@@ -521,18 +521,16 @@ const App = {
                         <button class="button-primary full-width" onclick="App.processCheckout('${tier}', 'card')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
                             Confirmer le paiement (Stripe)
                         </button>
-                    ` : (tier === 'pro' ? `
-                        <div id="paypal-container-K23GS3HM4TFF2" style="min-height: 150px; display: flex; align-items: center; justify-content: center;">
-                            <div class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #0070ba;"></div>
-                        </div>
-                        <script>
                     ` : `
-                        <div id="paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}" style="min-height: 150px; display: flex; align-items: center; justify-content: center;">
-                            <div class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #0070ba;"></div>
+                        <div class="paypal-checkout-box">
+                            <div id="paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}" class="paypal-button-mount">
+                                <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
+                            </div>
+                            <p class="paypal-info-text text-muted">Transaction sécurisée par PayPal</p>
                         </div>
-                    `)}
+                    `}
                     
-                    <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
+                    <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1.5rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
                         <i class="fas fa-arrow-left"></i> Retour aux offres
                     </button>
                 </div>
@@ -542,7 +540,6 @@ const App = {
             if (method === 'paypal') {
                 const buttonId = tier === 'pro' ? "K23GS3HM4TFF2" : "UH2HXUQ2DHQLJ";
                 const containerId = `#paypal-container-${buttonId}`;
-
                 setTimeout(() => {
                     if (window.paypal && window.paypal.HostedButtons) {
                         const container = document.querySelector(containerId);
@@ -555,113 +552,112 @@ const App = {
                     }
                 }, 100);
             }
-        }
-    },
+        },
 
-    processCheckout(tier, method = 'card') {
-        if (method === 'card') {
-            App.showNotification('Création de la session sécurisée Stripe...', 'info');
-            fetch('/api/payments/create-checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    planId: tier,
-                    userId: Storage.getUser()?.id,
-                    userEmail: Storage.getUser()?.email
+        processCheckout(tier, method = 'card') {
+            if (method === 'card') {
+                App.showNotification('Création de la session sécurisée Stripe...', 'info');
+                fetch('/api/payments/create-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        planId: tier,
+                        userId: Storage.getUser()?.id,
+                        userEmail: Storage.getUser()?.email
+                    })
                 })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.url) {
-                        window.location.href = data.url;
-                    } else {
-                        throw new Error('Erreur lors de la création de la session de paiement.');
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    App.showNotification(err.message, 'error');
-                });
-        }
-    },
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.url) {
+                            window.location.href = data.url;
+                        } else {
+                            throw new Error('Erreur lors de la création de la session de paiement.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        App.showNotification(err.message, 'error');
+                    });
+            }
+        },
 
-    // Afficher le modal d'activation de licence
-    showLicenseModal() {
-        const modal = document.getElementById('license-modal');
-        if (modal) {
-            modal.classList.add('active');
-            const input = modal.querySelector('#license-key-input');
-            if (input) input.value = '';
-        }
-    },
+        // Afficher le modal d'activation de licence
+        showLicenseModal() {
+            const modal = document.getElementById('license-modal');
+            if (modal) {
+                modal.classList.add('active');
+                const input = modal.querySelector('#license-key-input');
+                if (input) input.value = '';
+            }
+        },
 
-    // Fermer les modales
-    closeModal() {
-        document.querySelectorAll('.modal-overlay').forEach(modal => {
-            modal.classList.remove('active');
-            modal.style.display = ''; // Clear inline style
-        });
-    },
+        // Fermer les modales
+        closeModal() {
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.classList.remove('active');
+                modal.style.display = ''; // Clear inline style
+            });
+        },
 
-    // Activer une licence
-    activateLicense() {
-        const input = document.getElementById('license-key-input');
-        const licenseKey = input?.value.trim();
+        // Activer une licence
+        activateLicense() {
+            const input = document.getElementById('license-key-input');
+            const licenseKey = input?.value.trim();
 
-        if (!licenseKey) {
-            this.showNotification('Veuillez entrer une clé de licence', 'error');
-            return;
-        }
+            if (!licenseKey) {
+                this.showNotification('Veuillez entrer une clé de licence', 'error');
+                return;
+            }
 
-        // Validation simple de la clé (format: SPPRO-XXXXX-XXXXX-XXXXX)
-        const isValid = this.validateLicenseKey(licenseKey);
+            // Validation simple de la clé (format: SPPRO-XXXXX-XXXXX-XXXXX)
+            const isValid = this.validateLicenseKey(licenseKey);
 
-        if (isValid) {
-            Storage.activatePro(licenseKey);
-            this.closeModal();
-            this.renderProBadge();
-            this.checkFreemiumLimits();
-            this.showNotification('Licence activée avec succès.', 'success');
+            if (isValid) {
+                Storage.activatePro(licenseKey);
+                this.closeModal();
+                this.renderProBadge();
+                this.checkFreemiumLimits();
+                this.showNotification('Licence activée avec succès.', 'success');
 
-            // Recharger la page actuelle
-            this.loadPage(this.currentPage);
-        } else {
-            this.showNotification('Clé de licence invalide', 'error');
-        }
-    },
+                // Recharger la page actuelle
+                this.loadPage(this.currentPage);
+            } else {
+                this.showNotification('Clé de licence invalide', 'error');
+            }
+        },
 
-    // Validation de clé de licence
-    validateLicenseKey(key) {
-        // Format attendu: SPPRO-XXXXX-XXXXX-XXXXX
-        const pattern = /^[A-Z]{2,5}PRO-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/;
-        return pattern.test(key);
-    },
+        // Validation de clé de licence
+        validateLicenseKey(key) {
+            // Format attendu: SPPRO-XXXXX-XXXXX-XXXXX
+            const pattern = /^[A-Z]{2,5}PRO-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/;
+            return pattern.test(key);
+        },
 
-    // Générer une clé de licence (pour admin/test)
-    generateLicenseKey() {
-        const randomSegment = () => {
-            return Array.from({ length: 5 }, () =>
-                'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]
-            ).join('');
-        };
+        // Générer une clé de licence (pour admin/test)
+        generateLicenseKey() {
+            const randomSegment = () => {
+                return Array.from({ length: 5 }, () =>
+                    'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]
+                ).join('');
+            };
 
-        return `SPPRO - ${randomSegment()} -${randomSegment()} -${randomSegment()} `;
-    },
+            return `SPPRO - ${randomSegment()} -${randomSegment()} -${randomSegment()} `;
+        },
 
-    // Notification système
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification notification - ${type} `;
-        notification.textContent = message;
+        // Notification système
+        showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification - ${type} `;
+            notification.textContent = message;
 
-        notification.style.cssText = `
+            notification.style.cssText = `
 position: fixed;
 top: 20px;
 right: 20px;
 background: ${type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
-                type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
-                    'linear-gradient(135deg, #111827, #000000)'
-            };
+                    type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
+                        'linear-gradient(135deg, #111827, #000000)'
+                };
 color: white;
 padding: 1rem 1.5rem;
 border - radius: 12px;
@@ -672,87 +668,87 @@ animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s;
 max - width: 400px;
 `;
 
-        document.body.appendChild(notification);
+            document.body.appendChild(notification);
 
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    },
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        },
 
-    // Formatage de devises
-    formatCurrency(amount) {
-        const settings = Storage.get(Storage.KEYS.SETTINGS);
-        return `${Math.round(amount).toLocaleString('fr-FR')} ${settings.currency} `;
-    },
+        // Formatage de devises
+        formatCurrency(amount) {
+            const settings = Storage.get(Storage.KEYS.SETTINGS);
+            return `${Math.round(amount).toLocaleString('fr-FR')} ${settings.currency} `;
+        },
 
-    // Formatage de dates
-    formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('fr-FR');
-    },
+        // Formatage de dates
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        },
 
-    // Calcul de total avec TVA
-    calculateTotal(items, includeTax = true) {
-        const settings = Storage.get(Storage.KEYS.SETTINGS);
-        const subtotal = items.reduce((sum, item) =>
-            sum + (item.quantity * item.unitPrice), 0
-        );
+        // Calcul de total avec TVA
+        calculateTotal(items, includeTax = true) {
+            const settings = Storage.get(Storage.KEYS.SETTINGS);
+            const subtotal = items.reduce((sum, item) =>
+                sum + (item.quantity * item.unitPrice), 0
+            );
 
-        if (!includeTax) return subtotal;
+            if (!includeTax) return subtotal;
 
-        const taxAmount = subtotal * (settings.taxRate / 100);
-        return subtotal + taxAmount;
-    },
+            const taxAmount = subtotal * (settings.taxRate / 100);
+            return subtotal + taxAmount;
+        },
 
-    handlePaymentReturn() {
-        const params = new URLSearchParams(window.location.search);
-        const session_id = params.get('session');
-        const paymentStatus = params.get('payment');
-        const invoiceId = params.get('invoiceId');
+        handlePaymentReturn() {
+            const params = new URLSearchParams(window.location.search);
+            const session_id = params.get('session');
+            const paymentStatus = params.get('payment');
+            const invoiceId = params.get('invoiceId');
 
-        // Retour d'achat SaaS (PRO)
-        if (session_id) {
-            this.showNotification('Paiement réussi ! Bienvenue dans la version PRO.', 'success');
-            // On force un sync utilisateur pour obtenir le nouveau tag isPro
-            this.syncUser();
-            // Nettoyer l'URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-        // Retour de paiement facture client
-        else if (paymentStatus === 'success' && invoiceId) {
-            const invoice = Storage.getInvoice(invoiceId);
-            if (invoice && invoice.status !== 'paid') {
-                Storage.updateInvoice(invoiceId, { status: 'paid' });
-                this.showNotification(`Paiement réussi pour la facture ${invoice.number} !`, 'success');
-                // Nettoyer l'URL sans recharger
+            // Retour d'achat SaaS (PRO)
+            if (session_id) {
+                this.showNotification('Paiement réussi ! Bienvenue dans la version PRO.', 'success');
+                // On force un sync utilisateur pour obtenir le nouveau tag isPro
+                this.syncUser();
+                // Nettoyer l'URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            // Retour de paiement facture client
+            else if (paymentStatus === 'success' && invoiceId) {
+                const invoice = Storage.getInvoice(invoiceId);
+                if (invoice && invoice.status !== 'paid') {
+                    Storage.updateInvoice(invoiceId, { status: 'paid' });
+                    this.showNotification(`Paiement réussi pour la facture ${invoice.number} !`, 'success');
+                    // Nettoyer l'URL sans recharger
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, newUrl);
+
+                    // Si on était sur la page des factures, on rafraîchit
+                    if (typeof Invoices !== 'undefined' && this.currentPage === 'quotes') {
+                        Invoices.render();
+                    }
+                }
+            } else if (paymentStatus === 'cancel') {
+                this.showNotification('Paiement annulé.', 'info');
                 const newUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, newUrl);
-
-                // Si on était sur la page des factures, on rafraîchit
-                if (typeof Invoices !== 'undefined' && this.currentPage === 'quotes') {
-                    Invoices.render();
-                }
             }
-        } else if (paymentStatus === 'cancel') {
-            this.showNotification('Paiement annulé.', 'info');
-            const newUrl = window.location.pathname;
-            window.history.replaceState({}, document.title, newUrl);
         }
-    }
-};
+    };
 
-window.App = App;
+    window.App = App;
 
-// Auto-démarrage quand le DOM est prêt
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        try {
-            App.init();
-            console.log("App initialized");
-        } catch (e) {
-            console.error("App Init Error:", e);
-        }
-    });
+    // Auto-démarrage quand le DOM est prêt
+    if(document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                App.init();
+                console.log("App initialized");
+            } catch (e) {
+                console.error("App Init Error:", e);
+            }
+        });
 } else {
     try {
         App.init();
