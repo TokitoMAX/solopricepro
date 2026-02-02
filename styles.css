@@ -908,76 +908,120 @@ section {
 
 /* Upgrade Modal Mini Cards */
 .upgrade-comparison {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
+    display: flex;
+    gap: 1rem;
     margin-top: 1.5rem;
+    justify-content: center;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 650px) {
     .upgrade-comparison {
-        grid-template-columns: repeat(3, 150px);
-        overflow-x: auto;
-        padding-bottom: 1rem;
-        margin-left: -1rem;
-        margin-right: -1rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .pricing-card-mini {
+        width: 100% !important;
+        max-width: 350px;
     }
 }
 
 .pricing-card-mini {
+    flex: 1;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border);
-    padding: 1.2rem 0.75rem;
-    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
     text-align: center;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
 }
 
 .pricing-card-mini:hover {
-    transform: translateY(-3px);
+    transform: translateY(-5px);
+    border-color: var(--primary-light);
     background: rgba(255, 255, 255, 0.05);
 }
 
 .pricing-card-mini.active {
     border-color: var(--primary);
     background: var(--primary-glass);
-    box-shadow: 0 0 15px var(--primary-glass);
+    box-shadow: 0 10px 30px var(--primary-glass);
+    transform: scale(1.02);
 }
 
 .card-tier {
     font-weight: 800;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
 }
 
 .card-price {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: 0.25rem;
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.card-price span {
+    font-size: 1rem;
+    color: var(--text-muted);
 }
 
 .card-value-tag {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     color: #ef4444;
-    font-weight: 700;
-    margin-bottom: 1rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    padding: 2px 8px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+    display: inline-block;
 }
 
 .card-features-mini {
     list-style: none;
-    font-size: 0.75rem;
-    color: var(--text-muted);
+    font-size: 0.85rem;
+    color: var(--text);
     text-align: left;
+    margin: 1rem 0;
+    padding: 0;
 }
 
 .card-features-mini li {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-features-mini li i {
+    color: var(--primary);
+    font-size: 0.8rem;
+}
+
+.card-select-btn {
+    margin-top: auto;
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.standard .card-select-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
 }
 
 @media (max-width: 768px) {

@@ -413,36 +413,36 @@ const App = {
         const comparisonContainer = modal.querySelector('.upgrade-comparison');
         if (comparisonContainer) {
             comparisonContainer.innerHTML = `
-                <div class="pricing-card-mini standard">
+                <div class="pricing-card-mini standard" onclick="App.selectTier(this, 'standard')">
                     <div class="card-tier">Standard</div>
-                    <div class="card-price">0€/m</div>
+                    <div class="card-price">0€<span>/m</span></div>
                     <ul class="card-features-mini">
-                        <li>1 Client</li>
-                        <li>2 Devis/m</li>
+                        <li><i class="fas fa-check"></i> 1 Client actif</li>
+                        <li><i class="fas fa-check"></i> 2 Devis / mois</li>
                     </ul>
-                    <button class="button-outline small" onclick="App.closeModal()" style="width: 100%; margin-top: 1rem; font-size: 0.7rem;">Inclus</button>
+                    <div class="card-select-btn">Inclus</div>
                 </div>
                 <div class="pricing-card-mini pro active" onclick="App.selectTier(this, 'pro')">
-                    <div class="card-tier">PRO</div>
-                    <div class="card-price">15€/m</div>
+                    <div class="card-tier">Pack PRO</div>
+                    <div class="card-price">15€<span>/m</span></div>
                     <div class="card-value-tag">Valeur 35€</div>
                     <ul class="card-features-mini">
-                        <li><strong>Tout illimité</strong></li>
-                        <li>Logo sur PDF</li>
-                        <li>Kanban & Profit</li>
+                        <li><i class="fas fa-check"></i> <strong>Tout Illimité</strong></li>
+                        <li><i class="fas fa-check"></i> Logo sur PDF</li>
+                        <li><i class="fas fa-check"></i> Kanban & Profit</li>
                     </ul>
-                    <button class="button-primary small" style="width: 100%; margin-top: 1rem; font-size: 0.7rem;">Choisir</button>
+                    <button class="button-primary card-select-btn" onclick="App.checkout('pro')">Choisir PRO</button>
                 </div>
                 <div class="pricing-card-mini expert" onclick="App.selectTier(this, 'expert')">
-                    <div class="card-tier">EXPERT</div>
-                    <div class="card-price">29€/m</div>
+                    <div class="card-tier">Pack EXPERT</div>
+                    <div class="card-price">29€<span>/m</span></div>
                     <div class="card-value-tag">Valeur 75€</div>
                     <ul class="card-features-mini">
-                        <li><strong>Expansion</strong></li>
-                        <li>Coaching IA</li>
-                        <li>Badge Expert</li>
+                        <li><i class="fas fa-check"></i> <strong>Mode Expert</strong></li>
+                        <li><i class="fas fa-check"></i> Coaching IA</li>
+                        <li><i class="fas fa-check"></i> Badge Expert</li>
                     </ul>
-                    <button class="button-secondary small" style="width: 100%; margin-top: 1rem; font-size: 0.7rem;">Choisir</button>
+                    <button class="button-secondary card-select-btn" onclick="App.checkout('expert')">Choisir EXPERT</button>
                 </div>
             `;
         }
@@ -451,15 +451,34 @@ const App = {
     },
 
     selectTier(card, tier) {
-        // Visuel
+        if (tier === 'standard') {
+            App.closeModal();
+            return;
+        }
         document.querySelectorAll('.pricing-card-mini').forEach(c => c.classList.remove('active'));
         card.classList.add('active');
+    },
 
-        // Action (Simulée pour l'instant ou redirect vers paiement)
-        App.showNotification(`Redirection vers le paiement pack ${tier.toUpperCase()}...`, 'info');
+    checkout(tier) {
+        event.stopPropagation();
+        App.showNotification(`Initialisation du paiement pour le Pack ${tier.toUpperCase()}...`, 'info');
 
-        // Simuler activation pour le test si besoin (à retirer en prod)
-        // setTimeout(() => { Storage.activatePro('TEST-KEY', tier, 1); location.reload(); }, 2000);
+        // Simuler un chargement de bouton
+        const btn = event.currentTarget;
+        const originalText = btn.textContent;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            // Simulation de succès pour la démo
+            Storage.activatePro('QPPRO-SOLO-DEMO-2026', tier, 12);
+            App.showNotification('Paiement réussi ! Félicitations vous êtes maintenant ' + tier.toUpperCase(), 'success');
+
+            // Fermer et recharger après un court délai
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        }, 2000);
     },
 
     // Afficher le modal d'activation de licence
