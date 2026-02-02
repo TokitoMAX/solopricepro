@@ -15,6 +15,9 @@ const App = {
         if (window.Network) Network.init();
         this.handlePaymentReturn();
 
+        // Masquer le loader une fois l'initialisation terminée
+        this.hideLoader();
+
         // Router / Landing Logic
         const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
         const isLoggedIn = Auth.isLoggedIn();
@@ -39,6 +42,16 @@ const App = {
                 this.closeModal();
             }
         });
+    },
+
+    hideLoader() {
+        const loader = document.getElementById('app-loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 500);
+        }
     },
 
     enterApp(animate = true) {
