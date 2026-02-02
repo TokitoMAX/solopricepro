@@ -425,6 +425,19 @@ const App = {
         if (step === 'comparison') {
             titleEl.textContent = 'Accès SoloPrice PRO';
             container.innerHTML = `
+                <!-- Standard -->
+                <div class="pricing-card-mini standard" onclick="App.closeModal()">
+                    <div class="card-tier">STANDARD</div>
+                    <div class="card-price">0€<span>/mois</span></div>
+                    <ul class="card-features-mini">
+                        <li><i class="fas fa-check-circle"></i> Marketplace Gratuite</li>
+                        <li><i class="fas fa-minus"></i> 1 Client Actif</li>
+                        <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
+                    </ul>
+                    <div class="card-select-btn">Rester en Standard</div>
+                </div>
+
+                <!-- Pro -->
                 <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', 'pro')">
                     <div class="card-badge">CONSEILLÉ</div>
                     <div class="card-tier">SOLOPRICE PRO</div>
@@ -438,8 +451,11 @@ const App = {
                     </ul>
                     <button class="card-select-btn pro">Passer Pro</button>
                 </div>
-                <div class="pricing-card-mini expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
-                    <div class="card-tier">PACK EXPERT</div>
+
+                <!-- Expert -->
+                <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
+                    <div class="card-badge" style="background: #a855f7;">PREMIUM</div>
+                    <div class="card-tier" style="color: #c084fc;">PACK EXPERT</div>
                     <div class="card-price">29€<span>/mois</span></div>
                     <div class="card-value-tag">Valeur Réelle 75€</div>
                     <ul class="card-features-mini">
@@ -448,16 +464,7 @@ const App = {
                         <li><i class="fas fa-check-circle"></i> Visibilité Prioritaire</li>
                         <li><i class="fas fa-check-circle"></i> Badge Expert Vérifié</li>
                     </ul>
-                    <button class="card-select-btn expert">Devenir Expert</button>
-                </div>
-                <div class="pricing-card-mini standard" onclick="App.closeModal()">
-                    <div class="card-tier">STANDARD</div>
-                    <div class="card-price">0€<span>/mois</span></div>
-                    <ul class="card-features-mini">
-                        <li><i class="fas fa-minus"></i> 1 Client Actif</li>
-                        <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
-                    </ul>
-                    <div class="card-select-btn">Rester en Standard</div>
+                    <button class="card-select-btn expert" style="background: #a855f7; color: white;">Devenir Expert</button>
                 </div>
             `;
         } else if (step === 'checkout') {

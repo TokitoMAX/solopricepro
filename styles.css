@@ -935,8 +935,19 @@ section {
 
 .pricing-card-mini.active.pro {
     border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
-    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
+    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+    transform: scale(1.02);
+}
+
+.pricing-card-mini.expert {
+    border-color: rgba(192, 132, 252, 0.3);
+}
+
+.pricing-card-mini.active.expert {
+    border-color: #c084fc;
+    background: linear-gradient(135deg, rgba(192, 132, 252, 0.15) 0%, rgba(192, 132, 252, 0.05) 100%);
+    box-shadow: 0 20px 40px rgba(192, 132, 252, 0.2);
     transform: scale(1.02);
 }
 
@@ -2522,13 +2533,7 @@ select.form-input:focus {
     right: 1rem;
 }
 
-/* Pricing Cards (Upgrade Modal) */
-.upgrade-comparison {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin: 2.5rem 0;
-}
+
 
 .pricing-card {
     background: rgba(255, 255, 255, 0.03);
