@@ -10,7 +10,7 @@ const { createClient } = require('@supabase/supabase-js');
 dotenv.config();
 
 // Validation des variables d'environnement critiques
-const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'STRIPE_WEBHOOK_SECRET'];
 const missingVars = requiredEnvVars.filter(v => !process.env[v]);
 
 if (missingVars.length > 0) {
@@ -58,6 +58,10 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Route Webhook Stripe (doit être AVANT express.json() pour avoir le raw body)
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 
 // Routes

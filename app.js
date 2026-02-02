@@ -279,7 +279,8 @@ const App = {
     },
 
     checkFreemiumLimits() {
-        const isPro = Storage.isPro();
+        const user = Auth.getUser();
+        const isPro = user?.isPro || false;
 
         const quotes = Storage.getQuotes();
         const invoices = Storage.getInvoices();
@@ -299,20 +300,20 @@ const App = {
             return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
         }).length;
 
-        // Toujours cacher la bannière PRO/Free par défaut pour le moment
+        // Affichage/Masquage de la bannière PRO
         const banner = document.getElementById('freemium-banner');
         if (banner) {
-            banner.style.display = 'none';
+            banner.style.display = isPro ? 'none' : 'flex';
         }
 
         return {
-            canAddClient: true, // Bypassed for discussion
-            canAddQuote: true, // Bypassed for discussion
-            canAddInvoice: true, // Bypassed for discussion
-            canExportPDF: true, // Bypassed for discussion
-            maxClients: Infinity,
-            maxQuotes: Infinity,
-            maxInvoices: Infinity
+            canAddClient: isPro || clients.length < 3,
+            canAddQuote: isPro || monthlyQuotesCount < 5,
+            canAddInvoice: isPro || monthlyInvoicesCount < 5,
+            canExportPDF: isPro, // PDF export with logo reserved for PRO
+            maxClients: isPro ? Infinity : 3,
+            maxQuotes: isPro ? Infinity : 5,
+            maxInvoices: isPro ? Infinity : 5
         };
     },
 
@@ -349,10 +350,10 @@ const App = {
         if (infoContainer) {
             infoContainer.innerHTML = `
                 <div class="user-profile" onclick="App.navigateTo('profile')" style="cursor: pointer;">
-                    <div class="user-avatar">${user.company?.name?.charAt(0) || 'U'}</div>
+                    <div class="user-avatar">${user.company?.name?.charAt(0) || user.email?.charAt(0) || 'U'}</div>
                     <div class="user-details">
                         <span class="user-name">${user.company?.name || user.email}</span>
-                        <span class="user-status"><span class="pro-badge-small">PRO</span></span>
+                        ${isPro ? '<span class="user-status"><span class="pro-badge-small">PRO</span></span>' : '<span class="user-status text-muted" style="font-size:0.7rem;">Version Standard</span>'}
                     </div>
                 </div>
             `;
@@ -532,10 +533,20 @@ const App = {
 
     handlePaymentReturn() {
         const params = new URLSearchParams(window.location.search);
+        const session_id = params.get('session');
         const paymentStatus = params.get('payment');
         const invoiceId = params.get('invoiceId');
 
-        if (paymentStatus === 'success' && invoiceId) {
+        // Retour d'achat SaaS (PRO)
+        if (session_id) {
+            this.showNotification('Paiement réussi ! Bienvenue dans la version PRO.', 'success');
+            // On force un sync utilisateur pour obtenir le nouveau tag isPro
+            this.syncUser();
+            // Nettoyer l'URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        // Retour de paiement facture client
+        else if (paymentStatus === 'success' && invoiceId) {
             const invoice = Storage.getInvoice(invoiceId);
             if (invoice && invoice.status !== 'paid') {
                 Storage.updateInvoice(invoiceId, { status: 'paid' });

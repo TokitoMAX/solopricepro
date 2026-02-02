@@ -193,7 +193,8 @@ const Storage = {
     },
 
     isPro() {
-        return true; // Toujours PRO par défaut pour le moment
+        const user = this.getUser();
+        return user?.isPro === true;
     },
 
     getSubscriptionStatus() {
