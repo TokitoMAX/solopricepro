@@ -196,9 +196,19 @@ const Storage = {
         }
     },
 
-    isPro() {
+    getTier() {
         const user = this.getUser();
-        return user?.isPro === true;
+        if (!user) return 'standard';
+        return user.tier || (user.isPro ? 'pro' : 'standard');
+    },
+
+    isPro() {
+        const tier = this.getTier();
+        return tier === 'pro' || tier === 'expert';
+    },
+
+    isExpert() {
+        return this.getTier() === 'expert';
     },
 
     getSubscriptionStatus() {
@@ -220,7 +230,7 @@ const Storage = {
         };
     },
 
-    activatePro(licenseKey, months = 1) {
+    activatePro(licenseKey, tier = 'pro', months = 1) {
         const user = this.getUser();
         const now = new Date();
         const expiry = new Date(now.setMonth(now.getMonth() + months));
@@ -228,6 +238,7 @@ const Storage = {
         this.setUser({
             ...user,
             isPro: true,
+            tier: tier,
             licenseKey: licenseKey,
             activatedAt: new Date().toISOString(),
             subscriptionEnd: expiry.toISOString()
