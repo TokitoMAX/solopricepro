@@ -8,6 +8,10 @@ router.post('/create-checkout', async (req, res) => {
     try {
         const { planId, userId, userEmail } = req.body;
 
+        const isExpert = planId === 'expert';
+        const amount = isExpert ? 2900 : 1500; // 29€ ou 15€
+        const planName = isExpert ? 'SoloPrice EXPERT - Croissance IA' : 'SoloPrice PRO - Illimité';
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             customer_email: userEmail,
@@ -16,21 +20,21 @@ router.post('/create-checkout', async (req, res) => {
                     price_data: {
                         currency: 'eur',
                         product_data: {
-                            name: 'SoloPrice Pro - Pack Illimité',
-                            description: 'Accès complet à toutes les fonctionnalités de SoloPrice Pro',
+                            name: planName,
+                            description: isExpert ? 'IA Stratégique, Visibilité Marketplace & Badge Expert' : 'Documents illimités, Logos & Pipeline Kanban',
                         },
-                        unit_amount: 900, // 9.00€
+                        unit_amount: amount,
                         recurring: { interval: 'month' },
                     },
                     quantity: 1,
                 },
             ],
             mode: 'subscription',
-            success_url: `${process.env.APP_URL}/?session={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.APP_URL}/profile`,
+            success_url: `${process.env.APP_URL}/?payment_success=true&plan=${planId}`,
+            cancel_url: `${process.env.APP_URL}/?payment_cancel=true`,
             metadata: {
                 userId: userId,
-                planId: 'pro'
+                planId: planId
             }
         });
 
@@ -76,9 +80,14 @@ router.post('/webhook', async (req, res) => {
                 }
             });
 
-            // Mise à jour du statut PRO dans les metadata Supabase Auth
+            const planId = session.metadata.planId || 'pro';
+
+            // Mise à jour du statut dans les metadata Supabase Auth
             const { error } = await adminClient.auth.admin.updateUserById(userId, {
-                user_metadata: { is_pro: true }
+                user_metadata: {
+                    is_pro: true,
+                    tier: planId
+                }
             });
 
             if (error) throw error;

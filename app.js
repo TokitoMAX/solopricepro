@@ -511,70 +511,78 @@ const App = {
 
                     ${method === 'card' ? `
                         <div class="form-group">
-                            <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Numéro de carte</label>
+                            <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Numéro de carte (Stripe)</label>
                             <input type="text" class="form-input checkout-input" placeholder="0000 0000 0000 0000" id="card-number">
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <input type="text" class="form-input checkout-input" placeholder="MM/AA">
                             <input type="text" class="form-input checkout-input" placeholder="CVC">
                         </div>
-                    ` : `
-                        <div style="text-align: center; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 12px; margin-bottom:1.5rem;">
-                            <i class="fab fa-paypal" style="font-size: 2rem; color: #0070ba; margin-bottom: 0.5rem; display: block;"></i>
-                            <p style="font-size: 0.9rem;">Vous allez être redirigé vers l'interface sécurisée de PayPal.</p>
+                        <button class="button-primary full-width" onclick="App.processCheckout('${tier}', 'card')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
+                            Confirmer le paiement (Stripe)
+                        </button>
+                    ` : (tier === 'pro' ? `
+                        <div id="paypal-container-K23GS3HM4TFF2" style="min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                            <div class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #0070ba;"></div>
                         </div>
-                    `}
+                        <script>
+                    ` : `
+                        <div id="paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}" style="min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                            <div class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #0070ba;"></div>
+                        </div>
+                    `)}
                     
-                    <button class="button-primary full-width" onclick="App.processCheckout('${tier}', '${method}')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
-                        ${method === 'card' ? 'Confirmer le paiement' : 'Payer avec PayPal'}
-                    </button>
                     <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
                         <i class="fas fa-arrow-left"></i> Retour aux offres
                     </button>
                 </div>
             `;
+
+            // Re-exécution du script PayPal en fonction du tier
+            if (method === 'paypal') {
+                const buttonId = tier === 'pro' ? "K23GS3HM4TFF2" : "UH2HXUQ2DHQLJ";
+                const containerId = `#paypal-container-${buttonId}`;
+
+                setTimeout(() => {
+                    if (window.paypal && window.paypal.HostedButtons) {
+                        const container = document.querySelector(containerId);
+                        if (container) {
+                            container.innerHTML = '';
+                            paypal.HostedButtons({
+                                hostedButtonId: buttonId,
+                            }).render(containerId);
+                        }
+                    }
+                }, 100);
+            }
         }
     },
 
     processCheckout(tier, method = 'card') {
-        const modal = document.getElementById('upgrade-modal');
-        const container = modal.querySelector('.upgrade-comparison');
-        const titleEl = modal.querySelector('.upgrade-title');
-
-        const msg = method === 'paypal' ? 'Redirection vers PayPal...' : 'Vérification de la carte...';
-        App.showNotification(msg, 'info');
-
-        // Modal Loading State
-        titleEl.textContent = method === 'paypal' ? 'Liaison PayPal' : 'Sécurisation';
-        container.innerHTML = `
-            <div style="text-align: center; padding: 3rem 1rem;">
-                <div class="payment-loader" style="margin-bottom: 2rem;">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--primary);"></i>
-                </div>
-                <h3 style="margin-bottom: 1rem;">${method === 'paypal' ? 'Ouverture de la fenêtre sécurisée...' : 'Traitement de la transaction...'}</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Ne fermez pas cette fenêtre.</p>
-            </div>
-        `;
-
-        const delay = method === 'paypal' ? 3500 : 2500;
-
-        setTimeout(() => {
-            Storage.activatePro('SP-TRANS-' + Math.random().toString(36).substring(7).toUpperCase(), tier, 1);
-            App.showNotification('Paiement réussi ! Pack ' + tier.toUpperCase() + ' activé.', 'success');
-
-            // Success View
-            titleEl.textContent = 'Bienvenue !';
-            container.innerHTML = `
-                <div style="text-align: center; padding: 2rem 0;">
-                    <div class="success-icon-wrapper" style="width: 80px; height: 80px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);">
-                        <i class="fas fa-check" style="color: white; font-size: 2.5rem;"></i>
-                    </div>
-                    <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Abonnement Activé</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem; line-height: 1.5;">Votre espace de travail est maintenant configuré en mode ${tier.toUpperCase()}. Profitez de l'illimité !</p>
-                    <button class="button-primary" onclick="location.reload()" style="padding: 1rem 2.5rem; border-radius: 50px;">Accéder à mes outils</button>
-                </div>
-            `;
-        }, delay);
+        if (method === 'card') {
+            App.showNotification('Création de la session sécurisée Stripe...', 'info');
+            fetch('/api/payments/create-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    planId: tier,
+                    userId: Storage.getUser()?.id,
+                    userEmail: Storage.getUser()?.email
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else {
+                        throw new Error('Erreur lors de la création de la session de paiement.');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    App.showNotification(err.message, 'error');
+                });
+        }
     },
 
     // Afficher le modal d'activation de licence
