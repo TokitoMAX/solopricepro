@@ -400,7 +400,9 @@ const App = {
         const messages = {
             limit: 'Passez à la vitesse supérieure.',
             pdf: 'Logo personnalisé & exports illimités.',
-            feature: 'Fonctionnalité réservée aux membres PRO.'
+            feature: 'Fonctionnalité réservée aux membres PRO.',
+            scoper_limit: 'Analyse illimitée réservée aux membres PRO.',
+            marketplace_automation: 'Automatisation réservée aux membres PRO.'
         };
 
         const titleEl = modal.querySelector('.upgrade-title');
@@ -409,6 +411,8 @@ const App = {
         if (titleEl) titleEl.textContent = 'Accès SoloPrice PRO';
         if (messageEl) messageEl.textContent = messages[reason] || messages.limit;
 
+        // Force display flex to override any potential inline style 'none'
+        modal.style.display = 'flex';
         modal.classList.add('active');
         this.renderUpgradeStep('comparison');
     },
@@ -567,6 +571,7 @@ const App = {
     closeModal() {
         document.querySelectorAll('.modal-overlay').forEach(modal => {
             modal.classList.remove('active');
+            modal.style.display = ''; // Clear inline style
         });
     },
 
