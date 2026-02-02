@@ -79,6 +79,7 @@ const Storage = {
             [this.KEYS.REVENUES]: 'revenues',
             [this.KEYS.EXPENSES]: 'expenses',
             [this.KEYS.SETTINGS]: 'settings',
+            [this.KEYS.CALCULATOR]: 'calculator_data',
             'sp_network_providers': 'network_providers'
         };
 
@@ -115,6 +116,7 @@ const Storage = {
             { key: this.KEYS.REVENUES, table: 'revenues' },
             { key: this.KEYS.EXPENSES, table: 'expenses' },
             { key: this.KEYS.SETTINGS, table: 'settings' },
+            { key: this.KEYS.CALCULATOR, table: 'calculator_data' },
             { key: 'sp_network_providers', table: 'network_providers' }
         ];
 
@@ -275,7 +277,9 @@ const Storage = {
             [this.KEYS.QUOTES]: 'quotes',
             [this.KEYS.INVOICES]: 'invoices',
             [this.KEYS.SERVICES]: 'services',
-            [this.KEYS.LEADS]: 'leads'
+            [this.KEYS.LEADS]: 'leads',
+            [this.KEYS.EXPENSES]: 'expenses',
+            [this.KEYS.REVENUES]: 'revenues'
         };
         const table = tableMap[key];
         if (!table) return;
