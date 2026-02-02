@@ -1307,7 +1307,7 @@ section {
 .hero-subtitle {
     font-size: 1.25rem;
     color: var(--text-muted);
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
     line-height: 1.6;
 }
 
@@ -1423,18 +1423,64 @@ section {
 
 .floating-card {
     position: absolute;
-    background: rgba(255, 255, 255, 0.05);
+    background: #0a0a0a;
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5rem;
+    border: 1px solid var(--primary);
+    padding: 2rem;
     border-radius: 20px;
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: var(--shadow-glow);
     animation: float 6s ease-in-out infinite;
     right: 15%;
     top: 30%;
+    z-index: 20;
+}
+
+.goal-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.goal-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.currency-symbol {
+    font-size: 1.8rem;
+    margin-left: 2px;
+}
+
+.goal-progress-container {
+    margin-top: 0.5rem;
+    height: 6px;
+    background: #1f2937;
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.goal-progress-fill {
+    width: 75%;
+    height: 100%;
+    background: var(--primary);
+    box-shadow: 0 0 10px var(--primary);
+}
+
+.logo-badge {
+    background: var(--primary);
+    color: #000;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 0.25rem;
 }
 
 @keyframes float {
@@ -1524,6 +1570,42 @@ section {
 
     .freemium-banner span.mobile-show {
         display: inline;
+    }
+
+    /* Fix Landing Hero overlapping */
+    .landing-hero {
+        flex-direction: column !important;
+        padding-top: 3rem !important;
+        gap: 2rem !important;
+        text-align: center !important;
+    }
+
+    .hero-content {
+        margin-bottom: 0 !important;
+        text-align: center !important;
+    }
+
+    .hero-buttons {
+        align-items: center !important;
+    }
+
+    .floating-card.goal-card-landing {
+        position: relative !important;
+        right: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        max-width: 320px !important;
+        margin: 0 auto !important;
+        animation: none !important;
+        padding: 1.5rem !important;
+    }
+
+    .goal-value {
+        font-size: 2rem !important;
+    }
+
+    .currency-symbol {
+        font-size: 1.4rem !important;
     }
 
     /* Fix Dashboard overlapping */
