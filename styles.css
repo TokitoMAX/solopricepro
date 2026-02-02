@@ -910,15 +910,16 @@ section {
 .upgrade-comparison {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
     margin-top: 2rem;
     align-items: center;
-    padding-bottom: 2.5rem;
+    padding-bottom: 2rem;
 }
 
 .pricing-card-mini {
     width: 100%;
-    min-height: 480px;
+    /* Max width consistent across mobile/desktop to ensure vertical stack */
+    max-width: 450px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-light);
     padding: 2.5rem 1.5rem;
@@ -1513,15 +1514,24 @@ section {
         gap: 0.5rem;
         border-radius: 50px;
         font-size: 0.75rem;
+        z-index: 100;
     }
 
     .freemium-banner span {
         display: none;
-        /* Hide text, keep only icon/button or just very short text */
     }
 
     .freemium-banner span.mobile-show {
         display: inline;
+    }
+
+    /* Fix Dashboard overlapping */
+    .stat-card.goal-card {
+        padding-bottom: 2rem;
+    }
+
+    .dashboard-header {
+        margin-bottom: 2rem;
     }
 }
 
@@ -2198,7 +2208,7 @@ select.form-input:focus {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
     margin-bottom: 3rem;
 }

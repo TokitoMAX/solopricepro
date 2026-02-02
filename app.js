@@ -511,18 +511,32 @@ const App = {
     },
 
     processCheckout(tier, method = 'card') {
-        const msg = method === 'paypal' ? 'Redirection vers PayPal...' : 'Traitement bancaire en cours...';
+        const modal = document.getElementById('upgrade-modal');
+        const container = modal.querySelector('.upgrade-comparison');
+        const titleEl = modal.querySelector('.upgrade-title');
+
+        const msg = method === 'paypal' ? 'Redirection vers PayPal...' : 'Vérification de la carte...';
         App.showNotification(msg, 'info');
-        const btn = event.currentTarget;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${method === 'paypal' ? 'Liaison...' : 'Transaction...'}`;
-        btn.disabled = true;
+
+        // Modal Loading State
+        titleEl.textContent = method === 'paypal' ? 'Liaison PayPal' : 'Sécurisation';
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1rem;">
+                <div class="payment-loader" style="margin-bottom: 2rem;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--primary);"></i>
+                </div>
+                <h3 style="margin-bottom: 1rem;">${method === 'paypal' ? 'Ouverture de la fenêtre sécurisée...' : 'Traitement de la transaction...'}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Ne fermez pas cette fenêtre.</p>
+            </div>
+        `;
+
+        const delay = method === 'paypal' ? 3500 : 2500;
 
         setTimeout(() => {
             Storage.activatePro('SP-TRANS-' + Math.random().toString(36).substring(7).toUpperCase(), tier, 1);
             App.showNotification('Paiement réussi ! Pack ' + tier.toUpperCase() + ' activé.', 'success');
 
-            const container = document.querySelector('.upgrade-comparison');
-            const titleEl = document.querySelector('.upgrade-title');
+            // Success View
             titleEl.textContent = 'Bienvenue !';
             container.innerHTML = `
                 <div style="text-align: center; padding: 2rem 0;">
@@ -534,7 +548,7 @@ const App = {
                     <button class="button-primary" onclick="location.reload()" style="padding: 1rem 2.5rem; border-radius: 50px;">Accéder à mes outils</button>
                 </div>
             `;
-        }, 2500);
+        }, delay);
     },
 
     // Afficher le modal d'activation de licence
