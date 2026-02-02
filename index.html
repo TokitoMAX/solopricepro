@@ -181,28 +181,65 @@
             </div>
         </header>
 
-        <section class="landing-features container">
+        <section id="pricing" class="landing-pricing container">
             <div class="section-header">
-                <h2 class="section-title">Facilitez vos collaborations</h2>
-                <p class="section-subtitle">Des outils simples pour clients et prestataires de l'écosystème
-                    DomTomConnect</p>
+                <h2 class="section-title">Choisissez votre <span class="gradient-text">Puissance</span></h2>
+                <p class="section-subtitle">Un investissement rentable dès votre premier devis.</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card glass">
-                    <h3 class="feature-title">Pour les Clients</h3>
-                    <p class="feature-description">Décrivez votre projet et recevez des devis transparents de
-                        prestataires qualifiés de l'écosystème DomTomConnect.
-                    </p>
+
+            <div class="pricing-grid">
+                <!-- Standard -->
+                <div class="pricing-card glass">
+                    <div class="pricing-header">
+                        <h3 class="tier-name">Standard</h3>
+                        <div class="tier-price">0€<span class="period">/mois</span></div>
+                    </div>
+                    <ul class="tier-features">
+                        <li><i class="fas fa-check"></i> Marketplace Gratuite</li>
+                        <li><i class="fas fa-check"></i> 1 Client actif</li>
+                        <li><i class="fas fa-check"></i> 2 Devis / mois</li>
+                        <li class="disabled"><i class="fas fa-times"></i> Logo sur PDF</li>
+                        <li class="disabled"><i class="fas fa-times"></i> Kanban & Profit</li>
+                    </ul>
+                    <button class="button-outline full-width" onclick="Auth.showAuthModal('register')">Démarrer
+                        Gratuitement</button>
                 </div>
-                <div class="feature-card glass">
-                    <h3 class="feature-title">Pour les Prestataires</h3>
-                    <p class="feature-description">Répondez aux opportunités avec des tarifs justes et des devis
-                        professionnels. Calculez votre rentabilité avant de vous engager.</p>
+
+                <!-- Pro -->
+                <div class="pricing-card glass popular">
+                    <div class="popular-badge">Plus Populaire</div>
+                    <div class="pricing-header">
+                        <h3 class="tier-name">Pack PRO</h3>
+                        <div class="market-value">Valeur 35€/mois</div>
+                        <div class="tier-price">15€<span class="period">/mois</span></div>
+                    </div>
+                    <ul class="tier-features">
+                        <li><i class="fas fa-check"></i> <strong>Tout l'illimité</strong></li>
+                        <li><i class="fas fa-check"></i> PDF avec <strong>votre Logo</strong></li>
+                        <li><i class="fas fa-check"></i> Pipeline Kanban</li>
+                        <li><i class="fas fa-check"></i> Pilotage Profit Net</li>
+                        <li><i class="fas fa-check"></i> Support Prioritaire</li>
+                    </ul>
+                    <button class="button-primary full-width" onclick="Auth.showAuthModal('register')">Devenir
+                        PRO</button>
                 </div>
-                <div class="feature-card glass">
-                    <h3 class="feature-title">Écosystème DomTomConnect</h3>
-                    <p class="feature-description">Accédez à un réseau de clients et prestataires de confiance dans les
-                        DOM-TOM.</p>
+
+                <!-- Expert -->
+                <div class="pricing-card glass expert">
+                    <div class="pricing-header">
+                        <h3 class="tier-name">Pack EXPERT</h3>
+                        <div class="market-value">Valeur 75€/mois</div>
+                        <div class="tier-price">29€<span class="period">/mois</span></div>
+                    </div>
+                    <ul class="tier-features">
+                        <li><i class="fas fa-check"></i> Tout du Pack PRO</li>
+                        <li><i class="fas fa-check"></i> <strong>Coaching IA Stratégique</strong></li>
+                        <li><i class="fas fa-check"></i> <strong>Priorité</strong> dans l'Annuaire</li>
+                        <li><i class="fas fa-check"></i> Badge Expert Vérifié</li>
+                        <li><i class="fas fa-check"></i> Auto-Devis Marketplace</li>
+                    </ul>
+                    <button class="button-secondary full-width" onclick="Auth.showAuthModal('register')">Passer
+                        Expert</button>
                 </div>
             </div>
         </section>

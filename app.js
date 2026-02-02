@@ -274,13 +274,19 @@ const App = {
                 } catch (e) { console.error("Migration error (sp_my_providers):", e); }
             }
             localStorage.setItem(unifiedKey, JSON.stringify(unified));
-            console.log('✅ Network/Marketplace data unified.');
+            console.log('🔗 Network providers unified.');
+            // Clean up old keys
+            localStorage.removeItem('sp_providers');
+            localStorage.removeItem('sp_my_providers');
         }
     },
 
+    // Vérification des limites selon le Tier (Standard, Pro, Expert)
     checkFreemiumLimits() {
         const user = Auth.getUser();
-        const isPro = user?.isPro || false;
+        const tier = Storage.getTier();
+        const isPro = tier === 'pro' || tier === 'expert';
+        const isExpert = tier === 'expert';
 
         const quotes = Storage.getQuotes();
         const invoices = Storage.getInvoices();
@@ -291,26 +297,27 @@ const App = {
         const currentYear = now.getFullYear();
 
         const monthlyQuotesCount = quotes.filter(q => {
-            const date = new Date(q.createdAt);
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            const d = new Date(q.createdAt);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         }).length;
 
         const monthlyInvoicesCount = invoices.filter(i => {
-            const date = new Date(i.createdAt);
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            const d = new Date(i.createdAt);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         }).length;
 
-        // Affichage/Masquage de la bannière PRO
+        // Banner visibility
         const banner = document.getElementById('freemium-banner');
-        if (banner) {
-            banner.style.display = isPro ? 'none' : 'flex';
-        }
+        if (banner) banner.style.display = isPro ? 'none' : 'flex';
 
         return {
+            tier: tier,
             canAddClient: isPro || clients.length < 1,
             canAddQuote: isPro || monthlyQuotesCount < 2,
             canAddInvoice: isPro || monthlyInvoicesCount < 2,
-            canExportPDF: isPro, // PDF export with logo reserved for PRO
+            canExportPDF: isPro,
+            canAutomateMarketplace: isPro,
+            isExpert: isExpert,
             maxClients: isPro ? Infinity : 1,
             maxQuotes: isPro ? Infinity : 2,
             maxInvoices: isPro ? Infinity : 2
@@ -318,11 +325,19 @@ const App = {
     },
 
     isFeatureProGated(feature) {
-        const user = Auth.getUser();
-        if (user?.isPro) return false;
+        const tier = Storage.getTier();
+        if (tier === 'pro' || tier === 'expert') return false;
 
-        const proFeatures = ['kanban', 'coach', 'expenses', 'marketplace_automation'];
+        const proFeatures = ['kanban', 'coach', 'expenses'];
         return proFeatures.includes(feature);
+    },
+
+    isFeatureExpertGated(feature) {
+        const tier = Storage.getTier();
+        if (tier === 'expert') return false;
+
+        const expertFeatures = ['expert_coaching', 'expert_directory'];
+        return expertFeatures.includes(feature);
     },
 
     async syncUser() {
@@ -394,27 +409,39 @@ const App = {
         if (titleEl) titleEl.textContent = 'Accès SoloPrice PRO';
         if (messageEl) messageEl.textContent = messages[reason] || messages.limit;
 
-        // Populate comparisons if container exists
+        // Populate comparison with 3 Tiers and Value Anchoring
         const comparisonContainer = modal.querySelector('.upgrade-comparison');
         if (comparisonContainer) {
             comparisonContainer.innerHTML = `
-                <div class="pricing-card free">
+                <div class="pricing-card-mini standard">
                     <div class="card-tier">Standard</div>
-                    <div class="card-price">0€<span>/mois</span></div>
-                    <ul class="card-features">
-                        <li><i class="fas fa-check"></i> 1 Client actif</li>
-                        <li><i class="fas fa-check"></i> 2 Devis / mois</li>
-                        <li><i class="fas fa-times"></i> Export PDF avec Logo</li>
-                        <li><i class="fas fa-times"></i> Coaching & Kanban</li>
+                    <div class="card-price">0€/m</div>
+                    <ul class="card-features-mini">
+                        <li>1 Client</li>
+                        <li>2 Devis/m</li>
+                        <li>Marketplace</li>
                     </ul>
                 </div>
-                <div class="pricing-card pro active">
-                    <div class="card-tier">SoloPrice PRO</div>
-                    <div class="card-price">9€<span>/mois</span></div>
-                    <ul class="card-features">
-                        <li><i class="fas fa-check"></i> <strong>Illimité</strong> partout</li>
-                        <li><i class="fas fa-check"></i> PDF avec <strong>ton Logo</strong></li>
-                        <li><i class="fas fa-check"></i> Support Prioritaire</li>
+                <div class="pricing-card-mini pro active">
+                    <div class="card-tier">PRO</div>
+                    <div class="card-price">15€/m</div>
+                    <div class="card-value-tag">Valeur 35€</div>
+                    <ul class="card-features-mini">
+                        <li><strong>Illimité</strong></li>
+                        <li>PDF Pro (Logo)</li>
+                        <li>Kanban & Profit</li>
+                        <li>Pilotage Cash</li>
+                    </ul>
+                </div>
+                <div class="pricing-card-mini expert">
+                    <div class="card-tier">EXPERT</div>
+                    <div class="card-price">29€/m</div>
+                    <div class="card-value-tag">Valeur 75€</div>
+                    <ul class="card-features-mini">
+                        <li><strong>Power User</strong></li>
+                        <li>Coaching IA</li>
+                        <li>Visibilité ++</li>
+                        <li>Badge Expert</li>
                     </ul>
                 </div>
             `;

@@ -799,6 +799,178 @@ section {
     margin-bottom: 2rem;
 }
 
+/* 3-Column Pricing Grid */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+    align-items: stretch;
+}
+
+.pricing-card {
+    padding: 3rem 2rem;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pricing-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.pricing-card.popular {
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.1);
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+.pricing-card.popular:hover {
+    transform: translateY(-10px) scale(1.05);
+}
+
+.pricing-card.expert {
+    border: 1px solid #c084fc;
+    /* Purple for Expert */
+    background: linear-gradient(180deg, rgba(192, 132, 252, 0.05) 0%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.tier-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.market-value {
+    font-size: 0.85rem;
+    color: #ef4444;
+    text-decoration: line-through;
+    opacity: 0.8;
+    margin-bottom: 0.2rem;
+}
+
+.tier-price {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+}
+
+.tier-price .period {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+.tier-features {
+    list-style: none;
+    margin-bottom: 2.5rem;
+    flex-grow: 1;
+}
+
+.tier-features li {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.tier-features li i.fa-check {
+    color: var(--primary);
+}
+
+.tier-features li i.fa-times {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+.tier-features li.disabled {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+/* Upgrade Modal Mini Cards */
+.upgrade-comparison {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pricing-card-mini {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.pricing-card-mini.active {
+    border-color: var(--primary);
+    background: var(--primary-glass);
+}
+
+.card-tier {
+    font-weight: 800;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.card-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+}
+
+.card-value-tag {
+    font-size: 0.7rem;
+    color: #ef4444;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.card-features-mini {
+    list-style: none;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: left;
+}
+
+.card-features-mini li {
+    margin-bottom: 0.4rem;
+}
+
+@media (max-width: 768px) {
+
+    .pricing-grid,
+    .upgrade-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .pricing-card.popular {
+        transform: scale(1);
+    }
+}
+
 .price-amount {
     font-size: 4rem;
     font-weight: 800;
