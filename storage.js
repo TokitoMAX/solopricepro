@@ -199,6 +199,16 @@ const Storage = {
     getTier() {
         const user = this.getUser();
         if (!user) return 'standard';
+
+        // Vérification de l'expiration si une date est fixée
+        if (user.subscriptionEnd) {
+            const expiry = new Date(user.subscriptionEnd);
+            if (new Date() > expiry) {
+                // L'abonnement a expiré
+                return 'standard';
+            }
+        }
+
         return user.tier || (user.isPro ? 'pro' : 'standard');
     },
 
@@ -241,8 +251,20 @@ const Storage = {
             tier: tier,
             licenseKey: licenseKey,
             activatedAt: new Date().toISOString(),
-            subscriptionEnd: expiry.toISOString()
+            subscriptionEnd: expiry.toISOString(),
+            subscriptionCanceled: false
         });
+    },
+
+    cancelSubscription() {
+        const user = this.getUser();
+        if (!user || !user.isPro) return false;
+
+        this.setUser({
+            ...user,
+            subscriptionCanceled: true
+        });
+        return true;
     },
 
     updateStreak() {

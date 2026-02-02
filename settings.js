@@ -16,6 +16,7 @@ const Settings = {
  
             <div class="settings-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <button class="settings-tab ${activeTabId === 'billing' ? 'active' : ''}" onclick="Settings.switchTab('billing')">Paramètres Devis</button>
+                <button class="settings-tab ${activeTabId === 'subscription' ? 'active' : ''}" onclick="Settings.switchTab('subscription')">Abonnement</button>
                 <button class="settings-tab ${activeTabId === 'data' ? 'active' : ''}" onclick="Settings.switchTab('data')">Données & Backup</button>
             </div>
  
@@ -68,6 +69,16 @@ const Settings = {
                     </div>
                 </div>
 
+                <!-- Tab: Subscription -->
+                <div id="settings-tab-subscription" class="settings-tab-content ${activeTabId === 'subscription' ? 'active' : ''}">
+                    <div class="settings-section">
+                        <h2 class="section-title-small">Votre Offre SoloPrice Pro</h2>
+                        <div id="subscription-info-container" style="margin-top: 1.5rem;">
+                            <!-- Dynamically filled -->
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tab: Data -->
                 <div id="settings-tab-data" class="settings-tab-content ${activeTabId === 'data' ? 'active' : ''}">
                     <div class="settings-section">
@@ -83,6 +94,8 @@ const Settings = {
                 </div>
             </div>
         `;
+
+        this.updateSubscriptionUI();
 
         if (typeof TaxEngine !== 'undefined') {
             TaxEngine.renderSelector('settings-tax-selector-container', (ctxId) => {
@@ -185,6 +198,66 @@ const Settings = {
         if (confirm('Attention : réinitialisation totale. Continuer ?')) {
             Storage.clearAll();
             window.location.reload();
+        }
+    },
+
+    updateSubscriptionUI() {
+        const container = document.getElementById('subscription-info-container');
+        if (!container) return;
+
+        const tier = Storage.getTier();
+        const user = Storage.getUser();
+        const status = Storage.getSubscriptionStatus();
+
+        if (tier === 'standard') {
+            container.innerHTML = `
+                <div class="glass" style="padding: 2rem; border-radius: 16px; border: 1px dashed var(--border); text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🌱</div>
+                    <h3 style="margin-bottom: 0.5rem;">Vous utilisez la version Standard (Gratuite)</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Passez à PRO ou EXPERT pour débloquer l'illimité et le coaching IA.</p>
+                    <button class="button-primary" onclick="App.showUpgradeModal()">Voir les offres</button>
+                </div>
+            `;
+        } else {
+            const isCanceled = user.subscriptionCanceled;
+            container.innerHTML = `
+                <div class="glass active-subscription" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--primary-glass); background: var(--primary-glass);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <div>
+                            <span class="badge" style="background: var(--primary); color: white; margin-bottom: 0.5rem; display: inline-block;">PACK ${tier.toUpperCase()}</span>
+                            <h3 style="margin: 0;">Abonnement Actif</h3>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.2rem; font-weight: 800;">${status.daysLeft} jours</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">restants</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem; font-size: 0.9rem;">
+                        <p style="margin: 0.25rem 0;"><i class="fas fa-calendar-check" style="margin-right: 8px;"></i> Prochain renouvellement : <strong>${new Date(status.expiryDate).toLocaleDateString()}</strong></p>
+                        ${isCanceled ?
+                    '<p style="color: #ef4444; margin-top: 1rem; font-weight: 600;"><i class="fas fa-exclamation-triangle"></i> Votre abonnement est résilié et prendra fin à la date indiquée.</p>' :
+                    '<p style="color: var(--text-muted); font-size: 0.8rem;">Votre abonnement sera automatiquement renouvelé mensuellement.</p>'
+                }
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        ${!isCanceled ?
+                    '<button class="button-outline small" onclick="Settings.confirmCancelSubscription()" style="border-color: #ef4444; color: #ef4444;">Résilier l\'abonnement</button>' :
+                    '<button class="button-primary small" onclick="App.showUpgradeModal()">Réactiver / Changer d\'offre</button>'
+                }
+                    </div>
+                </div>
+            `;
+        }
+    },
+
+    confirmCancelSubscription() {
+        if (confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Vous conserverez vos accès PRO jusqu'à la fin de la période en cours.")) {
+            if (Storage.cancelSubscription()) {
+                App.showNotification('Abonnement résilié avec succès.', 'success');
+                this.updateSubscriptionUI();
+            }
         }
     }
 };

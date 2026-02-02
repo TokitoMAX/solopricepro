@@ -409,76 +409,118 @@ const App = {
         if (titleEl) titleEl.textContent = 'Accès SoloPrice PRO';
         if (messageEl) messageEl.textContent = messages[reason] || messages.limit;
 
-        // Populate comparison with 3 Tiers and Value Anchoring
-        const comparisonContainer = modal.querySelector('.upgrade-comparison');
-        if (comparisonContainer) {
-            comparisonContainer.innerHTML = `
-                <div class="pricing-card-mini standard" onclick="App.selectTier(this, 'standard')">
+        modal.classList.add('active');
+        this.renderUpgradeStep('comparison');
+    },
+
+    renderUpgradeStep(step, data = {}) {
+        const modal = document.getElementById('upgrade-modal');
+        const container = modal.querySelector('.upgrade-comparison');
+        const titleEl = modal.querySelector('.upgrade-title');
+
+        if (step === 'comparison') {
+            titleEl.textContent = 'Accès SoloPrice PRO';
+            container.innerHTML = `
+                <div class="pricing-card-mini standard" onclick="App.renderUpgradeStep('checkout', {tier: 'standard'})">
                     <div class="card-tier">Standard</div>
-                    <div class="card-price">0€<span>/m</span></div>
+                    <div class="card-price">0€<span>/mo</span></div>
                     <ul class="card-features-mini">
                         <li><i class="fas fa-check"></i> 1 Client actif</li>
                         <li><i class="fas fa-check"></i> 2 Devis / mois</li>
                     </ul>
-                    <div class="card-select-btn">Inclus</div>
+                    <button class="card-select-btn">Rester Standard</button>
                 </div>
-                <div class="pricing-card-mini pro active" onclick="App.selectTier(this, 'pro')">
+                <div class="pricing-card-mini pro active" onclick="App.renderUpgradeStep('checkout', {tier: 'pro'})">
                     <div class="card-tier">Pack PRO</div>
-                    <div class="card-price">15€<span>/m</span></div>
+                    <div class="card-price">15€<span>/mo</span></div>
                     <div class="card-value-tag">Valeur 35€</div>
                     <ul class="card-features-mini">
-                        <li><i class="fas fa-check"></i> <strong>Tout Illimité</strong></li>
+                        <li><i class="fas fa-check"></i> Tout Illimité</li>
                         <li><i class="fas fa-check"></i> Logo sur PDF</li>
                         <li><i class="fas fa-check"></i> Kanban & Profit</li>
                     </ul>
-                    <button class="button-primary card-select-btn" onclick="App.checkout('pro')">Choisir PRO</button>
+                    <button class="card-select-btn">Choisir PRO</button>
                 </div>
-                <div class="pricing-card-mini expert" onclick="App.selectTier(this, 'expert')">
+                <div class="pricing-card-mini expert" onclick="App.renderUpgradeStep('checkout', {tier: 'expert'})">
                     <div class="card-tier">Pack EXPERT</div>
-                    <div class="card-price">29€<span>/m</span></div>
+                    <div class="card-price">29€<span>/mo</span></div>
                     <div class="card-value-tag">Valeur 75€</div>
                     <ul class="card-features-mini">
-                        <li><i class="fas fa-check"></i> <strong>Mode Expert</strong></li>
+                        <li><i class="fas fa-check"></i> Mode Expansion</li>
                         <li><i class="fas fa-check"></i> Coaching IA</li>
                         <li><i class="fas fa-check"></i> Badge Expert</li>
                     </ul>
-                    <button class="button-secondary card-select-btn" onclick="App.checkout('expert')">Choisir EXPERT</button>
+                    <button class="card-select-btn">Choisir EXPERT</button>
+                </div>
+            `;
+        } else if (step === 'checkout') {
+            const price = data.tier === 'pro' ? '15€' : '29€';
+            if (data.tier === 'standard') { App.closeModal(); return; }
+
+            titleEl.textContent = 'Paiement Sécurisé';
+            container.innerHTML = `
+                <div class="checkout-view" style="width: 100%; text-align: left; padding: 1rem;">
+                    <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                            <span>Abonnement ${data.tier.toUpperCase()}</span>
+                            <span>${price}/mois</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.5rem 0 0 0;">Accès immédiat illimité.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Titulaire de la carte</label>
+                        <input type="text" class="form-input" placeholder="Nom complet" id="card-name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Numéro de carte</label>
+                        <input type="text" class="form-input" placeholder="0000 0000 0000 0000" id="card-number">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">MM/AA</label>
+                            <input type="text" class="form-input" placeholder="MM/AA">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CVC</label>
+                            <input type="text" class="form-input" placeholder="123">
+                        </div>
+                    </div>
+                    
+                    <button class="button-primary full-width" onclick="App.processCheckout('${data.tier}')" style="margin-top: 2rem; padding: 1rem;">
+                        Payer ${price}
+                    </button>
+                    <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 0.5rem; border: none; color: var(--text-muted);">
+                        Retour aux offres
+                    </button>
                 </div>
             `;
         }
-
-        modal.classList.add('active');
     },
 
-    selectTier(card, tier) {
-        if (tier === 'standard') {
-            App.closeModal();
-            return;
-        }
-        document.querySelectorAll('.pricing-card-mini').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
-    },
-
-    checkout(tier) {
-        event.stopPropagation();
-        App.showNotification(`Initialisation du paiement pour le Pack ${tier.toUpperCase()}...`, 'info');
-
-        // Simuler un chargement de bouton
+    processCheckout(tier) {
+        App.showNotification('Traitement du paiement...', 'info');
         const btn = event.currentTarget;
-        const originalText = btn.textContent;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Traitement...';
         btn.disabled = true;
 
         setTimeout(() => {
-            // Simulation de succès pour la démo
-            Storage.activatePro('QPPRO-SOLO-DEMO-2026', tier, 12);
-            App.showNotification('Paiement réussi ! Félicitations vous êtes maintenant ' + tier.toUpperCase(), 'success');
+            Storage.activatePro('QPPRO-USER-SUCCESS-2026', tier, 1);
+            App.showNotification('Paiement accepté ! Bienvenue dans le Pack ' + tier.toUpperCase(), 'success');
 
-            // Fermer et recharger après un court délai
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        }, 2000);
+            // Vue de succès
+            const container = document.querySelector('.upgrade-comparison');
+            const titleEl = document.querySelector('.upgrade-title');
+            titleEl.textContent = 'Félicitations !';
+            container.innerHTML = `
+                <div style="text-align: center; padding: 3rem 1rem;">
+                    <div style="font-size: 4rem; color: #10b981; margin-bottom: 2rem;">✅</div>
+                    <h2>Votre compte est activé</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Vous avez maintenant accès à toutes les fonctionnalités du Pack ${tier.toUpperCase()}.</p>
+                    <button class="button-primary" onclick="location.reload()" style="padding: 1rem 2rem;">Commencer maintenant</button>
+                </div>
+            `;
+        }, 2500);
     },
 
     // Afficher le modal d'activation de licence
