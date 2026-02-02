@@ -934,10 +934,21 @@ section {
 .paypal-button-mount {
     min-height: 60px;
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     max-width: 350px;
+    display: block;
+    /* Évite les conflits flex avec l'iframe PayPal */
+    margin: 0 auto;
+}
+
+/* Cache tout le texte superflu injecté par le SDK PayPal pour ne garder que le bouton */
+.paypal-button-mount div[data-uid]>div:not(.paypal-button-container) {
+    display: none !important;
+}
+
+/* Assure que le bouton lui-même est bien dimensionné et non squeeze */
+.paypal-button-container {
+    width: 100% !important;
+    min-width: 250px !important;
 }
 
 .paypal-info-text {
@@ -945,6 +956,12 @@ section {
     font-size: 0.8rem;
     letter-spacing: 0.02em;
     opacity: 0.7;
+}
+
+@media (max-width: 480px) {
+    .paypal-checkout-box {
+        padding: 1.5rem 0.75rem;
+    }
 }
 
 .checkout-summary {
