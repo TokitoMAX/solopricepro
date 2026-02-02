@@ -438,48 +438,48 @@ const App = {
         if (step === 'comparison') {
             titleEl.textContent = 'Accès SoloPrice PRO';
             container.innerHTML = `
-                <!-- Standard -->
-                <div class="pricing-card-mini standard" onclick="App.closeModal()">
-                    <div class="card-tier">STANDARD</div>
-                    <div class="card-price">0€<span>/mois</span></div>
-                    <ul class="card-features-mini">
-                        <li><i class="fas fa-check-circle"></i> Marketplace Gratuite</li>
-                        <li><i class="fas fa-minus"></i> 1 Client Actif</li>
-                        <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
-                    </ul>
-                    <div class="card-select-btn">Rester en Standard</div>
-                </div>
+            <!-- Standard -->
+            <div class="pricing-card-mini standard" onclick="App.closeModal()">
+                <div class="card-tier">STANDARD</div>
+                <div class="card-price">0€<span>/mois</span></div>
+                <ul class="card-features-mini">
+                    <li><i class="fas fa-check-circle"></i> Marketplace Gratuite</li>
+                    <li><i class="fas fa-minus"></i> 1 Client Actif</li>
+                    <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
+                </ul>
+                <div class="card-select-btn">Rester en Standard</div>
+            </div>
 
-                <!-- Pro -->
-                <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', 'pro')">
-                    <div class="card-badge">PRODUCTION ILLIMITÉE</div>
-                    <div class="card-tier">SOLOPRICE PRO</div>
-                    <div class="card-price">15€<span>/mois</span></div>
-                    <div class="card-value-tag">Idéal pour produire sans limites</div>
-                    <ul class="card-features-mini">
-                        <li><i class="fas fa-check-circle"></i> Devis/Factures <strong>Illimités</strong></li>
-                        <li><i class="fas fa-check-circle"></i> Votre <strong>Logo</strong> sur PDF</li>
-                        <li><i class="fas fa-check-circle"></i> Pipeline Kanban Complet</li>
-                        <li><i class="fas fa-check-circle"></i> <strong>Zéro Limite</strong> sur les documents</li>
-                    </ul>
-                    <button class="card-select-btn pro">Passer Pro</button>
-                </div>
+            <!-- Pro -->
+            <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', 'pro')">
+                <div class="card-badge">PRODUCTION ILLIMITÉE</div>
+                <div class="card-tier">SOLOPRICE PRO</div>
+                <div class="card-price">15€<span>/mois</span></div>
+                <div class="card-value-tag">Idéal pour produire sans limites</div>
+                <ul class="card-features-mini">
+                    <li><i class="fas fa-check-circle"></i> Devis/Factures <strong>Illimités</strong></li>
+                    <li><i class="fas fa-check-circle"></i> Votre <strong>Logo</strong> sur PDF</li>
+                    <li><i class="fas fa-check-circle"></i> Pipeline Kanban Complet</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Zéro Limite</strong> sur les documents</li>
+                </ul>
+                <button class="card-select-btn pro">Passer Pro</button>
+            </div>
 
-                <!-- Expert -->
-                <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
-                    <div class="card-badge" style="background: #a855f7;">ACCÉLÉRATEUR BUSINESS</div>
-                    <div class="card-tier" style="color: #c084fc;">PACK EXPERT</div>
-                    <div class="card-price">29€<span>/mois</span></div>
-                    <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
-                    <ul class="card-features-mini">
-                        <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
-                        <li><i class="fas fa-check-circle"></i> <strong>Coaching IA</strong> de Survie</li>
-                        <li><i class="fas fa-check-circle"></i> <strong>Priorité</strong> sur la Marketplace</li>
-                        <li><i class="fas fa-check-circle"></i> Badge <strong>Expert Vérifié</strong></li>
-                    </ul>
-                    <button class="card-select-btn expert" style="background: #a855f7; color: white;">Devenir Expert</button>
-                </div>
-            `;
+            <!-- Expert -->
+            <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
+                <div class="card-badge" style="background: #a855f7;">ACCÉLÉRATEUR BUSINESS</div>
+                <div class="card-tier" style="color: #c084fc;">PACK EXPERT</div>
+                <div class="card-price">29€<span>/mois</span></div>
+                <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
+                <ul class="card-features-mini">
+                    <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Coaching IA</strong> de Survie</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Priorité</strong> sur la Marketplace</li>
+                    <li><i class="fas fa-check-circle"></i> Badge <strong>Expert Vérifié</strong></li>
+                </ul>
+                <button class="card-select-btn expert" style="background: #a855f7; color: white;">Devenir Expert</button>
+            </div>
+        `;
         } else if (step === 'checkout') {
             const tier = typeof data === 'string' ? data : data.tier;
             const method = data.method || 'card';
@@ -489,52 +489,52 @@ const App = {
 
             titleEl.textContent = 'Paiement Sécurisé';
             container.innerHTML = `
-                <div class="checkout-view" style="width: 100%; text-align: left; padding: 0.5rem;">
-                    <div class="payment-methods" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                        <div class="pay-method ${method === 'card' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${tier}', method: 'card'})">
-                            <i class="fab fa-cc-stripe"></i> Carte
-                        </div>
-                        <div class="pay-method ${method === 'paypal' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${tier}', method: 'paypal'})">
-                            <i class="fab fa-paypal"></i> PayPal
-                        </div>
+            <div class="checkout-view" style="width: 100%; text-align: left; padding: 0.5rem;">
+                <div class="payment-methods" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <div class="pay-method ${method === 'card' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${tier}', method: 'card'})">
+                        <i class="fab fa-cc-stripe"></i> Carte
                     </div>
-
-                    <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid var(--border);">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${tier.toUpperCase()}</h4>
-                                <span style="font-size: 0.8rem; color: var(--text-muted);">Paiement via ${method === 'card' ? 'Visa/Mastercard' : 'PayPal'}</span>
-                            </div>
-                            <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">${price}</span>
-                        </div>
+                    <div class="pay-method ${method === 'paypal' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${tier}', method: 'paypal'})">
+                        <i class="fab fa-paypal"></i> PayPal
                     </div>
-
-                    ${method === 'card' ? `
-                        <div class="form-group">
-                            <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Numéro de carte (Stripe)</label>
-                            <input type="text" class="form-input checkout-input" placeholder="0000 0000 0000 0000" id="card-number">
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <input type="text" class="form-input checkout-input" placeholder="MM/AA">
-                            <input type="text" class="form-input checkout-input" placeholder="CVC">
-                        </div>
-                        <button class="button-primary full-width" onclick="App.processCheckout('${tier}', 'card')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
-                            Confirmer le paiement (Stripe)
-                        </button>
-                    ` : `
-                        <div class="paypal-checkout-box">
-                            <div id="paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}" class="paypal-button-mount">
-                                <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
-                            </div>
-                            <p class="paypal-info-text text-muted">Transaction sécurisée par PayPal</p>
-                        </div>
-                    `}
-                    
-                    <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1.5rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
-                        <i class="fas fa-arrow-left"></i> Retour aux offres
-                    </button>
                 </div>
-            `;
+
+                <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${tier.toUpperCase()}</h4>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Paiement via ${method === 'card' ? 'Visa/Mastercard' : 'PayPal'}</span>
+                        </div>
+                        <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">${price}</span>
+                    </div>
+                </div>
+
+                ${method === 'card' ? `
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Numéro de carte (Stripe)</label>
+                        <input type="text" class="form-input checkout-input" placeholder="0000 0000 0000 0000" id="card-number">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <input type="text" class="form-input checkout-input" placeholder="MM/AA">
+                        <input type="text" class="form-input checkout-input" placeholder="CVC">
+                    </div>
+                    <button class="button-primary full-width" onclick="App.processCheckout('${tier}', 'card')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
+                        Confirmer le paiement (Stripe)
+                    </button>
+                ` : `
+                    <div class="paypal-checkout-box">
+                        <div id="paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}" class="paypal-button-mount">
+                            <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
+                        </div>
+                        <p class="paypal-info-text text-muted">Transaction sécurisée par PayPal</p>
+                    </div>
+                `}
+                
+                <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1.5rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="fas fa-arrow-left"></i> Retour aux offres
+                </button>
+            </div>
+        `;
 
             // Re-exécution du script PayPal en fonction du tier
             if (method === 'paypal') {
@@ -552,203 +552,204 @@ const App = {
                     }
                 }, 100);
             }
-        },
+        }
+    },
 
-        processCheckout(tier, method = 'card') {
-            if (method === 'card') {
-                App.showNotification('Création de la session sécurisée Stripe...', 'info');
-                fetch('/api/payments/create-checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        planId: tier,
-                        userId: Storage.getUser()?.id,
-                        userEmail: Storage.getUser()?.email
-                    })
+    processCheckout(tier, method = 'card') {
+        if (method === 'card') {
+            App.showNotification('Création de la session sécurisée Stripe...', 'info');
+            fetch('/api/payments/create-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    planId: tier,
+                    userId: Storage.getUser()?.id,
+                    userEmail: Storage.getUser()?.email
                 })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.url) {
-                            window.location.href = data.url;
-                        } else {
-                            throw new Error('Erreur lors de la création de la session de paiement.');
-                        }
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        App.showNotification(err.message, 'error');
-                    });
-            }
-        },
-
-        // Afficher le modal d'activation de licence
-        showLicenseModal() {
-            const modal = document.getElementById('license-modal');
-            if (modal) {
-                modal.classList.add('active');
-                const input = modal.querySelector('#license-key-input');
-                if (input) input.value = '';
-            }
-        },
-
-        // Fermer les modales
-        closeModal() {
-            document.querySelectorAll('.modal-overlay').forEach(modal => {
-                modal.classList.remove('active');
-                modal.style.display = ''; // Clear inline style
-            });
-        },
-
-        // Activer une licence
-        activateLicense() {
-            const input = document.getElementById('license-key-input');
-            const licenseKey = input?.value.trim();
-
-            if (!licenseKey) {
-                this.showNotification('Veuillez entrer une clé de licence', 'error');
-                return;
-            }
-
-            // Validation simple de la clé (format: SPPRO-XXXXX-XXXXX-XXXXX)
-            const isValid = this.validateLicenseKey(licenseKey);
-
-            if (isValid) {
-                Storage.activatePro(licenseKey);
-                this.closeModal();
-                this.renderProBadge();
-                this.checkFreemiumLimits();
-                this.showNotification('Licence activée avec succès.', 'success');
-
-                // Recharger la page actuelle
-                this.loadPage(this.currentPage);
-            } else {
-                this.showNotification('Clé de licence invalide', 'error');
-            }
-        },
-
-        // Validation de clé de licence
-        validateLicenseKey(key) {
-            // Format attendu: SPPRO-XXXXX-XXXXX-XXXXX
-            const pattern = /^[A-Z]{2,5}PRO-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/;
-            return pattern.test(key);
-        },
-
-        // Générer une clé de licence (pour admin/test)
-        generateLicenseKey() {
-            const randomSegment = () => {
-                return Array.from({ length: 5 }, () =>
-                    'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]
-                ).join('');
-            };
-
-            return `SPPRO - ${randomSegment()} -${randomSegment()} -${randomSegment()} `;
-        },
-
-        // Notification système
-        showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification notification - ${type} `;
-            notification.textContent = message;
-
-            notification.style.cssText = `
-position: fixed;
-top: 20px;
-right: 20px;
-background: ${type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
-                    type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
-                        'linear-gradient(135deg, #111827, #000000)'
-                };
-color: white;
-padding: 1rem 1.5rem;
-border - radius: 12px;
-font - weight: 600;
-box - shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-z - index: 10000;
-animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s;
-max - width: 400px;
-`;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        },
-
-        // Formatage de devises
-        formatCurrency(amount) {
-            const settings = Storage.get(Storage.KEYS.SETTINGS);
-            return `${Math.round(amount).toLocaleString('fr-FR')} ${settings.currency} `;
-        },
-
-        // Formatage de dates
-        formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR');
-        },
-
-        // Calcul de total avec TVA
-        calculateTotal(items, includeTax = true) {
-            const settings = Storage.get(Storage.KEYS.SETTINGS);
-            const subtotal = items.reduce((sum, item) =>
-                sum + (item.quantity * item.unitPrice), 0
-            );
-
-            if (!includeTax) return subtotal;
-
-            const taxAmount = subtotal * (settings.taxRate / 100);
-            return subtotal + taxAmount;
-        },
-
-        handlePaymentReturn() {
-            const params = new URLSearchParams(window.location.search);
-            const session_id = params.get('session');
-            const paymentStatus = params.get('payment');
-            const invoiceId = params.get('invoiceId');
-
-            // Retour d'achat SaaS (PRO)
-            if (session_id) {
-                this.showNotification('Paiement réussi ! Bienvenue dans la version PRO.', 'success');
-                // On force un sync utilisateur pour obtenir le nouveau tag isPro
-                this.syncUser();
-                // Nettoyer l'URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-            // Retour de paiement facture client
-            else if (paymentStatus === 'success' && invoiceId) {
-                const invoice = Storage.getInvoice(invoiceId);
-                if (invoice && invoice.status !== 'paid') {
-                    Storage.updateInvoice(invoiceId, { status: 'paid' });
-                    this.showNotification(`Paiement réussi pour la facture ${invoice.number} !`, 'success');
-                    // Nettoyer l'URL sans recharger
-                    const newUrl = window.location.pathname;
-                    window.history.replaceState({}, document.title, newUrl);
-
-                    // Si on était sur la page des factures, on rafraîchit
-                    if (typeof Invoices !== 'undefined' && this.currentPage === 'quotes') {
-                        Invoices.render();
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else {
+                        throw new Error('Erreur lors de la création de la session de paiement.');
                     }
-                }
-            } else if (paymentStatus === 'cancel') {
-                this.showNotification('Paiement annulé.', 'info');
+                })
+                .catch(err => {
+                    console.error(err);
+                    App.showNotification(err.message, 'error');
+                });
+        }
+    },
+
+    // Afficher le modal d'activation de licence
+    showLicenseModal() {
+        const modal = document.getElementById('license-modal');
+        if (modal) {
+            modal.classList.add('active');
+            const input = modal.querySelector('#license-key-input');
+            if (input) input.value = '';
+        }
+    },
+
+    // Fermer les modales
+    closeModal() {
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.classList.remove('active');
+            modal.style.display = ''; // Clear inline style
+        });
+    },
+
+    // Activer une licence
+    activateLicense() {
+        const input = document.getElementById('license-key-input');
+        const licenseKey = input?.value.trim();
+
+        if (!licenseKey) {
+            this.showNotification('Veuillez entrer une clé de licence', 'error');
+            return;
+        }
+
+        // Validation simple de la clé (format: SPPRO-XXXXX-XXXXX-XXXXX)
+        const isValid = this.validateLicenseKey(licenseKey);
+
+        if (isValid) {
+            Storage.activatePro(licenseKey);
+            this.closeModal();
+            this.renderProBadge();
+            this.checkFreemiumLimits();
+            this.showNotification('Licence activée avec succès.', 'success');
+
+            // Recharger la page actuelle
+            this.loadPage(this.currentPage);
+        } else {
+            this.showNotification('Clé de licence invalide', 'error');
+        }
+    },
+
+    // Validation de clé de licence
+    validateLicenseKey(key) {
+        // Format attendu: SPPRO-XXXXX-XXXXX-XXXXX
+        const pattern = /^[A-Z]{2,5}PRO-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/;
+        return pattern.test(key);
+    },
+
+    // Générer une clé de licence (pour admin/test)
+    generateLicenseKey() {
+        const randomSegment = () => {
+            return Array.from({ length: 5 }, () =>
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]
+            ).join('');
+        };
+
+        return `SPPRO-${randomSegment()}-${randomSegment()}-${randomSegment()}`;
+    },
+
+    // Notification système
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
+                type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
+                    'linear-gradient(135deg, #111827, #000000)'
+            };
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s;
+            max-width: 400px;
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    },
+
+    // Formatage de devises
+    formatCurrency(amount) {
+        const settings = Storage.get(Storage.KEYS.SETTINGS) || { currency: '€' };
+        return `${Math.round(amount).toLocaleString('fr-FR')} ${settings.currency}`;
+    },
+
+    // Formatage de dates
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR');
+    },
+
+    // Calcul de total avec TVA
+    calculateTotal(items, includeTax = true) {
+        const settings = Storage.get(Storage.KEYS.SETTINGS) || { taxRate: 0 };
+        const subtotal = items.reduce((sum, item) =>
+            sum + (item.quantity * item.unitPrice), 0
+        );
+
+        if (!includeTax) return subtotal;
+
+        const taxAmount = subtotal * (settings.taxRate / 100);
+        return subtotal + taxAmount;
+    },
+
+    handlePaymentReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const session_id = params.get('session');
+        const paymentStatus = params.get('payment');
+        const invoiceId = params.get('invoiceId');
+
+        // Retour d'achat SaaS (PRO)
+        if (session_id) {
+            this.showNotification('Paiement réussi ! Bienvenue dans la version PRO.', 'success');
+            // On force un sync utilisateur pour obtenir le nouveau tag isPro
+            this.syncUser();
+            // Nettoyer l'URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        // Retour de paiement facture client
+        else if (paymentStatus === 'success' && invoiceId) {
+            const invoice = Storage.getInvoice(invoiceId);
+            if (invoice && invoice.status !== 'paid') {
+                Storage.updateInvoice(invoiceId, { status: 'paid' });
+                this.showNotification(`Paiement réussi pour la facture ${invoice.number} !`, 'success');
+                // Nettoyer l'URL sans recharger
                 const newUrl = window.location.pathname;
                 window.history.replaceState({}, document.title, newUrl);
+
+                // Si on était sur la page des factures, on rafraîchit
+                if (typeof Invoices !== 'undefined' && this.currentPage === 'quotes') {
+                    Invoices.render();
+                }
             }
+        } else if (paymentStatus === 'cancel') {
+            this.showNotification('Paiement annulé.', 'info');
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
         }
-    };
+    }
+};
 
-    window.App = App;
+window.App = App;
 
-    // Auto-démarrage quand le DOM est prêt
-    if(document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-                App.init();
-                console.log("App initialized");
-            } catch (e) {
-                console.error("App Init Error:", e);
-            }
-        });
+// Auto-démarrage quand le DOM est prêt
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            App.init();
+            console.log("App initialized");
+        } catch (e) {
+            console.error("App Init Error:", e);
+        }
+    });
 } else {
     try {
         App.init();
