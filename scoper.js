@@ -118,6 +118,10 @@ const Scoper = {
     },
 
     addTask() {
+        if (!Auth.getUser()?.isPro && this.tasks.length >= 5) {
+            App.showUpgradeModal('scoper_limit');
+            return;
+        }
         this.tasks.push({ name: '', min: 1, max: 2, manualPrice: null });
         this.renderTasks();
         this.calculate();
@@ -316,6 +320,12 @@ const Scoper = {
     },
 
     createQuote() {
+        const limits = App.checkFreemiumLimits();
+        if (!limits.canAddQuote) {
+            App.showUpgradeModal('quotes');
+            return;
+        }
+
         const tjm = parseFloat(document.getElementById('scoper-tjm')?.value) || 400;
         const buffer = parseFloat(document.getElementById('scoper-buffer')?.value) || 20;
 
@@ -397,6 +407,10 @@ const Scoper = {
     },
 
     importService(serviceId) {
+        if (!Auth.getUser()?.isPro && this.tasks.length >= 5) {
+            App.showUpgradeModal('scoper_limit');
+            return;
+        }
         const service = Storage.getService(serviceId);
         if (!service) return;
 

@@ -307,14 +307,22 @@ const App = {
         }
 
         return {
-            canAddClient: isPro || clients.length < 3,
-            canAddQuote: isPro || monthlyQuotesCount < 5,
-            canAddInvoice: isPro || monthlyInvoicesCount < 5,
+            canAddClient: isPro || clients.length < 1,
+            canAddQuote: isPro || monthlyQuotesCount < 2,
+            canAddInvoice: isPro || monthlyInvoicesCount < 2,
             canExportPDF: isPro, // PDF export with logo reserved for PRO
-            maxClients: isPro ? Infinity : 3,
-            maxQuotes: isPro ? Infinity : 5,
-            maxInvoices: isPro ? Infinity : 5
+            maxClients: isPro ? Infinity : 1,
+            maxQuotes: isPro ? Infinity : 2,
+            maxInvoices: isPro ? Infinity : 2
         };
+    },
+
+    isFeatureProGated(feature) {
+        const user = Auth.getUser();
+        if (user?.isPro) return false;
+
+        const proFeatures = ['kanban', 'coach', 'expenses', 'marketplace_automation'];
+        return proFeatures.includes(feature);
     },
 
     async syncUser() {
@@ -394,9 +402,10 @@ const App = {
                     <div class="card-tier">Standard</div>
                     <div class="card-price">0€<span>/mois</span></div>
                     <ul class="card-features">
-                        <li><i class="fas fa-check"></i> 3 Clients actifs</li>
-                        <li><i class="fas fa-check"></i> 5 Devis / mois</li>
+                        <li><i class="fas fa-check"></i> 1 Client actif</li>
+                        <li><i class="fas fa-check"></i> 2 Devis / mois</li>
                         <li><i class="fas fa-times"></i> Export PDF avec Logo</li>
+                        <li><i class="fas fa-times"></i> Coaching & Kanban</li>
                     </ul>
                 </div>
                 <div class="pricing-card pro active">

@@ -33,7 +33,7 @@ const Dashboard = {
                 <p class="page-subtitle">Vue d'ensemble de votre activité</p>
             </div>
 
-            ${typeof Coach !== 'undefined' ? Coach.renderWidget() : ''}
+            ${typeof Coach !== 'undefined' ? (App.isFeatureProGated('coach') ? PremiumWall.renderTeaser('Coaching Stratégique', 'Obtenez des analyses automatiques sur votre cash dormant et vos objectifs de salairenet.', '📈') : Coach.renderWidget()) : ''}
 
             <div class="stats-grid dashboard-stats">
                 <!-- Goal Card -->
@@ -72,7 +72,6 @@ const Dashboard = {
                 </div>
             </div>
 
-            <!-- Dashboard Row: Treasury & Flow -->
             <div class="dashboard-sections" style="margin-top: 2rem;">
                 <div class="dashboard-section treasury-section glass" style="grid-column: 1 / -1; padding: 2rem; border-radius: 20px; background: linear-gradient(145deg, rgba(99, 102, 241, 0.05), rgba(0, 0, 0, 0)); border: 1px solid var(--primary-glass);">
                     <div class="section-header-inline">
@@ -80,6 +79,11 @@ const Dashboard = {
                         <span class="badge" style="background: var(--success); color: white;">Données Réelles</span>
                     </div>
                     
+                    ${App.isFeatureProGated('expenses') ? `
+                        <div style="margin-top: 1.5rem;">
+                            ${PremiumWall.renderTeaser('Profitabilité en Temps Réel', 'Suivez vos dépenses, vos charges sociales et votre salaire net réel automatiquement.', '💰')}
+                        </div>
+                    ` : `
                     <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 1.5rem;">
                         <div class="stat-item">
                             <span class="stat-label">CA Encaissé (Mois)</span>
@@ -115,6 +119,7 @@ const Dashboard = {
                             <strong>Santé Financière :</strong> Votre bénéfice net représente ${Math.round(((Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) - (Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) * (TaxEngine.getSocialRate() / 100)) - Storage.getExpenses().reduce((sum, e) => sum + e.amount, 0)) / (Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) || 1)) * 100)}% de votre CA encaissé.
                         </p>
                     </div>
+                    `}
                 </div>
             </div>
 

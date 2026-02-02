@@ -6,6 +6,11 @@ const Kanban = {
         const container = document.getElementById('kanban-page');
         if (!container) return;
 
+        if (App.isFeatureProGated('kanban')) {
+            container.innerHTML = PremiumWall.renderPageWall('Pipeline Kanban');
+            return;
+        }
+
         const leads = Storage.getLeads();
         const quotes = Storage.getQuotes();
         const invoices = Storage.getInvoices();

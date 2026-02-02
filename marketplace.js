@@ -376,6 +376,11 @@ const Marketplace = {
     },
 
     convertMissionToQuote(id) {
+        if (App.isFeatureProGated('marketplace_automation')) {
+            App.showUpgradeModal('marketplace_automation');
+            return;
+        }
+
         const missions = this.getPublicMissions();
         const mission = missions.find(m => m.id == id);
 
