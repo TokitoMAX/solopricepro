@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoloPrice Pro - Collaboration DomTomConnect | Devis & Tarifs DOM-TOM</title>
+    <meta name="description"
+        content="Outil de collaboration DomTomConnect pour faciliter les échanges entre clients et prestataires DOM-TOM. Créez des devis, calculez vos tarifs, gérez vos projets.">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        // Helpers de Secours - Forcent le display au cas où le CSS bloque
+        window.showModal = function (id) {
+            console.log("Showing modal:", id);
+            const m = document.getElementById(id);
+            if (m) {
+                m.style.display = 'flex';
+                m.classList.add('active');
+            }
+        };
+        window.closeAllModals = function () {
+            console.log("Closing all modals");
+            document.querySelectorAll('.modal-overlay').forEach(m => {
+                m.style.display = 'none';
+                m.classList.remove('active');
+            });
+        };
+
+        // Indicateur visuel discret pour confirmer que le JS tourne
+        window.addEventListener('load', () => {
+            const dot = document.createElement('div');
+            dot.style.cssText = "position:fixed; bottom:5px; right:5px; width:6px; height:6px; background:#10b981; border-radius:50%; z-index:100000; opacity:0.5;";
+            document.body.appendChild(dot);
+        });
+
+        async function startApp() {
+            // Check for existing user session
+            if (localStorage.getItem('sp_user')) {
+                if (typeof App !== 'undefined' && App.enterApp) {
+                    App.enterApp();
+                }
+            } else {
+                // No user, show auth modal
+                if (typeof showAuthModal === 'function') {
+                    showAuthModal('login');
+                }
+            }
+        }
+    </script>
+    <noscript>
+        <div
+            style="position:fixed; top:0; left:0; width:100%; background:red; color:white; text-align:center; padding:10px; z-index:999999;">
+            JavaScript est désactivé. L'application ne peut pas fonctionner.
+        </div>
+    </noscript>
+</head>
+
+<body>
+    <!-- LANDING PAGE -->
+    <div id="landing-page" class="landing-container">
+        <nav class="landing-nav container">
+            <div class="logo">
+                <span class="logo-text">SoloPrice</span>
+                <span class="logo-badge">Pro</span>
+            </div>
+            <div class="landing-actions">
+                <button type="button" class="button-secondary landing-auth-btn" onclick="showAuthModal('login')">Se
+                    connecter</button>
+                <button type="button" class="button-outline landing-auth-btn"
+                    onclick="showAuthModal('register')">S'inscrire</button>
+            </div>
+        </nav>
+
+        <!-- Modale Connexion / Inscription -->
+        <div id="auth-modal" class="modal-overlay auth-modal" style="display: none;" aria-hidden="true"
+            onclick="if(event.target===this) closeAuthModal()">
+            <div class="modal-content auth-modal-content" onclick="event.stopPropagation()">
+                <button type="button" class="modal-close" onclick="closeAuthModal()" aria-label="Fermer">✕</button>
+                <div class="auth-modal-tabs">
+                    <button type="button" class="auth-tab active" data-auth-tab="login"
+                        onclick="switchAuthTab('login')">Connexion</button>
+                    <button type="button" class="auth-tab" data-auth-tab="register"
+                        onclick="switchAuthTab('register')">Inscription</button>
+                </div>
+                <div class="modal-body auth-modal-body">
+                    <form id="auth-form-login" class="auth-form active" onsubmit="handleAuthLogin(event)">
+                        <h2 class="auth-form-title">Connexion</h2>
+                        <label class="form-group">
+                            <span class="form-label">Email</span>
+                            <input type="email" id="auth-login-email" class="form-input" placeholder="vous@exemple.fr"
+                                required>
+                        </label>
+                        <label class="form-group">
+                            <span class="form-label">Mot de passe</span>
+                            <input type="password" id="auth-login-password" class="form-input" placeholder="••••••••"
+                                required>
+                        </label>
+                        <p id="auth-login-error" class="auth-error" aria-live="polite"></p>
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                            <a href="#" onclick="showAuthModal('forgot-password'); return false;"
+                                style="font-size: 0.85rem; color: var(--primary);">Mot de passe oublié ?</a>
+                        </div>
+                        <button type="submit" class="button-primary full-width">Se connecter</button>
+                    </form>
+                    <form id="auth-form-forgot-password" class="auth-form" onsubmit="handleAuthForgotPassword(event)">
+                        <h2 class="auth-form-title">Réinitialisation</h2>
+                        <label class="form-group">
+                            <span class="form-label">Email</span>
+                            <input type="email" id="auth-forgot-email" class="form-input" placeholder="vous@exemple.fr"
+                                required>
+                        </label>
+                        <p id="auth-forgot-message" class="auth-success" aria-live="polite"></p>
+                        <p id="auth-forgot-error" class="auth-error" aria-live="polite"></p>
+                        <button type="submit" class="button-primary full-width">Envoyer le lien</button>
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <a href="#" onclick="showAuthModal('login'); return false;"
+                                style="font-size: 0.85rem;">Retour à la connexion</a>
+                        </div>
+                    </form>
+                    <form id="auth-form-reset-password" class="auth-form" onsubmit="handleAuthResetPassword(event)">
+                        <h2 class="auth-form-title">Nouveau mot de passe</h2>
+                        <label class="form-group">
+                            <span class="form-label">Nouveau mot de passe</span>
+                            <input type="password" id="auth-reset-new-password" class="form-input"
+                                placeholder="Au moins 6 caractères" required minlength="6">
+                        </label>
+                        <p id="auth-reset-message" class="auth-success" aria-live="polite"></p>
+                        <p id="auth-reset-error" class="auth-error" aria-live="polite"></p>
+                        <button type="submit" class="button-primary full-width">Mettre à jour</button>
+                    </form>
+                    <form id="auth-form-register" class="auth-form" onsubmit="handleAuthRegister(event)">
+                        <h2 class="auth-form-title">Créer un compte</h2>
+                        <label class="form-group">
+                            <span class="form-label">Nom de l'entreprise (optionnel)</span>
+                            <input type="text" id="auth-register-company" class="form-input"
+                                placeholder="Mon Entreprise">
+                        </label>
+                        <label class="form-group">
+                            <span class="form-label">Email</span>
+                            <input type="email" id="auth-register-email" class="form-input"
+                                placeholder="vous@exemple.fr" required>
+                        </label>
+                        <label class="form-group">
+                            <span class="form-label">Mot de passe</span>
+                            <input type="password" id="auth-register-password" class="form-input"
+                                placeholder="Au moins 6 caractères" required minlength="6">
+                        </label>
+                        <p id="auth-register-error" class="auth-error" aria-live="polite"></p>
+                        <button type="submit" class="button-primary full-width">S'inscrire</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <header class="landing-hero container">
+            <div class="hero-content">
+                <h1 class="hero-title">SoloPrice <span class="gradient-text">Pro</span></h1>
+                <p class="hero-subtitle">L'outil de chiffrage haute-performance pour experts. <br>Éliminez
+                    l'incertitude. Dominez votre rentabilité.</p>
+                <div class="hero-buttons">
+                    <button class="button-primary big" onclick="showAuthModal('register')">
+                        Commencer l'Expérience
+                    </button>
+                    <p class="hero-note" style="color: var(--text-muted); opacity: 0.8; font-style: italic;">Précis.
+                        Puissant. Professionnel.</p>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-card"
+                    style="background: #0a0a0a; border: 1px solid var(--primary); padding: 2rem; border-radius: 20px; box-shadow: var(--shadow-glow);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Objectif Mensuel
+                        (TJM Cible)</div>
+                    <div id="landing-pipeline-value"
+                        style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">5 000 €</div>
+                    <div
+                        style="margin-top: 1rem; height: 6px; background: #1f2937; border-radius: 3px; overflow: hidden;">
+                        <div id="landing-pipeline-progress"
+                            style="width: 75%; height: 100%; background: var(--primary);"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="landing-features container">
+            <div class="section-header">
+                <h2 class="section-title">Facilitez vos collaborations</h2>
+                <p class="section-subtitle">Des outils simples pour clients et prestataires de l'écosystème
+                    DomTomConnect</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card glass">
+                    <h3 class="feature-title">Pour les Clients</h3>
+                    <p class="feature-description">Décrivez votre projet et recevez des devis transparents de
+                        prestataires qualifiés de l'écosystème DomTomConnect.
+                    </p>
+                </div>
+                <div class="feature-card glass">
+                    <h3 class="feature-title">Pour les Prestataires</h3>
+                    <p class="feature-description">Répondez aux opportunités avec des tarifs justes et des devis
+                        professionnels. Calculez votre rentabilité avant de vous engager.</p>
+                </div>
+                <div class="feature-card glass">
+                    <h3 class="feature-title">Écosystème DomTomConnect</h3>
+                    <p class="feature-description">Accédez à un réseau de clients et prestataires de confiance dans les
+                        DOM-TOM.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="landing-footer">
+            <div class="container footer-content">
+                <div class="footer-logo">
+                    SoloPrice <span style="color:var(--primary)">Pro</span>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Solution de gestion
+                        par DomTomConnect</div>
+                </div>
+
+            </div>
+            <div class="footer-bottom container">
+                <p>&copy; 2026 SoloPrice Pro by DomTomConnect. Facilitons la collaboration dans les DOM-TOM.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- APP WRAPPER -->
+    <div id="app-wrapper" style="display: none;">
+        <!-- Bannière Freemium -->
+        <div id="freemium-banner" class="freemium-banner">
+            <span>Version Gratuite - Passez à PRO pour débloquer toutes les fonctionnalités</span>
+            <button class="btn-upgrade" onclick="App.showUpgradeModal()">Upgrade</button>
+        </div>
+
+        <div class="app-layout">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <button id="mobile-menu-toggle" class="mobile-menu-toggle" onclick="App.toggleMobileMenu()">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="logo">
+                        <span class="logo-text">SoloPrice</span>
+                        <span class="logo-badge">Pro</span>
+                    </div>
+                </div>
+                <div class="user-info-sidebar" id="user-info-sidebar">
+                    <!-- Rempli par app.js -->
+                </div>
+
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-nav="dashboard">
+                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg></span> <span class="nav-label">Accueil</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="kanban">
+                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="3" x2="12" y2="21"></line>
+                            </svg></span> <span class="nav-label">Pipeline</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="scoper">
+                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                                </path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg></span> <span class="nav-label">Estimateur</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="quotes">
+                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg></span> <span class="nav-label">Documents</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="marketplace">
+                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg></span> <span class="nav-label">Marketplace</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="profile">
+                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg></span> <span class="nav-label">Mon Profil</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="settings">
+                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                                </path>
+                            </svg></span> <span class="nav-label">Réglages</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer" style="display: none;">
+                    <button class="license-button" onclick="Auth.logout()"
+                        style="background: transparent; border-color: var(--border-light);">
+                        Déconnexion
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Mobile Header (visible only on mobile) -->
+            <div class="mobile-header">
+                <button id="mobile-home-btn" class="mobile-home-btn" onclick="App.navigateTo('dashboard')"
+                    aria-label="Retour au tableau de bord">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </button>
+                <span id="mobile-page-title" class="mobile-page-title">Tableau de Bord</span>
+                <button id="mobile-menu-toggle-header" class="mobile-menu-toggle" onclick="App.toggleMobileMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page active">
+                    <div id="dashboard-content"></div>
+                </div>
+
+                <!-- Scoper Page -->
+                <div id="scoper-page" class="page">
+                    <div id="scoper-content"></div>
+                </div>
+
+                <!-- Calculator Page (Embedded in Settings) -->
+                <div id="calculator-page" class="page">
+                    <div id="calculator-content"></div>
+                </div>
+
+                <!-- Clients Page -->
+                <div id="clients-page" class="page">
+                    <div id="clients-content"></div>
+                </div>
+
+                <!-- Network/Cercle Page -->
+                <div id="network-page" class="page">
+                    <div id="network-content"></div>
+                </div>
+
+                <!-- Marketplace Hub (Consolidated) -->
+                <div id="marketplace-page" class="page-content" style="display: none;">
+                    <div id="marketplace-content"></div>
+                </div>
+
+                <!-- Page: Dépenses -->
+                <div id="expenses-page" class="page-content" style="display: none;"></div>
+
+                <!-- Page: Kanban -->
+                <div id="kanban-page" class="page-content" style="display: none;"></div>
+                <!-- SERVICES PAGE -->
+                <div id="services-page" class="page">
+                    <div id="services-content"></div>
+                </div>
+
+                <!-- Invoices Page -->
+                <div id="invoices-page" class="page">
+                    <div id="invoices-content"></div>
+                </div>
+
+                <!-- Quotes Page (Documents) -->
+                <div id="quotes-page" class="page">
+                    <div id="quotes-content"></div>
+                </div>
+
+                <!-- Settings Page -->
+                <div id="settings-page" class="page">
+                    <div id="settings-content"></div>
+                </div>
+
+                <!-- Profile Page -->
+                <div id="profile-page" class="page">
+                    <div id="profile-content"></div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modal Upgrade -->
+        <div id="upgrade-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 700px;">
+                <button class="modal-close" onclick="App.closeModal()">✕</button>
+                <div class="modal-header">
+                    <h2 class="upgrade-title">Passer à SoloPrice PRO</h2>
+                </div>
+                <div class="modal-body">
+                    <p class="upgrade-message">Débloquez la pleine puissance de votre activité.</p>
+
+                    <div class="upgrade-comparison">
+                        <!-- Rempli dynamiquement par App.showUpgradeModal dans app.js -->
+                    </div>
+
+                    <div class="modal-actions" style="display: none;">
+                        <button class="button-primary full-width" onclick="Settings.buyPro()"
+                            style="padding: 1rem; font-size: 1.1rem;">
+                            S'abonner Maintenant (9€/mois)
+                        </button>
+                        <button class="button-outline full-width" onclick="App.showLicenseModal()">
+                            J'ai déjà une clé d'activation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Licence -->
+        <div id="license-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button class="modal-close" onclick="App.closeModal()">✕</button>
+                <div class="modal-header">
+                    <h2>Activer une Licence</h2>
+                </div>
+                <div class="modal-body">
+                    <p>Entrez votre clé de licence pour activer SoloPrice PRO</p>
+
+                    <div class="form-group">
+                        <input type="text" id="license-key-input" class="form-input"
+                            placeholder="QPPRO-XXXXX-XXXXX-XXXXX">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="button-primary" onclick="App.activateLicense()">
+                            Activer
+                        </button>
+                        <button class="button-secondary" onclick="App.closeModal()">
+                            Annuler
+                        </button>
+                    </div>
+
+                    <p class="text-sm text-muted">Format attendu: QPPRO-XXXXX-XXXXX-XXXXX</p>
+                </div>
+            </div>
+            <!-- NOTIFICATION CONTAINER (moved here for global access) -->
+            <div id="notification-container"></div>
+
+        </div> <!-- End App Wrapper -->
+
+
+
+        <!-- Quick Add Client Modal -->
+        <div id="quick-client-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Nouveau Client Rapide</h3>
+                    <button class="btn-close" type="button" onclick="Clients.closeQuickAdd()">✕</button>
+                </div>
+                <form id="quick-client-form" onsubmit="Clients.handleQuickAdd(event)">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">Nom du client *</label>
+                            <input type="text" name="name" class="form-input" required
+                                placeholder="Entreprise ou Particulier">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-input" placeholder="contact@client.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ville</label>
+                            <input type="text" name="city" class="form-input" placeholder="Paris">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="button-secondary"
+                            onclick="Clients.closeQuickAdd()">Annuler</button>
+                        <button type="submit" class="button-primary">Créer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Network Add Partner Modal -->
+        <div id="network-add-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Ajouter un Partenaire</h3>
+                    <button class="btn-close" type="button" onclick="Network.hideAddModal()">✕</button>
+                </div>
+                <form onsubmit="Network.addProvider(event)">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">Nom / Entreprise *</label>
+                            <input type="text" name="name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Spécialité *</label>
+                            <input type="text" name="specialty" class="form-input" required
+                                placeholder="Ex: Développeur React">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" name="phone" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ville</label>
+                            <input type="text" name="city" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="button-secondary" onclick="Network.hideAddModal()">Annuler</button>
+                        <button type="submit" class="button-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Client Detail Modal -->
+        <div id="client-detail-modal" class="modal-overlay">
+            <div class="modal-content large">
+                <div class="modal-header">
+                    <h3 id="detail-client-name">Détails du Client</h3>
+                    <button class="btn-close" type="button" onclick="Clients.closeDetail()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="client-detail-grid">
+                        <div class="client-info-card">
+                            <h4>Informations Générales</h4>
+                            <div id="client-detail-info"></div>
+                        </div>
+                        <div class="client-history-card">
+                            <h4>Historique Activité</h4>
+                            <div id="client-detail-history"></div>
+                        </div>
+                    </div>
+                    <div class="client-notes-section">
+                        <h4>Notes CRM</h4>
+                        <textarea id="client-detail-notes" class="form-input" rows="4"
+                            placeholder="Ajouter des notes sur la relation avec ce client..."></textarea>
+                        <button class="button-secondary sm" onclick="Clients.saveNotes()"
+                            style="margin-top: 0.5rem;">Saisir Note</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Scripts -->
+        <script>console.log("Loading modules...");</script>
+        <script>
+            function showAuthModal(tab) {
+                var m = document.getElementById('auth-modal');
+                if (m) { m.style.display = 'flex'; m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); }
+                var tabs = m ? m.querySelector('.auth-modal-tabs') : null;
+                if (tabs) {
+                    if (tab === 'reset-password' || tab === 'forgot-password') {
+                        tabs.style.display = 'none';
+                    } else {
+                        tabs.style.display = 'flex';
+                    }
+                }
+                switchAuthTab(tab || 'login');
+                // Clear errors
+                ['login', 'register', 'forgot', 'reset'].forEach(t => {
+                    var err = document.getElementById('auth-' + t + '-error');
+                    if (err) err.textContent = '';
+                });
+            }
+            function closeAuthModal() {
+                var m = document.getElementById('auth-modal');
+                if (m) { m.style.display = 'none'; m.classList.remove('active'); m.setAttribute('aria-hidden', 'true'); }
+            }
+            function switchAuthTab(tab) {
+                document.querySelectorAll('.auth-tab').forEach(function (t) { t.classList.toggle('active', t.dataset.authTab === tab); });
+                document.querySelectorAll('.auth-form').forEach(function (f) { f.classList.toggle('active', f.id === 'auth-form-' + tab); });
+            }
+            function handleAuthLogin(e) {
+                e.preventDefault();
+                var errEl = document.getElementById('auth-login-error');
+                errEl.textContent = '';
+                var email = document.getElementById('auth-login-email').value.trim();
+                var password = document.getElementById('auth-login-password').value;
+                if (!email || !password) { errEl.textContent = 'Veuillez remplir tous les champs.'; return; }
+                Auth.login(email, password).then(function () { closeAuthModal(); }).catch(function (err) {
+                    errEl.textContent = err && err.message ? err.message : 'Erreur de connexion.';
+                });
+            }
+            function handleAuthRegister(e) {
+                e.preventDefault();
+                var errEl = document.getElementById('auth-register-error');
+                errEl.textContent = '';
+                var company = document.getElementById('auth-register-company').value.trim();
+                var email = document.getElementById('auth-register-email').value.trim();
+                var password = document.getElementById('auth-register-password').value;
+                if (!email || !password) { errEl.textContent = 'Email et mot de passe requis.'; return; }
+                Auth.register({ email: email, password: password, company: { name: company || '' } })
+                    .then(function () { closeAuthModal(); }).catch(function (err) {
+                        errEl.textContent = err && err.message ? err.message : 'Erreur lors de l\'inscription.';
+                    });
+            }
+            function handleAuthForgotPassword(e) {
+                e.preventDefault();
+                var msgEl = document.getElementById('auth-forgot-message');
+                var errEl = document.getElementById('auth-forgot-error');
+                msgEl.textContent = ''; errEl.textContent = '';
+                var email = document.getElementById('auth-forgot-email').value.trim();
+                if (!email) { errEl.textContent = 'Email requis.'; return; }
+
+                Auth.forgotPassword(email)
+                    .then(function (res) {
+                        msgEl.innerHTML = "Si cet email existe, un lien a été envoyé.<br><small style='color:#888; display:block; margin-top:5px;'>(Vérifiez vos spams. Attendez 1h si vous avez fait plusieurs essais).</small>";
+                    })
+                    .catch(function (err) { errEl.textContent = err.message || 'Erreur inconnue.'; });
+            }
+            function handleAuthResetPassword(e) {
+                e.preventDefault();
+                var msgEl = document.getElementById('auth-reset-message');
+                var errEl = document.getElementById('auth-reset-error');
+                msgEl.textContent = ''; errEl.textContent = '';
+
+                var newPass = document.getElementById('auth-reset-new-password').value;
+                if (!newPass || newPass.length < 6) { errEl.textContent = 'Minimum 6 caractères.'; return; }
+
+                // Retrieve token from hash that was saved/parsed by Auth.init
+                // OR we can parse it again if we are on the page.
+                // Actually, Auth.checkRecoveryMode should have handled the parsing.
+                // We'll trust Auth.updatePassword to know the token or pass it.
+                // Wait, Auth.updatePassword needs the token.
+                // Let's assume Auth stored it in a temporary variable or we get it from URL.
+                var hash = window.location.hash;
+                var token = null;
+                if (hash && hash.includes('access_token=')) {
+                    var params = new URLSearchParams(hash.substring(1)); // remove #
+                    token = params.get('access_token');
+                }
+
+                if (!token) { errEl.textContent = 'Token invalide ou expiré.'; return; }
+
+                Auth.updatePassword(token, newPass)
+                    .then(function (res) {
+                        msgEl.textContent = 'Mot de passe mis à jour ! Redirection...';
+                        setTimeout(function () {
+                            window.location.hash = '';
+                            window.location.reload();
+                        }, 2000);
+                    })
+                    .catch(function (err) { errEl.textContent = err.message || 'Erreur de mise à jour.'; });
+            }
+        </script>
+        <script src="storage.js"></script>
+        <script src="auth.js"></script>
+        <script src="network.js"></script>
+        <script src="scoper.js"></script>
+        <script src="expenses.js"></script>
+        <script src="kanban.js"></script>
+        <script src="app.js"></script>
+        <script src="services.js"></script>
+        <script src="dashboard.js"></script>
+        <script src="clients.js"></script>
+        <script src="leads.js"></script>
+        <script src="marketplace.js"></script>
+        <script src="invoices.js"></script>
+        <script src="profile.js"></script>
+        <script src="settings.js"></script>
+        <script src="pdf-generator.js"></script>
+        <script src="taxes.js"></script>
+        <script src="quotes.js"></script>
+        <script src="scoper.js"></script>
+        <script src="calculator.js"></script>
+
+</body>
+
+</html>

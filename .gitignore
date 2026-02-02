@@ -1,0 +1,7 @@
+node_modules
+.DS_Store
+push_error.txt
+push_test_error.txt
+last_git_error.txt
+
+.env

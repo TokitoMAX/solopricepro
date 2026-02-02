@@ -1,0 +1,578 @@
+// SoloPrice Pro - Application Manager
+// Gestion du routing et de la navigation SPA
+
+const App = {
+    currentPage: 'dashboard',
+
+    // Initialisation de l'application
+    init() {
+        this.setupNavigation();
+        this.migrateData();
+        this.setupMobileOverlay();
+        this.checkFreemiumLimits();
+        this.renderProBadge();
+        this.renderUserInfo();
+        if (window.Network) Network.init();
+        this.handlePaymentReturn();
+
+        // Router / Landing Logic
+        const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
+        const isLoggedIn = Auth.isLoggedIn();
+        const inApp = sessionStorage.getItem('sp_in_app') === 'true';
+
+        if (isLoggedIn || inApp) {
+            this.enterApp(false);
+            if (isLoggedIn) Storage.fullSync();
+            this.navigateTo(savedPage);
+        } else {
+            // Landing page by default if never entered
+            const landing = document.getElementById('landing-page');
+            const appWrapper = document.getElementById('app-wrapper');
+            if (landing) landing.style.display = 'block';
+            if (appWrapper) appWrapper.style.display = 'none';
+            this.updateLandingStats();
+        }
+
+        // Event listener pour fermeture de modales
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                this.closeModal();
+            }
+        });
+    },
+
+    enterApp(animate = true) {
+        const landing = document.getElementById('landing-page');
+        const appWrapper = document.getElementById('app-wrapper');
+
+        if (landing) landing.style.display = 'none';
+        if (appWrapper) {
+            appWrapper.style.display = 'block';
+            if (animate) {
+                appWrapper.style.animation = 'fadeIn 0.5s ease';
+            }
+        }
+
+        sessionStorage.setItem('sp_in_app', 'true');
+        this.renderUserInfo();
+        this.navigateTo('dashboard');
+    },
+
+    updateLandingStats() {
+        if (typeof Storage === 'undefined') return;
+
+        const calculatorData = Storage.get('sp_calculator_data');
+        const monthlyGoal = calculatorData ? parseFloat(calculatorData.monthlyRevenue) : 5000;
+
+        const quotes = Storage.getQuotes() || [];
+        const pipelineValue = quotes
+            .filter(q => q.status === 'sent')
+            .reduce((sum, q) => sum + (q.total || 0), 0);
+
+        const valueEl = document.getElementById('landing-pipeline-value');
+        const progressEl = document.getElementById('landing-pipeline-progress');
+
+        if (valueEl) valueEl.textContent = this.formatCurrency(monthlyGoal);
+        if (progressEl) {
+            // Sur la landing, on montre un état "objectif" inspirant
+            const progress = pipelineValue > 0 ? Math.min(100, Math.round((pipelineValue / monthlyGoal) * 100)) : 75; // 75% par défaut pour le style si 0
+            progressEl.style.width = `${progress}%`;
+        }
+    },
+
+    setupMobileOverlay() {
+        if (!document.querySelector('.sidebar-backdrop')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'sidebar-backdrop';
+            overlay.onclick = () => {
+                this.toggleMobileMenu();
+            };
+            document.body.appendChild(overlay);
+        }
+    },
+
+    toggleMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-backdrop');
+        const toggle = document.getElementById('mobile-menu-toggle');
+
+        sidebar.classList.toggle('active');
+        toggle.classList.toggle('active');
+        if (overlay) overlay.classList.toggle('active');
+    },
+
+    // Configuration de la navigation
+    setupNavigation() {
+        document.querySelectorAll('[data-nav]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = e.currentTarget.dataset.nav;
+                this.navigateTo(page);
+            });
+        });
+    },
+
+    // Navigation entre pages avec support d'arguments pour le rendu
+    navigateTo(page, ...args) {
+        // Fermer le menu mobile si ouvert
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-backdrop');
+        if (sidebar) sidebar.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        const toggle = document.getElementById('mobile-menu-toggle');
+        if (toggle) toggle.classList.remove('active');
+
+        // Cacher toutes les pages
+        document.querySelectorAll('.page').forEach(p => {
+            p.classList.remove('active');
+        });
+
+        // Afficher la page demandée
+        const pageElement = document.getElementById(`${page}-page`);
+        if (pageElement) {
+            pageElement.classList.add('active');
+            this.currentPage = page;
+
+            // Render specific page content with args
+            this.renderPageContent(page, ...args);
+
+            // Mettre à jour l'état actif de la navigation
+            document.querySelectorAll('[data-nav]').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.nav === page) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Update mobile header
+            this.updateMobileHeader(page);
+        }
+    },
+
+    // Update mobile header title and home button visibility
+    updateMobileHeader(page) {
+        const titleMap = {
+            dashboard: 'Tableau de Bord',
+            scoper: 'Estimateur',
+            quotes: 'Documents',
+            network: 'Mon Cercle',
+            marketplace: 'Marketplace',
+            expenses: 'Dépenses',
+            kanban: 'Pipeline Business',
+            profile: 'Mon Profil',
+            settings: 'Réglages'
+        };
+
+        const mobileTitle = document.getElementById('mobile-page-title');
+        const homeBtn = document.getElementById('mobile-home-btn');
+
+        if (mobileTitle) {
+            mobileTitle.textContent = titleMap[page] || 'SoloPrice Pro';
+        }
+
+        // Show home button on all pages except dashboard
+        if (homeBtn) {
+            homeBtn.style.display = page === 'dashboard' ? 'none' : 'flex';
+        }
+    },
+
+    // Nouveau helper pour le rendu des pages
+    renderPageContent(page, ...args) {
+        if (page === 'dashboard' && typeof Dashboard !== 'undefined') Dashboard.render();
+        if (page === 'quotes' && typeof Quotes !== 'undefined') Quotes.render();
+        if (page === 'invoices' && typeof Invoices !== 'undefined') {
+            this.navigateTo('quotes'); // Redirect to Documents
+            setTimeout(() => Quotes.switchTab('invoices'), 100);
+        }
+        if (page === 'network' && typeof Network !== 'undefined') Network.render(...args);
+        if (page === 'clients' && typeof Clients !== 'undefined') {
+            this.navigateTo('network', 'clients'); // Redirect to Cercle > Clients
+        }
+        if (page === 'leads' && typeof Leads !== 'undefined') {
+            this.navigateTo('network', 'leads'); // Redirect to Cercle > Prospects
+        }
+        if (page === 'marketplace' && typeof Marketplace !== 'undefined') Marketplace.render('marketplace-content', ...args);
+        if (page === 'expenses' && typeof Expenses !== 'undefined') Expenses.render();
+        if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();
+        if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render();
+        if (page === 'profile' && typeof Profile !== 'undefined') Profile.render();
+        if (page === 'settings' && typeof Settings !== 'undefined') Settings.render();
+        if (page === 'services' && typeof Services !== 'undefined') {
+            this.navigateTo('settings', 'tariffs'); // Redirect to Settings with tariffs tab
+        }
+    },
+
+    // Chargement du contenu de chaque page
+    loadPage(page) {
+        this.renderPageContent(page);
+    },
+
+    // Vérification des limites freemium
+    // Migration de QuickPrice Pro vers SoloPrice Pro
+    migrateData() {
+        this.migrateNetworkData();
+        const oldKeys = [
+            'qp_user', 'qp_clients', 'qp_quotes', 'qp_invoices', 'qp_services',
+            'qp_leads', 'qp_revenues', 'qp_expenses', 'qp_settings',
+            'qp_tax_context', 'qp_calculator_data', 'qp_profit_profile',
+            'qp_marketplace_missions', 'qp_my_missions', 'qp_my_providers',
+            'qp_calculator_inputs', 'qp_draft_quote_item', 'qp_last_page',
+            'qp_token'
+        ];
+
+        let migrated = false;
+        oldKeys.forEach(oldKey => {
+            const data = localStorage.getItem(oldKey);
+            if (data) {
+                const newKey = oldKey.replace('qp_', 'sp_');
+                if (!localStorage.getItem(newKey)) {
+                    localStorage.setItem(newKey, data);
+                    migrated = true;
+                }
+            }
+        });
+
+        if (migrated) {
+            console.log("🚀 Migration SoloPrice Pro terminée avec succès !");
+        }
+    },
+
+    // Fusionner les anciennes clés de prestataires/partenaires en une seule
+    migrateNetworkData() {
+        // Cleanup dummy missions if they exist
+        const missions = localStorage.getItem('sp_marketplace_missions');
+        if (missions) {
+            try {
+                const parsed = JSON.parse(missions);
+                // Si les missions contiennent les IDs factices, on vide tout pour repartir sur du propre
+                if (parsed.some(m => ['m1', 'm2', 'm3'].includes(m.id))) {
+                    localStorage.setItem('sp_marketplace_missions', '[]');
+                    console.log('🧹 Dummy missions cleared.');
+                }
+            } catch (e) { console.error("Error clearing dummy missions:", e); }
+        }
+
+        const networkProviders = localStorage.getItem('sp_providers'); // from old network.js
+        const marketplaceProviders = localStorage.getItem('sp_my_providers'); // from old marketplace.js
+        const unifiedKey = 'sp_network_providers';
+
+        if ((networkProviders || marketplaceProviders) && !localStorage.getItem(unifiedKey)) {
+            let unified = [];
+            if (networkProviders) {
+                try {
+                    unified = unified.concat(JSON.parse(networkProviders));
+                } catch (e) { console.error("Migration error (sp_providers):", e); }
+            }
+            if (marketplaceProviders) {
+                try {
+                    const marketProvs = JSON.parse(marketplaceProviders);
+                    marketProvs.forEach(p => {
+                        if (!unified.find(u => u.name === p.name)) {
+                            unified.push(p);
+                        }
+                    });
+                } catch (e) { console.error("Migration error (sp_my_providers):", e); }
+            }
+            localStorage.setItem(unifiedKey, JSON.stringify(unified));
+            console.log('✅ Network/Marketplace data unified.');
+        }
+    },
+
+    checkFreemiumLimits() {
+        const isPro = Storage.isPro();
+
+        const quotes = Storage.getQuotes();
+        const invoices = Storage.getInvoices();
+        const clients = Storage.getClients();
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const monthlyQuotesCount = quotes.filter(q => {
+            const date = new Date(q.createdAt);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        }).length;
+
+        const monthlyInvoicesCount = invoices.filter(i => {
+            const date = new Date(i.createdAt);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        }).length;
+
+        // Toujours cacher la bannière PRO/Free par défaut pour le moment
+        const banner = document.getElementById('freemium-banner');
+        if (banner) {
+            banner.style.display = 'none';
+        }
+
+        return {
+            canAddClient: true, // Bypassed for discussion
+            canAddQuote: true, // Bypassed for discussion
+            canAddInvoice: true, // Bypassed for discussion
+            canExportPDF: true, // Bypassed for discussion
+            maxClients: Infinity,
+            maxQuotes: Infinity,
+            maxInvoices: Infinity
+        };
+    },
+
+    async syncUser() {
+        try {
+            if (!window.sbClient) return;
+            const { data: { user }, error } = await window.sbClient.auth.getUser();
+
+            if (user) {
+                const userData = {
+                    id: user.id,
+                    email: user.email,
+                    company: { name: user.user_metadata.company_name },
+                    isPro: user.user_metadata.is_pro
+                };
+                Storage.setUser(userData);
+                this.renderUserInfo();
+            } else if (error) {
+                // Session probablement expirée
+                Auth.logout();
+            }
+        } catch (error) {
+            console.error('Failed to sync user:', error);
+        }
+    },
+
+    // Affichage des informations utilisateur dans la sidebar
+    renderUserInfo() {
+        const user = Auth.getUser();
+        if (!user) return;
+
+        const infoContainer = document.getElementById('user-info-sidebar');
+        const isPro = Storage.isPro();
+        if (infoContainer) {
+            infoContainer.innerHTML = `
+                <div class="user-profile" onclick="App.navigateTo('profile')" style="cursor: pointer;">
+                    <div class="user-avatar">${user.company?.name?.charAt(0) || 'U'}</div>
+                    <div class="user-details">
+                        <span class="user-name">${user.company?.name || user.email}</span>
+                        <span class="user-status"><span class="pro-badge-small">PRO</span></span>
+                    </div>
+                </div>
+            `;
+        }
+    },
+
+    // Affichage du badge PRO (legacy, used in other places maybe)
+    renderProBadge() {
+        const isPro = Storage.isPro();
+        const badge = document.getElementById('pro-badge');
+        if (badge) {
+            badge.style.display = isPro ? 'inline-flex' : 'none';
+        }
+    },
+
+    // Afficher le modal d'upgrade
+    showUpgradeModal(reason = 'limit') {
+        const modal = document.getElementById('upgrade-modal');
+        if (!modal) return;
+
+        const messages = {
+            limit: 'Passez à la vitesse supérieure.',
+            pdf: 'Logo personnalisé & exports illimités.',
+            feature: 'Fonctionnalité réservée aux membres PRO.'
+        };
+
+        const titleEl = modal.querySelector('.upgrade-title');
+        const messageEl = modal.querySelector('.upgrade-message');
+
+        if (titleEl) titleEl.textContent = 'Accès SoloPrice PRO';
+        if (messageEl) messageEl.textContent = messages[reason] || messages.limit;
+
+        // Populate comparisons if container exists
+        const comparisonContainer = modal.querySelector('.upgrade-comparison');
+        if (comparisonContainer) {
+            comparisonContainer.innerHTML = `
+                <div class="pricing-card free">
+                    <div class="card-tier">Standard</div>
+                    <div class="card-price">0€<span>/mois</span></div>
+                    <ul class="card-features">
+                        <li><i class="fas fa-check"></i> 3 Clients actifs</li>
+                        <li><i class="fas fa-check"></i> 5 Devis / mois</li>
+                        <li><i class="fas fa-times"></i> Export PDF avec Logo</li>
+                    </ul>
+                </div>
+                <div class="pricing-card pro active">
+                    <div class="card-tier">SoloPrice PRO</div>
+                    <div class="card-price">9€<span>/mois</span></div>
+                    <ul class="card-features">
+                        <li><i class="fas fa-check"></i> <strong>Illimité</strong> partout</li>
+                        <li><i class="fas fa-check"></i> PDF avec <strong>ton Logo</strong></li>
+                        <li><i class="fas fa-check"></i> Support Prioritaire</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        modal.classList.add('active');
+    },
+
+    // Afficher le modal d'activation de licence
+    showLicenseModal() {
+        const modal = document.getElementById('license-modal');
+        if (modal) {
+            modal.classList.add('active');
+            const input = modal.querySelector('#license-key-input');
+            if (input) input.value = '';
+        }
+    },
+
+    // Fermer les modales
+    closeModal() {
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    },
+
+    // Activer une licence
+    activateLicense() {
+        const input = document.getElementById('license-key-input');
+        const licenseKey = input?.value.trim();
+
+        if (!licenseKey) {
+            this.showNotification('Veuillez entrer une clé de licence', 'error');
+            return;
+        }
+
+        // Validation simple de la clé (format: SPPRO-XXXXX-XXXXX-XXXXX)
+        const isValid = this.validateLicenseKey(licenseKey);
+
+        if (isValid) {
+            Storage.activatePro(licenseKey);
+            this.closeModal();
+            this.renderProBadge();
+            this.checkFreemiumLimits();
+            this.showNotification('Licence activée avec succès.', 'success');
+
+            // Recharger la page actuelle
+            this.loadPage(this.currentPage);
+        } else {
+            this.showNotification('Clé de licence invalide', 'error');
+        }
+    },
+
+    // Validation de clé de licence
+    validateLicenseKey(key) {
+        // Format attendu: SPPRO-XXXXX-XXXXX-XXXXX
+        const pattern = /^[A-Z]{2,5}PRO-[A-Z0-9]{5}-[A-Z0-9]{5}-[A-Z0-9]{5}$/;
+        return pattern.test(key);
+    },
+
+    // Générer une clé de licence (pour admin/test)
+    generateLicenseKey() {
+        const randomSegment = () => {
+            return Array.from({ length: 5 }, () =>
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]
+            ).join('');
+        };
+
+        return `SPPRO-${randomSegment()}-${randomSegment()}-${randomSegment()}`;
+    },
+
+    // Notification système
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
+                type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
+                    'linear-gradient(135deg, #111827, #000000)'};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s;
+            max-width: 400px;
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    },
+
+    // Formatage de devises
+    formatCurrency(amount) {
+        const settings = Storage.get(Storage.KEYS.SETTINGS);
+        return `${Math.round(amount).toLocaleString('fr-FR')} ${settings.currency}`;
+    },
+
+    // Formatage de dates
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR');
+    },
+
+    // Calcul de total avec TVA
+    calculateTotal(items, includeTax = true) {
+        const settings = Storage.get(Storage.KEYS.SETTINGS);
+        const subtotal = items.reduce((sum, item) =>
+            sum + (item.quantity * item.unitPrice), 0
+        );
+
+        if (!includeTax) return subtotal;
+
+        const taxAmount = subtotal * (settings.taxRate / 100);
+        return subtotal + taxAmount;
+    },
+
+    handlePaymentReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const paymentStatus = params.get('payment');
+        const invoiceId = params.get('invoiceId');
+
+        if (paymentStatus === 'success' && invoiceId) {
+            const invoice = Storage.getInvoice(invoiceId);
+            if (invoice && invoice.status !== 'paid') {
+                Storage.updateInvoice(invoiceId, { status: 'paid' });
+                this.showNotification(`Paiement réussi pour la facture ${invoice.number} !`, 'success');
+                // Nettoyer l'URL sans recharger
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+
+                // Si on était sur la page des factures, on rafraîchit
+                if (typeof Invoices !== 'undefined' && this.currentPage === 'quotes') {
+                    Invoices.render();
+                }
+            }
+        } else if (paymentStatus === 'cancel') {
+            this.showNotification('Paiement annulé.', 'info');
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    }
+};
+
+window.App = App;
+
+// Auto-démarrage quand le DOM est prêt
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            App.init();
+            console.log("App initialized");
+        } catch (e) {
+            console.error("App Init Error:", e);
+        }
+    });
+} else {
+    try {
+        App.init();
+    } catch (e) {
+        console.error("App Init Error:", e);
+    }
+}
