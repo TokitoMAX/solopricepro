@@ -421,36 +421,39 @@ const App = {
         if (step === 'comparison') {
             titleEl.textContent = 'Accès SoloPrice PRO';
             container.innerHTML = `
-                <div class="pricing-card-mini standard" onclick="App.renderUpgradeStep('checkout', {tier: 'standard'})">
-                    <div class="card-tier">Standard</div>
-                    <div class="card-price">0€<span>/mo</span></div>
+                <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', {tier: 'pro'})">
+                    <div class="card-badge">CONSEILLÉ</div>
+                    <div class="card-tier">SOLOPRICE PRO</div>
+                    <div class="card-price">15€<span>/mois</span></div>
+                    <div class="card-value-tag">Économisez 20€/mois</div>
                     <ul class="card-features-mini">
-                        <li><i class="fas fa-check"></i> 1 Client actif</li>
-                        <li><i class="fas fa-check"></i> 2 Devis / mois</li>
+                        <li><i class="fas fa-check-circle"></i> Devis/Factures <strong>Illimités</strong></li>
+                        <li><i class="fas fa-check-circle"></i> Votre <strong>Logo</strong> sur PDF</li>
+                        <li><i class="fas fa-check-circle"></i> Pipeline Kanban Complet</li>
+                        <li><i class="fas fa-check-circle"></i> Pilotage CA & Profit</li>
                     </ul>
-                    <button class="card-select-btn">Rester Standard</button>
-                </div>
-                <div class="pricing-card-mini pro active" onclick="App.renderUpgradeStep('checkout', {tier: 'pro'})">
-                    <div class="card-tier">Pack PRO</div>
-                    <div class="card-price">15€<span>/mo</span></div>
-                    <div class="card-value-tag">Valeur 35€</div>
-                    <ul class="card-features-mini">
-                        <li><i class="fas fa-check"></i> Tout Illimité</li>
-                        <li><i class="fas fa-check"></i> Logo sur PDF</li>
-                        <li><i class="fas fa-check"></i> Kanban & Profit</li>
-                    </ul>
-                    <button class="card-select-btn">Choisir PRO</button>
+                    <button class="card-select-btn pro">Passer Pro</button>
                 </div>
                 <div class="pricing-card-mini expert" onclick="App.renderUpgradeStep('checkout', {tier: 'expert'})">
-                    <div class="card-tier">Pack EXPERT</div>
-                    <div class="card-price">29€<span>/mo</span></div>
-                    <div class="card-value-tag">Valeur 75€</div>
+                    <div class="card-tier">PACK EXPERT</div>
+                    <div class="card-price">29€<span>/mois</span></div>
+                    <div class="card-value-tag">Valeur Réelle 75€</div>
                     <ul class="card-features-mini">
-                        <li><i class="fas fa-check"></i> Mode Expansion</li>
-                        <li><i class="fas fa-check"></i> Coaching IA</li>
-                        <li><i class="fas fa-check"></i> Badge Expert</li>
+                        <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Coaching IA</strong> Avancé</li>
+                        <li><i class="fas fa-check-circle"></i> Visibilité Prioritaire</li>
+                        <li><i class="fas fa-check-circle"></i> Badge Expert Vérifié</li>
                     </ul>
-                    <button class="card-select-btn">Choisir EXPERT</button>
+                    <button class="card-select-btn expert">Devenir Expert</button>
+                </div>
+                <div class="pricing-card-mini standard" onclick="App.closeModal()">
+                    <div class="card-tier">STANDARD</div>
+                    <div class="card-price">0€<span>/mois</span></div>
+                    <ul class="card-features-mini">
+                        <li><i class="fas fa-minus"></i> 1 Client Actif</li>
+                        <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
+                    </ul>
+                    <div class="card-select-btn">Rester en Standard</div>
                 </div>
             `;
         } else if (step === 'checkout') {
@@ -459,39 +462,37 @@ const App = {
 
             titleEl.textContent = 'Paiement Sécurisé';
             container.innerHTML = `
-                <div class="checkout-view" style="width: 100%; text-align: left; padding: 1rem;">
-                    <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 2rem;">
-                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                            <span>Abonnement ${data.tier.toUpperCase()}</span>
-                            <span>${price}/mois</span>
+                <div class="checkout-view" style="width: 100%; text-align: left; padding: 0.5rem;">
+                    <div class="payment-methods" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                        <div class="pay-method active"><i class="fab fa-cc-stripe"></i> Carte</div>
+                        <div class="pay-method"><i class="fab fa-paypal"></i> PayPal</div>
+                        <div class="pay-method"><i class="fab fa-apple-pay"></i> Pay</div>
+                    </div>
+
+                    <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${data.tier.toUpperCase()}</h4>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Paiement Unique Mensuel</span>
+                            </div>
+                            <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">${price}</span>
                         </div>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.5rem 0 0 0;">Accès immédiat illimité.</p>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Titulaire de la carte</label>
-                        <input type="text" class="form-input" placeholder="Nom complet" id="card-name">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Numéro de carte</label>
-                        <input type="text" class="form-input" placeholder="0000 0000 0000 0000" id="card-number">
+                        <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Informations de paiement</label>
+                        <input type="text" class="form-input checkout-input" placeholder="Numéro de carte" id="card-number">
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label class="form-label">MM/AA</label>
-                            <input type="text" class="form-input" placeholder="MM/AA">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">CVC</label>
-                            <input type="text" class="form-input" placeholder="123">
-                        </div>
+                        <input type="text" class="form-input checkout-input" placeholder="MM/AA">
+                        <input type="text" class="form-input checkout-input" placeholder="CVC">
                     </div>
                     
-                    <button class="button-primary full-width" onclick="App.processCheckout('${data.tier}')" style="margin-top: 2rem; padding: 1rem;">
-                        Payer ${price}
+                    <button class="button-primary full-width" onclick="App.processCheckout('${data.tier}')" style="margin-top: 2rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
+                        Confirmer le paiement
                     </button>
-                    <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 0.5rem; border: none; color: var(--text-muted);">
-                        Retour aux offres
+                    <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
+                        <i class="fas fa-arrow-left"></i> Retour aux offres
                     </button>
                 </div>
             `;
@@ -499,25 +500,26 @@ const App = {
     },
 
     processCheckout(tier) {
-        App.showNotification('Traitement du paiement...', 'info');
+        App.showNotification('Traitement bancaire en cours...', 'info');
         const btn = event.currentTarget;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Traitement...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Transaction...';
         btn.disabled = true;
 
         setTimeout(() => {
-            Storage.activatePro('QPPRO-USER-SUCCESS-2026', tier, 1);
-            App.showNotification('Paiement accepté ! Bienvenue dans le Pack ' + tier.toUpperCase(), 'success');
+            Storage.activatePro('SP-TRANS-' + Math.random().toString(36).substring(7).toUpperCase(), tier, 1);
+            App.showNotification('Paiement réussi ! Pack ' + tier.toUpperCase() + ' activé.', 'success');
 
-            // Vue de succès
             const container = document.querySelector('.upgrade-comparison');
             const titleEl = document.querySelector('.upgrade-title');
-            titleEl.textContent = 'Félicitations !';
+            titleEl.textContent = 'Bienvenue !';
             container.innerHTML = `
-                <div style="text-align: center; padding: 3rem 1rem;">
-                    <div style="font-size: 4rem; color: #10b981; margin-bottom: 2rem;">✅</div>
-                    <h2>Votre compte est activé</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Vous avez maintenant accès à toutes les fonctionnalités du Pack ${tier.toUpperCase()}.</p>
-                    <button class="button-primary" onclick="location.reload()" style="padding: 1rem 2rem;">Commencer maintenant</button>
+                <div style="text-align: center; padding: 2rem 0;">
+                    <div class="success-icon-wrapper" style="width: 80px; height: 80px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);">
+                        <i class="fas fa-check" style="color: white; font-size: 2.5rem;"></i>
+                    </div>
+                    <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Abonnement Activé</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem; line-height: 1.5;">Votre espace de travail est maintenant configuré en mode ${tier.toUpperCase()}. Profitez de l'illimité !</p>
+                    <button class="button-primary" onclick="location.reload()" style="padding: 1rem 2.5rem; border-radius: 50px;">Accéder à mes outils</button>
                 </div>
             `;
         }, 2500);
@@ -582,31 +584,32 @@ const App = {
             ).join('');
         };
 
-        return `SPPRO-${randomSegment()}-${randomSegment()}-${randomSegment()}`;
+        return `SPPRO - ${randomSegment()} -${randomSegment()} -${randomSegment()} `;
     },
 
     // Notification système
     showNotification(message, type = 'info') {
         const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
+        notification.className = `notification notification - ${type} `;
         notification.textContent = message;
 
         notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
+position: fixed;
+top: 20px;
+right: 20px;
+background: ${type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
                 type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' :
-                    'linear-gradient(135deg, #111827, #000000)'};
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            z-index: 10000;
-            animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s;
-            max-width: 400px;
-        `;
+                    'linear-gradient(135deg, #111827, #000000)'
+            };
+color: white;
+padding: 1rem 1.5rem;
+border - radius: 12px;
+font - weight: 600;
+box - shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+z - index: 10000;
+animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s;
+max - width: 400px;
+`;
 
         document.body.appendChild(notification);
 
@@ -618,7 +621,7 @@ const App = {
     // Formatage de devises
     formatCurrency(amount) {
         const settings = Storage.get(Storage.KEYS.SETTINGS);
-        return `${Math.round(amount).toLocaleString('fr-FR')} ${settings.currency}`;
+        return `${Math.round(amount).toLocaleString('fr-FR')} ${settings.currency} `;
     },
 
     // Formatage de dates
