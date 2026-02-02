@@ -153,7 +153,7 @@ const App = {
     updateMobileHeader(page) {
         const titleMap = {
             dashboard: 'Tableau de Bord',
-            scoper: 'Estimateur',
+            scoper: 'Chiffrage Projet',
             quotes: 'Documents',
             network: 'Mon Cercle',
             marketplace: 'Marketplace',

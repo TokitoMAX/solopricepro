@@ -202,7 +202,7 @@ const Dashboard = {
                     <div class="quick-actions">
                         <button class="action-card" onclick="App.navigateTo('scoper');" style="background: var(--gradient-1); color: white;">
                              <span class="action-icon" style="font-size: 2rem; margin-bottom: 0.5rem;"></span>
-                            <span class="action-label" style="font-weight: 700;">Estimer un Projet</span>
+                            <span class="action-label" style="font-weight: 700;">Chiffrage Projet</span>
                         </button>
                         <button class="action-card" onclick="App.navigateTo('network');">
                              <span class="action-icon"></span>

@@ -22,7 +22,7 @@ const Kanban = {
                 <!-- Column: Leads -->
                 <div class="kanban-column">
                     <div class="kanban-column-header">
-                        <span>🚀 PROSPECTS</span>
+                        <span>PROSPECTS</span>
                         <span class="badge">${leads.length}</span>
                     </div>
                     <div class="kanban-cards">
@@ -33,7 +33,7 @@ const Kanban = {
                 <!-- Column: Quotes (Draft/Sent) -->
                 <div class="kanban-column">
                     <div class="kanban-column-header">
-                        <span>📝 DEVIS ENVOYÉS</span>
+                        <span>DEVIS ENVOYÉS</span>
                         <span class="badge">${quotes.filter(q => q.status !== 'accepted').length}</span>
                     </div>
                     <div class="kanban-cards">
@@ -55,7 +55,7 @@ const Kanban = {
                 <!-- Column: Paid (Real Net Cash) -->
                 <div class="kanban-column">
                     <div class="kanban-column-header">
-                        <span>💰 PAYÉS / NET</span>
+                        <span>PAYÉS / NET</span>
                         <span class="badge">${invoices.filter(i => i.status === 'paid').length}</span>
                     </div>
                     <div class="kanban-cards">
