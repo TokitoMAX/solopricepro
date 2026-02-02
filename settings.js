@@ -2,7 +2,7 @@
 // Handles technical settings, taxes, and data management
 
 const Settings = {
-    render(activeTabId = 'tariffs') {
+    render(activeTabId = 'billing') {
         const container = document.getElementById('settings-content');
         if (!container) return;
 
@@ -15,47 +15,11 @@ const Settings = {
             </div>
  
             <div class="settings-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                <button class="settings-tab ${activeTabId === 'tariffs' ? 'active' : ''}" onclick="Settings.switchTab('tariffs')">Stratégie de Revenus</button>
                 <button class="settings-tab ${activeTabId === 'billing' ? 'active' : ''}" onclick="Settings.switchTab('billing')">Paramètres Devis</button>
                 <button class="settings-tab ${activeTabId === 'data' ? 'active' : ''}" onclick="Settings.switchTab('data')">Données & Backup</button>
             </div>
  
             <div class="settings-content-wrapper">
-                <!-- Tab: Tariffs (Combined TJM + Services) -->
-                <div id="settings-tab-tariffs" class="settings-tab-content ${activeTabId === 'tariffs' ? 'active' : ''}">
-                    <!-- Combined Section 1: TJM -->
-                    <div class="settings-section glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-                        <h2 class="section-title-small">1. Stratégie de Taux (TJM)</h2>
-                        <p class="section-subtitle">Définissez votre objectif de revenu pour calculer votre tarif de base.</p>
-                        <div id="calculator-embed-container" style="margin-top: 1.5rem;">
-                            <!-- Calculator UI will render here -->
-                        </div>
-                    </div>
-
-                    <!-- Combined Section 2: Services -->
-                    <div class="settings-section glass-card" style="padding: 1.5rem;">
-                        <h2 class="section-title-small">2. Bibliothèque Métier (Catalogue)</h2>
-                        <p class="section-subtitle">Gérez vos prestations récurrentes pour les importer en un clic dans vos estimations et devis.</p>
-                        <div id="settings-services-container">
-                            ${typeof Services !== 'undefined' && Storage.getServices().length > 0 ?
-                `<div class="page-actions" style="margin: 1.5rem 0;">
-                                    <button class="button-primary small" onclick="Services.showAddForm()">
-                                        Ajouter une prestation
-                                    </button>
-                                </div>
-                                <div id="service-form-container"></div>
-                                <div class="services-settings-list">
-                                    ${Services.renderGroupedServices(Storage.getServices())}
-                                </div>` : `
-                                <div class="empty-state" style="padding: 2rem; text-align: center;">
-                                    <p class="text-sm text-muted">Votre catalogue est vide.</p>
-                                    <button class="button-primary small" onclick="Services.showAddForm()" style="margin-top: 1rem;">Créer un service</button>
-                                    <div id="service-form-container"></div>
-                                </div>
-                                `}
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Tab: Billing -->
                 <div id="settings-tab-billing" class="settings-tab-content ${activeTabId === 'billing' ? 'active' : ''}">
@@ -149,9 +113,8 @@ const Settings = {
         const activeContent = document.getElementById(`settings-tab-${tabId}`);
         if (activeContent) activeContent.classList.add('active');
 
-        if (tabId === 'tariffs' && typeof renderCalculatorUI === 'function') {
-            document.getElementById('calculator-embed-container').innerHTML = '';
-            renderCalculatorUI('calculator-embed-container');
+        if (tabId === 'billing' && typeof TaxEngine !== 'undefined') {
+            // Optionnel: rafraîchir le sélecteur de taxes si besoin
         }
     },
 

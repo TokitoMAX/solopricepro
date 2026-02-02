@@ -44,7 +44,7 @@ const Kanban = {
                 <!-- Column: In Progress / Invoices Sent -->
                 <div class="kanban-column">
                     <div class="kanban-column-header">
-                        <span>⚙️ EN COURS / FACTURÉ</span>
+                        <span>EN COURS / FACTURÉ</span>
                         <span class="badge">${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length}</span>
                     </div>
                     <div class="kanban-cards">

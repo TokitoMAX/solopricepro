@@ -198,7 +198,7 @@ const App = {
         if (page === 'profile' && typeof Profile !== 'undefined') Profile.render();
         if (page === 'settings' && typeof Settings !== 'undefined') Settings.render();
         if (page === 'services' && typeof Services !== 'undefined') {
-            this.navigateTo('settings', 'tariffs'); // Redirect to Settings with tariffs tab
+            this.navigateTo('settings', 'billing'); // Redirect to Settings with billing tab
         }
     },
 
