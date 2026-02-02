@@ -501,7 +501,7 @@ const App = {
                         </div>
                     `}
                     
-                    <button class="button-primary full-width" onclick="App.processCheckout('${data.tier}', '${method}')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
+                    <button class="button-primary full-width" onclick="App.processCheckout('${tier}', '${method}')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
                         ${method === 'card' ? 'Confirmer le paiement' : 'Payer avec PayPal'}
                     </button>
                     <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
