@@ -917,7 +917,8 @@ section {
 }
 
 /* PayPal UI Optimization */
-.paypal-checkout-box {
+.paypal-checkout-box,
+.stripe-checkout-box {
     background: rgba(255, 255, 255, 0.03);
     border: 1px dashed var(--border);
     border-radius: 20px;
@@ -929,6 +930,11 @@ section {
     width: 100%;
     margin-bottom: 1rem;
     transition: all 0.3s ease;
+    text-align: center;
+}
+
+.stripe-official-logo {
+    margin-bottom: 0.5rem;
 }
 
 .paypal-button-mount {

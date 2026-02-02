@@ -510,17 +510,17 @@ const App = {
                 </div>
 
                 ${method === 'card' ? `
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Numéro de carte (Stripe)</label>
-                        <input type="text" class="form-input checkout-input" placeholder="0000 0000 0000 0000" id="card-number">
+                    <div class="stripe-checkout-box">
+                        <div class="stripe-official-logo">
+                            <i class="fab fa-cc-stripe" style="font-size: 2.5rem; color: #635bff;"></i>
+                        </div>
+                        <p style="margin: 1rem 0; font-size: 0.95rem; font-weight: 500;">Paiement 100% Sécurisé via Stripe</p>
+                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1.5rem;">Vous allez être redirigé vers la plateforme sécurisée de Stripe pour finaliser votre transaction.</p>
+                        
+                        <button class="button-primary full-width" onclick="App.processCheckout('${tier}', 'card')" style="padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: #635bff; border: none; box-shadow: 0 4px 15px rgba(99, 91, 255, 0.3);">
+                           <i class="fas fa-lock"></i> Payer par Carte (Stripe)
+                        </button>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <input type="text" class="form-input checkout-input" placeholder="MM/AA">
-                        <input type="text" class="form-input checkout-input" placeholder="CVC">
-                    </div>
-                    <button class="button-primary full-width" onclick="App.processCheckout('${tier}', 'card')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
-                        Confirmer le paiement (Stripe)
-                    </button>
                 ` : `
                     <div class="paypal-checkout-box">
                         <div id="paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}" class="paypal-button-mount">
