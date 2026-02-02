@@ -1202,7 +1202,8 @@ section {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    /* Force single line */
 }
 
 .landing-auth-btn {
@@ -1527,7 +1528,11 @@ section {
 
     /* Fix Dashboard overlapping */
     .stat-card.goal-card {
-        padding-bottom: 2rem;
+        padding: 1.5rem 1rem 2.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
     }
 
     .dashboard-header {
@@ -2254,9 +2259,11 @@ select.form-input:focus {
 }
 
 .stat-value {
-    font-size: 2rem;
+    font-size: 1.75rem;
+    /* Reduced from 2rem to prevent overlap */
     font-weight: 800;
     color: var(--primary-light);
+    word-break: break-all;
 }
 
 .stat-description {

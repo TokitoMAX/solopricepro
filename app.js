@@ -421,7 +421,7 @@ const App = {
         if (step === 'comparison') {
             titleEl.textContent = 'Accès SoloPrice PRO';
             container.innerHTML = `
-                <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', {tier: 'pro'})">
+                <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', 'pro')">
                     <div class="card-badge">CONSEILLÉ</div>
                     <div class="card-tier">SOLOPRICE PRO</div>
                     <div class="card-price">15€<span>/mois</span></div>
@@ -434,7 +434,7 @@ const App = {
                     </ul>
                     <button class="card-select-btn pro">Passer Pro</button>
                 </div>
-                <div class="pricing-card-mini expert" onclick="App.renderUpgradeStep('checkout', {tier: 'expert'})">
+                <div class="pricing-card-mini expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
                     <div class="card-tier">PACK EXPERT</div>
                     <div class="card-price">29€<span>/mois</span></div>
                     <div class="card-value-tag">Valeur Réelle 75€</div>
@@ -457,18 +457,20 @@ const App = {
                 </div>
             `;
         } else if (step === 'checkout') {
-            const price = data.tier === 'pro' ? '15€' : '29€';
+            const tier = typeof data === 'string' ? data : data.tier;
             const method = data.method || 'card';
-            if (data.tier === 'standard') { App.closeModal(); return; }
+            const price = tier === 'pro' ? '15€' : '29€';
+
+            if (tier === 'standard') { App.closeModal(); return; }
 
             titleEl.textContent = 'Paiement Sécurisé';
             container.innerHTML = `
                 <div class="checkout-view" style="width: 100%; text-align: left; padding: 0.5rem;">
                     <div class="payment-methods" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                        <div class="pay-method ${method === 'card' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${data.tier}', method: 'card'})">
+                        <div class="pay-method ${method === 'card' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${tier}', method: 'card'})">
                             <i class="fab fa-cc-stripe"></i> Carte
                         </div>
-                        <div class="pay-method ${method === 'paypal' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${data.tier}', method: 'paypal'})">
+                        <div class="pay-method ${method === 'paypal' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${tier}', method: 'paypal'})">
                             <i class="fab fa-paypal"></i> PayPal
                         </div>
                     </div>
@@ -476,7 +478,7 @@ const App = {
                     <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid var(--border);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${data.tier.toUpperCase()}</h4>
+                                <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${tier.toUpperCase()}</h4>
                                 <span style="font-size: 0.8rem; color: var(--text-muted);">Paiement via ${method === 'card' ? 'Visa/Mastercard' : 'PayPal'}</span>
                             </div>
                             <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">${price}</span>
