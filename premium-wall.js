@@ -13,12 +13,12 @@ const PremiumWall = {
      */
     renderTeaser(title, description, icon = '🔒') {
         return `
-            <div class="premium-teaser-card glass" style="padding: 2rem; border: 1px dashed var(--primary-glass); border-radius: 20px; text-align: center; background: rgba(99, 102, 241, 0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-height: 200px;">
-                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">${icon}</div>
-                <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-light);">${title}</h3>
-                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted); max-width: 300px;">${description}</p>
-                <button class="button-primary small" onclick="App.showUpgradeModal('feature')" style="margin-top: 0.5rem;">
-                    Débloquer SoloPrice PRO
+            <div class="premium-teaser-card glass" style="padding: 1.5rem; border: 1px dashed var(--primary-glass); border-radius: 16px; text-align: center; background: rgba(99, 102, 241, 0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; min-height: 160px;">
+                <div style="font-size: 2rem;">${icon}</div>
+                <h3 style="margin: 0; font-size: 1rem; color: var(--primary-light);">${title}</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); max-width: 250px;">${description}</p>
+                <button class="button-primary small" onclick="App.showUpgradeModal('feature')" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.8rem;">
+                    Débloquer
                 </button>
             </div>
         `;

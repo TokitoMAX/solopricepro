@@ -72,14 +72,23 @@ const Kanban = {
             <style>
                 .kanban-board {
                     display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 1.5rem;
+                    grid-template-columns: repeat(4, 300px);
+                    gap: 1rem;
                     align-items: flex-start;
                     margin-top: 2rem;
+                    overflow-x: auto;
+                    padding-bottom: 2rem;
+                    cursor: grab;
                 }
+                .kanban-board:active { cursor: grabbing; }
+                
                 @media (max-width: 1024px) {
                     .kanban-board {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: repeat(4, 280px);
+                        margin-left: -1rem;
+                        margin-right: -1rem;
+                        padding-left: 1rem;
+                        padding-right: 1rem;
                     }
                 }
                 .kanban-column {

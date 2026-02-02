@@ -419,35 +419,47 @@ const App = {
                     <ul class="card-features-mini">
                         <li>1 Client</li>
                         <li>2 Devis/m</li>
-                        <li>Marketplace</li>
                     </ul>
+                    <button class="button-outline small" onclick="App.closeModal()" style="width: 100%; margin-top: 1rem; font-size: 0.7rem;">Inclus</button>
                 </div>
-                <div class="pricing-card-mini pro active">
+                <div class="pricing-card-mini pro active" onclick="App.selectTier(this, 'pro')">
                     <div class="card-tier">PRO</div>
                     <div class="card-price">15€/m</div>
                     <div class="card-value-tag">Valeur 35€</div>
                     <ul class="card-features-mini">
-                        <li><strong>Illimité</strong></li>
-                        <li>PDF Pro (Logo)</li>
+                        <li><strong>Tout illimité</strong></li>
+                        <li>Logo sur PDF</li>
                         <li>Kanban & Profit</li>
-                        <li>Pilotage Cash</li>
                     </ul>
+                    <button class="button-primary small" style="width: 100%; margin-top: 1rem; font-size: 0.7rem;">Choisir</button>
                 </div>
-                <div class="pricing-card-mini expert">
+                <div class="pricing-card-mini expert" onclick="App.selectTier(this, 'expert')">
                     <div class="card-tier">EXPERT</div>
                     <div class="card-price">29€/m</div>
                     <div class="card-value-tag">Valeur 75€</div>
                     <ul class="card-features-mini">
-                        <li><strong>Power User</strong></li>
+                        <li><strong>Expansion</strong></li>
                         <li>Coaching IA</li>
-                        <li>Visibilité ++</li>
                         <li>Badge Expert</li>
                     </ul>
+                    <button class="button-secondary small" style="width: 100%; margin-top: 1rem; font-size: 0.7rem;">Choisir</button>
                 </div>
             `;
         }
 
         modal.classList.add('active');
+    },
+
+    selectTier(card, tier) {
+        // Visuel
+        document.querySelectorAll('.pricing-card-mini').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+
+        // Action (Simulée pour l'instant ou redirect vers paiement)
+        App.showNotification(`Redirection vers le paiement pack ${tier.toUpperCase()}...`, 'info');
+
+        // Simuler activation pour le test si besoin (à retirer en prod)
+        // setTimeout(() => { Storage.activatePro('TEST-KEY', tier, 1); location.reload(); }, 2000);
     },
 
     // Afficher le modal d'activation de licence
