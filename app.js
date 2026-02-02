@@ -141,7 +141,7 @@ const App = {
         });
 
         // Afficher la page demandée
-        const pageElement = document.getElementById(`${page}-page`);
+        const pageElement = document.getElementById(page);
         if (pageElement) {
             pageElement.classList.add('active');
             this.currentPage = page;
@@ -452,30 +452,30 @@ const App = {
 
                 <!-- Pro -->
                 <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', 'pro')">
-                    <div class="card-badge">CONSEILLÉ</div>
+                    <div class="card-badge">PRODUCTION ILLIMITÉE</div>
                     <div class="card-tier">SOLOPRICE PRO</div>
                     <div class="card-price">15€<span>/mois</span></div>
-                    <div class="card-value-tag">Économisez 20€/mois</div>
+                    <div class="card-value-tag">Idéal pour produire sans limites</div>
                     <ul class="card-features-mini">
                         <li><i class="fas fa-check-circle"></i> Devis/Factures <strong>Illimités</strong></li>
                         <li><i class="fas fa-check-circle"></i> Votre <strong>Logo</strong> sur PDF</li>
                         <li><i class="fas fa-check-circle"></i> Pipeline Kanban Complet</li>
-                        <li><i class="fas fa-check-circle"></i> Pilotage CA & Profit</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Zéro Limite</strong> sur les documents</li>
                     </ul>
                     <button class="card-select-btn pro">Passer Pro</button>
                 </div>
 
                 <!-- Expert -->
                 <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
-                    <div class="card-badge" style="background: #a855f7;">PREMIUM</div>
+                    <div class="card-badge" style="background: #a855f7;">ACCÉLÉRATEUR BUSINESS</div>
                     <div class="card-tier" style="color: #c084fc;">PACK EXPERT</div>
                     <div class="card-price">29€<span>/mois</span></div>
-                    <div class="card-value-tag">Valeur Réelle 75€</div>
+                    <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
                     <ul class="card-features-mini">
                         <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
-                        <li><i class="fas fa-check-circle"></i> <strong>Coaching IA</strong> Avancé</li>
-                        <li><i class="fas fa-check-circle"></i> Visibilité Prioritaire</li>
-                        <li><i class="fas fa-check-circle"></i> Badge Expert Vérifié</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Coaching IA</strong> de Survie</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Priorité</strong> sur la Marketplace</li>
+                        <li><i class="fas fa-check-circle"></i> Badge <strong>Expert Vérifié</strong></li>
                     </ul>
                     <button class="card-select-btn expert" style="background: #a855f7; color: white;">Devenir Expert</button>
                 </div>
