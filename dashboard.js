@@ -33,6 +33,8 @@ const Dashboard = {
                 <p class="page-subtitle">Vue d'ensemble de votre activité</p>
             </div>
 
+            ${typeof Coach !== 'undefined' ? Coach.renderWidget() : ''}
+
             <div class="stats-grid dashboard-stats">
                 <!-- Goal Card -->
                 <div class="stat-card goal-card">

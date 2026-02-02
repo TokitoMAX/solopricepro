@@ -13,7 +13,8 @@ const Storage = {
         REVENUES: 'sp_revenues',
         EXPENSES: 'sp_expenses',
         SETTINGS: 'sp_settings',
-        CALCULATOR: 'sp_calculator_data'
+        CALCULATOR: 'sp_calculator_data',
+        GAMIFICATION: 'sp_gamification'
     },
 
     // Initialisation
@@ -28,6 +29,7 @@ const Storage = {
                 theme: 'dark'
             });
         }
+        this.updateStreak();
     },
 
     // Méthodes génériques avec isolation par utilisateur
@@ -232,6 +234,37 @@ const Storage = {
         });
     },
 
+    updateStreak() {
+        if (!Auth.isLoggedIn()) return;
+
+        const data = this.get(this.KEYS.GAMIFICATION) || { streak: 0, lastActivity: null };
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        if (!data.lastActivity) {
+            data.streak = 1;
+            data.lastActivity = today;
+        } else {
+            const lastDate = new Date(data.lastActivity).getTime();
+            const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+                data.streak += 1;
+                data.lastActivity = today;
+            } else if (diffDays > 1) {
+                data.streak = 1;
+                data.lastActivity = today;
+            }
+        }
+
+        this.set(this.KEYS.GAMIFICATION, data);
+    },
+
+    getStreak() {
+        const data = this.get(this.KEYS.GAMIFICATION);
+        return data ? data.streak : 0;
+    },
+
     // Méthodes clients
     getClients() {
         return this.get(this.KEYS.CLIENTS) || [];
@@ -325,6 +358,14 @@ const Storage = {
         const quotes = this.getQuotes();
         const index = quotes.findIndex(q => q.id === id);
         if (index !== -1) {
+            // Logic for "Hard Truths" coaching
+            if (updates.status === 'sent' && quotes[index].status !== 'sent') {
+                updates.sentAt = new Date().toISOString();
+            }
+            if (updates.status === 'sent' && quotes[index].status === 'sent') {
+                updates.lastFollowUpAt = new Date().toISOString();
+            }
+
             quotes[index] = { ...quotes[index], ...updates };
             this.set(this.KEYS.QUOTES, quotes);
             return quotes[index];
@@ -368,6 +409,14 @@ const Storage = {
         const invoices = this.getInvoices();
         const index = invoices.findIndex(i => i.id === id);
         if (index !== -1) {
+            // Logic for "Hard Truths" coaching
+            if (updates.status === 'sent' && invoices[index].status !== 'sent') {
+                updates.sentAt = new Date().toISOString();
+            }
+            if (updates.status === 'sent' && invoices[index].status === 'sent') {
+                updates.lastFollowUpAt = new Date().toISOString();
+            }
+
             invoices[index] = { ...invoices[index], ...updates };
             this.set(this.KEYS.INVOICES, invoices);
             return invoices[index];

@@ -352,7 +352,7 @@ const App = {
                 <div class="user-profile" onclick="App.navigateTo('profile')" style="cursor: pointer;">
                     <div class="user-avatar">${user.company?.name?.charAt(0) || user.email?.charAt(0) || 'U'}</div>
                     <div class="user-details">
-                        <span class="user-name">${user.company?.name || user.email}</span>
+                        <span class="user-name">${user.company?.name || user.email} ${Storage.getStreak() > 0 ? '<span title="Série de jours actifs" style="cursor:help;">🔥 ' + Storage.getStreak() + '</span>' : ''}</span>
                         ${isPro ? '<span class="user-status"><span class="pro-badge-small">PRO</span></span>' : '<span class="user-status text-muted" style="font-size:0.7rem;">Version Standard</span>'}
                     </div>
                 </div>
