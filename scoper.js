@@ -14,8 +14,8 @@ const Scoper = {
         container.innerHTML = `
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Estimateur de Projet</h1>
-                    <p class="page-subtitle">Ingénierie de prix basée sur la valeur et le risque.</p>
+                    <h1 class="page-title">Chiffrage Projet</h1>
+                    <p class="page-subtitle">Calculez le prix juste pour cette mission spécifique (Valeur & Risque).</p>
                 </div>
             </div>
 
@@ -64,8 +64,9 @@ const Scoper = {
                         <h4 class="breakdown-title" style="margin-bottom: 1.5rem; font-weight: 600;">Stratégie & Rentabilité</h4>
                         
                         <div class="input-group">
-                            <label class="form-label">Ton TJM Cible (€)</label>
-                            <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()">
+                            <label class="form-label">TJM appliqué à ce projet (€)</label>
+                            <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="border-color: var(--primary-light);">
+                            <p class="text-xs text-muted" style="margin-top: 4px;">Défaut : TJM Stratégique définit dans les Réglages.</p>
                         </div>
 
                         <div class="input-group">

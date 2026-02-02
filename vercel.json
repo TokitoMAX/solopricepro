@@ -11,11 +11,7 @@
           "*.js",
           "backend/**/*.js",
           "assets/**/*"
-        ],
-        "env": {
-          "PORT": "5050",
-          "NODE_ENV": "production"
-        }
+        ]
       }
     }
   ],

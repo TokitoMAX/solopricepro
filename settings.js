@@ -10,14 +10,14 @@ const Settings = {
 
         container.innerHTML = `
             <div class="page-header">
-                <h1 class="page-title">Réglages</h1>
-                <p class="page-subtitle">Configurez votre base de rentabilité. Ces réglages alimentent l'Estimateur et vos Devis.</p>
+                <h1 class="page-title">Stratégie & Réglages</h1>
+                <p class="page-subtitle">Définissez votre modèle économique global. Ces bases servent par défaut à l'Estimateur et vos Devis.</p>
             </div>
  
             <div class="settings-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                <button class="settings-tab ${activeTabId === 'tariffs' ? 'active' : ''}" onclick="Settings.switchTab('tariffs')">Tarifs & Prestations</button>
-                <button class="settings-tab ${activeTabId === 'billing' ? 'active' : ''}" onclick="Settings.switchTab('billing')">Facturation</button>
-                <button class="settings-tab ${activeTabId === 'data' ? 'active' : ''}" onclick="Settings.switchTab('data')">Système & Données</button>
+                <button class="settings-tab ${activeTabId === 'tariffs' ? 'active' : ''}" onclick="Settings.switchTab('tariffs')">Stratégie de Revenus</button>
+                <button class="settings-tab ${activeTabId === 'billing' ? 'active' : ''}" onclick="Settings.switchTab('billing')">Paramètres Devis</button>
+                <button class="settings-tab ${activeTabId === 'data' ? 'active' : ''}" onclick="Settings.switchTab('data')">Données & Backup</button>
             </div>
  
             <div class="settings-content-wrapper">

@@ -9,6 +9,17 @@ const { createClient } = require('@supabase/supabase-js');
 // Load environment variables
 dotenv.config();
 
+// Validation des variables d'environnement critiques
+const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+const missingVars = requiredEnvVars.filter(v => !process.env[v]);
+
+if (missingVars.length > 0) {
+    console.warn('⚠️ ATTENTION : Variables d\'environnement manquantes :', missingVars.join(', '));
+    console.warn('Le backend risque de ne pas fonctionner correctement.');
+} else {
+    console.log('✅ Configuration environnement : OK');
+}
+
 const app = express();
 const PORT = process.env.PORT || 5050; // Changé de 5000 à 5050
 
