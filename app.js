@@ -458,38 +458,49 @@ const App = {
             `;
         } else if (step === 'checkout') {
             const price = data.tier === 'pro' ? '15€' : '29€';
+            const method = data.method || 'card';
             if (data.tier === 'standard') { App.closeModal(); return; }
 
             titleEl.textContent = 'Paiement Sécurisé';
             container.innerHTML = `
                 <div class="checkout-view" style="width: 100%; text-align: left; padding: 0.5rem;">
                     <div class="payment-methods" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                        <div class="pay-method active"><i class="fab fa-cc-stripe"></i> Carte</div>
-                        <div class="pay-method"><i class="fab fa-paypal"></i> PayPal</div>
-                        <div class="pay-method"><i class="fab fa-apple-pay"></i> Pay</div>
+                        <div class="pay-method ${method === 'card' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${data.tier}', method: 'card'})">
+                            <i class="fab fa-cc-stripe"></i> Carte
+                        </div>
+                        <div class="pay-method ${method === 'paypal' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${data.tier}', method: 'paypal'})">
+                            <i class="fab fa-paypal"></i> PayPal
+                        </div>
                     </div>
 
                     <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid var(--border);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${data.tier.toUpperCase()}</h4>
-                                <span style="font-size: 0.8rem; color: var(--text-muted);">Paiement Unique Mensuel</span>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Paiement via ${method === 'card' ? 'Visa/Mastercard' : 'PayPal'}</span>
                             </div>
                             <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">${price}</span>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Informations de paiement</label>
-                        <input type="text" class="form-input checkout-input" placeholder="Numéro de carte" id="card-number">
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <input type="text" class="form-input checkout-input" placeholder="MM/AA">
-                        <input type="text" class="form-input checkout-input" placeholder="CVC">
-                    </div>
+                    ${method === 'card' ? `
+                        <div class="form-group">
+                            <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Numéro de carte</label>
+                            <input type="text" class="form-input checkout-input" placeholder="0000 0000 0000 0000" id="card-number">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <input type="text" class="form-input checkout-input" placeholder="MM/AA">
+                            <input type="text" class="form-input checkout-input" placeholder="CVC">
+                        </div>
+                    ` : `
+                        <div style="text-align: center; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 12px; margin-bottom:1.5rem;">
+                            <i class="fab fa-paypal" style="font-size: 2rem; color: #0070ba; margin-bottom: 0.5rem; display: block;"></i>
+                            <p style="font-size: 0.9rem;">Vous allez être redirigé vers l'interface sécurisée de PayPal.</p>
+                        </div>
+                    `}
                     
-                    <button class="button-primary full-width" onclick="App.processCheckout('${data.tier}')" style="margin-top: 2rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
-                        Confirmer le paiement
+                    <button class="button-primary full-width" onclick="App.processCheckout('${data.tier}', '${method}')" style="margin-top: 1rem; padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: var(--primary);">
+                        ${method === 'card' ? 'Confirmer le paiement' : 'Payer avec PayPal'}
                     </button>
                     <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
                         <i class="fas fa-arrow-left"></i> Retour aux offres
@@ -499,10 +510,11 @@ const App = {
         }
     },
 
-    processCheckout(tier) {
-        App.showNotification('Traitement bancaire en cours...', 'info');
+    processCheckout(tier, method = 'card') {
+        const msg = method === 'paypal' ? 'Redirection vers PayPal...' : 'Traitement bancaire en cours...';
+        App.showNotification(msg, 'info');
         const btn = event.currentTarget;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Transaction...';
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${method === 'paypal' ? 'Liaison...' : 'Transaction...'}`;
         btn.disabled = true;
 
         setTimeout(() => {

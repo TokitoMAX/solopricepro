@@ -910,18 +910,19 @@ section {
 .upgrade-comparison {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 2rem;
     margin-top: 2rem;
     align-items: center;
+    padding-bottom: 2.5rem;
 }
 
 .pricing-card-mini {
     width: 100%;
-    max-width: 400px;
+    min-height: 480px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-light);
-    padding: 2rem;
-    border-radius: 24px;
+    padding: 2.5rem 1.5rem;
+    border-radius: 28px;
     text-align: center;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
