@@ -818,6 +818,56 @@ const App = {
             const newUrl = window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
         }
+    },
+
+    // Gestion du reset password via hash URL
+    handleUrlHash() {
+        const hash = window.location.hash.substring(1);
+        if (!hash) return;
+
+        const params = new URLSearchParams(hash);
+        const type = params.get('type');
+        const accessToken = params.get('access_token');
+        const error = params.get('error_description');
+
+        if (error) {
+            this.showNotification(decodeURIComponent(error), 'error');
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+        }
+
+        if (type === 'recovery' && accessToken) {
+            console.log('🔐 Mode Recovery détecté');
+            sessionStorage.setItem('sp_recovery_token', accessToken);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            this.showResetPasswordModal();
+        }
+    },
+
+    showResetPasswordModal() {
+        // Créer la modale dynamiquement si elle n'existe pas
+        let modal = document.getElementById('reset-password-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'reset-password-modal';
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content floating-card">
+                    <h3 class="gradient-text">Nouveau mot de passe</h3>
+                    <p class="text-muted">Définissez votre nouveau mot de passe sécurisé.</p>
+                    <div class="form-group">
+                        <input type="password" id="new-password" placeholder="Nouveau mot de passe" class="modern-input">
+                    </div>
+                    <button onclick="Auth.updateUserPassword()" class="button-primary full-width">Valider</button>
+                    <button onclick="App.closeModal()" class="button-outline full-width" style="margin-top: 10px;">Annuler</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Afficher
+        modal.classList.add('active');
+        modal.style.display = 'flex';
     }
 };
 
