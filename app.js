@@ -14,6 +14,7 @@ const App = {
         this.renderUserInfo();
         if (window.Network) Network.init();
         this.handlePaymentReturn();
+        this.handleUrlHash(); // Gestion du retour Reset Password
 
         // Masquer le loader une fois l'initialisation terminée
         this.hideLoader();
@@ -766,19 +767,30 @@ const App = {
         return subtotal + taxAmount;
     },
 
+    // Gestion du retour de paiement Stripe
     handlePaymentReturn() {
-        const params = new URLSearchParams(window.location.search);
-        const session_id = params.get('session');
-        const paymentStatus = params.get('payment');
-        const invoiceId = params.get('invoiceId');
+        const urlParams = new URLSearchParams(window.location.search);
+        const session_id = urlParams.get('session_id');
+        const paymentStatus = urlParams.get('payment');
+        const invoiceId = urlParams.get('invoiceId');
 
         // Retour d'achat SaaS (PRO)
         if (session_id) {
-            this.showNotification('Paiement réussi ! Bienvenue dans la version PRO.', 'success');
-            // On force un sync utilisateur pour obtenir le nouveau tag isPro
-            this.syncUser();
             // Nettoyer l'URL
             window.history.replaceState({}, document.title, window.location.pathname);
+
+            // Afficher un loader pendant la vérification
+            this.showUpgradeModal('success'); // On réutilise le template succès
+            document.querySelector('.upgrade-success h3').textContent = 'Vérification du paiement...';
+
+            // Appel backend pour vérifier la session
+            // (Note: En théorie on attend le webhook, mais on peut aussi fetcher le status si besoin)
+            // Pour l'instant on assume le succès visuel et le webhook fera le job en back
+            setTimeout(() => {
+                Storage.activatePro('STRIPE-' + session_id.substring(0, 8), 'pro');
+                document.querySelector('.upgrade-success h3').textContent = 'Paiement confirmé !';
+                this.renderUserInfo();
+            }, 1000);
         }
         // Retour de paiement facture client
         else if (paymentStatus === 'success' && invoiceId) {

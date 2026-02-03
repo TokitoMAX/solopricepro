@@ -186,11 +186,24 @@ router.post('/forgot-password', async (req, res) => {
         console.log(`📧 Demande de réinitialisation pour: ${email}`);
 
         // Obtenir l'URL de base pour la redirection
-        // En prod, on utilise APP_URL si défini. Sinon on fallback sur le header origin (dev/preview)
-        const origin = process.env.APP_URL || req.headers.origin || req.protocol + '://' + req.get('host');
+        let origin = process.env.APP_URL;
+
+        // Si APP_URL est localhost ou non défini, essayer de construire une URL plus intelligente via les headers
+        // (Utile si le serveur est derrière un proxy ou ngrok)
+        if (!origin || origin.includes('localhost')) {
+            const host = req.get('host'); // ex: my-app.vercel.app ou 192.168.1.50:5050
+            const protocol = req.protocol;
+            if (host) {
+                origin = `${protocol}://${host}`;
+            }
+        }
+
+        // Retirer le slash final si présent
+        if (origin.endsWith('/')) origin = origin.slice(0, -1);
+
         const redirectTo = `${origin}/index.html`;
 
-        console.log(`🔗 Redirect URL set to: ${redirectTo}`);
+        console.log(`🔗 Redirect URL computed: ${redirectTo} (APP_URL was: ${process.env.APP_URL})`);
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: redirectTo,
