@@ -152,7 +152,7 @@ const PDFGenerator = {
                 </div>
 
                 <div class="footer">
-                    Document généré par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr
+                    ${(Storage.getTier() === 'expert') ? '' : 'Document généré par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr'}
                 </div>
 
                 <script>
@@ -324,7 +324,7 @@ const PDFGenerator = {
                 </div>
 
                 <div class="footer">
-                    Devis généré par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr
+                    ${(Storage.getTier() === 'expert') ? '' : 'Devis généré par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr'}
                 </div>
 
                 <script>

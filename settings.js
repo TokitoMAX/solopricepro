@@ -17,6 +17,7 @@ const Settings = {
             <div class="settings-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <button class="settings-tab ${activeTabId === 'billing' ? 'active' : ''}" onclick="Settings.switchTab('billing')">Paramètres Devis</button>
                 <button class="settings-tab ${activeTabId === 'subscription' ? 'active' : ''}" onclick="Settings.switchTab('subscription')">Abonnement</button>
+                <button class="settings-tab ${activeTabId === 'legal' ? 'active' : ''}" onclick="Settings.switchTab('legal')">Ressources Juridiques</button>
                 <button class="settings-tab ${activeTabId === 'data' ? 'active' : ''}" onclick="Settings.switchTab('data')">Données & Backup</button>
             </div>
  
@@ -79,6 +80,13 @@ const Settings = {
                     </div>
                 </div>
 
+                <!-- Tab: Legal Resources -->
+                <div id="settings-tab-legal" class="settings-tab-content ${activeTabId === 'legal' ? 'active' : ''}">
+                    <div id="legal-content">
+                        <!-- Rempli par Legal.render() -->
+                    </div>
+                </div>
+
                 <!-- Tab: Data -->
                 <div id="settings-tab-data" class="settings-tab-content ${activeTabId === 'data' ? 'active' : ''}">
                     <div class="settings-section">
@@ -96,6 +104,7 @@ const Settings = {
         `;
 
         this.updateSubscriptionUI();
+        if (typeof Legal !== 'undefined') Legal.render('legal-content');
 
         if (typeof TaxEngine !== 'undefined') {
             TaxEngine.renderSelector('settings-tax-selector-container', (ctxId) => {
