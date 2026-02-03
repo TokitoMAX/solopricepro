@@ -156,9 +156,8 @@ const Quotes = {
     },
 
     showAddForm(preselectedClientId = null) {
-        const limits = App.checkFreemiumLimits();
-        if (!limits.canAddQuote) {
-            App.showUpgradeModal('limit');
+        // Bloquage strict via App.enforceLimit
+        if (typeof App !== 'undefined' && !App.enforceLimit('quotes')) {
             return;
         }
 

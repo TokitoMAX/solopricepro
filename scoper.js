@@ -8,8 +8,16 @@ const Scoper = {
     },
 
     render() {
-        const container = document.getElementById('scoper-content');
+        const container = document.getElementById('scoper-page');
         if (!container) return;
+
+        // VERROUILLAGE FREEMIUM STRICT
+        // Si pas PRO, on affiche le mur et on arrête tout rendu interactif
+        const isPro = Storage.isPro();
+        if (!isPro) {
+            container.innerHTML = PremiumWall.renderPageWall('Estimateur de Projet');
+            return;
+        }
 
         container.innerHTML = `
             <div class="page-header">

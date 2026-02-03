@@ -88,14 +88,13 @@ const Clients = {
     },
 
     showAddForm() {
-        const limits = App.checkFreemiumLimits();
-        if (!limits.canAddClient) {
-            App.showUpgradeModal('limit');
+        // Bloquage strict via App.enforceLimit
+        if (typeof App !== 'undefined' && !App.enforceLimit('clients')) {
             return;
         }
 
         this.editingId = null;
-        const container = document.getElementById('client-form-container');
+        const container = document.getElementById('clients-form-container');
 
         container.innerHTML = `
             <div class="form-card">

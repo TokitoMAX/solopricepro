@@ -353,6 +353,39 @@ const App = {
         return expertFeatures.includes(feature);
     },
 
+    // Méthode centrale pour bloquer strictement une action si limite atteinte
+    enforceLimit(feature) {
+        const limits = this.checkFreemiumLimits();
+
+        // 1. Gestion des clients
+        if (feature === 'clients') {
+            if (!limits.canAddClient) {
+                this.showUpgradeModal('limit');
+                return false; // Bloqué
+            }
+        }
+
+        // 2. Gestion des devis
+        if (feature === 'quotes') {
+            if (!limits.canAddQuote) {
+                this.showUpgradeModal('limit');
+                return false; // Bloqué
+            }
+        }
+
+        // 3. Gestion de l'Estimateur (Scoper) - STRICT PRO ONLY
+        if (feature === 'scoper') {
+            // L'estimateur est PRO uniquement, pas de notion de quota
+            const isPro = limits.tier === 'pro' || limits.tier === 'expert';
+            if (!isPro) {
+                this.showUpgradeModal('scoper_limit'); // Ou feature réservée
+                return false;
+            }
+        }
+
+        return true; // Autorisé
+    },
+
     async syncUser() {
         try {
             if (!window.sbClient) return;
