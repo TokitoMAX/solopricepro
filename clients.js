@@ -219,13 +219,25 @@ const Clients = {
         if (this.editingId) {
             Storage.updateClient(this.editingId, clientData);
             App.showNotification('Client modifié.', 'success');
+            this.hideForm();
+            this.render();
         } else {
-            Storage.addClient(clientData);
+            const newClient = Storage.addClient(clientData);
             App.showNotification('Client ajouté.', 'success');
-        }
+            this.hideForm();
+            this.render();
 
-        this.hideForm();
-        this.render();
+            // Check redirect logic
+            if (sessionStorage.getItem('sp_return_to_quote') === 'true') {
+                sessionStorage.removeItem('sp_return_to_quote');
+                setTimeout(() => {
+                    App.navigateTo('quotes');
+                    if (typeof Quotes !== 'undefined') {
+                        Quotes.showAddForm(newClient.id);
+                    }
+                }, 500);
+            }
+        }
     },
 
     delete(id) {

@@ -163,7 +163,25 @@ const Quotes = {
         }
 
         const clients = Storage.getClients();
-        // Removed the check "if clients.length === 0 return" to allow adding first client via Quick Add inside form
+
+        // Si aucun client n'existe, on redirige vers l'ajout de client
+        if (clients.length === 0) {
+            if (confirm('Vous devez d\'abord créer un client pour établir un devis. Voulez-vous en créer un maintenant ?')) {
+                // Sauvegarder l'état pour revenir ici après la création du client
+                sessionStorage.setItem('sp_return_to_quote', 'true');
+
+                // Si on vient du scoper, on garde les items en mémoire dans le Storage
+                // (déjà géré par Scoper.createQuote qui met dans sp_draft_quote_items)
+
+                if (typeof Clients !== 'undefined') {
+                    // On utilise le mode "Full Page" ou modal rapide selon préférence
+                    // Ici on simule une navigation vers Clients -> Nouveau
+                    App.navigateTo('network', 'clients');
+                    setTimeout(() => Clients.showAddForm(), 100);
+                }
+            }
+            return;
+        }
 
         this.editingId = null;
 
