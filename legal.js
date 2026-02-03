@@ -8,7 +8,8 @@ const Legal = {
             id: 'cgv-service',
             title: 'CGV - Prestations de Service',
             description: 'Conditions Générales de Vente standard pour freelance, conformes au Code de Commerce.',
-            preview: \`CONDITIONS GÉNÉRALES DE VENTE (PRESTATION DE SERVICE)
+            lastUpdated: 'Janvier 2026',
+            preview: `CONDITIONS GÉNÉRALES DE VENTE (PRESTATION DE SERVICE)
 
 ARTICLE 1 - OBJET ET CHAMP D'APPLICATION
 Les présentes Conditions Générales de Vente (CGV) s'appliquent sans restrictions ni réserves à toute prestation de services commercialisée par le Prestataire auprès de clients professionnels ou particuliers.
@@ -23,14 +24,15 @@ ARTICLE 3 - RÉSERVE DE PROPRIÉTÉ
 Le Prestataire conserve la propriété pleine et entière des résultats de la prestation (livrables, fichiers sources) jusqu'au paiement intégral du prix (principal et accessoires).
 
 ARTICLE 4 - RESPONSABILITÉ
-Le Prestataire est tenu d'une obligation de moyens. Sa responsabilité est plafonnée au montant des honoraires perçus pour la mission concernée.\`,
+Le Prestataire est tenu d'une obligation de moyens. Sa responsabilité est plafonnée au montant des honoraires perçus pour la mission concernée.`,
             type: 'docx'
         },
         {
             id: 'contrat-cadre',
             title: 'Contrat Cadre de Prestation',
             description: 'Modèle de contrat pour les missions longues durées, avec clauses de propriété intellectuelle.',
-            preview: \`CONTRAT DE PRESTATION DE SERVICES
+            lastUpdated: 'Janvier 2026',
+            preview: `CONTRAT DE PRESTATION DE SERVICES
 
 ENTRE LES SOUSSIGNÉS :
 [Société du Prestataire], demeurant au [Adresse], immatriculée sous le SIRET [Numéro], ci-après "le Prestataire".
@@ -47,14 +49,15 @@ ARTICLE 4 - CESSION DES DROITS
 4.2 Condition: Cette cession n'est effective qu'au paiement complet et définitif du prix.
 
 ARTICLE 8 - NON-SOLLICITATION
-Le Client s'interdit d'engager ou de faire travailler tout collaborateur du Prestataire ayant participé à la mission, pendant toute la durée du contrat et 12 mois après sa fin.\`,
+Le Client s'interdit d'engager ou de faire travailler tout collaborateur du Prestataire ayant participé à la mission, pendant toute la durée du contrat et 12 mois après sa fin.`,
             type: 'docx'
         },
         {
             id: 'nda',
             title: 'Accord de Confidentialité (NDA)',
             description: 'Accord de non-divulgation pour protéger vos idées et données sensibles lors des négociations.',
-            preview: \`ACCORD DE CONFIDENTIALITÉ UNILATÉRAL
+            lastUpdated: 'Décembre 2025',
+            preview: `ACCORD DE CONFIDENTIALITÉ UNILATÉRAL
 
 Le présent Accord est conclu afin de permettre des discussions relatives à [Projet/Partenariat] (ci-après "le Projet").
 
@@ -68,14 +71,15 @@ ii) N'utiliser ces Informations que pour l'évaluation du Projet.
 iii) Protéger les Informations avec le même degré de soin que ses propres données confidentielles.
 
 Article 5. DURÉE
-Les obligations de confidentialité resteront en vigueur pendant une durée de 5 ans à compter de la signature des présentes.\`,
+Les obligations de confidentialité resteront en vigueur pendant une durée de 5 ans à compter de la signature des présentes.`,
             type: 'pdf'
         },
         {
             id: 'relance',
             title: 'Modèles de Relance Facture',
             description: '3 niveaux de courriers de relance (Amiable, Ferme, Mise en demeure) pour vos impayés.',
-            preview: \`NIVEAU 2 : RELANCE FERME
+            lastUpdated: 'Janvier 2026',
+            preview: `NIVEAU 2 : RELANCE FERME
 
 Objet : 2ème Relance - Retard de paiement Facture N°[Numéro]
 
@@ -87,7 +91,7 @@ Nous vous rappelons que conformément à l'article L441-10 du Code de Commerce e
 
 Nous vous mettons en demeure de procéder au virement sous 48h. À défaut, nous serons contraints de transmettre ce dossier à notre service recouvrement.
 
-Cordialement,\`,
+Cordialement,`,
             type: 'txt'
         }
     ],
@@ -97,46 +101,53 @@ Cordialement,\`,
         if (!container) return;
 
         const isExpert = App.isFeatureExpertGated ? !App.isFeatureExpertGated('legal_kit') : Storage.getTier() === 'expert';
-        // Note: isFeatureExpertGated returns true if BLOCKED, so !BLOCKED = ALLOWED.
-        // But let's check explicit tier for clarity if helper is missing logic.
         const canAccess = Storage.getTier() === 'expert';
 
         container.innerHTML = `
-        < div class= "legal-header" style = "margin-bottom: 2rem;" >
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-                <h2 class="section-title-small">Bibliothèque Juridique</h2>
-                <p style="color: var(--text-muted);">Modèles de contrats et documents administratifs prêts à l'emploi.</p>
-            </div>
-            ${canAccess ? '<span class="badge" style="background:var(--primary); color:white;">ACCÈS EXPERT ACTIVÉ</span>' : ''}
-        </div>
+            <div class="legal-header" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h2 class="section-title-small">Bibliothèque Juridique</h2>
+                        <p style="color: var(--text-muted);">Modèles maintenus et conformes aux standards 2026.</p>
+                    </div>
+                     ${canAccess ? '<span class="badge" style="background:var(--primary); color:white;">ACCÈS EXPERT ACTIVÉ</span>' : ''}
+                </div>
                 ${!canAccess ? `
                     <div class="premium-banner-inline" style="margin-top: 1rem; background: linear-gradient(90deg, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0) 100%); border-left: 3px solid #FFD700; padding: 1rem;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             <span style="font-size: 1.5rem;">⚖️</span>
                             <div>
                                 <strong style="color: #FFD700;">Réservé aux Experts</strong>
-                                <p style="font-size: 0.9rem; margin: 0; color: var(--text-muted);">Ces documents ont une valeur de plus de 500€. Débloquez-les avec le pack Expert.</p>
+                                <p style="font-size: 0.9rem; margin: 0; color: var(--text-muted);">Accédez à des modèles juridiques (CGV, Contrats) d'une valeur de +500€. Débloquez-les avec le pack Expert.</p>
                             </div>
                             <button class="button-primary small" onclick="App.showUpgradeModal('feature')" style="margin-left: auto;">Débloquer</button>
                         </div>
                     </div>
                 ` : ''}
-            </div >
+            </div>
 
             <div class="legal-grid" style="display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
                 ${this.documents.map(doc => this.renderDocumentCard(doc, canAccess)).join('')}
             </div>
             
-            <div style="margin-top: 3rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
-                <p style="margin: 0;"><strong>⚠️ Avertissement Légal :</strong> Ces documents sont des modèles types fournis à titre indicatif. Ils doivent être adaptés à votre situation spécifique. SoloPrice décline toute responsabilité quant à leur utilisation sans validation par un professionnel du droit.</p>
+            <div style="margin-top: 3rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.85rem; color: var(--text-muted); text-align: left;">
+                <div style="display: flex; gap: 1rem; align-items: start;">
+                    <span style="font-size: 1.5rem;">🛡️</span>
+                    <div>
+                        <strong style="color: var(--white); display: block; margin-bottom: 0.5rem;">Responsabilité & Usage</strong>
+                        <p style="margin: 0; line-height: 1.5;">
+                            Ces modèles sont établis sur la base de la législation française en vigueur à leur date de mise à jour. Ils constituent une trame solide pour vos relations commerciales.
+                            Cependant, chaque activité étant spécifique, <strong>SoloPrice ne saurait remplacer le conseil d'un avocat spécialisé</strong>. L'utilisation de ces modèles se fait sous votre seule responsabilité.
+                        </p>
+                    </div>
+                </div>
             </div>
-`;
+        `;
     },
 
     renderDocumentCard(doc, canAccess) {
         return `
-    < div class="legal-card glass" style = "display: flex; flex-direction: column; height: 100%; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative;" >
+            <div class="legal-card glass" style="display: flex; flex-direction: column; height: 100%; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative;">
                 <div class="card-header" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
                         <div class="doc-icon" style="font-size: 1.5rem;">${this.getIcon(doc.type)}</div>
@@ -184,8 +195,8 @@ Cordialement,\`,
                         ${canAccess ? 'Télécharger le modèle' : 'Débloquer le modèle'}
                     </button>
                 </div>
-            </div >
-    `;
+            </div>
+        `;
     },
 
     getIcon(type) {
