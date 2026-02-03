@@ -99,22 +99,6 @@ router.post('/login', async (req, res) => {
     try {
         console.log(`🔑 Tentative de connexion pour: ${email}`);
 
-        // --- EMERGENCY BYPASS (Rate Limit Fix) ---
-        if (email === 'admin-force@local' && password === 'bypass') {
-            console.log('🚨 EMERGENCY LOGIN ACTIVATED');
-            return res.json({
-                user: {
-                    id: 'force-user-id',
-                    email: 'admin-force@local',
-                    user_metadata: { company_name: 'Admin Urgence', is_pro: true }
-                },
-                session: {
-                    access_token: 'FORCE_TOKEN'
-                }
-            });
-        }
-        // -----------------------------------------
-
         if (!supabase) {
             console.error('❌ Supabase client is NULL in login route');
             return res.status(503).json({

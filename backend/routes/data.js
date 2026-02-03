@@ -12,20 +12,6 @@ async function authenticateUser(req, res, next) {
 
     const token = authHeader.split(' ')[1];
 
-    // --- EMERGENCY BYPASS CHECK ---
-    if (token === 'FORCE_TOKEN') {
-        req.user = {
-            id: 'force-user-id',
-            email: 'admin-force@local',
-            app_metadata: {},
-            user_metadata: { is_pro: true },
-            aud: 'authenticated',
-            created_at: new Date().toISOString()
-        };
-        return next();
-    }
-    // ------------------------------
-
     try {
         const { data: { user }, error } = await supabase.auth.getUser(token);
         if (error || !user) throw error || new Error('User not found');
