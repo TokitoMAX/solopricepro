@@ -3476,38 +3476,39 @@ select.form-input:focus {
     display: inline-flex;
     align-items: center;
     line-height: 1;
+}
 
-    /* --- LOGOUT BUTTON --- */
-    .sidebar-footer {
-        padding: 1.5rem;
-        border-top: 1px solid var(--border);
-        margin-top: auto;
-    }
+/* --- LOGOUT BUTTON --- */
+.sidebar-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+}
 
-    .logout-btn {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        color: #ef4444;
-        padding: 0.8rem 1rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
+.logout-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-    .logout-btn:hover {
-        background: #ef4444;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    }
+.logout-btn:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
 
-    .logout-btn i {
-        font-size: 1rem;
-    }
+.logout-btn i {
+    font-size: 1rem;
+}

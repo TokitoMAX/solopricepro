@@ -204,9 +204,6 @@ const Quotes = {
 
         // Render Tax Selector
         if (typeof TaxEngine !== 'undefined') {
-            if (quote && quote.taxContext) {
-                TaxEngine.setContext(quote.taxContext);
-            }
             TaxEngine.renderSelector('quote-tax-selector-container', () => this.updateTotals());
         }
     },
