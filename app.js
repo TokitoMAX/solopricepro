@@ -395,6 +395,33 @@ const App = {
             `;
         }
 
+        // Afficher les badges PRO dans la sidebar pour les fonctions limitées
+        document.querySelectorAll('.nav-item').forEach(item => {
+            const nav = item.dataset.nav;
+            const proFeatures = ['kanban', 'scoper', 'expenses'];
+
+            // Supprimer d'anciens badges pour éviter les doublons
+            const oldBadge = item.querySelector('.pro-lock-badge');
+            if (oldBadge) oldBadge.remove();
+
+            if (!isPro && proFeatures.includes(nav)) {
+                const badge = document.createElement('span');
+                badge.className = 'pro-lock-badge';
+                badge.innerHTML = '<i class="fas fa-crown"></i> PRO';
+                badge.style.cssText = `
+                    margin-left: auto;
+                    font-size: 0.6rem;
+                    font-weight: 900;
+                    background: linear-gradient(135deg, #f59e0b, #d97706);
+                    color: white;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    letter-spacing: 0.5px;
+                `;
+                item.appendChild(badge);
+            }
+        });
+
         // Afficher le bouton de déconnexion
         const sidebarFooter = document.querySelector('.sidebar-footer');
         if (sidebarFooter) {
