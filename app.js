@@ -349,7 +349,7 @@ const App = {
         const tier = Storage.getTier();
         if (tier === 'expert') return false;
 
-        const expertFeatures = ['expert_coaching', 'expert_directory'];
+        const expertFeatures = ['expert_coaching'];
         return expertFeatures.includes(feature);
     },
 
