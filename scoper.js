@@ -8,7 +8,7 @@ const Scoper = {
     },
 
     render() {
-        const container = document.getElementById('scoper-page');
+        const container = document.getElementById('scoper-content');
         if (!container) return;
 
         // VERROUILLAGE FREEMIUM STRICT
