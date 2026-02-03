@@ -1,0 +1,19 @@
+/* FIX CRITIQUE : Deblocage des boutons sous la banniere */
+#freemium-banner {
+    pointer-events: none !important;
+    background: linear-gradient(to top, #000 20%, transparent 100%) !important;
+    height: auto !important;
+    padding-top: 4rem !important;
+}
+
+#freemium-banner button,
+#freemium-banner a {
+    pointer-events: auto !important;
+}
+
+/* Ajustement Z-Index scoper */
+.calculator-actions {
+    position: relative;
+    z-index: 50;
+    /* Au-dessus de la banniere par defaut si elle est mal calibree */
+}
