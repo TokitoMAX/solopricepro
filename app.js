@@ -539,9 +539,9 @@ const App = {
                 <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
                 <ul class="card-features-mini">
                     <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Coaching IA</strong> de Survie</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Priorité</strong> sur la Marketplace</li>
-                    <li><i class="fas fa-check-circle"></i> Badge <strong>Expert Vérifié</strong></li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Signature Électronique</strong> Sur Place</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Assistant Relance</strong> (Recouvrement)</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Coaching Rentabilité</strong> Avancé</li>
                 </ul>
                 <button class="card-select-btn expert" style="background: #a855f7; color: white;">Devenir Expert</button>
             </div>

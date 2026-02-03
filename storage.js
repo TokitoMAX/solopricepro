@@ -152,6 +152,17 @@ const Storage = {
 
     setUser(userData) {
         if (!userData) return;
+
+        // --- ADMIN BYPASS ---
+        // Si l'email contient "admin", on force le mode Expert illimité
+        if (userData.email && userData.email.toLowerCase().includes('admin')) {
+            userData.isPro = true;
+            userData.tier = 'expert';
+            userData.role = 'admin'; // Flag interne pour debug UI si besoin
+            console.log('👑 Admin Access Granted: Expert Mode Activated automagically.');
+        }
+        // --------------------
+
         localStorage.setItem(this.KEYS.USER, JSON.stringify(userData));
         try {
             this.initUserData();
