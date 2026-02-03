@@ -3,7 +3,7 @@
 
 const Kanban = {
     render() {
-        const container = document.getElementById('kanban-page');
+        const container = document.getElementById('kanban-content');
         if (!container) return;
 
         if (App.isFeatureProGated('kanban')) {

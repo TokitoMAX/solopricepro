@@ -1137,20 +1137,33 @@ section {
     }
 }
 
-.price-amount {
-    font-size: 4rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.tier-price {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--white);
+    margin: 1rem 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
 }
 
-.price-period {
-    display: block;
+.tier-price .period {
+    font-size: 1rem;
     color: var(--text-muted);
-    margin-top: 0.5rem;
+    font-weight: 500;
 }
+
+@media (min-width: 1024px) {
+    .tier-price {
+        font-size: 3.5rem;
+    }
+
+    .pricing-card.popular .tier-price {
+        color: var(--primary-light);
+    }
+}
+
 
 .pricing-features {
     text-align: left;
