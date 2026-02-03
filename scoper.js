@@ -240,8 +240,11 @@ const Scoper = {
     },
 
     calculate() {
-        const tjm = parseFloat(document.getElementById('scoper-tjm')?.value) || 400;
-        const buffer = parseFloat(document.getElementById('scoper-buffer')?.value) || 20;
+        const tjmEl = document.getElementById('scoper-tjm');
+        const bufferEl = document.getElementById('scoper-buffer');
+
+        const tjm = tjmEl ? parseFloat(tjmEl.value) : (this.getTJM() || 400);
+        const buffer = bufferEl ? parseFloat(bufferEl.value) : 20;
 
         let totalHoursInternal = 0;
         let totalCalculatedHT = 0;
@@ -326,8 +329,11 @@ const Scoper = {
             return;
         }
 
-        const tjm = parseFloat(document.getElementById('scoper-tjm')?.value) || 400;
-        const buffer = parseFloat(document.getElementById('scoper-buffer')?.value) || 20;
+        const tjmEl = document.getElementById('scoper-tjm');
+        const bufferEl = document.getElementById('scoper-buffer');
+
+        const tjm = tjmEl ? parseFloat(tjmEl.value) : (this.getTJM() || 400);
+        const buffer = bufferEl ? parseFloat(bufferEl.value) : 20;
 
         const quoteItems = [];
 
