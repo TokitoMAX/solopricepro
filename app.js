@@ -394,6 +394,12 @@ const App = {
                 </div>
             `;
         }
+
+        // Afficher le bouton de déconnexion
+        const sidebarFooter = document.querySelector('.sidebar-footer');
+        if (sidebarFooter) {
+            sidebarFooter.style.display = 'block';
+        }
     },
 
     // Affichage du badge PRO (legacy, used in other places maybe)
