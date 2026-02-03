@@ -6,18 +6,24 @@ const App = {
 
     // Initialisation de l'application
     init() {
-        this.setupNavigation();
-        this.migrateData();
-        this.setupMobileOverlay();
-        this.checkFreemiumLimits();
-        this.renderProBadge();
-        this.renderUserInfo();
-        if (window.Network) Network.init();
-        this.handlePaymentReturn();
-        this.handleUrlHash(); // Gestion du retour Reset Password
-
-        // Masquer le loader une fois l'initialisation terminée
-        this.hideLoader();
+        try {
+            console.log('🚀 QuickPrice Pro Initializing...');
+            this.setupNavigation();
+            this.migrateData();
+            this.setupMobileOverlay();
+            this.checkFreemiumLimits();
+            this.renderProBadge();
+            this.renderUserInfo();
+            if (window.Network) Network.init();
+            this.handlePaymentReturn();
+            this.handleUrlHash();
+        } catch (e) {
+            console.error('❌ Critical Init Error:', e);
+            // On peut afficher une notification d'erreur à l'utilisateur si besoin
+        } finally {
+            // Masquer le loader une fois l'initialisation terminée (ou échouée)
+            this.hideLoader();
+        }
 
         // Router / Landing Logic
         const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
