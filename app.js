@@ -557,28 +557,27 @@ const App = {
 
     processCheckout(tier, method = 'card') {
         if (method === 'card') {
-            App.showNotification('Création de la session sécurisée Stripe...', 'info');
-            fetch('/api/payments/create-checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    planId: tier,
-                    userId: Storage.getUser()?.id,
-                    userEmail: Storage.getUser()?.email
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.url) {
-                        window.location.href = data.url;
-                    } else {
-                        throw new Error('Erreur lors de la création de la session de paiement.');
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    App.showNotification(err.message, 'error');
-                });
+            const user = Storage.getUser();
+            if (!user || !user.id) {
+                App.showNotification('Veuillez vous connecter pour continuer.', 'error');
+                return;
+            }
+
+            // Liens de paiement Stripe fournis par l'utilisateur
+            const stripeLinks = {
+                pro: "https://buy.stripe.com/5kQ4gybhHcb29usaYt7Re01",
+                expert: "https://buy.stripe.com/bJe6oG85v6QIfSQ3w17Re02"
+            };
+
+            const link = stripeLinks[tier];
+            if (link) {
+                App.showNotification('Redirection vers Stripe sécurisé...', 'info');
+                // On passe l'userId via client_reference_id pour que le webhook puisse activer le compte
+                const finalUrl = `${link}?client_reference_id=${user.id}${user.email ? `&prefilled_email=${encodeURIComponent(user.email)}` : ''}`;
+                window.location.href = finalUrl;
+            } else {
+                App.showNotification('Configuration du plan invalide.', 'error');
+            }
         }
     },
 
