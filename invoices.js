@@ -539,9 +539,28 @@ const Invoices = {
 
     copyToClipboard() {
         const body = document.getElementById('relance-body');
-        body.select();
-        document.execCommand('copy'); // Legacy but works widely
-        App.showNotification('Texte copié !', 'success');
+        const textToCopy = body.value;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                App.showNotification('Texte copié !', 'success');
+            }).catch(err => {
+                console.error('Clipboard API fail:', err);
+                this.fallbackCopyText(body);
+            });
+        } else {
+            this.fallbackCopyText(body);
+        }
+    },
+
+    fallbackCopyText(element) {
+        element.select();
+        try {
+            document.execCommand('copy');
+            App.showNotification('Texte copié !', 'success');
+        } catch (err) {
+            App.showNotification('Impossible de copier automatiquement.', 'error');
+        }
     },
 
     sendRelanceEmail(email) {
