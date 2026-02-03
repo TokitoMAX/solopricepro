@@ -90,7 +90,7 @@ const Scoper = {
                     </div>
 
                     <div class="calculator-actions" style="margin-top: 2rem;">
-                        <button class="button-primary full-width" onclick="Scoper.createQuote()" id="btn-create-quote" style="padding: 1rem; font-size: 1rem;">
+                        <button class="button-primary full-width" id="btn-create-quote" style="padding: 1rem; font-size: 1rem;">
                             Générer le Devis Officiel
                         </button>
                     </div>
@@ -105,6 +105,16 @@ const Scoper = {
         }
 
         this.calculate();
+
+        // Attach event listener explicitly to avoid inline onclick issues
+        const createBtn = document.getElementById('btn-create-quote');
+        if (createBtn) {
+            createBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Create Quote Clicked');
+                this.createQuote();
+            });
+        }
     },
 
     getTJM() {
@@ -323,45 +333,67 @@ const Scoper = {
     },
 
     createQuote() {
-        const limits = App.checkFreemiumLimits();
-        if (!limits.canAddQuote) {
-            App.showUpgradeModal('quotes');
-            return;
-        }
-
-        const tjmEl = document.getElementById('scoper-tjm');
-        const bufferEl = document.getElementById('scoper-buffer');
-
-        const tjm = tjmEl ? parseFloat(tjmEl.value) : (this.getTJM() || 400);
-        const buffer = bufferEl ? parseFloat(bufferEl.value) : 20;
-
-        const quoteItems = [];
-
-        this.tasks.forEach(task => {
-            if (!task.name) return;
-
-            const hours = task.max * (1 + buffer / 100);
-            const calculatedPrice = (hours / 7) * tjm;
-            const finalPrice = task.manualPrice !== null ? task.manualPrice : calculatedPrice;
-
-            let description = task.name;
-            if (!this.settings.hideHours) {
-                description += ` (Est. ${Math.ceil(hours)}h)`;
+        console.log('Starting createQuote...');
+        try {
+            const limits = App.checkFreemiumLimits();
+            if (!limits.canAddQuote) {
+                console.log('Limit reached');
+                App.showUpgradeModal('quotes');
+                return;
             }
 
-            quoteItems.push({
-                description: description,
-                quantity: 1,
-                unitPrice: finalPrice
+            const tjmEl = document.getElementById('scoper-tjm');
+            const bufferEl = document.getElementById('scoper-buffer');
+
+            // Fallbacks robustes
+            const tjm = tjmEl ? (parseFloat(tjmEl.value) || 400) : (this.getTJM() || 400);
+            const buffer = bufferEl ? (parseFloat(bufferEl.value) || 20) : 20;
+
+            console.log('Params:', { tjm, buffer });
+
+            const quoteItems = [];
+
+            this.tasks.forEach(task => {
+                if (!task.name) return;
+
+                const hours = task.max * (1 + buffer / 100);
+                const calculatedPrice = (hours / 7) * tjm;
+                const finalPrice = task.manualPrice !== null ? task.manualPrice : calculatedPrice;
+
+                let description = task.name;
+                if (!this.settings.hideHours) {
+                    description += ` (Est. ${Math.ceil(hours)}h)`;
+                }
+
+                quoteItems.push({
+                    description: description,
+                    quantity: 1,
+                    unitPrice: finalPrice
+                });
             });
-        });
 
-        if (quoteItems.length > 0) {
-            Storage.set('sp_draft_quote_items', quoteItems);
-            App.navigateTo('quotes');
-            if (typeof Quotes !== 'undefined') {
-                Quotes.showAddForm();
+            if (quoteItems.length > 0) {
+                console.log('Items generated, saving to storage...', quoteItems);
+                Storage.set('sp_draft_quote_items', quoteItems);
+
+                console.log('Navigating to quotes...');
+                App.navigateTo('quotes');
+
+                setTimeout(() => {
+                    if (typeof Quotes !== 'undefined') {
+                        console.log('Opening Add Form...');
+                        Quotes.showAddForm();
+                    } else {
+                        console.error('Quotes module undefined');
+                        App.showNotification('Erreur: Module Devis non chargé', 'error');
+                    }
+                }, 100);
+            } else {
+                App.showNotification('Aucune tâche à deviser', 'warning');
             }
+        } catch (error) {
+            console.error('CRITICAL ERROR in createQuote:', error);
+            alert('Erreur critique lors de la génération : ' + error.message);
         }
     },
 
