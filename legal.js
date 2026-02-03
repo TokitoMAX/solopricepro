@@ -176,7 +176,7 @@ Cordialement,\`,
                     </div>
 
                     <div class="doc-meta" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                         <span style="color: #10b981;">●</span> Mis à jour : ${doc.lastUpdated || 'Récemment'}
+                         <span style="color: #10b981;">●</span> Mis à jour : ${doc.lastUpdated || 'Janvier 2026'}
                     </div>
 
                     <button class="button-secondary small" style="width: 100%; margin-top: auto;" 

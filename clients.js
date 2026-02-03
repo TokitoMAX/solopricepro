@@ -94,7 +94,7 @@ const Clients = {
         }
 
         this.editingId = null;
-        const container = document.getElementById('clients-form-container');
+        const container = document.getElementById('client-form-container');
 
         container.innerHTML = `
             <div class="form-card">
