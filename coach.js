@@ -46,32 +46,42 @@ const Coach = {
             });
         }
 
-        // 3. Analyse du Salaire Réel (La vérité crue)
-        const stats = Storage.getStats();
-        const currentNet = stats.monthlyRevenue - (stats.monthlyRevenue * (TaxEngine.getSocialRate() / 100)) - expenses.reduce((sum, e) => sum + e.amount, 0);
-        const gap = targetMonthlyNet - currentNet;
+        // 3. Analyse du Salaire Réel (La vérité crue) - RÉSERVÉ EXPERT
+        if (App.isFeatureExpertGated('expert_coaching')) {
+            truths.push({
+                type: 'info',
+                title: '💎 Analyse Avancée Verrouillée',
+                message: `Le calcul prédictif de votre salaire net réel et l'analyse de risque sont réservés aux membres EXPERT.`,
+                action: 'Débloquer le Pack Expert',
+                nav: 'settings' // Redirige vers l'upgrade
+            });
+        } else {
+            const stats = Storage.getStats();
+            const currentNet = stats.monthlyRevenue - (stats.monthlyRevenue * (TaxEngine.getSocialRate() / 100)) - expenses.reduce((sum, e) => sum + e.amount, 0);
+            const gap = targetMonthlyNet - currentNet;
 
-        if (gap > 0) {
-            const pipelineValue = quotes.filter(q => q.status === 'sent' || q.status === 'accepted').reduce((sum, q) => sum + q.total, 0);
-            const probaPipe = pipelineValue * 0.5; // On estime 50% de closing
+            if (gap > 0) {
+                const pipelineValue = quotes.filter(q => q.status === 'sent' || q.status === 'accepted').reduce((sum, q) => sum + q.total, 0);
+                const probaPipe = pipelineValue * 0.5; // On estime 50% de closing
 
-            if (currentNet + probaPipe < targetMonthlyNet) {
+                if (currentNet + probaPipe < targetMonthlyNet) {
+                    truths.push({
+                        type: 'warning',
+                        title: '📉 Risque de Salaire',
+                        message: `À ce rythme, vous allez manquer votre objectif net de **${App.formatCurrency(gap)}**. Votre pipeline actuel ne suffit pas à couvrir l'écart.`,
+                        action: 'Calculer un nouveau projet',
+                        nav: 'scoper'
+                    });
+                }
+            } else if (stats.monthlyRevenue > 0) {
                 truths.push({
-                    type: 'warning',
-                    title: '📉 Risque de Salaire',
-                    message: `À ce rythme, vous allez manquer votre objectif net de **${App.formatCurrency(gap)}**. Votre pipeline actuel ne suffit pas à couvrir l'écart.`,
-                    action: 'Calculer un nouveau projet',
-                    nav: 'scoper'
+                    type: 'success',
+                    title: '🚀 Objectif Atteint',
+                    message: `Félicitations. Votre salaire net cible est sécurisé. C'est le moment idéal pour investir dans vos outils ou prendre du repos.`,
+                    action: 'Voir les réglages',
+                    nav: 'settings'
                 });
             }
-        } else if (stats.monthlyRevenue > 0) {
-            truths.push({
-                type: 'success',
-                title: '🚀 Objectif Atteint',
-                message: `Félicitations. Votre salaire net cible est sécurisé. C'est le moment idéal pour investir dans vos outils ou prendre du repos.`,
-                action: 'Voir les réglages',
-                nav: 'settings'
-            });
         }
 
         // 4. Mission d'impact (Si rien d'autre)

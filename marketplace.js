@@ -301,6 +301,20 @@ const Marketplace = {
 
     // ===== EXPERTS =====
     renderExperts(container) {
+        // VERROUILLAGE EXPERT
+        if (App.isFeatureExpertGated('expert_directory')) {
+            container.innerHTML = `
+                <div class="experts-header" style="text-align: center; padding: 4rem 2rem;">
+                    <h2 class="section-title-small" style="font-size: 2rem; margin-bottom: 1rem;">Annuaire des Experts Vérifiés</h2>
+                    <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem auto;">
+                        Accédez à notre réseau exclusif de professionnels certifiés pour sous-traiter vos missions ou trouver des partenaires de confiance.
+                    </p>
+                    ${PremiumWall.renderTeaser('Accès Réseau Expert', 'Débloquez l\'annuaire complet et postulez pour devenir Expert Vérifié avec le Pack Expert.', '🤝')}
+                </div>
+            `;
+            return;
+        }
+
         // Liste des experts (dynamique dans le futur)
         const experts = []; // Initialement vide pour éviter le "fake" content
 
