@@ -317,9 +317,14 @@ const PDFGenerator = {
                         <p>Ce devis est valable pour une durée de ${validityDays} jours à compter de sa date d'émission. Le début des travaux est conditionné par le retour de ce devis signé accompagné du versement de l'acompte convenu.</p>
                         ${user.company.footer_mentions ? `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
                     </div>
-                    <div class="signature-box">
+                    <div class="signature-box" style="position: relative;">
                         <span class="signature-label">Bon pour accord</span>
-                        <div class="signature-mention">Date, signature et cachet</div>
+                        ${quote.signature ? `
+                            <img src="${quote.signature.image}" style="max-width: 150px; position: absolute; top: 20px; left: 10px; mix-blend-mode: multiply;" />
+                            <div class="signature-mention" style="margin-top: 60px;">Signé le ${new Date(quote.signature.date).toLocaleDateString()}</div>
+                        ` : `
+                            <div class="signature-mention">Date, signature et cachet</div>
+                        `}
                     </div>
                 </div>
 

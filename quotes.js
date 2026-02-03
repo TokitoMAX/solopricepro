@@ -118,6 +118,9 @@ const Quotes = {
                                                 <button class="btn-icon btn-danger" onclick="Quotes.delete('${quote.id}')" title="Supprimer">
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                                 </button>
+                                                <button class="btn-icon" onclick="Quotes.openSignatureModal('${quote.id}')" title="Faire Signer (Expert)" style="color: #a855f7;">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M18 11l2 2 4-4"></path></svg>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -647,6 +650,130 @@ const Quotes = {
             window.location.href = mailtoUrl;
         }, 800);
     },
+
+    // --- Signature Module (Expert Feature) ---
+
+    openSignatureModal(id) {
+        if (Storage.getTier() !== 'expert') {
+            App.showUpgradeModal('feature');
+            return;
+        }
+
+        const quote = Storage.getQuote(id);
+        if (!quote) return;
+
+        // Création dynamique de la modale
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay active';
+        modal.id = 'signature-modal';
+        modal.innerHTML = `
+            <div class="modal-content glass" style="max-width: 500px; text-align: center;">
+                <div class="modal-header">
+                    <h3>Signature Client</h3>
+                    <button class="modal-close" onclick="Quotes.closeSignatureModal()">✕</button>
+                </div>
+                <div class="modal-body" style="padding: 1rem 0;">
+                    <p style="margin-bottom: 1rem;">Faites signer le client ci-dessous :</p>
+                    <div style="border: 2px dashed var(--primary); background: #fff; border-radius: 8px; cursor: crosshair;">
+                        <canvas id="signature-pad" width="400" height="200" style="width: 100%; touch-action: none;"></canvas>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+                        <button class="button-outline small" onclick="Quotes.clearSignature()">Effacer</button>
+                    </div>
+                </div>
+                <div class="modal-footer" style="justify-content: center;">
+                    <button class="button-primary full-width" onclick="Quotes.saveSignature('${id}')">Valider et Signer</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        this.initCanvas();
+    },
+
+    closeSignatureModal() {
+        const modal = document.getElementById('signature-modal');
+        if (modal) modal.remove();
+    },
+
+    initCanvas() {
+        const canvas = document.getElementById('signature-pad');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // Mouse Events
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseout', () => isDrawing = false);
+
+        // Touch Events
+        canvas.addEventListener('touchstart', (e) => {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            lastX = e.touches[0].clientX - rect.left;
+            lastY = e.touches[0].clientY - rect.top;
+            e.preventDefault();
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.touches[0].clientX - rect.left;
+            const y = e.touches[0].clientY - rect.top;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            [lastX, lastY] = [x, y];
+            e.preventDefault();
+        });
+        canvas.addEventListener('touchend', () => isDrawing = false);
+    },
+
+    clearSignature() {
+        const canvas = document.getElementById('signature-pad');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    },
+
+    saveSignature(id) {
+        const canvas = document.getElementById('signature-pad');
+        // Check if empty (simple check: getting dataURL and comparing length of empty canvas is tricky across browsers, 
+        // so we trust the user for now or could implement isCanvasBlank)
+
+        const dataUrl = canvas.toDataURL('image/png');
+
+        const quote = Storage.getQuote(id);
+        if (quote) {
+            quote.signature = {
+                image: dataUrl,
+                date: new Date().toISOString()
+            };
+            Storage.updateQuote(id, quote);
+            App.showNotification('Devis signé avec succès !', 'success');
+            this.closeSignatureModal();
+            this.render();
+            // Optionnel : Générer directement le PDF signé
+            // this.downloadPDF(id); 
+        }
+    }
 
     edit(id) {
         const quote = Storage.getQuote(id);

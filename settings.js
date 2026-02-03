@@ -17,7 +17,6 @@ const Settings = {
             <div class="settings-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <button class="settings-tab ${activeTabId === 'billing' ? 'active' : ''}" onclick="Settings.switchTab('billing')">Paramètres Devis</button>
                 <button class="settings-tab ${activeTabId === 'subscription' ? 'active' : ''}" onclick="Settings.switchTab('subscription')">Abonnement</button>
-                <button class="settings-tab ${activeTabId === 'legal' ? 'active' : ''}" onclick="Settings.switchTab('legal')">Ressources Juridiques</button>
                 <button class="settings-tab ${activeTabId === 'data' ? 'active' : ''}" onclick="Settings.switchTab('data')">Données & Backup</button>
             </div>
  
@@ -80,17 +79,25 @@ const Settings = {
                     </div>
                 </div>
 
-                <!-- Tab: Legal Resources -->
-                <div id="settings-tab-legal" class="settings-tab-content ${activeTabId === 'legal' ? 'active' : ''}">
-                    <div id="legal-content">
-                        <!-- Rempli par Legal.render() -->
-                    </div>
-                </div>
-
-                <!-- Tab: Data -->
+                <!-- Data Tab -->
                 <div id="settings-tab-data" class="settings-tab-content ${activeTabId === 'data' ? 'active' : ''}">
                     <div class="settings-section">
-                        <h2 class="section-title-small">Sauvegarde & Sécurité</h2>
+                        <h2 class="section-title-small">Export Comptable (Expert)</h2>
+                        <p class="section-subtitle">Générez un fichier CSV compatible avec tous les logiciels comptables (Sage, Ciel, Excel).</p>
+                        
+                        <div class="glass" style="margin-top: 1rem; padding: 1.5rem; border: 1px solid var(--border); border-radius: 8px;">
+                            <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                                <div>
+                                    <h3 style="font-size: 1rem; margin: 0 0 0.5rem 0; color: var(--white);">Journal des Ventes (CSV)</h3>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Toutes vos factures et avoirs de l'année en cours.</p>
+                                </div>
+                                <button class="button-primary" onclick="Settings.exportAccounting()" ${Storage.getTier() === 'expert' ? '' : 'disabled style="opacity:0.6; cursor:not-allowed;"'}>
+                                    ${Storage.getTier() === 'expert' ? '📥 Télécharger l\'export' : '🔒 Réservé Expert'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <h2 class="section-title-small" style="margin-top: 2.5rem;">Sauvegarde & Sécurité</h2>
                         <p class="section-subtitle">Vos données sont stockées localement. Exportez-les régulièrement pour ne pas les perdre.</p>
                         <div class="data-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
                             <button class="button-secondary" onclick="Settings.exportData()">Exporter un Backup (.json)</button>
@@ -268,6 +275,44 @@ const Settings = {
                 this.updateSubscriptionUI();
             }
         }
+    },
+
+    exportAccounting() {
+        if (Storage.getTier() !== 'expert') {
+            App.showUpgradeModal('feature');
+            return;
+        }
+
+        const invoices = Storage.getInvoices().filter(i => i.status !== 'draft');
+        if (invoices.length === 0) {
+            App.showNotification('Aucune facture validée à exporter.', 'info');
+            return;
+        }
+
+        let csvContent = "Date Facture;Numéro;Client;Montant HT;TVA;Montant TTC;Statut\n";
+
+        invoices.forEach(inv => {
+            const date = new Date(inv.date).toLocaleDateString('fr-FR');
+            const clientName = inv.clientName || 'Client Inconnu';
+            const ht = inv.totalHT.toFixed(2).replace('.', ',');
+            const tva = (inv.totalTTC - inv.totalHT).toFixed(2).replace('.', ',');
+            const ttc = inv.totalTTC.toFixed(2).replace('.', ',');
+            const status = inv.status.toUpperCase();
+            const cleanClient = clientName.replace(/;/g, ',');
+
+            csvContent += `${date};${inv.number};${cleanClient};${ht};${tva};${ttc};${status}\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `SoloPrice_Export_Comptable_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        App.showNotification('Export comptable (CSV) téléchargé !', 'success');
     }
 };
 

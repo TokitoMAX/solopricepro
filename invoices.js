@@ -74,6 +74,9 @@ const Invoices = {
                                                 <button class="btn-icon btn-danger" onclick="Invoices.delete('${invoice.id}')" title="Supprimer">
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                                 </button>
+                                                <button class="btn-icon" onclick="Invoices.openRelanceModal('${invoice.id}')" title="Assistant Relance (Expert)" style="color: #f59e0b;">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -447,6 +450,105 @@ const Invoices = {
         setTimeout(() => {
             window.location.href = mailtoUrl;
         }, 800);
+    },
+
+    // --- Assistant Relances (Expert Feature) ---
+
+    openRelanceModal(id) {
+        if (Storage.getTier() !== 'expert') {
+            App.showUpgradeModal('feature');
+            return;
+        }
+
+        const invoice = Storage.getInvoice(id);
+        const client = Storage.getClient(invoice?.clientId);
+        const user = Storage.getUser(); // Safe access
+        if (!invoice || !client) return;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay active';
+        modal.id = 'relance-modal';
+
+        // Templates de relance
+        const templates = {
+            soft: {
+                label: '1. Rappel Amiable',
+                subject: `Rappel : Facture ${invoice.number} en attente - ${user.company?.name || ''}`,
+                body: `Bonjour ${client.name},\n\nSauf erreur de notre part, la facture ${invoice.number} du ${new Date(invoice.createdAt).toLocaleDateString()} d'un montant de ${App.formatCurrency(invoice.total)} reste impayée à ce jour.\n\nPouvez-vous me confirmer son statut ?\n\nBien cordialement,\n${user.company?.name || ''}`
+            },
+            firm: {
+                label: '2. Retard Confirmé',
+                subject: `Urgent : Retard de paiement Facture ${invoice.number}`,
+                body: `Bonjour ${client.name},\n\nLa facture ${invoice.number} (Échéance : ${invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'Passée'}) est toujours en attente de règlement malgré notre précédente relance.\n\nJe vous remercie de procéder au virement des ${App.formatCurrency(invoice.total)} sans délai.\n\nCordialement,\n${user.company?.name || ''}`
+            },
+            hard: {
+                label: '3. Mise en Demeure',
+                subject: `Mise en demeure : Facture ${invoice.number}`,
+                body: `Madame, Monsieur,\n\nMalgré mes relances, la facture ${invoice.number} reste impayée.\nJe vous mets par la présente en demeure de régler la somme de ${App.formatCurrency(invoice.total)} sous 48h, faute de quoi je transmettrai le dossier au service recouvrement.\n\nDans l'attente de votre virement immédiat.\n\n${user.company?.name || ''}`
+            }
+        };
+
+        modal.innerHTML = `
+            <div class="modal-content glass" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3>Assistant Relance Recouvrement</h3>
+                    <button class="modal-close" onclick="Invoices.closeRelanceModal()">✕</button>
+                </div>
+                <div class="modal-body" style="padding: 1rem;">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <button class="button-outline small active" id="btn-soft" onclick="Invoices.switchRelanceTemplate('${id}', 'soft')">Amiable</button>
+                        <button class="button-outline small" id="btn-firm" onclick="Invoices.switchRelanceTemplate('${id}', 'firm')">Ferme</button>
+                        <button class="button-outline small" id="btn-hard" onclick="Invoices.switchRelanceTemplate('${id}', 'hard')">Dernier Avis</button>
+                    </div>
+
+                    <label class="form-label">Objet</label>
+                    <input type="text" id="relance-subject" class="form-input" value="${templates.soft.subject}" readonly style="margin-bottom: 1rem;">
+                    
+                    <label class="form-label">Message</label>
+                    <textarea id="relance-body" class="form-input" rows="8" style="resize: vertical;">${templates.soft.body}</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="button-secondary" onclick="Invoices.copyToClipboard()">Copier le Texte</button>
+                    <button class="button-primary" onclick="Invoices.sendRelanceEmail('${client.email}')">Ouvrir Email</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        // Store current templates in DOM for switcher
+        modal.dataset.templates = JSON.stringify(templates);
+    },
+
+    closeRelanceModal() {
+        const modal = document.getElementById('relance-modal');
+        if (modal) modal.remove();
+    },
+
+    switchRelanceTemplate(id, type) {
+        const modal = document.getElementById('relance-modal');
+        const templates = JSON.parse(modal.dataset.templates);
+        const t = templates[type];
+
+        document.getElementById('relance-subject').value = t.subject;
+        document.getElementById('relance-body').value = t.body;
+
+        // Toggle active buttons
+        modal.querySelectorAll('.button-outline').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById(`btn-${type}`);
+        if (btn) btn.classList.add('active');
+    },
+
+    copyToClipboard() {
+        const body = document.getElementById('relance-body');
+        body.select();
+        document.execCommand('copy'); // Legacy but works widely
+        App.showNotification('Texte copié !', 'success');
+    },
+
+    sendRelanceEmail(email) {
+        const subject = encodeURIComponent(document.getElementById('relance-subject').value);
+        const body = encodeURIComponent(document.getElementById('relance-body').value);
+        const url = `mailto:${email}?subject=${subject}&body=${body}`;
+        window.location.href = url;
     },
 
     downloadPDF(id) {
