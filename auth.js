@@ -30,9 +30,31 @@ const Auth = {
     },
 
     openResetModal() {
+        // Hide any Supabase-injected forms
+        this.hideSupabaseForms();
+
         if (typeof showAuthModal === 'function') {
             showAuthModal('reset'); // Match the form ID 'auth-form-reset'
         }
+    },
+
+    hideSupabaseForms() {
+        // Supabase sometimes injects its own password reset forms
+        // We need to hide them and only show our custom form
+        setTimeout(() => {
+            // Hide any forms that are NOT our custom auth modal
+            const authModal = document.getElementById('auth-modal');
+            if (authModal) {
+                // Find all forms on the page
+                document.querySelectorAll('form').forEach(form => {
+                    // If the form is NOT inside our auth modal, hide it
+                    if (!authModal.contains(form)) {
+                        form.style.display = 'none';
+                        console.log('🚫 Hidden Supabase form:', form);
+                    }
+                });
+            }
+        }, 100);
     },
 
     async forgotPassword(email) {
