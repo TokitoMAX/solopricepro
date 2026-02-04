@@ -961,7 +961,10 @@ const App = {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!response.ok) throw new Error('Erreur API Admin');
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || `Erreur API (${response.status})`);
+            }
 
             const users = await response.json();
             this.adminUsersCache = users; // Cache for search
@@ -980,7 +983,14 @@ const App = {
 
         } catch (e) {
             console.error('Admin Data Error:', e);
-            if (listBody) listBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red; padding: 2rem;">Erreur: ${e.message}</td></tr>`;
+            if (listBody) listBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align:center; color:#ef4444; padding: 2rem;">
+                        <div style="font-weight:bold; margin-bottom:0.5rem;">❌ Erreur de connexion au serveur</div>
+                        <div style="font-size:0.9rem;">${e.message}</div>
+                        <div style="font-size:0.8rem; margin-top:1rem; color:#888;">Le backend doit avoir la SUPABASE_SERVICE_ROLE_KEY</div>
+                    </td>
+                </tr>`;
         }
     },
 
