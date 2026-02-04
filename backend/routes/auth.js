@@ -276,13 +276,29 @@ router.post('/update-password', async (req, res) => {
             if (updateError) throw updateError;
             console.log('✨ Mot de passe mis à jour avec succès (Admin)');
         } else {
-            console.log('⚠️ Service Role Key manquant, tentative via client utilisateur...');
-            // Fallback si pas de service key (moins fiable)
-            const userSupabase = createClient(supabaseUrl, anonKey, {
-                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            console.log('⚠️ Service Role Key manquant. Utilisation de l\'API REST directe (Bypass Library Check)...');
+
+            // On utilise fetch direct pour contourner le check de session de la librairie supabase-js
+            const updateUserUrl = `${supabaseUrl}/auth/v1/user`;
+
+            const response = await fetch(updateUserUrl, {
+                method: 'PUT', // L'API GoTrue utilise PUT pour update user
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                    'apikey': anonKey
+                },
+                body: JSON.stringify({ password: password })
             });
-            const { error: updateError } = await userSupabase.auth.updateUser({ password });
-            if (updateError) throw updateError;
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('❌ Direct API Error:', data);
+                throw new Error(data.msg || data.message || 'Erreur lors de la mise à jour directe');
+            }
+
+            console.log('✨ Mot de passe mis à jour via API directe !');
         }
 
         res.json({ message: 'Mot de passe mis à jour avec succès ! Vous pouvez maintenant vous connecter.' });
