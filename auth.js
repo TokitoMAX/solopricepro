@@ -31,7 +31,7 @@ const Auth = {
 
     openResetModal() {
         if (typeof showAuthModal === 'function') {
-            showAuthModal('reset-password'); // Will activate the form even if no tab matches
+            showAuthModal('reset'); // Match the form ID 'auth-form-reset'
         }
     },
 

@@ -461,7 +461,7 @@
             if (m) { m.style.display = 'flex'; m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); }
             var tabs = m ? m.querySelector('.auth-modal-tabs') : null;
             if (tabs) {
-                if (tab === 'reset-password' || tab === 'forgot-password') {
+                if (tab === 'reset' || tab === 'forgot') {
                     tabs.style.display = 'none';
                 } else {
                     tabs.style.display = 'flex';
