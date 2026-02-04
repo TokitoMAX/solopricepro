@@ -857,14 +857,29 @@ const App = {
             modal.className = 'modal-overlay';
             modal.innerHTML = `
                 <div class="modal-content floating-card">
-                    <h3 class="gradient-text">Nouveau mot de passe</h3>
-                    <p class="text-muted">Définissez votre nouveau mot de passe sécurisé.</p>
+                    <h3 class="auth-form-title gradient-text">Nouveau mot de passe</h3>
+                    <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">
+                        Définissez votre nouveau mot de passe sécurisé.
+                    </p>
+                    
                     <div class="form-group">
-                        <input type="password" id="new-password-input" placeholder="Min. 6 caractères" class="modern-input">
+                        <label class="form-label" for="new-password-input">Nouveau mot de passe</label>
+                        <input type="password" id="new-password-input" 
+                               placeholder="Min. 6 caractères" 
+                               class="modern-input"
+                               required minlength="6">
                     </div>
-                    <div id="reset-modal-error" class="auth-error" style="margin-bottom: 15px;"></div>
-                    <button id="btn-submit-reset" class="button-primary full-width">Mettre à jour</button>
-                    <button onclick="App.closeModal('reset-password-modal')" class="button-outline full-width" style="margin-top: 10px;">Annuler</button>
+
+                    <div id="reset-modal-error" class="auth-error"></div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+                        <button id="btn-submit-reset" class="button-primary full-width">
+                            Mettre à jour
+                        </button>
+                        <button onclick="App.closeModal('reset-password-modal')" class="button-outline full-width">
+                            Annuler
+                        </button>
+                    </div>
                 </div>
             `;
             document.body.appendChild(modal);
