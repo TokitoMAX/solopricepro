@@ -12,7 +12,7 @@ const Auth = {
     init() {
         // Mode Backend Local - Initialisation standard
         console.log("Auth initialized. API Base:", this.apiBase);
-        this.checkRecoveryMode();
+        // this.checkRecoveryMode(); // Géré par app.js pour une meilleure UI
     },
 
     checkRecoveryMode() {

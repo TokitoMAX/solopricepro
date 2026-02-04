@@ -845,7 +845,11 @@ const App = {
     },
 
     showResetPasswordModal() {
-        // Créer la modale dynamiquement si elle n'existe pas
+        // Nettoyer toute trace de Supabase avant d'afficher la nôtre
+        if (window.Auth && typeof window.Auth.hideSupabaseForms === 'function') {
+            window.Auth.hideSupabaseForms();
+        }
+
         let modal = document.getElementById('reset-password-modal');
         if (!modal) {
             modal = document.createElement('div');
@@ -856,18 +860,62 @@ const App = {
                     <h3 class="gradient-text">Nouveau mot de passe</h3>
                     <p class="text-muted">Définissez votre nouveau mot de passe sécurisé.</p>
                     <div class="form-group">
-                        <input type="password" id="new-password" placeholder="Nouveau mot de passe" class="modern-input">
+                        <input type="password" id="new-password-input" placeholder="Min. 6 caractères" class="modern-input">
                     </div>
-                    <button onclick="Auth.updateUserPassword()" class="button-primary full-width">Valider</button>
-                    <button onclick="App.closeModal()" class="button-outline full-width" style="margin-top: 10px;">Annuler</button>
+                    <div id="reset-modal-error" class="auth-error" style="margin-bottom: 15px;"></div>
+                    <button id="btn-submit-reset" class="button-primary full-width">Mettre à jour</button>
+                    <button onclick="App.closeModal('reset-password-modal')" class="button-outline full-width" style="margin-top: 10px;">Annuler</button>
                 </div>
             `;
             document.body.appendChild(modal);
+
+            // Gestionnaire de clic
+            document.getElementById('btn-submit-reset').addEventListener('click', async () => {
+                const password = document.getElementById('new-password-input').value;
+                const errEl = document.getElementById('reset-modal-error');
+                errEl.textContent = '';
+
+                if (!password || password.length < 6) {
+                    errEl.textContent = 'Le mot de passe doit faire 6 caractères min.';
+                    return;
+                }
+
+                const token = sessionStorage.getItem('sp_recovery_token');
+                if (!token) {
+                    errEl.textContent = 'Session expirée. Recommencez la demande.';
+                    return;
+                }
+
+                try {
+                    const btn = document.getElementById('btn-submit-reset');
+                    btn.disabled = true;
+                    btn.textContent = 'Mise à jour...';
+
+                    await Auth.updatePassword(token, password);
+
+                    App.showNotification('Mot de passe mis à jour !', 'success');
+                    sessionStorage.removeItem('sp_recovery_token');
+                    App.closeModal('reset-password-modal');
+                    if (typeof showAuthModal === 'function') showAuthModal('login');
+                } catch (err) {
+                    errEl.textContent = err.message || 'Erreur lors de la mise à jour.';
+                    const btn = document.getElementById('btn-submit-reset');
+                    btn.disabled = false;
+                    btn.textContent = 'Mettre à jour';
+                }
+            });
         }
 
-        // Afficher
         modal.classList.add('active');
         modal.style.display = 'flex';
+    },
+
+    closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+        }
     }
 };
 
