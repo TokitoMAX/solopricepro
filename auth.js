@@ -39,22 +39,52 @@ const Auth = {
     },
 
     hideSupabaseForms() {
-        // Supabase sometimes injects its own password reset forms
-        // We need to hide them and only show our custom form
-        setTimeout(() => {
-            // Hide any forms that are NOT our custom auth modal
+        console.log('🔍 Attempting to hide Supabase forms...');
+
+        // Function to hide forms
+        const hideForms = () => {
             const authModal = document.getElementById('auth-modal');
-            if (authModal) {
-                // Find all forms on the page
-                document.querySelectorAll('form').forEach(form => {
-                    // If the form is NOT inside our auth modal, hide it
-                    if (!authModal.contains(form)) {
+            let hiddenCount = 0;
+
+            document.querySelectorAll('form').forEach(form => {
+                // If the form is NOT inside our auth modal, hide it
+                if (!authModal || !authModal.contains(form)) {
+                    // Check if it's a Supabase form (has onclick with updateUserPassword)
+                    const buttons = form.querySelectorAll('button[onclick*="updateUserPassword"]');
+                    if (buttons.length > 0 || !authModal || !authModal.contains(form)) {
                         form.style.display = 'none';
+                        form.style.visibility = 'hidden';
+                        form.style.opacity = '0';
+                        form.style.pointerEvents = 'none';
+                        hiddenCount++;
                         console.log('🚫 Hidden Supabase form:', form);
                     }
-                });
-            }
-        }, 100);
+                }
+            });
+
+            console.log(`✅ Hidden ${hiddenCount} Supabase form(s)`);
+        };
+
+        // Try immediately
+        hideForms();
+
+        // Try again after delays (Supabase might inject forms later)
+        setTimeout(hideForms, 100);
+        setTimeout(hideForms, 500);
+        setTimeout(hideForms, 1000);
+
+        // Watch for new forms being added
+        const observer = new MutationObserver(() => {
+            hideForms();
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        // Stop observing after 5 seconds
+        setTimeout(() => observer.disconnect(), 5000);
     },
 
     async forgotPassword(email) {
