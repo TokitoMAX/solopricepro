@@ -856,7 +856,7 @@ const App = {
             modal.id = 'reset-password-modal';
             modal.className = 'modal-overlay';
             modal.innerHTML = `
-                <div class="modal-content floating-card">
+                <div class="modal-content">
                     <h3 class="auth-form-title gradient-text">Nouveau mot de passe</h3>
                     <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">
                         Définissez votre nouveau mot de passe sécurisé.
