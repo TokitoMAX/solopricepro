@@ -39,65 +39,36 @@ const Auth = {
     },
 
     hideSupabaseForms() {
-        console.log('🔍 Attempting to hide Supabase forms...');
+        console.log('🔍 Tentative de nettoyage des formulaires Supabase...');
 
-        // Function to hide forms and intercept events
-        const hideForms = () => {
+        const cleanup = () => {
             const authModal = document.getElementById('auth-modal');
-            let hiddenCount = 0;
+            if (!authModal) return;
 
-            // Strategy 1: Only remove <form> elements that are NOT in our modal
+            // On ne cible que les formulaires qui ne sont PAS dans notre modal
             document.querySelectorAll('form').forEach(form => {
-                if (authModal && authModal.contains(form)) {
-                    // This is OUR form, keep it
-                    console.log('✅ Keeping our form:', form.id);
-                    return;
-                }
-                // Remove forms outside our modal
-                console.log('🚫 Removing external form:', form);
-                form.remove();
-                hiddenCount++;
-            });
-
-            // Strategy 2: Intercept buttons with updateUserPassword onclick
-            document.querySelectorAll('button').forEach(button => {
-                const onclick = button.getAttribute('onclick');
-                if (onclick && onclick.includes('updateUserPassword')) {
-                    console.log('🚫 Found Supabase button, blocking:', button);
-                    button.onclick = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('🚫 Blocked Supabase button click');
-                        return false;
-                    };
-                    button.remove();
-                    hiddenCount++;
+                if (!authModal.contains(form)) {
+                    form.style.display = 'none';
+                    console.log('🚫 Formulaire Supabase masqué');
                 }
             });
 
-            console.log(`✅ Processed ${hiddenCount} Supabase element(s)`);
+            // On cherche aussi les boutons de reset par défaut de Supabase par leur texte ou leur action
+            document.querySelectorAll('button').forEach(btn => {
+                const hasResetText = btn.textContent.toLowerCase().includes('password');
+                const hasResetAction = btn.onclick?.toString().includes('updateUserPassword');
+
+                if ((hasResetText || hasResetAction) && !authModal.contains(btn)) {
+                    btn.style.display = 'none';
+                    console.log('🚫 Bouton Supabase masqué');
+                }
+            });
         };
 
-        // Try immediately
-        hideForms();
-
-        // Try again after delays (Supabase might inject forms later)
-        setTimeout(hideForms, 100);
-        setTimeout(hideForms, 500);
-        setTimeout(hideForms, 1000);
-
-        // Watch for new elements being added
-        const observer = new MutationObserver(() => {
-            hideForms();
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-
-        // Stop observing after 5 seconds
-        setTimeout(() => observer.disconnect(), 5000);
+        // On lance le nettoyage plusieurs fois pour attraper les injections retardées
+        cleanup();
+        setTimeout(cleanup, 500);
+        setTimeout(cleanup, 2000);
     },
 
     async forgotPassword(email) {
