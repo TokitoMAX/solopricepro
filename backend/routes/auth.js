@@ -231,48 +231,68 @@ router.post('/forgot-password', async (req, res) => {
 // @access  Private (via access_token in body)
 router.post('/update-password', async (req, res) => {
     const { accessToken, password } = req.body;
-    const supabase = req.app.get('supabase');
+    const { createClient } = require('@supabase/supabase-js');
 
     try {
         if (!accessToken) throw new Error('Token manquant');
+        if (!password) throw new Error('Mot de passe manquant');
 
-        console.log(`🔐 Mise à jour du mot de passe...`);
+        console.log(`🔐 Tentative de mise à jour du mot de passe...`);
 
-        // Pour mettre à jour le mot de passe, on doit avoir une session valide.
-        // Le flow Supabase : User clique sur le lien -> Redirigé vers le site avec un hash contenant access_token & type=recovery.
-        // Le frontend récupère ce token.
-        // MAIS pour updateUser, on doit être authentifié.
-        // Avec supabase-js côté serveur, on ne peut pas utiliser 'getUser(accessToken)' puis 'updateUser' directement sur l'instance admin
-        // car updateUser s'applique à l'utilisateur *connecté*.
-
-        // Solution : On renvoie juste le fait que c'est au frontend de faire l'update via le client supabase s'il en a un ?
-        // NON, on a pas de client supabase frontend configuré avec URL/KEY dans le code frontend actuel (c'est caché dans le backend proxy).
-
-        // Donc on doit créer un client supabase temporaire authentifié avec ce token.
-        const { createClient } = require('@supabase/supabase-js');
         const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_ANON_KEY;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const anonKey = process.env.SUPABASE_ANON_KEY;
 
-        // On crée un client juste pour cet utilisateur
-        const userSupabase = createClient(supabaseUrl, supabaseKey, {
-            global: {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
+        if (!supabaseUrl || (!serviceKey && !anonKey)) {
+            throw new Error('Configuration Supabase manquante sur le serveur');
+        }
+
+        // 1. D'abord, on vérifie si le token est valide et on récupère l'utilisateur
+        const client = createClient(supabaseUrl, anonKey);
+        const { data: userData, error: userError } = await client.auth.getUser(accessToken);
+
+        if (userError) {
+            console.error('❌ Token validation error:', userError.message);
+            // Message plus explicite pour l'utilisateur
+            if (userError.message.includes('expired')) {
+                throw new Error('Votre lien de récupération a expiré. Veuillez refaire une demande.');
             }
-        });
+            throw userError;
+        }
 
-        const { data, error } = await userSupabase.auth.updateUser({
-            password: password
-        });
+        const userId = userData.user.id;
+        console.log(`✅ Token valide pour l'utilisateur: ${userId}`);
 
-        if (error) throw error;
+        // 2. On utilise le Service Role Key (Admin) pour forcer le changement de mot de passe
+        // C'est beaucoup plus fiable côté serveur
+        if (serviceKey) {
+            console.log('🔑 Utilisation du Service Role Key pour la mise à jour...');
+            const adminClient = createClient(supabaseUrl, serviceKey);
+            const { data, error: updateError } = await adminClient.auth.admin.updateUserById(
+                userId,
+                { password: password }
+            );
 
-        res.json({ message: 'Mot de passe mis à jour avec succès !', user: data.user });
+            if (updateError) throw updateError;
+            console.log('✨ Mot de passe mis à jour avec succès (Admin)');
+        } else {
+            console.log('⚠️ Service Role Key manquant, tentative via client utilisateur...');
+            // Fallback si pas de service key (moins fiable)
+            const userSupabase = createClient(supabaseUrl, anonKey, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            });
+            const { error: updateError } = await userSupabase.auth.updateUser({ password });
+            if (updateError) throw updateError;
+        }
+
+        res.json({ message: 'Mot de passe mis à jour avec succès ! Vous pouvez maintenant vous connecter.' });
 
     } catch (error) {
         console.error('❌ Update Password Error:', error.message);
-        res.status(400).json({ message: error.message || 'Impossible de mettre à jour le mot de passe' });
+        res.status(400).json({
+            message: error.message || 'Impossible de mettre à jour le mot de passe',
+            error: error.message
+        });
     }
 });
 
