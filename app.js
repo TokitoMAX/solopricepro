@@ -220,6 +220,15 @@ const App = {
         if (page === 'services' && typeof Services !== 'undefined') {
             this.navigateTo('settings', 'billing'); // Redirect to Settings with billing tab
         }
+        if (page === 'admin') {
+            const user = Storage.getUser();
+            if (user && user.role === 'admin') {
+                this.refreshAdminData();
+            } else {
+                this.showNotification('Accès refusé', 'error');
+                this.navigateTo('dashboard');
+            }
+        }
     },
 
     // Chargement du contenu de chaque page
@@ -432,7 +441,19 @@ const App = {
                         ${isPro ? '<span class="user-status"><span class="pro-badge-small">PRO</span></span>' : '<span class="user-status text-muted" style="font-size:0.7rem;">Version Standard</span>'}
                     </div>
                 </div>
+                </div>
             `;
+        }
+
+        // Show Admin Nav if Role is Admin
+        const adminNav = document.getElementById('nav-item-admin');
+        if (adminNav) {
+            if (user.role === 'admin') {
+                adminNav.style.display = 'flex';
+                // Move to bottom of nav if needed, but current position is fine
+            } else {
+                adminNav.style.display = 'none';
+            }
         }
 
         // Afficher les badges PRO dans la sidebar pour les fonctions limitées
@@ -923,6 +944,94 @@ const App = {
 
         modal.classList.add('active');
         modal.style.display = 'flex';
+    },
+
+    // --- ADMIN DASHBOARD ---
+    async refreshAdminData() {
+        const listBody = document.getElementById('admin-users-list');
+        const statsTotal = document.getElementById('admin-total-users');
+        const statsNew = document.getElementById('admin-new-users');
+        const statsConfirmed = document.getElementById('admin-confirmed-users');
+
+        if (listBody) listBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem;">Chargement des données...</td></tr>';
+
+        try {
+            const token = localStorage.getItem('sp_token');
+            const response = await fetch(`${Auth.apiBase}/api/admin/users`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error('Erreur API Admin');
+
+            const users = await response.json();
+            this.adminUsersCache = users; // Cache for search
+
+            // Stats
+            if (statsTotal) statsTotal.textContent = users.length;
+
+            const now = new Date();
+            const last24h = users.filter(u => (now - new Date(u.created_at)) < 86400000).length;
+            if (statsNew) statsNew.textContent = `+${last24h}`;
+
+            const confirmed = users.filter(u => u.confirmed).length;
+            if (statsConfirmed) statsConfirmed.textContent = `${confirmed} (${Math.round(confirmed / users.length * 100)}%)`;
+
+            this.renderAdminTable(users);
+
+        } catch (e) {
+            console.error('Admin Data Error:', e);
+            if (listBody) listBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red; padding: 2rem;">Erreur: ${e.message}</td></tr>`;
+        }
+    },
+
+    renderAdminTable(users) {
+        const listBody = document.getElementById('admin-users-list');
+        if (!listBody) return;
+
+        if (users.length === 0) {
+            listBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 2rem;">Aucun utilisateur trouvé.</td></tr>';
+            return;
+        }
+
+        listBody.innerHTML = users.map(u => `
+            <tr>
+                <td>
+                    <div style="font-weight:600;">${u.email}</div>
+                    <div style="font-size:0.75rem; color: #666;">ID: ${u.id}</div>
+                </td>
+                <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                <td>${u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : 'Jamais'}</td>
+                <td>
+                    ${u.confirmed
+                ? '<span style="color:SpringGreen; font-size:0.8rem;">● Vérifié</span>'
+                : '<span style="color:orange; font-size:0.8rem;">○ En attente</span>'
+            }
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    filterAdminUsers(query) {
+        if (!this.adminUsersCache) return;
+        const lowerQ = query.toLowerCase();
+        const filtered = this.adminUsersCache.filter(u =>
+            u.email.toLowerCase().includes(lowerQ) ||
+            u.id.includes(lowerQ)
+        );
+        this.renderAdminTable(filtered);
+    },
+
+    async showSystemStatus() {
+        try {
+            const token = localStorage.getItem('sp_token');
+            const res = await fetch(`${Auth.apiBase}/api/admin/system`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            alert(`Système: ${data.status}\nNode Env: ${data.node_env}\nUptime: ${Math.round(data.uptime)}s`);
+        } catch (e) {
+            alert('Erreur status système');
+        }
     },
 
     closeModal(id) {

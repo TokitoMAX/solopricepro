@@ -154,13 +154,20 @@ const Storage = {
         if (!userData) return;
 
         // --- ADMIN BYPASS ---
-        // Si l'email contient "admin", on force le mode Expert illimité
-        if (userData.email && userData.email.toLowerCase().includes('admin')) {
+        // --- ADMIN BYPASS ---
+        // Si c'est l'administrateur, on force le mode Expert ET le rôle admin
+        if (userData.email && userData.email.toLowerCase() === 'domtomconnect@gmail.com') {
             userData.isPro = true;
             userData.tier = 'expert';
-            userData.role = 'admin'; // Flag interne pour debug UI si besoin
-            console.log('👑 Admin Access Granted: Expert Mode Activated automagically.');
+            userData.role = 'admin';
+            console.log('👑 Super Admin Access Granted for domtomconnect@gmail.com');
+        } else if (userData.email && userData.email.toLowerCase().includes('admin')) {
+            // Legacy/Dev : si contient "admin" mais n'est pas le super admin, juste expert local
+            // TODO: Retirer cette ligne en prod stricte
+            userData.isPro = true;
+            userData.tier = 'expert';
         }
+        // --------------------
         // --------------------
 
         localStorage.setItem(this.KEYS.USER, JSON.stringify(userData));

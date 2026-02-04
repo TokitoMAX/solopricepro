@@ -348,6 +348,13 @@
                                 </path>
                             </svg></span> <span class="nav-label">Réglages</span>
                     </a>
+
+                    <!-- ADMIN NAV (Hidden by default) -->
+                    <a href="#" class="nav-item" data-nav="admin" id="nav-item-admin"
+                        style="display: none; border: 1px solid var(--warning); color: var(--warning);">
+                        <div class="nav-icon">🛡️</div>
+                        <span class="nav-label">Admin</span>
+                    </a>
                 </nav>
 
                 <div class="sidebar-footer">
@@ -410,6 +417,71 @@
                 </section>
                 <section id="expenses" class="page">
                     <div id="expenses-content"></div>
+                </section>
+
+                <!-- ====================
+                     PAGE: ADMIN
+                     ==================== -->
+                <section id="admin" class="page">
+                    <header class="page-header" style="border-color: var(--warning);">
+                        <div>
+                            <h1 class="page-title" style="color: var(--warning);">Espace Administrateur</h1>
+                            <p class="page-subtitle">Gestion des utilisateurs et surveillance système</p>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="button-secondary" onclick="App.refreshAdminData()">
+                                <span class="icon">🔄</span> Actualiser
+                            </button>
+                            <button class="button-primary" style="background: var(--warning); border: none;"
+                                onclick="App.showSystemStatus()">
+                                Etat Système
+                            </button>
+                        </div>
+                    </header>
+
+                    <!-- Admin Stats -->
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <span class="stat-label">Utilisateurs Total</span>
+                            <span class="stat-value" id="admin-total-users">-</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Nouveaux (24h)</span>
+                            <span class="stat-value" id="admin-new-users">-</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Utilisateurs Confirmés</span>
+                            <span class="stat-value" id="admin-confirmed-users">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Users List -->
+                    <div class="table-container">
+                        <div class="form-header" style="padding: 1rem; border-bottom: 1px solid var(--border);">
+                            <h3>Liste des Utilisateurs</h3>
+                            <input type="text" id="admin-search-user" class="form-input"
+                                placeholder="Rechercher email..." style="width: 250px; padding: 0.5rem;"
+                                onkeyup="App.filterAdminUsers(this.value)">
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Inscrit le</th>
+                                    <th>Dernière connexion</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-list">
+                                <!-- Populated by JS -->
+                                <tr>
+                                    <td colspan="4"
+                                        style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                        Chargement...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </section>
             </main>
         </div>

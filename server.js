@@ -85,9 +85,10 @@ app.get('/api/health', (req, res) => {
 const authRoutes = require('./backend/routes/auth');
 const dataRoutes = require('./backend/routes/data');
 const paymentRoutes = require('./backend/routes/payments');
+const adminRoutes = require('./backend/routes/admin'); // [NEW] Admin Routes
 
 // Supabase Guard Middleware for Auth & Data Routes
-app.use(['/api/auth', '/api/data'], (req, res, next) => {
+app.use(['/api/auth', '/api/data', '/api/admin'], (req, res, next) => {
     if (!req.app.get('supabase')) {
         console.error(`[BACKEND-GUARD] ❌ Supabase client is MISSING for ${req.path}`);
         return res.status(503).json({
@@ -101,6 +102,7 @@ app.use(['/api/auth', '/api/data'], (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/admin', adminRoutes); // [NEW] Mount Admin API
 
 // 2. Static Files
 app.use(express.static(process.cwd()));
