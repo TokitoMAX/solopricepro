@@ -46,59 +46,45 @@ const Auth = {
             const authModal = document.getElementById('auth-modal');
             let hiddenCount = 0;
 
-            // Strategy 1: Hide all forms not in our modal
+            // Strategy 1: Only remove <form> elements that are NOT in our modal
             document.querySelectorAll('form').forEach(form => {
-                if (!authModal || !authModal.contains(form)) {
-                    form.style.display = 'none !important';
-                    form.remove(); // Completely remove from DOM
-                    hiddenCount++;
-                    console.log('🚫 Removed Supabase form:', form);
+                if (authModal && authModal.contains(form)) {
+                    // This is OUR form, keep it
+                    console.log('✅ Keeping our form:', form.id);
+                    return;
                 }
+                // Remove forms outside our modal
+                console.log('🚫 Removing external form:', form);
+                form.remove();
+                hiddenCount++;
             });
 
-            // Strategy 2: Find and hide any divs/containers with password reset content
-            document.querySelectorAll('div, section, main').forEach(el => {
-                const text = el.textContent || '';
-                // If it contains "Nouveau mot de passe" but is NOT our modal
-                if (text.includes('Nouveau mot de passe') && (!authModal || !authModal.contains(el))) {
-                    // Check if it's a top-level container (not nested in our modal)
-                    if (!el.closest('#auth-modal')) {
-                        el.style.display = 'none !important';
-                        el.remove();
-                        hiddenCount++;
-                        console.log('🚫 Removed Supabase container:', el);
-                    }
-                }
-            });
-
-            // Strategy 3: Intercept all button clicks that might call updateUserPassword
+            // Strategy 2: Intercept buttons with updateUserPassword onclick
             document.querySelectorAll('button').forEach(button => {
                 const onclick = button.getAttribute('onclick');
                 if (onclick && onclick.includes('updateUserPassword')) {
+                    console.log('🚫 Found Supabase button, blocking:', button);
                     button.onclick = (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         console.log('🚫 Blocked Supabase button click');
                         return false;
                     };
-                    button.style.display = 'none';
                     button.remove();
                     hiddenCount++;
-                    console.log('🚫 Removed Supabase button:', button);
                 }
             });
 
-            console.log(`✅ Hidden/removed ${hiddenCount} Supabase element(s)`);
+            console.log(`✅ Processed ${hiddenCount} Supabase element(s)`);
         };
 
         // Try immediately
         hideForms();
 
-        // Try again after delays
+        // Try again after delays (Supabase might inject forms later)
         setTimeout(hideForms, 100);
         setTimeout(hideForms, 500);
         setTimeout(hideForms, 1000);
-        setTimeout(hideForms, 2000);
 
         // Watch for new elements being added
         const observer = new MutationObserver(() => {
@@ -110,8 +96,8 @@ const Auth = {
             subtree: true
         });
 
-        // Stop observing after 10 seconds
-        setTimeout(() => observer.disconnect(), 10000);
+        // Stop observing after 5 seconds
+        setTimeout(() => observer.disconnect(), 5000);
     },
 
     async forgotPassword(email) {
