@@ -188,13 +188,16 @@ router.post('/forgot-password', async (req, res) => {
         // Obtenir l'URL de base pour la redirection
         let origin = process.env.APP_URL;
 
-        // Si APP_URL est localhost ou non défini, essayer de construire une URL plus intelligente via les headers
-        // (Utile si le serveur est derrière un proxy ou ngrok)
-        if (!origin || origin.includes('localhost')) {
+        // Si APP_URL n'est pas défini, utiliser les headers de la requête
+        // IMPORTANT: On ne vérifie plus si c'est localhost - on fait confiance à APP_URL
+        if (!origin) {
             const host = req.get('host'); // ex: my-app.vercel.app ou 192.168.1.50:5050
             const protocol = req.protocol;
             if (host) {
                 origin = `${protocol}://${host}`;
+            } else {
+                // Fallback ultime si vraiment rien n'est disponible
+                origin = 'http://localhost:5050';
             }
         }
 
