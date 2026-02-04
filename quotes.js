@@ -773,7 +773,7 @@ const Quotes = {
             // Optionnel : Générer directement le PDF signé
             // this.downloadPDF(id); 
         }
-    }
+    },
 
     edit(id) {
         const quote = Storage.getQuote(id);
