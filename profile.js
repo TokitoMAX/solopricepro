@@ -100,25 +100,41 @@ const Profile = {
         `;
     },
 
-    save(e) {
+    async save(e) {
         e.preventDefault();
-        const form = e.target;
-        const formData = new FormData(form);
+        const formData = new FormData(e.target);
 
         const companyData = {
-            name: formData.get('name'),
+            name: formData.get('name'), // Changed from 'companyName' to 'name' to match form input
+            siret: formData.get('siret'),
             email: formData.get('email'),
             phone: formData.get('phone'),
             address: formData.get('address'),
-            siret: formData.get('siret') || '',
-            footer_mentions: formData.get('footer_mentions') || '',
-            logo: formData.get('logo') || ''
+            // website: formData.get('website'), // 'website' field is not in the form, removed
+            footer_mentions: formData.get('footer_mentions') || '', // Added back footer_mentions
+            logo: formData.get('logo') || '' // Changed from hardcoded to formData.get('logo')
         };
 
-        Storage.updateUser({ company: companyData });
-        App.renderUserInfo();
-        App.showNotification('Profil mis à jour', 'success');
-        this.render();
+        try {
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = 'Enregistrement...';
+            btn.disabled = true;
+
+            // Update via Cloud Storage
+            await Storage.updateUser({ company: companyData });
+
+            App.renderUserInfo(); // Kept from original, as it updates user info in UI
+            App.showNotification('Profil mis à jour avec succès !', 'success');
+            this.render(); // Render the profile again to reflect changes
+
+            btn.textContent = originalText;
+            btn.disabled = false;
+        } catch (error) {
+            console.error(error);
+            App.showNotification('Erreur lors de la sauvegarde.', 'error');
+            e.target.querySelector('button[type="submit"]').disabled = false;
+        }
     },
 
     handleLogoUpload(e) {

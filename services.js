@@ -133,7 +133,7 @@ const Services = {
         container.scrollIntoView({ behavior: 'smooth' });
     },
 
-    save(e) {
+    async save(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const service = {
@@ -144,17 +144,21 @@ const Services = {
             description: formData.get('description')
         };
 
-        Storage.addService(service);
-        App.showNotification('Prestation ajoutée.', 'success');
-        this.hideForm();
+        try {
+            await Storage.addService(service);
+            App.showNotification('Prestation ajoutée.', 'success');
+            this.hideForm();
 
-        // Re-rendre les paramètres si on y est
-        if (App.currentPage === 'settings') Settings.render();
+            // Re-rendre les paramètres si on y est
+            if (App.currentPage === 'settings') Settings.render();
+        } catch (e) {
+            App.showNotification('Erreur lors de l\'ajout.', 'error');
+        }
     },
 
-    delete(id) {
+    async delete(id) {
         if (confirm('Supprimer cette prestation ?')) {
-            Storage.deleteService(id);
+            await Storage.deleteService(id);
             if (App.currentPage === 'settings') Settings.render();
         }
     },

@@ -359,7 +359,7 @@ const Invoices = {
         }
     },
 
-    save(e) {
+    async save(e) {
         e.preventDefault();
         const form = e.target;
         const formData = new FormData(form);
@@ -396,19 +396,33 @@ const Invoices = {
             total: total
         };
 
-        if (this.editingId) {
-            Storage.updateInvoice(this.editingId, invoiceData);
-            App.showNotification('Facture modifiée.', 'success');
-        } else {
-            Storage.addInvoice(invoiceData);
-            App.showNotification('Facture créée.', 'success');
-        }
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.textContent = 'Sauvegarde...';
+        btn.disabled = true;
 
-        this.hideForm();
-        this.render();
+        try {
+            if (this.editingId) {
+                await Storage.updateInvoice(this.editingId, invoiceData);
+                App.showNotification('Facture modifiée.', 'success');
+            } else {
+                await Storage.addInvoice(invoiceData);
+                App.showNotification('Facture créée.', 'success');
+            }
+            this.hideForm();
+            this.render();
+        } catch (e) {
+            console.error(e);
+            App.showNotification('Erreur de sauvegarde.', 'error');
+        } finally {
+            if (btn) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
     },
 
-    changeStatus(id) {
+    async changeStatus(id) {
         const invoice = Storage.getInvoice(id);
         if (!invoice) return;
 
@@ -423,7 +437,7 @@ const Invoices = {
         const nextIndex = (currentIndex + 1) % statuses.length;
         const nextStatus = statuses[nextIndex].value;
 
-        Storage.updateInvoice(id, { status: nextStatus });
+        await Storage.updateInvoice(id, { status: nextStatus });
         App.showNotification(`Statut mis à jour : ${statuses[nextIndex].label}`, 'success');
         this.render();
     },
@@ -596,7 +610,7 @@ const Invoices = {
         }
     },
 
-    duplicate(id) {
+    async duplicate(id) {
         const invoice = Storage.getInvoice(id);
         if (!invoice) return;
 
@@ -615,7 +629,7 @@ const Invoices = {
                 dueDate: dueDate.toISOString()
             };
 
-            Storage.addInvoice(newInvoiceData);
+            await Storage.addInvoice(newInvoiceData);
             App.showNotification('Facture dupliquée.', 'success');
             this.render();
         }
@@ -637,9 +651,9 @@ const Invoices = {
         }
     },
 
-    delete(id) {
+    async delete(id) {
         if (confirm('Confirmer la suppression de cette facture ?')) {
-            Storage.deleteInvoice(id);
+            await Storage.deleteInvoice(id);
             App.showNotification('Facture supprimée.', 'success');
             this.render();
         }

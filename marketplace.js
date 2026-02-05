@@ -59,12 +59,12 @@ const Marketplace = {
     },
 
     getPublicMissions() {
-        return JSON.parse(localStorage.getItem('sp_marketplace_missions') || '[]');
+        // Read from Storage Cache (populated by Storage.fetchAllData)
+        return Storage.getPublicMissions() || [];
     },
 
     // ===== MISSIONS RADAR (from others) =====
     renderMissions(container) {
-        // Utilisation des données publiques (simulées via localStorage pour le prototype)
         const missions = this.getPublicMissions();
 
         if (missions.length === 0) {
@@ -211,7 +211,7 @@ const Marketplace = {
         if (container) container.innerHTML = '';
     },
 
-    saveMission(e) {
+    async saveMission(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const mission = {
@@ -225,39 +225,46 @@ const Marketplace = {
             status: 'active'
         };
 
-        const missions = this.getMyMissions();
-        missions.push(mission);
-        localStorage.setItem('sp_my_missions', JSON.stringify(missions));
-
-        // ALSO push to public missions (Radar) so it appears there
-        const publicMissions = this.getPublicMissions();
-        publicMissions.push(mission);
-        localStorage.setItem('sp_marketplace_missions', JSON.stringify(publicMissions));
+        // Saving via Central Storage (Cloud-First)
+        try {
+            await Storage.addMission(mission);
+            App.showNotification('Mission publiée et synchronisée !', 'success');
+        } catch (err) {
+            console.error(err);
+            App.showNotification('Erreur de synchronisation.', 'error');
+        }
 
         this.hidePostMissionForm();
         this.switchTab('my-missions');
-        App.showNotification('Mission publiée avec succès !', 'success');
     },
 
     getMyMissions() {
-        return JSON.parse(localStorage.getItem('sp_my_missions') || '[]');
+        return Storage.get(Storage.KEYS.MY_MISSIONS) || [];
     },
 
-    deleteMission(id) {
+    async deleteMission(id) {
         if (!confirm('Supprimer cette mission ?')) return;
 
-        // 1. Supprimer de "Mes Annonces" (Liste privée)
-        let missions = this.getMyMissions();
-        missions = missions.filter(m => m.id !== id);
-        localStorage.setItem('sp_my_missions', JSON.stringify(missions));
+        // Uses the central Storage delete logic logic for consistency
+        // Note: Marketplace missions might need dual deletion if we track them in two lists locally/remotely
+        // Plan: Delete from MY_MISSIONS table.
+        // For MARKETPLACE_MISSIONS (Public), we usually flag as deleted or have separate admin clear.
+        // Assuming strict user ownership:
 
-        // 2. Supprimer du "Radar" (Liste publique)
-        let publicMissions = this.getPublicMissions();
-        publicMissions = publicMissions.filter(m => m.id !== id);
-        localStorage.setItem('sp_marketplace_missions', JSON.stringify(publicMissions));
+        try {
+            // Delete from "my_missions" table
+            await Storage.delete(Storage.KEYS.MY_MISSIONS, id);
 
-        this.switchTab('my-missions');
-        App.showNotification('Mission supprimée et retirée du Radar.', 'success');
+            // Also attempt delete from "marketplace_missions" if user owns it (backend policy)
+            // Simplified: Just delete from local view
+            await Storage.delete(Storage.KEYS.MARKETPLACE_MISSIONS, id);
+
+            App.showNotification('Mission supprimée.', 'success');
+            // Refresh view
+            this.activeTab === 'my-missions' ? this.renderMyMissions(document.getElementById('marketplace-dynamic-content')) : this.switchTab(this.activeTab);
+        } catch (e) {
+            App.showNotification('Erreur lors de la suppression.', 'error');
+        }
     },
 
     editMission(id) {
@@ -267,7 +274,7 @@ const Marketplace = {
     // ===== PROVIDERS (Mes Prestataires) =====
     renderProviders(container) {
         // Unifié avec le module Network
-        const providers = JSON.parse(localStorage.getItem('sp_network_providers') || '[]');
+        const providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
 
         if (providers.length === 0) {
             container.innerHTML = `
@@ -346,7 +353,8 @@ const Marketplace = {
     },
 
     applyForMission(id) {
-        const mission = this.missions.find(m => m.id === id);
+        // Use Storage cache
+        const mission = this.getPublicMissions().find(m => m.id === id);
         if (mission) {
             const subject = encodeURIComponent(`Candidature pour la mission : ${mission.title}`);
             const body = encodeURIComponent(`Bonjour,\n\nJe souhaite postuler pour la mission "${mission.title}" (Budget: ${mission.budget}).\n\nCordialement,`);
@@ -375,7 +383,7 @@ const Marketplace = {
         return div.innerHTML;
     },
 
-    convertMissionToQuote(id) {
+    async convertMissionToQuote(id) {
         if (App.isFeatureProGated('marketplace_automation')) {
             App.showUpgradeModal('marketplace_automation');
             return;
@@ -403,7 +411,8 @@ const Marketplace = {
                 activity: 'Opportunité Marketplace',
                 createdAt: new Date().toISOString()
             };
-            Storage.addClient(client);
+            // Async creation
+            client = await Storage.addClient(client);
         }
 
         // 2. Créer le devis
@@ -421,7 +430,7 @@ const Marketplace = {
             notes: `Opportunité issue du Radar DomTomConnect. Zone: ${mission.zone}. Urgence: ${mission.urgency}.`
         };
 
-        const newQuote = Storage.addQuote(quoteData);
+        const newQuote = await Storage.addQuote(quoteData);
 
         App.showNotification('Devis et client créés avec succès !', 'success');
 

@@ -1,654 +1,339 @@
-// SoloPrice Pro - Storage Manager
-// Gestion centralisée des données avec localStorage
+// SoloPrice Pro - Storage Manager (Cloud-First)
+// Gestion centralisée des données via Supabase API (No Local Storage Persistence)
 
 const Storage = {
-    // Clés de stockage
+    // Clés pour le cache mémoire (ne persiste pas au refresh)
     KEYS: {
-        USER: 'sp_user',
-        CLIENTS: 'sp_clients',
-        QUOTES: 'sp_quotes',
-        INVOICES: 'sp_invoices',
-        SERVICES: 'sp_services',
-        LEADS: 'sp_leads', // New Key
-        REVENUES: 'sp_revenues',
-        EXPENSES: 'sp_expenses',
-        SETTINGS: 'sp_settings',
-        CALCULATOR: 'sp_calculator_data',
-        GAMIFICATION: 'sp_gamification'
+        USER: 'sp_user', // LocalStorage allowed only for minimal session info if needed, but primary is cache
+        CLIENTS: 'clients',
+        QUOTES: 'quotes',
+        INVOICES: 'invoices',
+        SERVICES: 'services',
+        LEADS: 'leads',
+        REVENUES: 'revenues',
+        EXPENSES: 'expenses',
+        SETTINGS: 'settings',
+        CALCULATOR: 'calculator_data',
+        MARKETPLACE_MISSIONS: 'marketplace_missions',
+        MY_MISSIONS: 'my_missions',
+        PROVIDERS: 'network_providers'
     },
 
-    // Initialisation
+    // Cache mémoire
+    _cache: {},
+
     init() {
-        // L'init par défaut reste pour les données globales ou de base
-        if (!this.getRaw(this.KEYS.SETTINGS)) {
-            this.set(this.KEYS.SETTINGS, {
-                currency: '€',
-                taxRate: 20,
-                invoicePrefix: 'FACT-',
-                quotePrefix: 'DEV-',
-                theme: 'dark'
-            });
-        }
-        this.updateStreak();
-    },
-
-    // Méthodes génériques avec isolation par utilisateur
-    getUserPrefix() {
-        const user = this.getRaw(this.KEYS.USER);
-        return user?.id ? `u${user.id}_` : '';
-    },
-
-    getRaw(key) {
-        try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : null;
-        } catch (e) {
-            console.error('Error reading from storage:', e);
-            return null;
+        console.log("☁️ Storage initialized in Cloud-First mode.");
+        // Le token reste en localStorage pour l'auth
+        const token = localStorage.getItem('sp_token');
+        if (token) {
+            // Déclencher le chargement initial si connecté
+            // Note: C'est asynchrone, l'UI doit gérer le loading state via App
+            this.fetchAllData();
         }
     },
 
-    get(key) {
-        const prefix = this.getUserPrefix();
-        return this.getRaw(prefix + key);
-    },
+    // --- Core API Methods ---
 
-    set(key, value, skipSync = false) {
-        try {
-            const prefix = this.getUserPrefix();
-            localStorage.setItem(prefix + key, JSON.stringify(value));
-
-            // Sync with backend if logged in and not explicitly skipped
-            if (!skipSync && Auth.isLoggedIn()) {
-                this.syncToCloud(key, value);
-            }
-
-            return true;
-        } catch (e) {
-            console.error('Error writing to storage:', e);
-            return false;
-        }
-    },
-
-    // Méthodes de synchronisation Cloud
-    async syncToCloud(key, value) {
-        const tableMap = {
-            [this.KEYS.CLIENTS]: 'clients',
-            [this.KEYS.QUOTES]: 'quotes',
-            [this.KEYS.INVOICES]: 'invoices',
-            [this.KEYS.SERVICES]: 'services',
-            [this.KEYS.LEADS]: 'leads',
-            [this.KEYS.REVENUES]: 'revenues',
-            [this.KEYS.EXPENSES]: 'expenses',
-            [this.KEYS.SETTINGS]: 'settings',
-            [this.KEYS.CALCULATOR]: 'calculator_data',
-            'sp_network_providers': 'network_providers'
-        };
-
-        const table = tableMap[key];
-        if (!table) return;
-
-        try {
-            const token = localStorage.getItem('sp_token');
-            if (!token) return;
-
-            console.log(`☁️ Syncing ${table} to cloud...`);
-            await fetch(`${Auth.apiBase}/api/data/${table}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(value)
-            });
-        } catch (e) {
-            console.error(`Sync error for ${table}:`, e);
-        }
-    },
-
-    async fullSync() {
+    async fetchAllData() {
         if (!Auth.isLoggedIn()) return;
 
+        console.log("📥 Fetching all data from Supabase...");
         const tables = [
-            { key: this.KEYS.CLIENTS, table: 'clients' },
-            { key: this.KEYS.QUOTES, table: 'quotes' },
-            { key: this.KEYS.INVOICES, table: 'invoices' },
-            { key: this.KEYS.SERVICES, table: 'services' },
-            { key: this.KEYS.LEADS, table: 'leads' },
-            { key: this.KEYS.REVENUES, table: 'revenues' },
-            { key: this.KEYS.EXPENSES, table: 'expenses' },
-            { key: this.KEYS.SETTINGS, table: 'settings' },
-            { key: this.KEYS.CALCULATOR, table: 'calculator_data' },
-            { key: 'sp_network_providers', table: 'network_providers' }
+            this.KEYS.CLIENTS,
+            this.KEYS.QUOTES,
+            this.KEYS.INVOICES,
+            this.KEYS.SERVICES,
+            this.KEYS.LEADS,
+            this.KEYS.EXPENSES,
+            this.KEYS.REVENUES,
+            this.KEYS.SETTINGS,
+            this.KEYS.MARKETPLACE_MISSIONS,
+            this.KEYS.MY_MISSIONS,
+            this.KEYS.PROVIDERS
         ];
 
         try {
-            const token = localStorage.getItem('sp_token');
-            for (const item of tables) {
-                console.log(`📥 Pulling ${item.table} from cloud...`);
-                const response = await fetch(`${Auth.apiBase}/api/data/${item.table}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const remoteData = await response.json();
-                    if (remoteData && remoteData.length > 0) {
-                        // Pour les tableaux, on fusionne ou remplace le local
-                        // Pour l'instant, priorité au cloud si présent à l'init
-                        this.set(item.key, remoteData, true); // true = skipSync to avoid loop
-                    }
-                }
+            // Fetch User Profile first
+            const userRes = await fetch(`${Auth.apiBase}/api/auth/me`, {
+                headers: this.getHeaders()
+            });
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                this._cache[this.KEYS.USER] = userData.user;
+                // Update UI User info immediately
+                if (window.App && App.renderUserInfo) App.renderUserInfo();
             }
-            console.log("✅ Synchronisation terminée.");
+
+            // Fetch Tables in parallel
+            const promises = tables.map(table =>
+                fetch(`${Auth.apiBase}/api/data/${table}`, { headers: this.getHeaders() })
+                    .then(r => r.ok ? r.json() : [])
+                    .then(data => {
+                        this._cache[table] = data;
+                        return { table, count: data.length };
+                    })
+                    .catch(e => {
+                        console.error(`Failed to fetch ${table}:`, e);
+                        this._cache[table] = []; // Fallback empty
+                        return { table, error: true };
+                    })
+            );
+
+            await Promise.all(promises);
+            console.log("✅ All data loaded from Supabase.");
+
+            // Trigger UI refresh events if needed
+            // dispatchEvent(new CustomEvent('sp-data-ready'));
+
         } catch (e) {
-            console.error("Full sync failed:", e);
+            console.error("❌ Fatal error fetching data:", e);
         }
     },
 
-    // Méthodes utilisateur
-    getUser() {
-        return this.getRaw(this.KEYS.USER);
-    },
-
-    setUser(userData) {
-        if (!userData) return;
-
-        // --- ADMIN BYPASS ---
-        // --- ADMIN BYPASS ---
-        // Si c'est l'administrateur, on force le mode Expert ET le rôle admin
-        if (userData.email && userData.email.toLowerCase() === 'domtomconnect@gmail.com') {
-            userData.isPro = true;
-            userData.tier = 'expert';
-            userData.role = 'admin';
-            console.log('👑 Super Admin Access Granted for domtomconnect@gmail.com');
-        } else if (userData.email && userData.email.toLowerCase().includes('admin')) {
-            // Legacy/Dev : si contient "admin" mais n'est pas le super admin, juste expert local
-            // TODO: Retirer cette ligne en prod stricte
-            userData.isPro = true;
-            userData.tier = 'expert';
-        }
-        // --------------------
-        // --------------------
-
-        localStorage.setItem(this.KEYS.USER, JSON.stringify(userData));
-        try {
-            this.initUserData();
-        } catch (e) {
-            console.error('Data initialization failed:', e);
-        }
-    },
-
-    updateUser(updates) {
-        let user = this.getUser();
-        if (!user) {
-            // Force create a basic user if missing for testing
-            user = { id: 'temp_user', email: 'test@example.com', company: {} };
-        }
-        const updatedUser = { ...user, ...updates };
-        // Deep merge company if it's an object update
-        if (updates.company && user.company) {
-            updatedUser.company = { ...user.company, ...updates.company };
-        }
-        this.setUser(updatedUser);
-        return updatedUser;
-    },
-
-    initUserData() {
-        // Initialiser les collections vides pour cet utilisateur
-        ['CLIENTS', 'QUOTES', 'INVOICES', 'SERVICES', 'REVENUES', 'EXPENSES', 'LEADS'].forEach(key => {
-            if (!this.get(this.KEYS[key])) {
-                this.set(this.KEYS[key], []);
-            }
-        });
-
-        // Initialize Settings for this user if not present
-        if (!this.get(this.KEYS.SETTINGS)) {
-            const defaultSettings = this.getRaw(this.KEYS.SETTINGS) || {
-                currency: '€',
-                taxRate: 22,
-                invoicePrefix: 'FACT-',
-                quotePrefix: 'DEV-',
-                theme: 'dark'
-            };
-            this.set(this.KEYS.SETTINGS, defaultSettings);
-        }
-    },
-
-    getTier() {
-        const user = this.getUser();
-        if (!user) return 'standard';
-
-        // Vérification de l'expiration si une date est fixée
-        if (user.subscriptionEnd) {
-            const expiry = new Date(user.subscriptionEnd);
-            if (new Date() > expiry) {
-                // L'abonnement a expiré
-                return 'standard';
-            }
-        }
-
-        return user.tier || (user.isPro ? 'pro' : 'standard');
-    },
-
-    isPro() {
-        const tier = this.getTier();
-        return tier === 'pro' || tier === 'expert';
-    },
-
-    isExpert() {
-        return this.getTier() === 'expert';
-    },
-
-    getSubscriptionStatus() {
-        const user = this.getUser();
-        if (!user || !user.isPro) return { isActive: false };
-
-        const expiry = user.subscriptionEnd ? new Date(user.subscriptionEnd) : null;
-        if (!expiry) return { isActive: true, isLifetime: true };
-
-        const now = new Date();
-        const diff = expiry - now;
-        const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
+    getHeaders() {
         return {
-            isActive: daysLeft > 0,
-            daysLeft: Math.max(0, daysLeft),
-            expiryDate: expiry.toISOString(),
-            isExpired: daysLeft <= 0
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('sp_token')}`
         };
     },
 
-    activatePro(licenseKey, tier = 'pro', months = 1) {
-        const user = this.getUser();
-        const now = new Date();
-        const expiry = new Date(now.setMonth(now.getMonth() + months));
+    // --- Generic Getters (Sync from Cache) ---
+    // L'UI lit le cache. Si le cache est vide au démarrage, ça doit être géré par des loading states
 
-        this.setUser({
-            ...user,
-            isPro: true,
-            tier: tier,
-            licenseKey: licenseKey,
-            activatedAt: new Date().toISOString(),
-            subscriptionEnd: expiry.toISOString(),
-            subscriptionCanceled: false
-        });
+    get(key) {
+        return this._cache[key] || [];
     },
 
-    cancelSubscription() {
-        const user = this.getUser();
-        if (!user || !user.isPro) return false;
+    // --- Generic Setters (Async API Call + Cache Update) ---
 
-        this.setUser({
-            ...user,
-            subscriptionCanceled: true
-        });
-        return true;
-    },
+    async set(table, data) {
+        // En Cloud-First, "set" écrase souvent tout, mais pour l'API on préfère 
+        // upsert unitaire. Si 'data' est un tableau complet, on le save.
+        // ATTENTION: Cette méthode 'set' legacy écrasait tout le tableau local. 
+        // Pour l'API, on va essayer de sauver ce qu'on nous donne.
 
-    updateStreak() {
-        if (!Auth.isLoggedIn()) return;
-
-        const data = this.get(this.KEYS.GAMIFICATION) || { streak: 0, lastActivity: null };
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-
-        if (!data.lastActivity) {
-            data.streak = 1;
-            data.lastActivity = today;
-        } else {
-            const lastDate = new Date(data.lastActivity).getTime();
-            const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 1) {
-                data.streak += 1;
-                data.lastActivity = today;
-            } else if (diffDays > 1) {
-                data.streak = 1;
-                data.lastActivity = today;
-            }
-        }
-
-        this.set(this.KEYS.GAMIFICATION, data);
-    },
-
-    getStreak() {
-        const data = this.get(this.KEYS.GAMIFICATION);
-        return data ? data.streak : 0;
-    },
-
-    // Méthodes clients
-    getClients() {
-        return this.get(this.KEYS.CLIENTS) || [];
-    },
-
-    getClient(id) {
-        return this.getClients().find(c => c.id === id);
-    },
-
-    addClient(client) {
-        const clients = this.getClients();
-        const newClient = {
-            id: this.generateId(),
-            ...client,
-            createdAt: new Date().toISOString()
-        };
-        clients.push(newClient);
-        this.set(this.KEYS.CLIENTS, clients);
-        return newClient;
-    },
-
-    updateClient(id, updates) {
-        const clients = this.getClients();
-        const index = clients.findIndex(c => c.id === id);
-        if (index !== -1) {
-            clients[index] = { ...clients[index], ...updates };
-            this.set(this.KEYS.CLIENTS, clients);
-            return clients[index];
-        }
-        return null;
-    },
-
-    deleteClient(id) {
-        const clients = this.getClients().filter(c => c.id !== id);
-        this.set(this.KEYS.CLIENTS, clients);
-        this.deleteRemote(this.KEYS.CLIENTS, id);
-    },
-
-    async deleteRemote(key, id) {
-        if (!Auth.isLoggedIn()) return;
-        const tableMap = {
-            [this.KEYS.CLIENTS]: 'clients',
-            [this.KEYS.QUOTES]: 'quotes',
-            [this.KEYS.INVOICES]: 'invoices',
-            [this.KEYS.SERVICES]: 'services',
-            [this.KEYS.LEADS]: 'leads',
-            [this.KEYS.EXPENSES]: 'expenses',
-            [this.KEYS.REVENUES]: 'revenues'
-        };
-        const table = tableMap[key];
-        if (!table) return;
+        // Update Cache immediately (Optimistic UI)
+        this._cache[table] = data;
 
         try {
-            const token = localStorage.getItem('sp_token');
-            await fetch(`${Auth.apiBase}/api/data/${table}/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+            await fetch(`${Auth.apiBase}/api/data/${table}`, {
+                method: 'POST', // Notre endpoint POST gère l'upsert
+                headers: this.getHeaders(),
+                body: JSON.stringify(data) // Le backend doit gérer un array ou un objet
             });
         } catch (e) {
-            console.error("Remote delete error:", e);
+            console.error(`Error syncing ${table}:`, e);
+            // Revert cache if critical?
+            // Pour l'instant on log juste l'erreur
         }
     },
 
-    // Méthodes devis
-    getQuotes() {
-        return this.get(this.KEYS.QUOTES) || [];
+    // --- Helpers (Legacy Adapter) ---
+
+    getUser() {
+        // Fallback to localStorage USER if cache empty (for initial loads) but verify strict mode
+        // STRICT MODE: Only cache.
+        return this._cache[this.KEYS.USER] || null;
     },
 
-    getQuote(id) {
-        return this.getQuotes().find(q => q.id === id);
+    async setUser(userData) {
+        // Update Profile API
+        // userData contains partial or full user object. We extract 'company' part usually.
+        this._cache[this.KEYS.USER] = { ...this._cache[this.KEYS.USER], ...userData };
+
+        try {
+            // On envoie surtout les métadonnées (Company)
+            const company = userData.company || userData.user_metadata?.company;
+            if (company) {
+                await fetch(`${Auth.apiBase}/api/auth/profile`, {
+                    method: 'PUT',
+                    headers: this.getHeaders(),
+                    body: JSON.stringify({ company })
+                });
+            }
+        } catch (e) {
+            console.error("Error updating profile:", e);
+        }
     },
 
-    addQuote(quote) {
-        const quotes = this.getQuotes();
-        const settings = this.get(this.KEYS.SETTINGS);
-        const number = quotes.length + 1;
+    async updateUser(updates) {
+        const currentUser = this.getUser() || {};
+        const merged = { ...currentUser, ...updates };
+        if (updates.company && currentUser.company) {
+            merged.company = { ...currentUser.company, ...updates.company };
+        }
+        await this.setUser(merged);
+        return merged;
+    },
 
-        const newQuote = {
+    // --- CRUD Wrappers (To be used by modules) ---
+
+    async add(table, item) {
+        // Optimistic
+        if (!this._cache[table]) this._cache[table] = [];
+        this._cache[table].push(item);
+
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify(item)
+            });
+            if (!res.ok) throw new Error('API Error');
+            return await res.json(); // Returns saved item
+        } catch (e) {
+            console.error(`Error adding to ${table}:`, e);
+            // Rollback
+            this._cache[table] = this._cache[table].filter(i => i.id !== item.id);
+            throw e;
+        }
+    },
+
+    async update(table, id, updates) {
+        // Optimistic
+        const list = this._cache[table] || [];
+        const index = list.findIndex(i => i.id === id);
+        let previous = null;
+
+        if (index !== -1) {
+            previous = { ...list[index] };
+            list[index] = { ...list[index], ...updates };
+            this._cache[table] = list; // Trigger UI reactivity if framework used, here just ref update
+        }
+
+        try {
+            // On envoie l'objet complet mis à jour ou partiel ? POST upsert gère l'objet complet
+            const item = list[index];
+            const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify(item)
+            });
+            return await res.json();
+        } catch (e) {
+            console.error(`Error updating ${table}:`, e);
+            // Rollback
+            if (previous) {
+                list[index] = previous;
+                this._cache[table] = list;
+            }
+        }
+    },
+
+    async delete(table, id) {
+        // Optimistic
+        const list = this._cache[table] || [];
+        this._cache[table] = list.filter(i => i.id !== id);
+
+        try {
+            await fetch(`${Auth.apiBase}/api/data/${table}/${id}`, {
+                method: 'DELETE',
+                headers: this.getHeaders()
+            });
+        } catch (e) {
+            console.error(`Error deleting from ${table}:`, e);
+            // Rollback difficult without re-fetching or keeping logic
+        }
+    },
+
+    // --- Specific Domain Methods (Bridging the gap) ---
+
+    // CLIENTS
+    getClients() { return this.get(this.KEYS.CLIENTS); },
+    async addClient(client) {
+        const c = { id: this.generateId(), ...client, createdAt: new Date().toISOString() };
+        await this.add(this.KEYS.CLIENTS, c);
+        return c;
+    },
+    async updateClient(id, updates) { return this.update(this.KEYS.CLIENTS, id, updates); },
+    async deleteClient(id) { return this.delete(this.KEYS.CLIENTS, id); },
+
+    // QUOTES
+    getQuotes() { return this.get(this.KEYS.QUOTES); },
+    async addQuote(quote) {
+        // Logic for number generation needs to be cautious with async
+        // For now, optimistic length based
+        const settings = this.get(this.KEYS.SETTINGS) || {};
+        const count = (this.getQuotes() || []).length + 1;
+
+        const q = {
             id: this.generateId(),
-            number: `${settings.quotePrefix}${String(number).padStart(4, '0')}`,
+            number: `${settings.quotePrefix || 'DEV-'}${String(count).padStart(4, '0')}`,
             ...quote,
             createdAt: new Date().toISOString(),
             status: quote.status || 'draft'
         };
-        quotes.push(newQuote);
-        this.set(this.KEYS.QUOTES, quotes);
-        return newQuote;
+        await this.add(this.KEYS.QUOTES, q);
+        return q;
     },
+    async updateQuote(id, updates) { return this.update(this.KEYS.QUOTES, id, updates); },
+    async deleteQuote(id) { return this.delete(this.KEYS.QUOTES, id); },
 
-    updateQuote(id, updates) {
-        const quotes = this.getQuotes();
-        const index = quotes.findIndex(q => q.id === id);
-        if (index !== -1) {
-            // Logic for "Hard Truths" coaching
-            if (updates.status === 'sent' && quotes[index].status !== 'sent') {
-                updates.sentAt = new Date().toISOString();
-            }
-            if (updates.status === 'sent' && quotes[index].status === 'sent') {
-                updates.lastFollowUpAt = new Date().toISOString();
-            }
+    // INVOICES
+    getInvoices() { return this.get(this.KEYS.INVOICES); },
+    async addInvoice(invoice) {
+        const settings = this.get(this.KEYS.SETTINGS) || {};
+        const count = (this.getInvoices() || []).length + 1;
 
-            quotes[index] = { ...quotes[index], ...updates };
-            this.set(this.KEYS.QUOTES, quotes);
-            return quotes[index];
-        }
-        return null;
-    },
-
-    deleteQuote(id) {
-        const quotes = this.getQuotes().filter(q => q.id !== id);
-        this.set(this.KEYS.QUOTES, quotes);
-        this.deleteRemote(this.KEYS.QUOTES, id);
-    },
-
-    // Méthodes factures
-    getInvoices() {
-        return this.get(this.KEYS.INVOICES) || [];
-    },
-
-    getInvoice(id) {
-        return this.getInvoices().find(i => i.id === id);
-    },
-
-    addInvoice(invoice) {
-        const invoices = this.getInvoices();
-        const settings = this.get(this.KEYS.SETTINGS);
-        const number = invoices.length + 1;
-
-        const newInvoice = {
+        const i = {
             id: this.generateId(),
-            number: `${settings.invoicePrefix}${String(number).padStart(4, '0')}`,
+            number: `${settings.invoicePrefix || 'FACT-'}${String(count).padStart(4, '0')}`,
             ...invoice,
             createdAt: new Date().toISOString(),
             status: invoice.status || 'draft'
         };
-        invoices.push(newInvoice);
-        this.set(this.KEYS.INVOICES, invoices);
-        return newInvoice;
+        await this.add(this.KEYS.INVOICES, i);
+        return i;
+    },
+    async updateInvoice(id, updates) { return this.update(this.KEYS.INVOICES, id, updates); },
+    async deleteInvoice(id) { return this.delete(this.KEYS.INVOICES, id); },
+
+    // LEADS
+    getLeads() { return this.get(this.KEYS.LEADS); },
+    async addLead(lead) {
+        const l = { id: this.generateId(), ...lead, createdAt: new Date().toISOString(), status: lead.status || 'cold' };
+        await this.add(this.KEYS.LEADS, l);
+        return l;
+    },
+    async updateLead(id, updates) { return this.update(this.KEYS.LEADS, id, updates); },
+    async deleteLead(id) { return this.delete(this.KEYS.LEADS, id); },
+
+    // MARKETPLACE (New Cloud Methods)
+    getPublicMissions() { return this.get(this.KEYS.MARKETPLACE_MISSIONS); },
+    async addMission(mission) {
+        // Mission logic often saves to MY_MISSIONS and MARKETPLACE_MISSIONS
+        // Backend should probably handle this duplication or we send two requests.
+        // For now, simpler: user 'saves' to my_missions table. Global radar reads all.
+        // Let's assume we save to 'marketplace_missions' table which is public.
+        await this.add(this.KEYS.MARKETPLACE_MISSIONS, mission);
+        await this.add(this.KEYS.MY_MISSIONS, mission); // Keep track of mine separately or filter? API filtering is better but stick to plan.
     },
 
-    updateInvoice(id, updates) {
-        const invoices = this.getInvoices();
-        const index = invoices.findIndex(i => i.id === id);
-        if (index !== -1) {
-            // Logic for "Hard Truths" coaching
-            if (updates.status === 'sent' && invoices[index].status !== 'sent') {
-                updates.sentAt = new Date().toISOString();
-            }
-            if (updates.status === 'sent' && invoices[index].status === 'sent') {
-                updates.lastFollowUpAt = new Date().toISOString();
-            }
-
-            invoices[index] = { ...invoices[index], ...updates };
-            this.set(this.KEYS.INVOICES, invoices);
-            return invoices[index];
-        }
-        return null;
-    },
-
-    deleteInvoice(id) {
-        const invoices = this.getInvoices().filter(i => i.id !== id);
-        this.set(this.KEYS.INVOICES, invoices);
-        this.deleteRemote(this.KEYS.INVOICES, id);
-    },
-
-    // Méthodes Service Catalog
-    getServices() {
-        return this.get(this.KEYS.SERVICES) || [];
-    },
-
-    addService(service) {
-        const services = this.getServices();
-        const newService = {
-            id: this.generateId(),
-            ...service,
-            createdAt: new Date().toISOString()
-        };
-        services.push(newService);
-        this.set(this.KEYS.SERVICES, services);
-        return newService;
-    },
-
-    deleteService(id) {
-        const services = this.getServices().filter(s => s.id !== id);
-        this.set(this.KEYS.SERVICES, services);
-        this.deleteRemote(this.KEYS.SERVICES, id);
-    },
-
-    // Méthodes Radar à Prospects (Leads)
-    getLeads() {
-        return this.get(this.KEYS.LEADS) || [];
-    },
-
-    addLead(lead) {
-        const leads = this.getLeads();
-        const newLead = {
-            id: this.generateId(),
-            ...lead,
-            status: lead.status || 'cold', // 'cold', 'warm', 'won'
-            createdAt: new Date().toISOString()
-        };
-        leads.push(newLead);
-        this.set(this.KEYS.LEADS, leads);
-        return newLead;
-    },
-
-    updateLead(id, updates) {
-        const leads = this.getLeads();
-        const index = leads.findIndex(l => l.id === id);
-        if (index !== -1) {
-            leads[index] = { ...leads[index], ...updates };
-            this.set(this.KEYS.LEADS, leads);
-            return leads[index];
-        }
-        return null;
-    },
-
-    deleteLead(id) {
-        const leads = this.getLeads().filter(l => l.id !== id);
-        this.set(this.KEYS.LEADS, leads);
-        this.deleteRemote(this.KEYS.LEADS, id);
-    },
-
-    // Méthodes Dépenses
-    getExpenses() {
-        return this.get(this.KEYS.EXPENSES) || [];
-    },
-
-    addExpense(expense) {
-        const expenses = this.getExpenses();
-        const newExpense = {
-            id: 'exp-' + Date.now(),
-            ...expense,
-            createdAt: new Date().toISOString()
-        };
-        expenses.push(newExpense);
-        this.set(this.KEYS.EXPENSES, expenses);
-        return newExpense;
-    },
-
-    deleteExpense(id) {
-        const expenses = this.getExpenses().filter(e => e.id !== id);
-        this.set(this.KEYS.EXPENSES, expenses);
-        this.deleteRemote(this.KEYS.EXPENSES, id);
-    },
-
-    // Statistiques
-    getStats() {
-        const invoices = this.getInvoices();
-        const quotes = this.getQuotes();
-        const clients = this.getClients();
-
-        // CA du mois en cours
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        const monthlyRevenue = invoices
-            .filter(i => {
-                const date = new Date(i.createdAt);
-                return i.status === 'paid' &&
-                    date.getMonth() === currentMonth &&
-                    date.getFullYear() === currentYear;
-            })
-            .reduce((sum, i) => sum + (i.total || 0), 0);
-
-        // Factures impayées
-        const unpaidInvoices = invoices.filter(i =>
-            i.status === 'sent' || i.status === 'overdue'
-        );
-        const unpaidAmount = unpaidInvoices.reduce((sum, i) => sum + (i.total || 0), 0);
-
-        return {
-            totalClients: clients.length,
-            totalQuotes: quotes.length,
-            totalInvoices: invoices.length,
-            monthlyRevenue,
-            unpaidAmount,
-            unpaidCount: unpaidInvoices.length
-        };
-    },
-
-    // Utilitaires
+    // UTILS
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     },
 
-    // Export/Import
-    exportAll() {
-        const data = {
-            version: '1.0',
-            exportedAt: new Date().toISOString(),
-            user: this.get(this.KEYS.USER),
-            settings: this.get(this.KEYS.SETTINGS),
-            clients: this.get(this.KEYS.CLIENTS),
-            quotes: this.get(this.KEYS.QUOTES),
-            invoices: this.get(this.KEYS.INVOICES),
-            revenues: this.get(this.KEYS.REVENUES),
-            expenses: this.get(this.KEYS.EXPENSES)
-        };
-        return JSON.stringify(data, null, 2);
+    // SUBSCRIPTION (Helpers)
+    isPro() {
+        const user = this.getUser();
+        if (!user) return false;
+        // Check local override or metadata
+        if (user.user_metadata?.is_pro || user.is_pro) return true;
+        return false;
     },
 
-    importAll(jsonData) {
-        try {
-            const data = JSON.parse(jsonData);
-
-            // Validation basique
-            if (!data.version) throw new Error('Invalid data format');
-
-            // Import
-            Object.keys(this.KEYS).forEach(key => {
-                const dataKey = key.toLowerCase();
-                if (data[dataKey]) {
-                    this.set(this.KEYS[key], data[dataKey]);
-                }
-            });
-
-            return true;
-        } catch (e) {
-            console.error('Import error:', e);
-            return false;
-        }
+    getSubscriptionStatus() {
+        // Simplified for this context
+        return { isActive: this.isPro(), isLifetime: true };
     },
 
-    // Reset complet (pour debug)
-    clearAll() {
-        Object.values(this.KEYS).forEach(key => {
-            localStorage.removeItem(key);
-        });
-        this.init();
+    getTier() {
+        return this.isPro() ? 'expert' : 'standard';
     }
 };
 
-// Auto-initialisation
+// Auto-init
 Storage.init();
+

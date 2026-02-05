@@ -166,12 +166,69 @@ router.get('/me', async (req, res) => {
                 email: user.email,
                 user_metadata: {
                     company_name: user.user_metadata.company_name,
-                    is_pro: user.user_metadata.is_pro
+                    is_pro: user.user_metadata.is_pro,
+                    company: user.user_metadata.company // Include full company object
                 }
             }
         });
     } catch (error) {
         res.status(401).json({ message: 'Session invalide' });
+    }
+});
+
+// @route   PUT /api/auth/profile
+// @desc    Update user profile metadata
+// @access  Private
+router.put('/profile', async (req, res) => {
+    const supabase = req.app.get('supabase');
+    const token = req.headers.authorization?.split(' ')[1];
+    const { company } = req.body;
+
+    if (!token) return res.status(401).json({ message: 'Non autorisé' });
+
+    try {
+        console.log('🔄 Updating user profile meta...');
+        const { data, error } = await supabase.auth.updateUser({
+            data: { company: company }
+        }, {
+            headers: { Authorization: `Bearer ${token}` } // Pass token explicitly just in case using server client
+        });
+
+        // NOTE: supabase.auth.updateUser usually requires the user's access token if using client SDK,
+        // or Service Role if admin. Here we assume we might need to rely on the token validity or use getUser first.
+        // Actually, with @supabase/supabase-js server-side, we should use the client created with the context.
+        // But `auth.updateUser` updates the *current* session user if authenticated, or we can use admin.
+
+        // Use Admin API for safe server-side update by ID if needed, but let's try standard updateUser first if we can auth the client.
+        // Since `req.app.get('supabase')` is likely the ANON client, we can't just call updateUser without a session.
+        // Better approach:
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        if (userError || !user) throw new Error('User not found');
+
+        const { data: updateData, error: updateError } = await supabase.auth.updateUser({
+            data: { company }
+        }); // This might fail if the server client isn't scoped to the user.
+
+        // RETRY with Admin Client if the above fails or determines best practice:
+        // Using Service Role is safer for backend updates.
+        const serviceReplica = require('@supabase/supabase-js').createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        const { data: finalData, error: finalError } = await serviceReplica.auth.admin.updateUserById(
+            user.id,
+            { user_metadata: { company: company } }
+        );
+
+        if (finalError) throw finalError;
+
+        console.log('✅ User profile updated (metadata)');
+        res.json({ success: true, user: finalData.user });
+
+    } catch (error) {
+        console.error('❌ Profile update error:', error);
+        res.status(500).json({ message: 'Erreur lors de la mise à jour du profil' });
     }
 });
 

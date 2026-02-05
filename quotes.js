@@ -138,7 +138,7 @@ const Quotes = {
         `;
     },
 
-    duplicate(id) {
+    async duplicate(id) {
         const quote = Storage.getQuote(id);
         if (!quote) return;
 
@@ -152,8 +152,8 @@ const Quotes = {
                 total: quote.total
             };
 
-            Storage.addQuote(newQuoteData);
-            App.showNotification('Devis dupliqué.', 'success');
+            await Storage.addQuote(newQuoteData);
+            App.showNotification('Devis dupliqué (Sync Cloud).', 'success');
             this.render();
         }
     },
@@ -468,7 +468,7 @@ const Quotes = {
         `;
     },
 
-    save(e) {
+    async save(e) {
         e.preventDefault();
         const form = e.target;
         const formData = new FormData(form);
@@ -512,20 +512,32 @@ const Quotes = {
             taxContext: taxContext
         };
 
-        if (this.editingId) {
-            Storage.updateQuote(this.editingId, quoteData);
-            App.showNotification('Devis modifié.', 'success');
-        } else {
-            Storage.addQuote(quoteData);
-            App.showNotification('Devis créé.', 'success');
-        }
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.textContent = 'Sauvegarde...';
+        btn.disabled = true;
 
-        this.hideForm();
-        this.render();
+        try {
+            if (this.editingId) {
+                await Storage.updateQuote(this.editingId, quoteData);
+                App.showNotification('Devis modifié avec succès.', 'success');
+            } else {
+                await Storage.addQuote(quoteData);
+                App.showNotification('Devis créé avec succès.', 'success');
+            }
+            this.hideForm();
+            this.render();
+        } catch (err) {
+            console.error(err);
+            App.showNotification('Erreur de sauvegarde.', 'error');
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
     },
 
     // Convertir un devis en facture
-    convertToInvoice(id) {
+    async convertToInvoice(id) {
         const quote = Storage.getQuote(id);
         if (!quote) return;
 
@@ -533,7 +545,7 @@ const Quotes = {
             if (!confirm('Le devis n\'est pas encore marqué comme accepté. Souhaitez-vous tout de même générer la facture ?')) {
                 return;
             }
-            Storage.updateQuote(id, { status: 'accepted' });
+            await Storage.updateQuote(id, { status: 'accepted' });
         } else {
             if (!confirm('Voulez-vous convertir ce devis en facture ?')) {
                 return;
@@ -550,9 +562,13 @@ const Quotes = {
             dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         };
 
-        Storage.addInvoice(invoiceData);
-        App.showNotification('Facture générée avec succès.', 'success');
-        App.navigateTo('invoices');
+        try {
+            await Storage.addInvoice(invoiceData);
+            App.showNotification('Facture générée avec succès.', 'success');
+            App.navigateTo('invoices');
+        } catch (e) {
+            App.showNotification('Erreur de conversion.', 'error');
+        }
     },
 
     addDefaultServicesForClient(clientId) {
@@ -753,7 +769,7 @@ const Quotes = {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     },
 
-    saveSignature(id) {
+    async saveSignature(id) {
         const canvas = document.getElementById('signature-pad');
         // Check if empty (simple check: getting dataURL and comparing length of empty canvas is tricky across browsers, 
         // so we trust the user for now or could implement isCanvasBlank)
@@ -766,10 +782,14 @@ const Quotes = {
                 image: dataUrl,
                 date: new Date().toISOString()
             };
-            Storage.updateQuote(id, quote);
-            App.showNotification('Devis signé avec succès !', 'success');
-            this.closeSignatureModal();
-            this.render();
+            try {
+                await Storage.updateQuote(id, quote);
+                App.showNotification('Devis signé et synchronisé !', 'success');
+                this.closeSignatureModal();
+                this.render();
+            } catch (e) {
+                App.showNotification('Erreur de signature.', 'error');
+            }
             // Optionnel : Générer directement le PDF signé
             // this.downloadPDF(id); 
         }
@@ -791,9 +811,9 @@ const Quotes = {
         }
     },
 
-    delete(id) {
+    async delete(id) {
         if (confirm('Confirmer la suppression de ce devis ?')) {
-            Storage.deleteQuote(id);
+            await Storage.deleteQuote(id);
             App.showNotification('Devis supprimé.', 'success');
             this.render();
         }
