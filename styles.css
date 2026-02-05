@@ -841,7 +841,7 @@ section {
 
 .popular-badge {
     position: absolute;
-    top: -15px;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
     background: var(--primary);
@@ -854,6 +854,10 @@ section {
     white-space: nowrap;
     z-index: 20;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card.glass {
+    overflow: visible !important;
 }
 
 .tier-name {
