@@ -12,16 +12,19 @@ const Profitability = {
     },
 
     init() {
-        const saved = localStorage.getItem('sp_profit_profile');
-        if (saved) {
-            this.profile = JSON.parse(saved);
+        if (typeof Storage === 'undefined') return;
+        const settings = Storage.get(Storage.KEYS.SETTINGS) || {};
+        if (settings.profitProfile) {
+            this.profile = settings.profitProfile;
         }
         console.log('Profitability Engine Loaded');
     },
 
     saveProfile(data) {
         this.profile = { ...this.profile, ...data };
-        localStorage.setItem('sp_profit_profile', JSON.stringify(this.profile));
+        if (typeof Storage !== 'undefined') {
+            Storage.updateSettings({ profitProfile: this.profile });
+        }
     },
 
     /**

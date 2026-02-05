@@ -334,29 +334,65 @@ const Storage = {
         return this.isPro() ? 'expert' : 'standard';
     },
 
+    async updateSettings(updates) {
+        const settings = this.get(this.KEYS.SETTINGS) || {};
+        const newSettings = { ...settings, ...updates };
+        this._cache[this.KEYS.SETTINGS] = newSettings; // Optimistic
+
+        try {
+            await fetch(`${Auth.apiBase}/api/data/settings`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify(newSettings)
+            });
+        } catch (e) {
+            console.error('Failed to sync settings:', e);
+        }
+    },
+
     getStreak() {
         return 0; // Simplified for now
     },
 
+    // EXPENSES
+    getExpenses() { return this.get(this.KEYS.EXPENSES) || []; },
+    async addExpense(expense) {
+        const e = { id: this.generateId(), ...expense, createdAt: new Date().toISOString() };
+        await this.add(this.KEYS.EXPENSES, e);
+        return e;
+    },
+    async deleteExpense(id) { return this.delete(this.KEYS.EXPENSES, id); },
+
+    // STATS
     getStats() {
         const invoices = this.getInvoices() || [];
         const clients = this.getClients() || [];
+        const expenses = this.getExpenses() || [];
         const now = new Date();
 
+        const monthlyRevenue = invoices
+            .filter(i => {
+                const d = new Date(i.createdAt);
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && i.status === 'paid';
+            })
+            .reduce((sum, i) => sum + (i.total || 0), 0);
+
+        const monthlyExpenses = expenses
+            .filter(e => {
+                const d = new Date(e.date);
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            })
+            .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+
         return {
-            monthlyRevenue: invoices
-                .filter(i => {
-                    const d = new Date(i.createdAt);
-                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && i.status === 'paid';
-                })
-                .reduce((sum, i) => sum + (i.total || 0), 0),
+            monthlyRevenue,
+            monthlyExpenses,
+            netProfit: monthlyRevenue - monthlyExpenses,
             totalClients: clients.length,
             quotesCount: (this.getQuotes() || []).length,
             invoicesCount: invoices.length
         };
-    },
-
-    getExpenses() { return this.get(this.KEYS.EXPENSES) || []; }
+    }
 };
 
 // Auto-init

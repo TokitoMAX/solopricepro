@@ -12,11 +12,11 @@ const Network = {
     },
 
     loadProviders() {
-        this.providers = JSON.parse(localStorage.getItem('sp_network_providers') || '[]');
+        this.providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
     },
 
-    saveProviders() {
-        localStorage.setItem('sp_network_providers', JSON.stringify(this.providers));
+    async saveProviders() {
+        await Storage.set(Storage.KEYS.PROVIDERS, this.providers);
         this.render();
     },
 

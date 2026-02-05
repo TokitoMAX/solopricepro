@@ -85,10 +85,9 @@ function calculatePrice() {
         hourlyRate: Math.ceil(hourlyRate)
     };
 
-    // Save both for legacy compatibility and for the new Storage system
-    localStorage.setItem('sp_calculator_inputs', JSON.stringify(calcData));
+    // Save for the new Storage system (Cloud-First)
     if (typeof Storage !== 'undefined') {
-        Storage.set('sp_calculator_data', calcData);
+        Storage.set(Storage.KEYS.CALCULATOR, calcData);
     }
 
     // Update UI
@@ -128,8 +127,9 @@ function saveCalculatorInputs(data) {
 }
 
 function loadCalculatorInputs() {
-    const data = JSON.parse(localStorage.getItem('sp_calculator_inputs'));
-    if (data) {
+    if (typeof Storage === 'undefined') return;
+    const data = Storage.get(Storage.KEYS.CALCULATOR);
+    if (data && data.monthlyRevenue !== undefined) {
         setInputValue('monthlyRevenue', data.monthlyRevenue);
         setInputValue('workingDays', data.workingDays);
         setInputValue('hoursPerDay', data.hoursPerDay);

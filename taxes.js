@@ -51,16 +51,19 @@ const TaxEngine = {
     currentContext: 'FR-METRO',
 
     init() {
-        const saved = localStorage.getItem('sp_tax_context');
-        if (saved) {
-            this.currentContext = saved;
+        if (typeof Storage === 'undefined') return;
+        const settings = Storage.get(Storage.KEYS.SETTINGS) || {};
+        if (settings.taxContext) {
+            this.currentContext = settings.taxContext;
         }
     },
 
     setContext(ctxId) {
         if (this.contexts[ctxId]) {
             this.currentContext = ctxId;
-            localStorage.setItem('sp_tax_context', ctxId);
+            if (typeof Storage !== 'undefined') {
+                Storage.updateSettings({ taxContext: ctxId });
+            }
             return true;
         }
         return false;

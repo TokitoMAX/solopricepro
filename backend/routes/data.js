@@ -27,12 +27,14 @@ router.use(authenticateUser);
 
 // Generic GET for any table
 router.get('/:table', async (req, res) => {
-    const { table } = req.params;
+    let { table } = req.params;
+    // Prepend sp_ prefix if not present (except for public missions which might be different, but let's be consistent)
+    const actualTable = table.startsWith('sp_') ? table : `sp_${table}`;
     const supabase = req.app.get('supabase');
 
     try {
         const { data, error } = await supabase
-            .from(table)
+            .from(actualTable)
             .select('*')
             .eq('user_id', req.user.id);
 
@@ -45,7 +47,8 @@ router.get('/:table', async (req, res) => {
 
 // Generic POST (Insert)
 router.post('/:table', async (req, res) => {
-    const { table } = req.params;
+    let { table } = req.params;
+    const actualTable = table.startsWith('sp_') ? table : `sp_${table}`;
     const supabase = req.app.get('supabase');
     let payload = req.body;
 
@@ -58,7 +61,7 @@ router.post('/:table', async (req, res) => {
 
     try {
         const { data, error } = await supabase
-            .from(table)
+            .from(actualTable)
             .upsert(payload, { onConflict: 'id' }); // Use upsert for sync logic (local IDs might already exist)
 
         if (error) throw error;
@@ -70,12 +73,13 @@ router.post('/:table', async (req, res) => {
 
 // Generic DELETE
 router.delete('/:table/:id', async (req, res) => {
-    const { table, id } = req.params;
+    let { table, id } = req.params;
+    const actualTable = table.startsWith('sp_') ? table : `sp_${table}`;
     const supabase = req.app.get('supabase');
 
     try {
         const { error } = await supabase
-            .from(table)
+            .from(actualTable)
             .delete()
             .eq('id', id)
             .eq('user_id', req.user.id);
