@@ -70,8 +70,13 @@ const Storage = {
                 fetch(`${Auth.apiBase}/api/data/${table}`, { headers: this.getHeaders() })
                     .then(r => r.ok ? r.json() : [])
                     .then(data => {
-                        this._cache[table] = data;
-                        return { table, count: data.length };
+                        // Normalize singular tables to objects
+                        if ((table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR) && Array.isArray(data)) {
+                            this._cache[table] = data[0] || {};
+                        } else {
+                            this._cache[table] = data;
+                        }
+                        return { table, count: Array.isArray(data) ? data.length : 1 };
                     })
                     .catch(e => {
                         console.error(`Failed to fetch ${table}:`, e);
