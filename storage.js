@@ -60,7 +60,17 @@ const Storage = {
             });
             if (userRes.ok) {
                 const userData = await userRes.json();
-                this._cache[this.KEYS.USER] = userData.user;
+                const user = userData.user;
+
+                // Normalisation : On aplatit user_metadata à la racine
+                const normalizedUser = {
+                    ...user,
+                    ...(user.user_metadata || {}),
+                    company: user.user_metadata?.company || user.company || { name: user.user_metadata?.company_name || '' },
+                    isPro: user.user_metadata?.is_pro || user.is_pro || false
+                };
+
+                this._cache[this.KEYS.USER] = normalizedUser;
                 // Update UI User info immediately
                 if (window.App && App.renderUserInfo) App.renderUserInfo();
             }
@@ -145,12 +155,17 @@ const Storage = {
 
     async setUser(userData) {
         // Update Profile API
-        // userData contains partial or full user object. We extract 'company' part usually.
-        this._cache[this.KEYS.USER] = { ...this._cache[this.KEYS.USER], ...userData };
+        // userData contains partial or full user object.
+        const normalizedUpdate = {
+            ...userData,
+            isPro: userData.is_pro || userData.isPro || (userData.user_metadata?.is_pro)
+        };
+
+        this._cache[this.KEYS.USER] = { ...this._cache[this.KEYS.USER], ...normalizedUpdate };
 
         try {
-            // On envoie surtout les métadonnées (Company)
-            const company = userData.company || userData.user_metadata?.company;
+            // On envoie surtout les métadonnées (Company) au backend
+            const company = normalizedUpdate.company || normalizedUpdate.user_metadata?.company;
             if (company) {
                 await fetch(`${Auth.apiBase}/api/auth/profile`, {
                     method: 'PUT',

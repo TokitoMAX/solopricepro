@@ -9,7 +9,7 @@ const Profile = {
         const user = Storage.getUser() || {};
         const isPro = Storage.isPro();
 
-        const company = user.company || {};
+        const company = user.company || user.user_metadata?.company || {};
 
         container.innerHTML = `
             <div class="page-header">
@@ -107,14 +107,13 @@ const Profile = {
         const formData = new FormData(e.target);
 
         const companyData = {
-            name: formData.get('name'), // Changed from 'companyName' to 'name' to match form input
-            siret: formData.get('siret'),
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            address: formData.get('address'),
-            // website: formData.get('website'), // 'website' field is not in the form, removed
-            footer_mentions: formData.get('footer_mentions') || '', // Added back footer_mentions
-            logo: formData.get('logo') || '' // Changed from hardcoded to formData.get('logo')
+            name: formData.get('name'),
+            siret: formData.get('siret') || '',
+            email: formData.get('email') || '',
+            phone: formData.get('phone') || '',
+            address: formData.get('address') || '',
+            footer_mentions: formData.get('footer_mentions') || '',
+            logo: formData.get('logo') || ''
         };
 
         try {
@@ -123,7 +122,7 @@ const Profile = {
             btn.textContent = 'Enregistrement...';
             btn.disabled = true;
 
-            // Update via Cloud Storage
+            // On met à jour via Storage qui gère maintenant la normalisation
             await Storage.updateUser({ company: companyData });
 
             App.renderUserInfo(); // Kept from original, as it updates user info in UI
