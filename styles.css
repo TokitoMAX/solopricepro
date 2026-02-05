@@ -861,9 +861,8 @@ section {
 
 .market-value {
     font-size: 0.85rem;
-    color: #ef4444;
-    text-decoration: line-through;
-    opacity: 0.8;
+    color: var(--primary-light);
+    font-weight: 500;
     margin-bottom: 0.2rem;
 }
 
