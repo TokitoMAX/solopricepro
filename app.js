@@ -521,6 +521,7 @@ const App = {
         // Force display flex to override any potential inline style 'none'
         modal.style.display = 'flex';
         modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
         this.renderUpgradeStep('comparison');
     },
 
@@ -689,7 +690,8 @@ const App = {
     closeModal() {
         document.querySelectorAll('.modal-overlay').forEach(modal => {
             modal.classList.remove('active');
-            modal.style.display = ''; // Clear inline style
+            modal.style.display = 'none'; // Force hide
+            modal.setAttribute('aria-hidden', 'true');
         });
     },
 

@@ -75,7 +75,7 @@
         <!-- AUTH MODAL -->
         <div id="auth-modal" class="modal-overlay auth-modal" role="dialog" aria-modal="true" aria-hidden="true">
             <div class="modal-content glass">
-                <button class="modal-close" onclick="closeAuthModal()" aria-label="Fermer">✕</button>
+                <button type="button" class="modal-close" onclick="App.closeModal()" aria-label="Fermer">✕</button>
 
                 <div class="auth-modal-tabs">
                     <button class="auth-tab active" data-auth-tab="login"
@@ -490,7 +490,7 @@
     <!-- UPGRADE MODAL -->
     <div id="upgrade-modal" class="modal-overlay" role="dialog" aria-labelledby="upgrade-title">
         <div class="modal-content glass" style="max-width: 800px;">
-            <button class="modal-close" onclick="App.closeModal()" aria-label="Fermer">✕</button>
+            <button type="button" class="modal-close" onclick="App.closeModal()" aria-label="Fermer">✕</button>
             <div class="modal-header" style="border: none; text-align: center; padding-bottom: 0;">
                 <h2 id="upgrade-title" class="upgrade-title"
                     style="font-size: 2rem; background: linear-gradient(135deg, var(--white), var(--primary-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
@@ -529,8 +529,13 @@
 
     <script>
         function showAuthModal(tab) {
+            if (tab) switchAuthTab(tab);
             var m = document.getElementById('auth-modal');
-            if (m) { m.style.display = 'flex'; m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); }
+            if (m) {
+                m.style.display = 'flex';
+                m.classList.add('active');
+                m.setAttribute('aria-hidden', 'false');
+            }
             var tabs = m ? m.querySelector('.auth-modal-tabs') : null;
             if (tabs) {
                 if (tab === 'reset' || tab === 'forgot') {
