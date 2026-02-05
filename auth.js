@@ -237,7 +237,7 @@ const Auth = {
 
         if (typeof Storage !== 'undefined') {
             Storage.setUser(userData);
-            Storage.fullSync();
+            Storage.fetchAllData();
         }
 
         this.showSuccess('Bienvenue, ' + (userData.company.name || userData.email) + ' !');

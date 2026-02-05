@@ -32,7 +32,7 @@ const App = {
 
         if (isLoggedIn || inApp) {
             this.enterApp(false);
-            if (isLoggedIn) Storage.fullSync();
+            if (isLoggedIn) Storage.fetchAllData();
             this.navigateTo(savedPage);
         } else {
             // Landing page by default if never entered
@@ -82,12 +82,12 @@ const App = {
         if (typeof Storage === 'undefined') return;
 
         const calculatorData = Storage.get('sp_calculator_data');
-        const monthlyGoal = calculatorData ? parseFloat(calculatorData.monthlyRevenue) : 5000;
+        const monthlyGoal = (calculatorData && calculatorData.monthlyRevenue) ? parseFloat(calculatorData.monthlyRevenue) : 5000;
 
         const quotes = Storage.getQuotes() || [];
-        const pipelineValue = quotes
-            .filter(q => q.status === 'sent')
-            .reduce((sum, q) => sum + (q.total || 0), 0);
+        const pipelineValue = quotes.length > 0
+            ? quotes.filter(q => q.status === 'sent').reduce((sum, q) => sum + (q.total || 0), 0)
+            : 0;
 
         const valueEl = document.getElementById('landing-pipeline-value');
         const progressEl = document.getElementById('landing-pipeline-progress');
@@ -771,8 +771,10 @@ const App = {
 
     // Formatage de devises
     formatCurrency(amount) {
-        const settings = Storage.get(Storage.KEYS.SETTINGS) || { currency: '€' };
-        return `${Math.round(amount).toLocaleString('fr-FR')} ${settings.currency}`;
+        if (amount === undefined || amount === null || isNaN(amount)) amount = 0;
+        const settings = Storage.get(Storage.KEYS.SETTINGS) || {};
+        const currency = settings.currency || '€';
+        return `${Math.round(amount).toLocaleString('fr-FR')} ${currency}`;
     },
 
     // Formatage de dates

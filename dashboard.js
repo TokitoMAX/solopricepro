@@ -8,10 +8,10 @@ const Dashboard = {
         const stats = Storage.getStats();
         // Récupérer l'objectif (sauvegardé par le calculateur ou par défaut)
         const calculatorData = Storage.get('sp_calculator_data');
-        const monthlyGoal = calculatorData ? parseFloat(calculatorData.monthlyRevenue) : 5000;
+        const monthlyGoal = (calculatorData && calculatorData.monthlyRevenue) ? parseFloat(calculatorData.monthlyRevenue) : 5000;
 
         // Calcul du progrès
-        const progress = Math.min(100, Math.round((stats.monthlyRevenue / monthlyGoal) * 100));
+        const progress = monthlyGoal > 0 ? Math.min(100, Math.round((stats.monthlyRevenue / monthlyGoal) * 100)) : 0;
 
         // Calcul du pipeline (devis envoyés)
         const quotes = Storage.getQuotes();

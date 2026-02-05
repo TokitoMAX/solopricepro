@@ -102,7 +102,8 @@ const Storage = {
     // L'UI lit le cache. Si le cache est vide au démarrage, ça doit être géré par des loading states
 
     get(key) {
-        return this._cache[key] || [];
+        // Return null for missing data to allow proper default fallback in callers
+        return this._cache[key] || null;
     },
 
     // --- Generic Setters (Async API Call + Cache Update) ---
@@ -331,7 +332,31 @@ const Storage = {
 
     getTier() {
         return this.isPro() ? 'expert' : 'standard';
-    }
+    },
+
+    getStreak() {
+        return 0; // Simplified for now
+    },
+
+    getStats() {
+        const invoices = this.getInvoices() || [];
+        const clients = this.getClients() || [];
+        const now = new Date();
+
+        return {
+            monthlyRevenue: invoices
+                .filter(i => {
+                    const d = new Date(i.createdAt);
+                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && i.status === 'paid';
+                })
+                .reduce((sum, i) => sum + (i.total || 0), 0),
+            totalClients: clients.length,
+            quotesCount: (this.getQuotes() || []).length,
+            invoicesCount: invoices.length
+        };
+    },
+
+    getExpenses() { return this.get(this.KEYS.EXPENSES) || []; }
 };
 
 // Auto-init
