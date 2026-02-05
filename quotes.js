@@ -542,14 +542,12 @@ const Quotes = {
         if (!quote) return;
 
         if (quote.status !== 'accepted') {
-            if (!confirm('Le devis n\'est pas encore marqué comme accepté. Souhaitez-vous tout de même générer la facture ?')) {
-                return;
-            }
-            await Storage.updateQuote(id, { status: 'accepted' });
-        } else {
-            if (!confirm('Voulez-vous convertir ce devis en facture ?')) {
-                return;
-            }
+            App.showNotification('Le devis doit être SIGNÉ ou ACCEPTÉ avant d\'être facturé.', 'error');
+            return;
+        }
+
+        if (!confirm('Générer la facture pour ce devis accepté ?')) {
+            return;
         }
 
         const invoiceData = {
@@ -782,9 +780,12 @@ const Quotes = {
                 image: dataUrl,
                 date: new Date().toISOString()
             };
+            // Signature valide le devis
+            quote.status = 'accepted';
+
             try {
                 await Storage.updateQuote(id, quote);
-                App.showNotification('Devis signé et synchronisé !', 'success');
+                App.showNotification('Devis signé et validé !', 'success');
                 this.closeSignatureModal();
                 this.render();
             } catch (e) {
