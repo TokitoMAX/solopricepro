@@ -247,6 +247,7 @@ const Storage = {
 
     // CLIENTS
     getClients() { return this.get(this.KEYS.CLIENTS); },
+    getClient(id) { return (this._cache[this.KEYS.CLIENTS] || []).find(c => c.id === id); },
     async addClient(client) {
         const c = { id: this.generateId(), ...client, createdAt: new Date().toISOString() };
         await this.add(this.KEYS.CLIENTS, c);
@@ -255,8 +256,20 @@ const Storage = {
     async updateClient(id, updates) { return this.update(this.KEYS.CLIENTS, id, updates); },
     async deleteClient(id) { return this.delete(this.KEYS.CLIENTS, id); },
 
+    // SERVICES
+    getServices() { return this.get(this.KEYS.SERVICES); },
+    getService(id) { return (this._cache[this.KEYS.SERVICES] || []).find(s => s.id === id); },
+    async addService(service) {
+        const s = { id: this.generateId(), ...service, createdAt: new Date().toISOString() };
+        await this.add(this.KEYS.SERVICES, s);
+        return s;
+    },
+    async updateService(id, updates) { return this.update(this.KEYS.SERVICES, id, updates); },
+    async deleteService(id) { return this.delete(this.KEYS.SERVICES, id); },
+
     // QUOTES
     getQuotes() { return this.get(this.KEYS.QUOTES); },
+    getQuote(id) { return (this._cache[this.KEYS.QUOTES] || []).find(q => q.id === id || q.number === id); },
     async addQuote(quote) {
         // Logic for number generation needs to be cautious with async
         // For now, optimistic length based
@@ -278,6 +291,7 @@ const Storage = {
 
     // INVOICES
     getInvoices() { return this.get(this.KEYS.INVOICES); },
+    getInvoice(id) { return (this._cache[this.KEYS.INVOICES] || []).find(i => i.id === id || i.number === id); },
     async addInvoice(invoice) {
         const settings = this.get(this.KEYS.SETTINGS) || {};
         const count = (this.getInvoices() || []).length + 1;

@@ -6,8 +6,10 @@ const Profile = {
         const container = document.getElementById('profile-content');
         if (!container) return;
 
-        const user = Storage.getUser();
+        const user = Storage.getUser() || {};
         const isPro = Storage.isPro();
+
+        const company = user.company || {};
 
         container.innerHTML = `
             <div class="page-header">
@@ -24,43 +26,43 @@ const Profile = {
                             <div class="form-grid">
                                 <div class="form-group full-width">
                                     <label class="form-label">Nom Commercial / Entreprise *</label>
-                                    <input type="text" name="name" class="form-input" value="${user.company?.name || ''}" required>
+                                    <input type="text" name="name" class="form-input" value="${company.name || ''}" required>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Email Professionnel *</label>
-                                    <input type="email" name="email" class="form-input" value="${user.company?.email || user.email || ''}" required>
+                                    <input type="email" name="email" class="form-input" value="${company.email || user.email || ''}" required>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Téléphone</label>
-                                    <input type="tel" name="phone" class="form-input" value="${user.company?.phone || ''}">
+                                    <input type="tel" name="phone" class="form-input" value="${company.phone || ''}">
                                 </div>
                                 <div class="form-group full-width">
                                     <label class="form-label">Adresse Siège Social *</label>
-                                    <input type="text" name="address" class="form-input" value="${user.company?.address || ''}" required>
+                                    <input type="text" name="address" class="form-input" value="${company.address || ''}" required>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">SIRET</label>
-                                    <input type="text" name="siret" class="form-input" value="${user.company?.siret || ''}">
+                                    <input type="text" name="siret" class="form-input" value="${company.siret || ''}">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Mentions Légales (Pied de page)</label>
-                                    <input type="text" name="footer_mentions" class="form-input" value="${user.company?.footer_mentions || ''}" placeholder="Ex: TVA Intracom FR...">
+                                    <input type="text" name="footer_mentions" class="form-input" value="${company.footer_mentions || ''}" placeholder="Ex: TVA Intracom FR...">
                                 </div>
                                 
                                 <div class="form-group full-width">
                                     <label class="form-label">Logo de l'entreprise</label>
                                     <div class="logo-upload-container" style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px dashed var(--border);">
                                         <div id="logo-preview" style="width: 80px; height: 80px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border);">
-                                            ${user.company?.logo ? `<img src="${user.company.logo}" style="width: 100%; height: 100%; object-fit: contain;">` : '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>'}
+                                            ${company.logo ? `<img src="${company.logo}" style="width: 100%; height: 100%; object-fit: contain;">` : '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>'}
                                         </div>
                                         <div style="flex: 1;">
                                             <input type="file" id="logo-input" accept="image/*" style="display: none;" onchange="Profile.handleLogoUpload(event)">
                                             <div style="display: flex; gap: 0.5rem;">
                                                 <button type="button" class="button-primary small" onclick="document.getElementById('logo-input').click()">Charger Logo</button>
-                                                ${user.company?.logo ? `<button type="button" class="button-danger small" onclick="Profile.removeLogo()">Supprimer</button>` : ''}
+                                                ${company.logo ? `<button type="button" class="button-danger small" onclick="Profile.removeLogo()">Supprimer</button>` : ''}
                                             </div>
                                             <p class="text-xs text-muted" style="margin-top: 0.5rem;">PNG or JPG. Max 500KB.</p>
-                                            <input type="hidden" name="logo" id="logo-base64" value="${user.company?.logo || ''}">
+                                            <input type="hidden" name="logo" id="logo-base64" value="${company.logo || ''}">
                                         </div>
                                     </div>
                                 </div>
