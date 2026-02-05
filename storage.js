@@ -102,8 +102,8 @@ const Storage = {
     // L'UI lit le cache. Si le cache est vide au démarrage, ça doit être géré par des loading states
 
     get(key) {
-        // Return null for missing data to allow proper default fallback in callers
-        return this._cache[key] || null;
+        // Return empty array by default to prevent crashes with .length or .map
+        return this._cache[key] || [];
     },
 
     // --- Generic Setters (Async API Call + Cache Update) ---
@@ -318,7 +318,7 @@ const Storage = {
 
     // SUBSCRIPTION (Helpers)
     isPro() {
-        const user = this.getUser();
+        const user = this.getUser() || (typeof Auth !== 'undefined' ? Auth.getUser() : null);
         if (!user) return false;
         // Check local override or metadata
         if (user.user_metadata?.is_pro || user.is_pro) return true;
