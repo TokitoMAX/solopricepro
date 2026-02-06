@@ -99,9 +99,11 @@ const Marketplace = {
             return;
         }
 
+        const currentUser = Storage.getUser();
         container.innerHTML = `
             <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
                 ${missions.map(m => {
+            const isOwner = currentUser && (m.user_id === currentUser.id);
             // Robust mapping (Handle case-sensitivity if DB has capitalized keys)
             const title = m.title || m.Title || 'Mission sans titre';
             const budget = m.budget || m.Budget || '0';
@@ -168,12 +170,21 @@ const Marketplace = {
                         </div>
 
                         <div style="display: flex; gap: 1rem; margin-top: auto;">
-                            <button class="button-primary elite-btn" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" onclick="Marketplace.convertMissionToQuote('${m.id}')">
-                                <i class="fas fa-bolt" style="margin-right: 10px;"></i> Répondre
-                            </button>
-                            <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')" title="Postuler via DomTomConnect">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
+                            ${isOwner ? `
+                                <button class="button-secondary" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; opacity: 0.7; cursor: default;" disabled>
+                                    C'est votre annonce
+                                </button>
+                                <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.showPostMissionForm(${JSON.stringify(m).replace(/"/g, '&quot;')})" title="Modifier l'annonce">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            ` : `
+                                <button class="button-primary elite-btn" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" onclick="Marketplace.convertMissionToQuote('${m.id}')">
+                                    <i class="fas fa-bolt" style="margin-right: 10px;"></i> Proposer mes services
+                                </button>
+                                <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')" title="Contacter l'auteur de l'annonce">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            `}
                         </div>
                     </div>
                 `}).join('')}
@@ -321,13 +332,14 @@ const Marketplace = {
 
         const user = Storage.getUser();
         const roleLabel = user?.isPro ? 'Expert Pro' : 'Client';
+        const portfolio = user?.company?.portfolio || '';
 
         const mission = {
             title: formData.get('title'),
             budget: formData.get('budget'),
             zone: formData.get('zone'),
             urgency: formData.get('urgency'),
-            description: formData.get('description') + `\n\n(Publié par : ${roleLabel} - ${user?.name || 'Utilisateur'} ${user?.company?.name ? ` / Enterprise : ${user.company.name}` : ''})`,
+            description: formData.get('description') + `\n\n(Publié par : ${roleLabel} - ${user?.name || 'Utilisateur'} ${user?.company?.name ? ` / Enterprise : ${user.company.name}` : ''}${portfolio ? ` / Portfolio : ${portfolio}` : ''})`,
             status: 'open'
         };
 
@@ -476,10 +488,21 @@ const Marketplace = {
         // Use Storage cache
         const mission = this.getPublicMissions().find(m => m.id === id);
         if (mission) {
-            const subject = encodeURIComponent(`Candidature pour la mission : ${mission.title}`);
-            const body = encodeURIComponent(`Bonjour,\n\nJe souhaite postuler pour la mission "${mission.title}" (Budget: ${mission.budget}).\n\nCordialement,`);
-            window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${body}`;
-            App.showNotification('Ouverture de votre messagerie...', 'success');
+            const user = Storage.getUser();
+            const portfolio = user?.company?.portfolio || '';
+            const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
+            const subject = encodeURIComponent(`Intérêt pour votre mission : ${mission.title} (Via Radar SoloPrice)`);
+
+            let bodyText = `Bonjour ${posterName},\n\nJ'ai vu votre annonce "${mission.title}" sur le Radar SoloPrice Pro et votre projet m'intéresse vivement.\n\nEn tant qu'expert sur le réseau, je souhaiterais vous proposer mes services pour vous accompagner sur ce besoin (Budget: ${mission.budget}€).\n\nVoici pourquoi mon profil pourrait correspondre :\n- [Décrivez votre expertise ici...]\n`;
+
+            if (portfolio) {
+                bodyText += `\nVous pouvez consulter mon portfolio ici : ${portfolio}\n`;
+            }
+
+            bodyText += `\nDans l'attente de votre retour,\n\nCordialement,`;
+
+            window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+            App.showNotification('Préparation de votre message de contact...', 'success');
         } else {
             window.location.href = `mailto:domtomconnect@gmail.com`;
         }

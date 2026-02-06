@@ -48,6 +48,10 @@ const Profile = {
                                     <label class="form-label">Mentions Légales (Pied de page)</label>
                                     <input type="text" name="footer_mentions" class="form-input" value="${company.footer_mentions || ''}" placeholder="Ex: TVA Intracom FR...">
                                 </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Portfolio / Site Web</label>
+                                    <input type="url" name="portfolio" class="form-input" value="${company.portfolio || ''}" placeholder="https://votre-portfolio.com">
+                                </div>
                                 
                                 <div class="form-group full-width">
                                     <label class="form-label">Logo de l'entreprise</label>
@@ -113,7 +117,8 @@ const Profile = {
             phone: formData.get('phone') || '',
             address: formData.get('address') || '',
             footer_mentions: formData.get('footer_mentions') || '',
-            logo: formData.get('logo') || ''
+            logo: formData.get('logo') || '',
+            portfolio: formData.get('portfolio') || ''
         };
 
         try {
