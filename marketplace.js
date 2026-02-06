@@ -135,8 +135,8 @@ const Marketplace = {
                                 ${(m.poster_name || m.Poster_name || 'E').charAt(0)}
                             </div>
                             <div style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.75rem; color: var(--white); font-weight: 700; line-height: 1.2;">${this.escapeHtml(m.poster_name || m.Poster_name || 'Expert SoloPrice')}</span>
-                                <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">${this.escapeHtml(m.poster_company || m.Poster_company || 'Pro Vérifié')}</span>
+                                <span style="font-size: 0.75rem; color: var(--white); font-weight: 700; line-height: 1.2;">${this.escapeHtml(m.poster_name || m.Poster_name || 'Utilisateur')}</span>
+                                <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">${this.escapeHtml(m.poster_company || m.Poster_company || 'Membre du réseau')}</span>
                             </div>
                         </div>
 
@@ -293,12 +293,14 @@ const Marketplace = {
         const missionId = formData.get('id');
 
         const user = Storage.getUser();
+        const roleLabel = user?.isPro ? 'Expert Pro' : 'Client';
+        
         const mission = {
             title: formData.get('title'),
             budget: formData.get('budget'),
             zone: formData.get('zone'),
             urgency: formData.get('urgency'),
-            description: formData.get('description') + `\n\n(Publié par : ${user?.name || 'Expert'} ${user?.company?.name ? ` - ${user.company.name}` : ''})`,
+            description: formData.get('description') + `\n\n(Publié par : ${roleLabel} - ${user?.name || 'Utilisateur'} ${user?.company?.name ? ` / Enterprise : ${user.company.name}` : ''})`,
             status: 'open'
         };
 
