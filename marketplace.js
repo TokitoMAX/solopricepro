@@ -298,9 +298,7 @@ const Marketplace = {
             budget: formData.get('budget'),
             zone: formData.get('zone'),
             urgency: formData.get('urgency'),
-            description: formData.get('description'),
-            poster_name: user?.name || 'Expert SoloPrice',
-            poster_company: user?.company?.name || '',
+            description: formData.get('description') + `\n\n(Publié par : ${user?.name || 'Expert'} ${user?.company?.name ? ` - ${user.company.name}` : ''})`,
             status: 'open'
         };
 
