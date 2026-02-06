@@ -25,14 +25,14 @@ const PORT = process.env.PORT || 5050; // Changé de 5000 à 5050
 
 // Supabase Initialization
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
 let supabase;
 try {
     if (!supabaseUrl || !supabaseKey) {
-        console.warn('⚠️ Attention: SUPABASE_URL ou SUPABASE_ANON_KEY manquant.');
+        console.warn('⚠️ Attention: SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant.');
     } else {
-        console.log('📡 Initialisation de Supabase...');
+        console.log('📡 Initialisation de Supabase (Mode Service Role)...');
         supabase = createClient(supabaseUrl, supabaseKey);
         console.log('✅ Supabase client créé.');
     }

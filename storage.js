@@ -203,11 +203,15 @@ const Storage = {
         }
 
         try {
-            await fetch(`${Auth.apiBase}/api/data/${table}`, {
+            const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(newItem)
             });
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || `Erreur API ${res.status}`);
+            }
             return newItem;
         } catch (e) {
             console.error(`Error adding to ${table}:`, e);
@@ -231,11 +235,15 @@ const Storage = {
         }
 
         try {
-            await fetch(`${Auth.apiBase}/api/data/${table}`, {
+            const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
                 method: 'POST', // Use POST with upsert logic in backend
                 headers: this.getHeaders(),
                 body: JSON.stringify({ ...updates, id })
             });
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || `Erreur API ${res.status}`);
+            }
             return updatedItem;
         } catch (e) {
             console.error(`Error updating ${table}:`, e);
@@ -249,10 +257,14 @@ const Storage = {
         this._cache[table] = list.filter(i => i.id !== id);
 
         try {
-            await fetch(`${Auth.apiBase}/api/data/${table}/${id}`, {
+            const res = await fetch(`${Auth.apiBase}/api/data/${table}/${id}`, {
                 method: 'DELETE',
                 headers: this.getHeaders()
             });
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || `Erreur API ${res.status}`);
+            }
         } catch (e) {
             console.error(`Error deleting from ${table}:`, e);
             // Rollback difficult without re-fetching or keeping logic
