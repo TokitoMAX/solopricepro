@@ -102,25 +102,32 @@ const Marketplace = {
         container.innerHTML = `
             <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
                 ${missions.map(m => {
-            const urgencyColor = m.urgency === 'Haute' ? '#ff4757' : (m.urgency === 'Moyenne' ? '#ffa502' : '#2ed573');
+            // Robust mapping (Handle case-sensitivity if DB has capitalized keys)
+            const title = m.title || m.Title || 'Mission sans titre';
+            const desc = m.description || m.Description || 'Pas de description.';
+            const budget = m.budget || m.Budget || '0';
+            const urgency = m.urgency || m.Urgence || 'Moyenne';
+            const zone = m.zone || m.Zone || 'Outre-Mer';
+
+            const urgencyColor = urgency === 'Haute' ? '#ff4757' : (urgency === 'Moyenne' ? '#ffa502' : '#2ed573');
             return `
                     <div class="mission-card elite-card" style="position: relative; padding: 2rem; border-radius: 24px; background: rgba(15, 15, 15, 0.6); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px);">
                         <div class="glow-edge" style="position: absolute; top: -1px; left: -1px; right: -1px; height: 3px; background: linear-gradient(90deg, transparent, ${urgencyColor}, transparent); opacity: 0.5;"></div>
                         
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; background: rgba(255,255,255,0.03); padding: 4px 10px; border-radius: 100px;">${m.zone || 'Outre-Mer'}</span>
-                            <div style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 10px ${urgencyColor};" title="Urgence: ${m.urgency}"></div>
+                            <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; background: rgba(255,255,255,0.03); padding: 4px 10px; border-radius: 100px;">${this.escapeHtml(zone)}</span>
+                            <div style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 10px ${urgencyColor};" title="Urgence: ${urgency}"></div>
                         </div>
 
-                        <h3 style="margin: 0 0 1.25rem 0; font-size: 1.4rem; color: var(--white); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;">${this.escapeHtml(m.title)}</h3>
+                        <h3 style="margin: 0 0 1.25rem 0; font-size: 1.4rem; color: var(--white); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;">${this.escapeHtml(title)}</h3>
                         
                         <div style="margin-bottom: 2rem;">
-                            <div style="font-size: 2rem; font-weight: 900; color: var(--primary); font-family: 'Inter', sans-serif;">${this.escapeHtml(m.budget)}<span style="font-size: 1rem; margin-left: 4px;">€</span></div>
+                            <div style="font-size: 2rem; font-weight: 900; color: var(--primary); font-family: 'Inter', sans-serif;">${this.escapeHtml(budget)}<span style="font-size: 1rem; margin-left: 4px;">€</span></div>
                             <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Budget Alloué</div>
                         </div>
 
                         <p style="font-size: 0.95rem; line-height: 1.7; color: rgba(255,255,255,0.6); margin: 0 0 2.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400;">
-                            ${this.escapeHtml(m.description)}
+                            ${this.escapeHtml(desc)}
                         </p>
 
                         <div style="display: flex; gap: 1rem; margin-top: auto;">
