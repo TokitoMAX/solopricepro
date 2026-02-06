@@ -104,39 +104,66 @@ const Marketplace = {
                 ${missions.map(m => {
             // Robust mapping (Handle case-sensitivity if DB has capitalized keys)
             const title = m.title || m.Title || 'Mission sans titre';
-            const desc = m.description || m.Description || 'Pas de description.';
             const budget = m.budget || m.Budget || '0';
-            const urgency = m.urgency || m.Urgence || 'Moyenne';
             const zone = m.zone || m.Zone || 'Outre-Mer';
+            const urgency = m.urgency || m.Urgency || 'Normal';
+            const desc = m.description || m.Description || '';
 
-            const urgencyColor = urgency === 'Haute' ? '#ff4757' : (urgency === 'Moyenne' ? '#ffa502' : '#2ed573');
+            // Extract identity from description if missing in DB (Schema fallback)
+            let posterName = m.poster_name || m.Poster_name;
+            let posterRole = 'Utilisateur';
+            let posterCompany = m.poster_company || m.Poster_company || 'Membre du réseau';
+
+            if (!posterName && desc.includes('(Publié par :')) {
+                // Match patterns: (Publié par : role - name / Enterprise : company) OR (Publié par : role - name)
+                const match = desc.match(/\(Publié par : (.*?) - (.*?) \/ Enterprise : (.*?)\)/) ||
+                    desc.match(/\(Publié par : (.*?) - (.*?)\)/);
+                if (match) {
+                    posterRole = match[1];
+                    posterName = match[2];
+                    if (match[3]) posterCompany = match[3];
+                }
+            }
+
+            const isProPoster = posterRole.toLowerCase().includes('pro') || posterRole.toLowerCase().includes('expert');
+            const roleLabelText = posterRole === 'Utilisateur' ? (isProPoster ? 'Expert Pro' : 'Client') : posterRole;
+            const initials = (posterName || 'U').charAt(0).toUpperCase();
+
+            const urgencyColor = urgency === 'Urgent' ? '#ef4444' : (urgency === 'Prioritaire' ? '#f59e0b' : '#10b981');
+            const roleBadgeColor = isProPoster ? 'var(--primary)' : 'rgba(255,255,255,0.1)';
+            const roleTextColor = isProPoster ? '#000' : 'rgba(255,255,255,0.6)';
+
             return `
-                    <div class="mission-card elite-card" style="position: relative; padding: 2rem; border-radius: 24px; background: rgba(15, 15, 15, 0.6); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px);">
+                    <div class="mission-card elite-card" style="position: relative; padding: 2.25rem; border-radius: 28px; background: rgba(15, 15, 15, 0.6); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(12px);">
                         <div class="glow-edge" style="position: absolute; top: -1px; left: -1px; right: -1px; height: 3px; background: linear-gradient(90deg, transparent, ${urgencyColor}, transparent); opacity: 0.5;"></div>
                         
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; background: rgba(255,255,255,0.03); padding: 4px 10px; border-radius: 100px;">${this.escapeHtml(zone)}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); letter-spacing: 2.5px; text-transform: uppercase; background: rgba(255,255,255,0.03); padding: 5px 12px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.05);">${this.escapeHtml(zone)}</span>
                             <div style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 10px ${urgencyColor};" title="Urgence: ${urgency}"></div>
                         </div>
 
-                        <h3 style="margin: 0 0 1.25rem 0; font-size: 1.4rem; color: var(--white); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;">${this.escapeHtml(title)}</h3>
+                        <h3 style="margin: 0 0 1.5rem 0; font-size: 1.5rem; color: var(--white); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;">${this.escapeHtml(title)}</h3>
                         
-                        <div style="margin-bottom: 2rem;">
-                            <div style="font-size: 2rem; font-weight: 900; color: var(--primary); font-family: 'Inter', sans-serif;">${this.escapeHtml(budget)}<span style="font-size: 1rem; margin-left: 4px;">€</span></div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Budget Alloué</div>
+                        <div style="margin-bottom: 2.5rem; display: flex; align-items: flex-end; gap: 4px;">
+                            <div style="font-size: 2.5rem; font-weight: 900; color: var(--primary); font-family: 'Inter', sans-serif; line-height: 1;">${this.escapeHtml(budget)}</div>
+                            <div style="font-size: 1.1rem; color: var(--primary); font-weight: 700; margin-bottom: 5px;">€</div>
+                            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-left: 10px; margin-bottom: 8px;">Budget Radar</div>
                         </div>
 
                         <p style="font-size: 0.95rem; line-height: 1.7; color: rgba(255,255,255,0.6); margin: 0 0 2rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400;">
                             ${this.escapeHtml(desc)}
                         </p>
 
-                        <div class="poster-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 800; font-size: 0.8rem;">
-                                ${(m.poster_name || m.Poster_name || 'E').charAt(0)}
+                        <div class="poster-info" style="display: flex; align-items: center; gap: 12px; margin-bottom: 2.5rem; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.04);">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: ${isProPoster ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; display: flex; align-items: center; justify-content: center; color: ${isProPoster ? 'var(--primary)' : 'var(--text-muted)'}; font-weight: 900; font-size: 1rem; border: 1px solid ${isProPoster ? 'rgba(16, 185, 129, 0.2)' : 'transparent'};">
+                                ${initials}
                             </div>
-                            <div style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.75rem; color: var(--white); font-weight: 700; line-height: 1.2;">${this.escapeHtml(m.poster_name || m.Poster_name || 'Utilisateur')}</span>
-                                <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">${this.escapeHtml(m.poster_company || m.Poster_company || 'Membre du réseau')}</span>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 0.85rem; color: var(--white); font-weight: 700; line-height: 1;">${this.escapeHtml(posterName || 'Utilisateur')}</span>
+                                    <span style="font-size: 0.55rem; padding: 3px 8px; border-radius: 6px; background: ${roleBadgeColor}; color: ${roleTextColor}; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid ${isProPoster ? 'transparent' : 'rgba(255,255,255,0.05)'};">${roleLabelText}</span>
+                                </div>
+                                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; opacity: 0.7;">${this.escapeHtml(posterCompany)}</span>
                             </div>
                         </div>
 
@@ -294,7 +321,7 @@ const Marketplace = {
 
         const user = Storage.getUser();
         const roleLabel = user?.isPro ? 'Expert Pro' : 'Client';
-        
+
         const mission = {
             title: formData.get('title'),
             budget: formData.get('budget'),
