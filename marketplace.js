@@ -158,30 +158,33 @@ const Marketplace = {
         }
 
         container.innerHTML = `
-            <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
                 ${myMissions.map(m => `
-                    <div class="mission-card premium-glass" style="padding: 1.75rem; border-radius: 20px; border: 1px solid var(--primary-glass); background: rgba(16, 185, 129, 0.03); display: flex; flex-direction: column; position: relative; overflow: hidden;">
-                        <div style="position: absolute; top: 0; right: 0; padding: 6px 14px; background: var(--primary); color: white; font-size: 0.6rem; font-weight: 900; letter-spacing: 1px; border-bottom-left-radius: 12px; box-shadow: -2px 2px 10px rgba(0,0,0,0.3);">ACTIVE</div>
+                    <div class="mission-card elite-card" style="position: relative; padding: 2.25rem; border-radius: 28px; background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); display: flex; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(12px);">
+                        <div class="glow-edge" style="position: absolute; top: -1px; left: -1px; right: -1px; height: 3px; background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.6;"></div>
                         
-                        <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 1.25rem;">
-                             <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">MISSION PUBLIÉE</span>
-                             <h3 style="margin: 0; font-size: 1.25rem; color: var(--white); font-weight: 700;">${this.escapeHtml(m.title)}</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 0.65rem; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">MA PUBLICATION</span>
+                                <h3 style="margin: 0; font-size: 1.4rem; color: var(--white); font-weight: 800; line-height: 1.25;">${this.escapeHtml(m.title)}</h3>
+                            </div>
+                            <div class="status-dot" style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 15px var(--primary);" title="En ligne"></div>
                         </div>
 
-                        <div style="margin-bottom: 1.5rem; display: flex; align-items: baseline; gap: 0.5rem;">
-                            <span style="font-size: 1.6rem; font-weight: 900; color: var(--primary);">${this.escapeHtml(m.budget)}€</span>
-                            <span style="font-size: 0.8rem; color: var(--text-muted);">${this.escapeHtml(m.zone)}</span>
+                        <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 18px; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.04);">
+                            <div style="font-size: 2.2rem; font-weight: 900; color: var(--white); font-family: 'Inter', sans-serif; letter-spacing: -1px;">${this.escapeHtml(m.budget)}<span style="font-size: 1.2rem; margin-left: 4px; color: var(--primary);">€</span></div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Budget Radar</div>
                         </div>
 
-                        <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin: 0 0 2.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                        <p style="font-size: 1rem; line-height: 1.7; color: rgba(255,255,255,0.65); margin: 0 0 2.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400;">
                             ${this.escapeHtml(m.description)}
                         </p>
 
-                        <div style="display: flex; gap: 0.75rem; margin-top: auto; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                            <button class="button-secondary" style="flex: 1; border-radius: 10px; font-weight: 600; font-size: 0.85rem;" onclick="Marketplace.editMission('${m.id}')">
-                                <i class="fas fa-pen-nib" style="margin-right: 6px;"></i> Éditer
+                        <div style="display: flex; gap: 1rem; margin-top: auto; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.06);">
+                            <button class="button-secondary" style="flex: 2; height: 50px; border-radius: 14px; font-weight: 700; background: rgba(255,255,255,0.03); font-size: 0.9rem;" onclick="Marketplace.editMission('${m.id}')">
+                                <i class="fas fa-edit" style="margin-right: 10px;"></i> Corriger
                             </button>
-                            <button class="button-secondary" style="border-radius: 10px; border-color: #ef4444; color: #ef4444; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" onclick="Marketplace.deleteMission('${m.id}')">
+                            <button class="button-secondary" style="flex: 1; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; border-color: rgba(239, 68, 68, 0.3); color: #ff4757; background: rgba(239, 68, 68, 0.05);" onclick="Marketplace.deleteMission('${m.id}')">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
