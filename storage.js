@@ -243,13 +243,13 @@ const Storage = {
     getClient(id) { return (this._cache[this.KEYS.CLIENTS] || []).find(c => c.id === id); },
     async addClient(client) {
         const cleanClient = {
-            name: client.name,
-            email: client.email,
-            phone: client.phone,
-            address: client.address,
-            company: client.company,
-            siret: client.siret,
-            notes: client.notes,
+            name: client.name || '',
+            email: client.email || '',
+            phone: client.phone || '',
+            address: client.address || '',
+            company: client.company || '',
+            siret: client.siret || '',
+            notes: client.notes || '',
             defaultServiceIds: client.defaultServiceIds || []
         };
         return this.add(this.KEYS.CLIENTS, cleanClient);
@@ -357,6 +357,19 @@ const Storage = {
             quotesCount: (this.getQuotes() || []).length,
             invoicesCount: invoices.length
         };
+    },
+
+    isPro() {
+        const user = this.getUser();
+        return !!(user && (user.user_metadata?.is_pro || user.is_pro));
+    },
+
+    getTier() {
+        return this.isPro() ? 'expert' : 'standard';
+    },
+
+    getStreak() {
+        return 0;
     },
 
     generateId() {
