@@ -333,6 +333,25 @@ const Storage = {
         }
     },
 
+    async updateCalculator(updates) {
+        const current = this.get(this.KEYS.CALCULATOR) || {};
+        const newData = { ...current, ...updates };
+        this._cache[this.KEYS.CALCULATOR] = newData;
+        try {
+            console.log('[STORAGE] Updating calculator', newData);
+            const res = await fetch(`${Auth.apiBase}/api/data/calculator_data`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify(newData)
+            });
+            if (res.ok) this.broadcastSync();
+            return newData;
+        } catch (e) {
+            console.error('Failed to sync calculator:', e);
+            throw e;
+        }
+    },
+
     getStats() {
         const invoices = this.getInvoices() || [];
         const clients = this.getClients() || [];

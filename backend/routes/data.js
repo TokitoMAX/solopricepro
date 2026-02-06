@@ -59,12 +59,14 @@ router.post('/:table', async (req, res) => {
         payload.user_id = req.user.id;
     }
 
-    console.log(`[DATA-POST] Table: ${table}, User: ${req.user.id}`);
+    // Singular tables use 'user_id' as PK, others use 'id'
+    const isSingularTable = ['settings', 'calculator_data', 'sp_settings', 'sp_calculator_data'].includes(table);
+    const onConflict = isSingularTable ? 'user_id' : 'id';
 
     try {
         const { data, error } = await supabase
             .from(actualTable)
-            .upsert(payload, { onConflict: 'id' });
+            .upsert(payload, { onConflict });
 
         if (error) {
             console.error(`[DATA-POST] ❌ Supabase Error in ${table}:`, error);

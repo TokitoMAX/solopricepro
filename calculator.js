@@ -1,6 +1,8 @@
 // SoloPrice Pro - Calculator Module
 // Handles TJM and Hourly Rate calculations
 
+let calcDebounceTimer;
+
 function initCalculator() {
     loadCalculatorInputs();
 
@@ -9,7 +11,10 @@ function initCalculator() {
     inputs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.addEventListener('input', calculatePrice);
+            el.addEventListener('input', () => {
+                clearTimeout(calcDebounceTimer);
+                calcDebounceTimer = setTimeout(calculatePrice, 500);
+            });
         }
     });
 
@@ -30,7 +35,7 @@ function initCalculator() {
     calculatePrice();
 }
 
-function calculatePrice() {
+async function calculatePrice() {
     // Check if calculator exists on this page
     const revenueInput = document.getElementById('monthlyRevenue');
     if (!revenueInput) return;
@@ -45,33 +50,15 @@ function calculatePrice() {
     // Validation
     if (workingDays === 0 || hoursPerDay === 0) return;
 
-    // Calculate total needed before taxes
-    // Formula: RevenueNeeded = (NetGoal + Charges) / (1 - TaxRate)
-
-    const targetNet = monthlyRevenue;
-    const charges = monthlyCharges;
     const rate = taxRate / 100;
-
-    // Total a facturer pour avoir le net voulu + payer les charges
-    // Rev - (Rev * Rate) - Charges = Net
-    // Rev(1 - Rate) = Net + Charges
-    // Rev = (Net + Charges) / (1 - Rate)
-
     let revenueNeeded = 0;
     if (rate < 1) {
-        revenueNeeded = (targetNet + charges) / (1 - rate);
+        revenueNeeded = (monthlyRevenue + monthlyCharges) / (1 - rate);
     }
 
-    // Calculate total monthly hours
     const monthlyHours = workingDays * hoursPerDay;
-
-    // Calculate hourly rate
     const hourlyRate = monthlyHours > 0 ? revenueNeeded / monthlyHours : 0;
-
-    // Calculate daily rate
     const dailyRate = hourlyRate * hoursPerDay;
-
-    // Calculate annual revenue
     const annualRevenue = revenueNeeded * 12;
 
     // Save inputs and results to central storage
@@ -86,8 +73,8 @@ function calculatePrice() {
     };
 
     // Save for the new Storage system (Cloud-First)
-    if (typeof Storage !== 'undefined') {
-        Storage.set(Storage.KEYS.CALCULATOR, calcData);
+    if (typeof Storage !== 'undefined' && Storage.updateCalculator) {
+        await Storage.updateCalculator(calcData);
     }
 
     // Update UI
@@ -103,9 +90,9 @@ function calculatePrice() {
     // Update breakdown
     const taxAmount = revenueNeeded * rate;
 
-    updateElement('breakdownNet', Math.ceil(targetNet));
+    updateElement('breakdownNet', Math.ceil(monthlyRevenue));
     updateElement('breakdownTax', Math.ceil(taxAmount));
-    updateElement('breakdownCharges', Math.ceil(charges));
+    updateElement('breakdownCharges', Math.ceil(monthlyCharges));
     updateElement('breakdownTotal', Math.ceil(revenueNeeded));
 
     // Update comparison marker
