@@ -3,6 +3,7 @@
 const Quotes = {
     editingId: null,
     currentItems: [],
+    lastContainerId: 'quotes-content',
 
     init() {
         console.log('Quotes module initialized');
@@ -10,6 +11,7 @@ const Quotes = {
 
 
     render(containerId = 'quotes-content') {
+        this.lastContainerId = containerId;
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -526,7 +528,7 @@ const Quotes = {
                 App.showNotification('Devis créé avec succès.', 'success');
             }
             this.hideForm();
-            this.render();
+            this.render(this.lastContainerId);
         } catch (err) {
             console.error(err);
             App.showNotification('Erreur de sauvegarde.', 'error');
@@ -598,7 +600,7 @@ const Quotes = {
         }
     },
 
-    changeStatus(id) {
+    async changeStatus(id) {
         const quote = Storage.getQuote(id);
         if (!quote) return;
 
@@ -613,9 +615,9 @@ const Quotes = {
         const nextIndex = (currentIndex + 1) % statuses.length;
         const nextStatus = statuses[nextIndex].value;
 
-        Storage.updateQuote(id, { status: nextStatus });
+        await Storage.updateQuote(id, { status: nextStatus });
         App.showNotification(`Statut mis à jour : ${statuses[nextIndex].label}`, 'success');
-        this.render();
+        this.render(this.lastContainerId);
     },
 
     downloadPDF(id) {
@@ -643,7 +645,7 @@ const Quotes = {
         }
     },
 
-    fastSend(id) {
+    async fastSend(id) {
         const quote = Storage.getQuote(id);
         const client = Storage.getClient(quote?.clientId);
         const user = Storage.getUser();
@@ -657,8 +659,8 @@ const Quotes = {
 
         App.showNotification('Ouverture de votre messagerie...', 'info');
 
-        Storage.updateQuote(id, { status: 'sent' });
-        this.render();
+        await Storage.updateQuote(id, { status: 'sent' });
+        this.render(this.lastContainerId);
 
         setTimeout(() => {
             window.location.href = mailtoUrl;

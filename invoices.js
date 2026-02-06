@@ -3,8 +3,10 @@
 const Invoices = {
     editingId: null,
     currentItems: [],
+    lastContainerId: 'invoices-content',
 
     render(containerId = 'invoices-content') {
+        this.lastContainerId = containerId;
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -410,7 +412,7 @@ const Invoices = {
                 App.showNotification('Facture créée.', 'success');
             }
             this.hideForm();
-            this.render();
+            this.render(this.lastContainerId);
         } catch (e) {
             console.error(e);
             App.showNotification('Erreur de sauvegarde.', 'error');
@@ -439,10 +441,10 @@ const Invoices = {
 
         await Storage.updateInvoice(id, { status: nextStatus });
         App.showNotification(`Statut mis à jour : ${statuses[nextIndex].label}`, 'success');
-        this.render();
+        this.render(this.lastContainerId);
     },
 
-    fastSend(id) {
+    async fastSend(id) {
         const invoice = Storage.getInvoice(id);
         const client = Storage.getClient(invoice?.clientId);
         const user = Storage.getUser();
@@ -458,8 +460,8 @@ const Invoices = {
         App.showNotification('Ouverture de votre messagerie...', 'info');
 
         // Simuler le passage en mode "envoyé" immédiatement pour l'action-réaction
-        Storage.updateInvoice(id, { status: 'sent' });
-        this.render();
+        await Storage.updateInvoice(id, { status: 'sent' });
+        this.render(this.lastContainerId);
 
         setTimeout(() => {
             window.location.href = mailtoUrl;
@@ -655,7 +657,7 @@ const Invoices = {
         if (confirm('Confirmer la suppression de cette facture ?')) {
             await Storage.deleteInvoice(id);
             App.showNotification('Facture supprimée.', 'success');
-            this.render();
+            this.render(this.lastContainerId);
         }
     },
 

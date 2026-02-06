@@ -105,7 +105,7 @@ const Expenses = {
         `;
     },
 
-    save(e) {
+    async save(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const expense = {
@@ -116,14 +116,14 @@ const Expenses = {
             date: formData.get('date')
         };
 
-        Storage.addExpense(expense);
+        await Storage.addExpense(expense);
         App.showNotification('Dépense enregistrée', 'success');
         this.render();
     },
 
-    delete(id) {
+    async delete(id) {
         if (confirm('Supprimer cette dépense ?')) {
-            Storage.deleteExpense(id);
+            await Storage.deleteExpense(id);
             this.render();
         }
     }

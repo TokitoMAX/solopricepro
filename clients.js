@@ -2,8 +2,10 @@
 
 const Clients = {
     editingId: null,
+    lastContainerId: 'clients-content',
 
     render(containerId = 'clients-content') {
+        this.lastContainerId = containerId;
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -198,7 +200,7 @@ const Clients = {
         }
     },
 
-    save(e) {
+    async save(e) {
         e.preventDefault();
         const form = e.target;
         const formData = new FormData(form);
@@ -215,35 +217,39 @@ const Clients = {
             defaultServiceIds: Array.from(formData.getAll('defaultServiceIds'))
         };
 
-        if (this.editingId) {
-            Storage.updateClient(this.editingId, clientData);
-            App.showNotification('Client modifié.', 'success');
+        try {
+            let newClient = null;
+            if (this.editingId) {
+                await Storage.updateClient(this.editingId, clientData);
+                App.showNotification('Client mis à jour.', 'success');
+            } else {
+                newClient = await Storage.addClient(clientData);
+                App.showNotification('Client ajouté.', 'success');
+            }
             this.hideForm();
-            this.render();
-        } else {
-            const newClient = Storage.addClient(clientData);
-            App.showNotification('Client ajouté.', 'success');
-            this.hideForm();
-            this.render();
+            this.render(this.lastContainerId);
 
             // Check redirect logic
-            if (sessionStorage.getItem('sp_return_to_quote') === 'true') {
+            if (!this.editingId && sessionStorage.getItem('sp_return_to_quote') === 'true') {
                 sessionStorage.removeItem('sp_return_to_quote');
                 setTimeout(() => {
                     App.navigateTo('quotes');
-                    if (typeof Quotes !== 'undefined') {
+                    if (typeof Quotes !== 'undefined' && newClient) {
                         Quotes.showAddForm(newClient.id);
                     }
                 }, 500);
             }
+        } catch (error) {
+            console.error("Error saving client:", error);
+            App.showNotification('Erreur lors de l\'enregistrement du client.', 'error');
         }
     },
 
-    delete(id) {
+    async delete(id) {
         if (confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
-            Storage.deleteClient(id);
+            await Storage.deleteClient(id);
             App.showNotification('Client supprimé.', 'success');
-            this.render();
+            this.render(this.lastContainerId);
         }
     },
 

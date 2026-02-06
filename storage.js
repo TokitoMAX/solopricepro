@@ -191,54 +191,55 @@ const Storage = {
     // --- CRUD Wrappers (To be used by modules) ---
 
     async add(table, item) {
-        // Optimistic
-        if (!this._cache[table]) this._cache[table] = [];
-        this._cache[table].push(item);
+        const id = item.id || this.generateId();
+        const newItem = { ...item, id, createdAt: new Date().toISOString() };
+
+        // Update cache immediately for responsiveness
+        if ((table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR)) {
+            this._cache[table] = newItem;
+        } else {
+            if (!Array.isArray(this._cache[table])) this._cache[table] = [];
+            this._cache[table].push(newItem);
+        }
 
         try {
-            const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
+            await fetch(`${Auth.apiBase}/api/data/${table}`, {
                 method: 'POST',
                 headers: this.getHeaders(),
-                body: JSON.stringify(item)
+                body: JSON.stringify(newItem)
             });
-            if (!res.ok) throw new Error('API Error');
-            return await res.json(); // Returns saved item
+            return newItem;
         } catch (e) {
             console.error(`Error adding to ${table}:`, e);
-            // Rollback
-            this._cache[table] = this._cache[table].filter(i => i.id !== item.id);
             throw e;
         }
     },
 
     async update(table, id, updates) {
-        // Optimistic
-        const list = this._cache[table] || [];
-        const index = list.findIndex(i => i.id === id);
-        let previous = null;
+        if (!this._cache[table]) return;
 
-        if (index !== -1) {
-            previous = { ...list[index] };
-            list[index] = { ...list[index], ...updates };
-            this._cache[table] = list; // Trigger UI reactivity if framework used, here just ref update
+        let updatedItem = null;
+        if (table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR) {
+            this._cache[table] = { ...this._cache[table], ...updates };
+            updatedItem = this._cache[table];
+        } else {
+            const index = this._cache[table].findIndex(item => item.id === id);
+            if (index !== -1) {
+                this._cache[table][index] = { ...this._cache[table][index], ...updates };
+                updatedItem = this._cache[table][index];
+            }
         }
 
         try {
-            // On envoie l'objet complet mis à jour ou partiel ? POST upsert gère l'objet complet
-            const item = list[index];
-            const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
-                method: 'POST',
+            await fetch(`${Auth.apiBase}/api/data/${table}`, {
+                method: 'POST', // Use POST with upsert logic in backend
                 headers: this.getHeaders(),
-                body: JSON.stringify(item)
+                body: JSON.stringify({ ...updates, id })
             });
-            return await res.json();
+            return updatedItem;
         } catch (e) {
             console.error(`Error updating ${table}:`, e);
-            // Rollback
-            if (previous) {
-                list[index] = previous;
-                this._cache[table] = list;
-            }
+            throw e;
         }
     },
 

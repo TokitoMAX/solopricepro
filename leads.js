@@ -1,7 +1,10 @@
 // SoloPrice Pro - Leads Module (Radar à Prospects)
 
 const Leads = {
+    lastContainerId: 'leads-content',
+
     render(containerId = 'leads-content') {
+        this.lastContainerId = containerId;
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -113,7 +116,7 @@ const Leads = {
         container.scrollIntoView({ behavior: 'smooth' });
     },
 
-    save(e) {
+    async save(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const leadData = {
@@ -124,25 +127,25 @@ const Leads = {
             status: 'cold'
         };
 
-        Storage.addLead(leadData);
+        await Storage.addLead(leadData);
         App.showNotification('Prospect ajouté au suivi', 'success');
         this.hideForm();
-        this.render();
+        this.render(this.lastContainerId);
     },
 
-    updateStatus(id, newStatus) {
-        Storage.updateLead(id, { status: newStatus });
+    async updateStatus(id, newStatus) {
+        await Storage.updateLead(id, { status: newStatus });
         App.showNotification('Statut mis à jour', 'success');
-        this.render();
+        this.render(this.lastContainerId);
     },
 
-    convertToClient(id) {
+    async convertToClient(id) {
         if (!confirm('Convertir ce prospect en client ? Ses informations seront transférées dans le module Clients.')) return;
 
         const lead = Storage.getLeads().find(l => l.id === id);
         if (lead) {
             // Add to clients
-            Storage.addClient({
+            await Storage.addClient({
                 name: lead.name,
                 email: lead.email,
                 phone: lead.phone,
@@ -150,17 +153,17 @@ const Leads = {
             });
 
             // Delete from leads
-            Storage.deleteLead(id);
+            await Storage.deleteLead(id);
 
             App.showNotification('Nouveau client enregistré.', 'success');
             App.navigateTo('clients');
         }
     },
 
-    delete(id) {
+    async delete(id) {
         if (confirm('Supprimer ce prospect ?')) {
-            Storage.deleteLead(id);
-            this.render();
+            await Storage.deleteLead(id);
+            this.render(this.lastContainerId);
         }
     },
 
@@ -175,7 +178,7 @@ const Leads = {
         return div.innerHTML;
     },
 
-    convertToQuote(id) {
+    async convertToQuote(id) {
         const leads = Storage.getLeads();
         const lead = leads.find(l => l.id === id);
 
@@ -186,7 +189,7 @@ const Leads = {
         // 1. Assurer que c'est un client
         let client = Storage.getClients().find(c => c.name === lead.name || c.email === lead.email);
         if (!client) {
-            client = Storage.addClient({
+            client = await Storage.addClient({
                 name: lead.name,
                 email: lead.email,
                 phone: lead.phone,
@@ -195,7 +198,7 @@ const Leads = {
         }
 
         // 2. Créer le devis
-        const newQuote = Storage.addQuote({
+        const newQuote = await Storage.addQuote({
             clientId: client.id,
             status: 'draft',
             title: `Prestation pour ${lead.name}`,
