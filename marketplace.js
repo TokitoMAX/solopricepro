@@ -239,7 +239,11 @@ const Marketplace = {
     },
 
     getMyMissions() {
-        return Storage.get(Storage.KEYS.MY_MISSIONS) || [];
+        const user = Auth.getUser();
+        if (!user) return [];
+
+        // Filter the collective marketplace missions to find "my" announcements
+        return (Storage.getPublicMissions() || []).filter(m => m.user_id === user.id);
     },
 
     async deleteMission(id) {

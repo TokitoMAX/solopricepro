@@ -33,10 +33,15 @@ router.get('/:table', async (req, res) => {
     const supabase = req.app.get('supabase');
 
     try {
-        const { data, error } = await supabase
-            .from(actualTable)
-            .select('*')
-            .eq('user_id', req.user.id);
+        let query = supabase.from(actualTable).select('*');
+
+        // Marketplace missions: anyone authenticated can see all
+        // Other tables: strictly filter by user_id
+        if (table !== 'marketplace_missions' && table !== 'sp_marketplace_missions') {
+            query = query.eq('user_id', req.user.id);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         res.json(data);

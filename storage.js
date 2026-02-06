@@ -160,7 +160,13 @@ const Storage = {
 
     async add(table, item) {
         const id = item.id || this.generateId();
-        const newItem = { ...item, id, createdAt: new Date().toISOString() };
+        const user = this.getUser();
+        const newItem = {
+            ...item,
+            id,
+            user_id: user?.id,
+            createdAt: new Date().toISOString()
+        };
 
         if (!Array.isArray(this._cache[table])) this._cache[table] = [];
         this._cache[table].push(newItem);
@@ -313,6 +319,18 @@ const Storage = {
     getExpenses() { return this.get(this.KEYS.EXPENSES); },
     async addExpense(expense) { return this.add(this.KEYS.EXPENSES, expense); },
     async deleteExpense(id) { return this.delete(this.KEYS.EXPENSES, id); },
+
+    // Marketplace & Network
+    getPublicMissions() { return this.get(this.KEYS.MARKETPLACE_MISSIONS); },
+    async addMission(mission) {
+        // Normalisation pour correspondre au schéma (on peut stocker l'urgence/zone car Supabase l'accepte si on ajoute les colonnes)
+        return this.add(this.KEYS.MARKETPLACE_MISSIONS, mission);
+    },
+    async deleteMission(id) { return this.delete(this.KEYS.MARKETPLACE_MISSIONS, id); },
+
+    getNetworkProviders() { return this.get(this.KEYS.PROVIDERS); },
+    async addProvider(provider) { return this.add(this.KEYS.PROVIDERS, provider); },
+    async deleteProvider(id) { return this.delete(this.KEYS.PROVIDERS, id); },
 
     async updateSettings(updates) {
         const settings = this.get(this.KEYS.SETTINGS) || {};
