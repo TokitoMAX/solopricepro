@@ -147,7 +147,7 @@ const Settings = {
         }
     },
 
-    saveBillingSettings(e) {
+    async saveBillingSettings(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const settingsData = {
@@ -156,20 +156,21 @@ const Settings = {
             quotePrefix: formData.get('quotePrefix'),
             quoteValidityDays: parseInt(formData.get('quoteValidityDays')) || 30
         };
-        Storage.set(Storage.KEYS.SETTINGS, {
-            ...Storage.get(Storage.KEYS.SETTINGS),
-            ...settingsData
-        });
-        App.showNotification('Paramètres enregistrés', 'success');
+        try {
+            await Storage.updateSettings(settingsData);
+            App.showNotification('Paramètres enregistrés', 'success');
+        } catch (err) {
+            App.showNotification('Erreur de synchronisation', 'error');
+        }
     },
 
-    saveSocialStatus(value) {
-        Storage.set(Storage.KEYS.SETTINGS, {
-            ...Storage.get(Storage.KEYS.SETTINGS),
-            socialStatus: value
-        });
-        App.showNotification('Statut professionnel mis à jour', 'info');
-        // Rafraîchir le Dashboard si on y retourne
+    async saveSocialStatus(value) {
+        try {
+            await Storage.updateSettings({ socialStatus: value });
+            App.showNotification('Statut professionnel mis à jour', 'info');
+        } catch (err) {
+            App.showNotification('Erreur de sauvegarde', 'error');
+        }
     },
 
     exportData() {

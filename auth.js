@@ -227,8 +227,9 @@ const Auth = {
         const userData = {
             id: user.id,
             email: user.email,
-            company: { name: user.user_metadata?.company_name || '' },
-            isPro: user.user_metadata?.is_pro || false,
+            user_metadata: user.user_metadata,
+            company: user.user_metadata?.company || { name: user.user_metadata?.company_name || '' },
+            isPro: !!(user.user_metadata?.is_pro || user.is_pro),
             token: session?.access_token
         };
 
