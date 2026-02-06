@@ -14,27 +14,45 @@ const Marketplace = {
         if (startTab) this.activeTab = startTab;
 
         container.innerHTML = `
-            <div class="page-header">
+            <div class="page-header" style="margin-bottom: 2.5rem;">
                 <div>
-                    <h1 class="page-title">Marketplace <span style="color: var(--primary);">DomTomConnect</span></h1>
-                    <p class="page-subtitle">Développez votre business, trouvez des clients et des partenaires qualifiés.</p>
+                    <h1 class="page-title" style="display: flex; align-items: center; gap: 10px;">
+                        Marketplace <span class="badge-pro" style="background: var(--primary); font-size: 0.7rem; color: white; padding: 4px 8px; border-radius: 6px;">DOMTOM CONNECT</span>
+                    </h1>
+                    <p class="page-subtitle">Exploitez le premier réseau d'affaires des outre-mer.</p>
                 </div>
-                <button class="button-primary" onclick="Marketplace.showPostMissionForm()">
-                    + Poster une Mission
-                </button>
+                <div style="display: flex; gap: 1rem;">
+                    <div class="search-box" style="position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: var(--text-muted); font-size: 0.9rem;"></i>
+                        <input type="text" id="marketplace-search" class="form-input" placeholder="Rechercher une mission..." style="padding-left: 35px; width: 250px; background: rgba(255,255,255,0.03);" oninput="Marketplace.handleSearch(this.value)">
+                    </div>
+                    <button class="button-primary" onclick="Marketplace.showPostMissionForm()" style="box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                        <i class="fas fa-plus" style="margin-right: 8px;"></i> Poster une Mission
+                    </button>
+                </div>
             </div>
 
             <div id="mission-form-container"></div>
 
-            <div class="settings-tabs" style="margin-bottom: 2rem;">
-                <button class="settings-tab" onclick="Marketplace.switchTab('missions')">Radar Opportunités</button>
-                <button class="settings-tab" onclick="Marketplace.switchTab('my-missions')">Mes Annonces</button>
-                <button class="settings-tab" onclick="Marketplace.switchTab('experts')">Annuaire Experts</button>
+            <div class="marketplace-tabs-container" style="background: rgba(255,255,255,0.02); padding: 0.4rem; border-radius: 14px; display: inline-flex; gap: 0.5rem; margin-bottom: 2.5rem; border: 1px solid var(--border);">
+                <button class="m-tab ${this.activeTab === 'missions' ? 'active' : ''}" onclick="Marketplace.switchTab('missions')">Radar Opportunités</button>
+                <button class="m-tab ${this.activeTab === 'my-missions' ? 'active' : ''}" onclick="Marketplace.switchTab('my-missions')">Mes Annonces</button>
+                <button class="m-tab ${this.activeTab === 'experts' ? 'active' : ''}" onclick="Marketplace.switchTab('experts')">Annuaire Experts</button>
             </div>
 
-            <div id="marketplace-dynamic-content" class="marketplace-container">
-                <!-- Rempli par switchTab -->
+            <div id="marketplace-dynamic-content" class="marketplace-container" style="animation: fadeIn 0.4s ease;">
+                <!-- Content -->
             </div>
+            
+            <style>
+                .m-tab { padding: 0.6rem 1.2rem; border-radius: 10px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease; }
+                .m-tab.active { background: var(--white); color: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+                .m-tab:hover:not(.active) { color: var(--white); background: rgba(255,255,255,0.05); }
+                .mission-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+                .mission-card:hover { transform: translateY(-5px); border-color: var(--primary-glass); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+                .btn-icon { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-muted); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+                .btn-icon:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+            </style>
         `;
 
         this.switchTab(this.activeTab);
@@ -69,11 +87,11 @@ const Marketplace = {
 
         if (missions.length === 0) {
             container.innerHTML = `
-                <div class="empty-state" style="text-align: center; padding: 4rem 2rem;">
-                    <div style="font-size: 3rem; margin-bottom: 1.5rem;"></div>
-                    <h3 style="color: var(--white); margin-bottom: 1rem;">Aucune opportunité pour le moment</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">
-                        Les nouvelles missions apparaîtront ici dès qu'elles seront disponibles sur le réseau DomTom Connect.
+                <div class="empty-state" style="text-align: center; padding: 6rem 2rem; background: rgba(255,255,255,0.01); border-radius: 32px; border: 1px dashed var(--border);">
+                    <div style="font-size: 5rem; margin-bottom: 2rem; opacity: 0.4; filter: grayscale(1);">🚀</div>
+                    <h2 style="color: var(--white); margin-bottom: 0.75rem; font-weight: 800; letter-spacing: -0.5px;">Le Radar est en Scan...</h2>
+                    <p style="color: var(--text-muted); max-width: 420px; margin: 0 auto; line-height: 1.7; font-size: 0.95rem;">
+                        Nous surveillons le réseau DomTom Connect. Les nouvelles opportunités apparaîtront ici dès qu'elles seront publiées.
                     </p>
                 </div>
             `;
@@ -81,28 +99,45 @@ const Marketplace = {
         }
 
         container.innerHTML = `
-            <div class="section-header-inline">
-                <h3 class="section-title-small">Opportunités en cours</h3>
-            </div>
-            <div class="partners-grid">
-                ${missions.map(m => `
-                    <div class="stat-card" style="position: relative; overflow: hidden; border-left: 4px solid ${m.urgency === 'Haute' ? 'var(--danger)' : 'var(--primary)'};">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                            <h4 style="margin: 0; font-size: 1.1rem; color: var(--white);">${m.title}</h4>
-                            <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: ${m.urgency === 'Haute' ? 'var(--danger)' : 'var(--text-muted)'};">${m.urgency}</span>
+            <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
+                ${missions.map(m => {
+            const urgencyColor = m.urgency === 'Haute' ? '#ff4757' : (m.urgency === 'Moyenne' ? '#ffa502' : '#2ed573');
+            return `
+                    <div class="mission-card elite-card" style="position: relative; padding: 2rem; border-radius: 24px; background: rgba(15, 15, 15, 0.6); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px);">
+                        <div class="glow-edge" style="position: absolute; top: -1px; left: -1px; right: -1px; height: 3px; background: linear-gradient(90deg, transparent, ${urgencyColor}, transparent); opacity: 0.5;"></div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; background: rgba(255,255,255,0.03); padding: 4px 10px; border-radius: 100px;">${m.zone || 'Outre-Mer'}</span>
+                            <div style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 10px ${urgencyColor};" title="Urgence: ${m.urgency}"></div>
                         </div>
-                        <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">Budget : ${m.budget}</div>
-                        <div style="font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-                            <span>${m.zone}</span>
-                            <span style="margin-left: auto; opacity: 0.7;">Publié il y a 2h</span>
+
+                        <h3 style="margin: 0 0 1.25rem 0; font-size: 1.4rem; color: var(--white); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;">${this.escapeHtml(m.title)}</h3>
+                        
+                        <div style="margin-bottom: 2rem;">
+                            <div style="font-size: 2rem; font-weight: 900; color: var(--primary); font-family: 'Inter', sans-serif;">${this.escapeHtml(m.budget)}<span style="font-size: 1rem; margin-left: 4px;">€</span></div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Budget Alloué</div>
                         </div>
-                        <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
-                            <button class="button-primary small" style="flex: 2;" onclick="Marketplace.convertMissionToQuote('${m.id}')">Chiffrer via SoloPrice</button>
-                            <button class="button-secondary small" style="flex: 1;" onclick="Marketplace.applyForMission('${m.id}')">Contact</button>
+
+                        <p style="font-size: 0.95rem; line-height: 1.7; color: rgba(255,255,255,0.6); margin: 0 0 2.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400;">
+                            ${this.escapeHtml(m.description)}
+                        </p>
+
+                        <div style="display: flex; gap: 1rem; margin-top: auto;">
+                            <button class="button-primary elite-btn" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" onclick="Marketplace.convertMissionToQuote('${m.id}')">
+                                <i class="fas fa-bolt" style="margin-right: 10px;"></i> Répondre
+                            </button>
+                            <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')">
+                                <i class="fas fa-envelope"></i>
+                            </button>
                         </div>
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>
+            <style>
+                .elite-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+                .elite-btn { transition: all 0.3s ease; }
+                .elite-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+            </style>
         `;
     },
 
@@ -112,33 +147,43 @@ const Marketplace = {
 
         if (myMissions.length === 0) {
             container.innerHTML = `
-                <div class="empty-state" style="text-align: center; padding: 4rem 2rem;">
-                    <h3 style="color: var(--white); margin-bottom: 1rem;">Aucune mission publiée</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Postez une mission pour trouver des experts qualifiés.</p>
-                    <button class="button-primary" onclick="Marketplace.showPostMissionForm()">Poster ma première mission</button>
+                <div class="empty-state" style="text-align: center; padding: 5rem 2rem; background: var(--bg-sidebar); border-radius: 24px; border: 1px dashed var(--border);">
+                    <div style="font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.6;">�</div>
+                    <h3 style="color: var(--white); margin-bottom: 0.5rem; font-weight: 800;">Votre vitrine est vide</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6;">Publiez vos besoins et mobilisez les talents du réseau DomTomConnect.</p>
+                    <button class="button-primary" onclick="Marketplace.showPostMissionForm()" style="border-radius: 12px; font-weight: 700;">Poster ma première mission</button>
                 </div>
             `;
             return;
         }
 
         container.innerHTML = `
-            <div class="section-header-inline">
-                <h3 class="section-title-small">Mes annonces publiées</h3>
-                <span class="badge" style="background: var(--primary-glass); color: var(--primary);">${myMissions.length} mission(s)</span>
-            </div>
-            <div class="partners-grid">
+            <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
                 ${myMissions.map(m => `
-                    <div class="stat-card" style="position: relative; overflow: hidden; border-left: 4px solid var(--primary);">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                            <h4 style="margin: 0; font-size: 1.1rem; color: var(--white);">${this.escapeHtml(m.title)}</h4>
-                            <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--primary);">ACTIVE</span>
+                    <div class="mission-card premium-glass" style="padding: 1.75rem; border-radius: 20px; border: 1px solid var(--primary-glass); background: rgba(16, 185, 129, 0.03); display: flex; flex-direction: column; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: 0; right: 0; padding: 6px 14px; background: var(--primary); color: white; font-size: 0.6rem; font-weight: 900; letter-spacing: 1px; border-bottom-left-radius: 12px; box-shadow: -2px 2px 10px rgba(0,0,0,0.3);">ACTIVE</div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 1.25rem;">
+                             <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">MISSION PUBLIÉE</span>
+                             <h3 style="margin: 0; font-size: 1.25rem; color: var(--white); font-weight: 700;">${this.escapeHtml(m.title)}</h3>
                         </div>
-                        <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">Budget : ${this.escapeHtml(m.budget)} €</div>
-                        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">${this.escapeHtml(m.zone)}</div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1rem;">${this.escapeHtml(m.description).substring(0, 100)}...</p>
-                        <div style="display: flex; gap: 0.5rem; margin-top: auto;">
-                            <button class="button-secondary small" style="flex: 1;" onclick="Marketplace.editMission('${m.id}')">Modifier</button>
-                            <button class="button-secondary small" style="flex: 1; border-color: var(--danger); color: var(--danger);" onclick="Marketplace.deleteMission('${m.id}')">Supprimer</button>
+
+                        <div style="margin-bottom: 1.5rem; display: flex; align-items: baseline; gap: 0.5rem;">
+                            <span style="font-size: 1.6rem; font-weight: 900; color: var(--primary);">${this.escapeHtml(m.budget)}€</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">${this.escapeHtml(m.zone)}</span>
+                        </div>
+
+                        <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin: 0 0 2.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                            ${this.escapeHtml(m.description)}
+                        </p>
+
+                        <div style="display: flex; gap: 0.75rem; margin-top: auto; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                            <button class="button-secondary" style="flex: 1; border-radius: 10px; font-weight: 600; font-size: 0.85rem;" onclick="Marketplace.editMission('${m.id}')">
+                                <i class="fas fa-pen-nib" style="margin-right: 6px;"></i> Éditer
+                            </button>
+                            <button class="button-secondary" style="border-radius: 10px; border-color: #ef4444; color: #ef4444; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" onclick="Marketplace.deleteMission('${m.id}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </div>
                     </div>
                 `).join('')}
@@ -227,11 +272,13 @@ const Marketplace = {
 
         // Saving via Central Storage (Cloud-First)
         try {
-            await Storage.addMission(mission);
+            console.log('[MARKETPLACE] Saving mission...', mission);
+            const result = await Storage.addMission(mission);
+            console.log('[MARKETPLACE] Mission saved successfully:', result);
             App.showNotification('Mission publiée et synchronisée !', 'success');
         } catch (err) {
-            console.error(err);
-            App.showNotification('Erreur de synchronisation.', 'error');
+            console.error('[MARKETPLACE] Sync error:', err);
+            App.showNotification('Erreur de synchronisation : ' + err.message, 'error');
         }
 
         this.hidePostMissionForm();
@@ -247,28 +294,28 @@ const Marketplace = {
     },
 
     async deleteMission(id) {
-        if (!confirm('Supprimer cette mission ?')) return;
-
-        // Uses the central Storage delete logic logic for consistency
-        // Note: Marketplace missions might need dual deletion if we track them in two lists locally/remotely
-        // Plan: Delete from MY_MISSIONS table.
-        // For MARKETPLACE_MISSIONS (Public), we usually flag as deleted or have separate admin clear.
-        // Assuming strict user ownership:
+        if (!confirm('Voulez-vous vraiment retirer cette annonce du Marketplace ?')) return;
 
         try {
-            // Delete from "my_missions" table
-            await Storage.delete(Storage.KEYS.MY_MISSIONS, id);
-
-            // Also attempt delete from "marketplace_missions" if user owns it (backend policy)
-            // Simplified: Just delete from local view
-            await Storage.delete(Storage.KEYS.MARKETPLACE_MISSIONS, id);
-
-            App.showNotification('Mission supprimée.', 'success');
-            // Refresh view
-            this.activeTab === 'my-missions' ? this.renderMyMissions(document.getElementById('marketplace-dynamic-content')) : this.switchTab(this.activeTab);
+            console.log('[MARKETPLACE] Deleting mission:', id);
+            await Storage.deleteMission(id);
+            App.showNotification('Annonce retirée du Marketplace.', 'success');
+            this.switchTab(this.activeTab);
         } catch (e) {
-            App.showNotification('Erreur lors de la suppression.', 'error');
+            console.error('[MARKETPLACE] Delete error:', e);
+            App.showNotification('Erreur lors de la suppression sur le serveur.', 'error');
         }
+    },
+
+    handleSearch(value) {
+        this.render(undefined, this.activeTab); // Re-render with existing tab but could use logic to filter
+        // Optimized: only filter current view
+        const query = value.toLowerCase();
+        const cards = document.querySelectorAll('.mission-card');
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(query) ? 'flex' : 'none';
+        });
     },
 
     editMission(id) {

@@ -172,20 +172,28 @@ const Storage = {
         this._cache[table].push(newItem);
 
         try {
-            console.log(`[STORAGE] POST ${table}`, newItem);
+            console.log(`[STORAGE] Attempting POST to ${table}...`, newItem);
             const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(newItem)
             });
+
             if (!res.ok) {
                 const errorData = await res.json();
+                // Rollback local cache on failure
+                this._cache[table] = this._cache[table].filter(i => i.id !== id);
+                console.error(`[STORAGE] API Error for ${table}:`, errorData);
                 throw new Error(errorData.message || `Erreur API ${res.status}`);
             }
+
+            console.log(`[STORAGE] POST ${table} SUCCESS`);
             this.broadcastSync();
             return newItem;
         } catch (e) {
-            console.error(`Error adding to ${table}:`, e);
+            // Rollback local cache on catch
+            this._cache[table] = (this._cache[table] || []).filter(i => i.id !== id);
+            console.error(`[STORAGE] Network/Catch Error for ${table}:`, e);
             throw e;
         }
     },

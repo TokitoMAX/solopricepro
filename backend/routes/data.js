@@ -71,7 +71,8 @@ router.post('/:table', async (req, res) => {
     try {
         const { data, error } = await supabase
             .from(actualTable)
-            .upsert(payload, { onConflict });
+            .upsert(payload, { onConflict })
+            .select();
 
         if (error) {
             console.error(`[DATA-POST] ❌ Supabase Error in ${table}:`, error);
