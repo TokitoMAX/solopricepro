@@ -509,7 +509,7 @@ const Marketplace = {
                 title: title,
                 items: [
                     {
-                        description: `Prestation : ${title}`,
+                        description: `Prestation : ${title} (Radar: ${zone}, ${urgency})`,
                         quantity: 1,
                         unitPrice: expertAmount
                     },
@@ -519,8 +519,8 @@ const Marketplace = {
                         unitPrice: commissionAmount,
                         locked: true
                     }
-                ],
-                notes: `Opportunité issue du Radar DomTomConnect.\nZone: ${zone}. Urgence: ${urgency}.\n\nIMPORTANT : Ce devis inclut les frais de mise en relation de la plateforme.`
+                ]
+                // Notes removed to avoid SQL error (column missing in sp_quotes)
             };
 
             const newQuote = await Storage.addQuote(quoteData);
