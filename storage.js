@@ -63,7 +63,7 @@ const Storage = {
         ];
 
         try {
-            // Fetch User Profile first to normalize metadata
+            // Fetch User Profile first
             const profileRes = await fetch(`${Auth.apiBase}/api/auth/me`, {
                 headers: this.getHeaders()
             });
@@ -79,7 +79,6 @@ const Storage = {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    // Normalize singular tables
                     if ((table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR) && Array.isArray(data)) {
                         this._cache[table] = data[0] || {};
                     } else {
@@ -98,9 +97,10 @@ const Storage = {
     },
 
     getHeaders() {
+        const token = localStorage.getItem('sp_token');
         return {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('sp_token')}`
+            'Authorization': `Bearer ${token}`
         };
     },
 
@@ -120,8 +120,8 @@ const Storage = {
     },
 
     async setUser(userData) {
+        if (!userData) return;
         const user = userData;
-        // Normalisation : On aplatit user_metadata à la racine
         const normalizedUser = {
             ...user,
             ...(user.user_metadata || {}),
@@ -131,9 +131,18 @@ const Storage = {
 
         this._cache[this.KEYS.USER] = normalizedUser;
         if (typeof App !== 'undefined' && App.renderUserInfo) App.renderUserInfo();
+    },
+
+    async updateUser(updates) {
+        const currentUser = this.getUser() || {};
+        const merged = { ...currentUser, ...updates };
+        if (updates.company && currentUser.company) {
+            merged.company = { ...currentUser.company, ...updates.company };
+        }
+        await this.setUser(merged);
 
         try {
-            const company = normalizedUser.company;
+            const company = merged.company;
             if (company && company.name) {
                 await fetch(`${Auth.apiBase}/api/auth/profile`, {
                     method: 'PUT',
@@ -144,19 +153,10 @@ const Storage = {
         } catch (e) {
             console.error("Error updating profile:", e);
         }
-    },
-
-    async updateUser(updates) {
-        const currentUser = this.getUser() || {};
-        const merged = { ...currentUser, ...updates };
-        if (updates.company && currentUser.company) {
-            merged.company = { ...currentUser.company, ...updates.company };
-        }
-        await this.setUser(merged);
         return merged;
     },
 
-    // --- CRUD Wrappers ---
+    // --- CRUD Core ---
 
     async add(table, item) {
         const id = item.id || this.generateId();
@@ -166,6 +166,7 @@ const Storage = {
         this._cache[table].push(newItem);
 
         try {
+            console.log(`[STORAGE] POST ${table}`, newItem);
             const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
                 method: 'POST',
                 headers: this.getHeaders(),
@@ -199,6 +200,7 @@ const Storage = {
         }
 
         try {
+            console.log(`[STORAGE] UPDATE ${table} ${id}`, updates);
             const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
                 method: 'POST',
                 headers: this.getHeaders(),
@@ -239,8 +241,25 @@ const Storage = {
 
     getClients() { return this.get(this.KEYS.CLIENTS); },
     getClient(id) { return (this._cache[this.KEYS.CLIENTS] || []).find(c => c.id === id); },
-    async addClient(client) { return this.add(this.KEYS.CLIENTS, client); },
-    async updateClient(id, updates) { return this.update(this.KEYS.CLIENTS, id, updates); },
+    async addClient(client) {
+        const cleanClient = {
+            name: client.name,
+            email: client.email,
+            phone: client.phone,
+            address: client.address,
+            company: client.company,
+            siret: client.siret,
+            notes: client.notes,
+            defaultServiceIds: client.defaultServiceIds || []
+        };
+        return this.add(this.KEYS.CLIENTS, cleanClient);
+    },
+    async updateClient(id, updates) {
+        const cleanUpdates = {};
+        const allowed = ['name', 'email', 'phone', 'address', 'company', 'siret', 'notes', 'defaultServiceIds'];
+        allowed.forEach(k => { if (updates[k] !== undefined) cleanUpdates[k] = updates[k]; });
+        return this.update(this.KEYS.CLIENTS, id, cleanUpdates);
+    },
     async deleteClient(id) { return this.delete(this.KEYS.CLIENTS, id); },
 
     getServices() { return this.get(this.KEYS.SERVICES); },
@@ -295,24 +314,23 @@ const Storage = {
     async addExpense(expense) { return this.add(this.KEYS.EXPENSES, expense); },
     async deleteExpense(id) { return this.delete(this.KEYS.EXPENSES, id); },
 
-    // UTILS
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    },
-
-    isPro() {
-        const user = this.getUser();
-        return !!(user && (user.user_metadata?.is_pro || user.is_pro));
-    },
-
-    getTier() {
-        return this.isPro() ? 'expert' : 'standard';
-    },
-
     async updateSettings(updates) {
         const settings = this.get(this.KEYS.SETTINGS) || {};
         const newSettings = { ...settings, ...updates };
-        return this.update(this.KEYS.SETTINGS, null, newSettings); // Settings doesn't have ID per se, backend handles via user_id
+        this._cache[this.KEYS.SETTINGS] = newSettings;
+        try {
+            console.log('[STORAGE] Updating settings', newSettings);
+            const res = await fetch(`${Auth.apiBase}/api/data/settings`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify(newSettings)
+            });
+            if (res.ok) this.broadcastSync();
+            return newSettings;
+        } catch (e) {
+            console.error('Failed to sync settings:', e);
+            throw e;
+        }
     },
 
     getStats() {
@@ -320,29 +338,29 @@ const Storage = {
         const clients = this.getClients() || [];
         const expenses = this.getExpenses() || [];
         const now = new Date();
-
         const monthlyRevenue = invoices
             .filter(i => {
                 const d = new Date(i.createdAt);
                 return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && i.status === 'paid';
             })
             .reduce((sum, i) => sum + (i.total || 0), 0);
-
         const monthlyExpenses = expenses
             .filter(e => {
                 const d = new Date(e.date);
                 return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
             })
             .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-
         return {
-            monthlyRevenue,
-            monthlyExpenses,
+            monthlyRevenue, monthlyExpenses,
             netProfit: monthlyRevenue - monthlyExpenses,
             totalClients: clients.length,
             quotesCount: (this.getQuotes() || []).length,
             invoicesCount: invoices.length
         };
+    },
+
+    generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
 };
 

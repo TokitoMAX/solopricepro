@@ -59,14 +59,20 @@ router.post('/:table', async (req, res) => {
         payload.user_id = req.user.id;
     }
 
+    console.log(`[DATA-POST] Table: ${table}, User: ${req.user.id}`);
+
     try {
         const { data, error } = await supabase
             .from(actualTable)
-            .upsert(payload, { onConflict: 'id' }); // Use upsert for sync logic (local IDs might already exist)
+            .upsert(payload, { onConflict: 'id' });
 
-        if (error) throw error;
+        if (error) {
+            console.error(`[DATA-POST] ❌ Supabase Error in ${table}:`, error);
+            throw error;
+        }
         res.status(201).json(data);
     } catch (err) {
+        console.error(`[DATA-POST] 💥 Catch Error for ${table}:`, err.message);
         res.status(500).json({ message: `Error saving to ${table}`, error: err.message });
     }
 });
