@@ -192,6 +192,13 @@ const Storage = {
                 console.error(`[STORAGE] Sync Error [v:${errorData.v || 'legacy'}]:`, errorData);
                 if (errorData.DEBUG_MARKER) console.warn(`[SERVER-INFO] ${errorData.DEBUG_MARKER}`);
 
+                // Handle session expiration specifically
+                if (res.status === 401) {
+                    const msg = "Votre session a expiré. Veuillez vous déconnecter et vous reconnecter.";
+                    App.showNotification(msg, 'warning');
+                    throw new Error(msg);
+                }
+
                 // Construct a detailed error message
                 let msg = errorData.message || `Erreur API ${res.status}`;
                 if (errorData.error && errorData.error.message) msg = errorData.error.message;
