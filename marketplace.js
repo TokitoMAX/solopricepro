@@ -269,13 +269,12 @@ const Marketplace = {
             zone: formData.get('zone'),
             urgency: formData.get('urgency'),
             description: formData.get('description'),
-            createdAt: new Date().toISOString(),
-            status: 'active'
+            status: 'open' // Match database default 'open'
         };
 
         // Saving via Central Storage (Cloud-First)
         try {
-            console.log('[MARKETPLACE] Saving mission...', mission);
+            console.log('[MARKETPLACE-UI] 🚀 Preparing save with payload:', mission);
             const result = await Storage.addMission(mission);
             console.log('[MARKETPLACE] Mission saved successfully:', result);
             App.showNotification('Mission publiée et synchronisée !', 'success');

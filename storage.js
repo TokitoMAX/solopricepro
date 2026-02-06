@@ -160,40 +160,58 @@ const Storage = {
 
     async add(table, item) {
         const id = item.id || this.generateId();
-        const user = this.getUser();
-        const newItem = {
+        // Force retrieval from cache or localStorage fallback to ensure user_id
+        let user = this.getUser();
+        if (!user) {
+            const stored = localStorage.getItem('sp_user');
+            if (stored) user = JSON.parse(stored);
+        }
+
+        const payload = {
             ...item,
             id,
-            user_id: user?.id,
-            createdAt: new Date().toISOString()
+            user_id: user?.id
         };
 
+        // Don't add to cache yet if we want true sync, or add and replace
         if (!Array.isArray(this._cache[table])) this._cache[table] = [];
-        this._cache[table].push(newItem);
+        this._cache[table].push(payload);
 
         try {
-            console.log(`[STORAGE] Attempting POST to ${table}...`, newItem);
+            console.log(`[STORAGE] Syncing entry to ${table}...`);
+            console.table(payload);
             const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
                 method: 'POST',
                 headers: this.getHeaders(),
-                body: JSON.stringify(newItem)
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
                 const errorData = await res.json();
-                // Rollback local cache on failure
                 this._cache[table] = this._cache[table].filter(i => i.id !== id);
-                console.error(`[STORAGE] API Error for ${table}:`, errorData);
-                throw new Error(errorData.message || `Erreur API ${res.status}`);
+                console.error(`[STORAGE] Sync Error [v:${errorData.v || 'legacy'}]:`, errorData);
+                if (errorData.DEBUG_MARKER) console.warn(`[SERVER-INFO] ${errorData.DEBUG_MARKER}`);
+
+                // Construct a detailed error message
+                let msg = errorData.message || `Erreur API ${res.status}`;
+                if (errorData.error && errorData.error.message) msg = errorData.error.message;
+                if (errorData.hint) msg += ` (Conseil: ${errorData.hint})`;
+
+                throw new Error(msg);
             }
 
-            console.log(`[STORAGE] POST ${table} SUCCESS`);
+            const savedItems = await res.json();
+            const confirmedItem = Array.isArray(savedItems) ? savedItems[0] : savedItems;
+
+            // Re-sync local cache with real DB object (with ids, timestamps etc)
+            this._cache[table] = this._cache[table].map(i => i.id === id ? confirmedItem : i);
+
+            console.log(`[STORAGE] ${table} synced successfully.`);
             this.broadcastSync();
-            return newItem;
+            return confirmedItem;
         } catch (e) {
-            // Rollback local cache on catch
             this._cache[table] = (this._cache[table] || []).filter(i => i.id !== id);
-            console.error(`[STORAGE] Network/Catch Error for ${table}:`, e);
+            console.error(`[STORAGE] Transaction failed for ${table}:`, e);
             throw e;
         }
     },

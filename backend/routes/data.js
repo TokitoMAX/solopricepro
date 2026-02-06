@@ -64,6 +64,8 @@ router.post('/:table', async (req, res) => {
         payload.user_id = req.user.id;
     }
 
+    console.log(`[DATA-POST] 📤 Upserting to ${actualTable}:`, JSON.stringify(payload, null, 2));
+
     // Singular tables use 'user_id' as PK, others use 'id'
     const isSingularTable = ['settings', 'calculator_data', 'sp_settings', 'sp_calculator_data'].includes(table);
     const onConflict = isSingularTable ? 'user_id' : 'id';
@@ -76,12 +78,27 @@ router.post('/:table', async (req, res) => {
 
         if (error) {
             console.error(`[DATA-POST] ❌ Supabase Error in ${table}:`, error);
-            throw error;
+            return res.status(400).json({
+                success: false,
+                v: '1.3-DIAGNOSTIC',
+                DEBUG_MARKER: '!!-FAST-SYNC-ACTIVE-RESTART-SERVER-!!',
+                message: `Supabase Error: ${error.message}`,
+                error: error,
+                hint: error.hint,
+                details: error.details
+            });
         }
-        res.status(201).json(data);
+
+        console.log(`[DATA-POST] ✅ ${table} updated.`, data ? data.length : 0);
+        res.status(201).json({ success: true, v: '1.3-DIAGNOSTIC', timestamp: new Date().toISOString(), data });
     } catch (err) {
-        console.error(`[DATA-POST] 💥 Catch Error for ${table}:`, err.message);
-        res.status(500).json({ message: `Error saving to ${table}`, error: err.message });
+        console.error(`[DATA-POST] 💥 Critical Error for ${table}:`, err);
+        res.status(500).json({
+            success: false,
+            v: '1.2-elite',
+            message: `FATAL_SERVER_ERROR: ${err.message}`,
+            details: err.stack
+        });
     }
 });
 
