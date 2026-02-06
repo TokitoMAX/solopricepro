@@ -458,73 +458,87 @@ const Marketplace = {
     },
 
     async convertMissionToQuote(id) {
-        if (!App.enforceLimit('marketplace_response')) {
-            return;
-        }
+        try {
+            console.log('[MARKETPLACE] Initiating conversion for mission:', id);
 
-        const missions = this.getPublicMissions();
-        const mission = missions.find(m => m.id == id);
-
-        if (!mission) {
-            App.showNotification('Mission introuvable.', 'error');
-            return;
-        }
-
-        if (!confirm(`Voulez-vous créer automatiquement un devis pour la mission "${mission.title}" ?\n\nCela va créer un client temporaire et pré-remplir le devis.`)) return;
-
-        // 1. Créer le client (si besoin, ou client générique "Opportunité Radar")
-        const clients = Storage.getClients();
-        let client = clients.find(c => c.name === 'Prospect Radar');
-
-        if (!client) {
-            client = {
-                id: 'prospect-' + Date.now(),
-                name: 'Prospect Radar',
-                email: 'contact@domtomconnect.com',
-                activity: 'Opportunité Marketplace',
-                createdAt: new Date().toISOString()
-            };
-            // Async creation
-            client = await Storage.addClient(client);
-        }
-
-        // 2. Créer le devis avec répartition automatique (Commission DomTomConnect)
-        const rawBudget = parseFloat(mission.budget) || 0;
-        const commissionRate = 0.20; // 20% commission par défaut
-        const commissionAmount = Math.round(rawBudget * commissionRate);
-        const expertAmount = rawBudget - commissionAmount;
-
-        const quoteData = {
-            clientId: client.id,
-            status: 'draft',
-            title: mission.title,
-            items: [
-                {
-                    description: `Prestation : ${mission.title}`,
-                    quantity: 1,
-                    unitPrice: expertAmount
-                },
-                {
-                    description: `Frais de mise en relation & Plateforme DomTomConnect (20%)`,
-                    quantity: 1,
-                    unitPrice: commissionAmount,
-                    locked: true // Indicateur visuel (logique métier à renforcer)
-                }
-            ],
-            notes: `Opportunité issue du Radar DomTomConnect.\nZone: ${mission.zone}. Urgence: ${mission.urgency}.\n\nIMPORTANT : Ce devis inclut les frais de mise en relation de la plateforme.`
-        };
-
-        const newQuote = await Storage.addQuote(quoteData);
-
-        App.showNotification('Devis et client créés avec succès !', 'success');
-
-        // 3. Rediriger vers l'édition du devis
-        App.navigateTo('quotes');
-        setTimeout(() => {
-            if (typeof Quotes !== 'undefined') {
-                Quotes.edit(newQuote.id);
+            if (!App.enforceLimit('marketplace_response')) {
+                console.warn('[MARKETPLACE] Response limit reached.');
+                return;
             }
-        }, 500);
+
+            const missions = this.getPublicMissions();
+            const mission = missions.find(m => m.id == id);
+
+            if (!mission) {
+                App.showNotification('Mission introuvable.', 'error');
+                return;
+            }
+
+            // Robust data mapping
+            const title = mission.title || mission.Title || 'Mission sans titre';
+            const budget = mission.budget || mission.Budget || '0';
+            const zone = mission.zone || mission.Zone || 'Outre-Mer';
+            const urgency = mission.urgency || mission.Urgence || 'Moyenne';
+
+            if (!confirm(`Voulez-vous créer automatiquement un devis pour la mission "${title}" ?\n\nCela va créer un client temporaire et pré-remplir le devis.`)) return;
+
+            // 1. Créer le client (si besoin, ou client générique "Opportunité Radar")
+            const clients = Storage.getClients();
+            let client = clients.find(c => c.name === 'Prospect Radar');
+
+            if (!client) {
+                console.log('[MARKETPLACE] Creating generic prospect...');
+                const newClientData = {
+                    name: 'Prospect Radar',
+                    email: 'contact@domtomconnect.com',
+                    activity: 'Opportunité Marketplace'
+                };
+                client = await Storage.addClient(newClientData);
+            }
+
+            // 2. Créer le devis avec répartition automatique (Commission DomTomConnect)
+            console.log('[MARKETPLACE] Creating quote with commission...');
+            const rawBudget = parseFloat(budget) || 0;
+            const commissionRate = 0.20; // 20% commission par défaut
+            const commissionAmount = Math.round(rawBudget * commissionRate);
+            const expertAmount = rawBudget - commissionAmount;
+
+            const quoteData = {
+                clientId: client.id,
+                status: 'draft',
+                title: title,
+                items: [
+                    {
+                        description: `Prestation : ${title}`,
+                        quantity: 1,
+                        unitPrice: expertAmount
+                    },
+                    {
+                        description: `Frais de mise en relation & Plateforme DomTomConnect (20%)`,
+                        quantity: 1,
+                        unitPrice: commissionAmount,
+                        locked: true
+                    }
+                ],
+                notes: `Opportunité issue du Radar DomTomConnect.\nZone: ${zone}. Urgence: ${urgency}.\n\nIMPORTANT : Ce devis inclut les frais de mise en relation de la plateforme.`
+            };
+
+            const newQuote = await Storage.addQuote(quoteData);
+            if (!newQuote) throw new Error("Échec de la création du devis.");
+
+            App.showNotification('Devis et client créés avec succès !', 'success');
+
+            // 3. Rediriger vers l'édition du devis
+            App.navigateTo('quotes');
+            setTimeout(() => {
+                if (typeof Quotes !== 'undefined') {
+                    Quotes.edit(newQuote.id);
+                }
+            }, 500);
+        } catch (error) {
+            console.error('[MARKETPLACE] Conversion error:', error);
+            App.showNotification('Erreur lors de la conversion : ' + error.message, 'error');
+        }
     }
 };
 
