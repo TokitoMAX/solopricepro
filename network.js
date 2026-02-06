@@ -15,8 +15,8 @@ const Network = {
         this.providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
     },
 
-    async saveProviders() {
-        await Storage.set(Storage.KEYS.PROVIDERS, this.providers);
+    async refresh() {
+        this.loadProviders();
         this.render();
     },
 
@@ -124,11 +124,10 @@ const Network = {
         if (modal) modal.classList.remove('active');
     },
 
-    addProvider(e) {
+    async addProvider(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const newProvider = {
-            id: Date.now().toString(),
             name: formData.get('name'),
             specialty: formData.get('specialty'),
             email: formData.get('email'),
@@ -136,18 +135,29 @@ const Network = {
             city: formData.get('city')
         };
 
-        this.providers.push(newProvider);
-        this.saveProviders();
-        this.hideAddModal();
-        e.target.reset();
-        App.showNotification('Partenaire ajouté au réseau.', 'success');
+        try {
+            await Storage.add(Storage.KEYS.PROVIDERS, newProvider);
+            this.loadProviders();
+            this.render();
+            this.hideAddModal();
+            e.target.reset();
+            App.showNotification('Partenaire ajouté au réseau.', 'success');
+        } catch (err) {
+            console.error('Network error:', err);
+            App.showNotification('Erreur lors de l\'ajout.', 'error');
+        }
     },
 
-    deleteProvider(id) {
+    async deleteProvider(id) {
         if (confirm('Supprimer ce partenaire de votre réseau ?')) {
-            this.providers = this.providers.filter(p => p.id !== id);
-            this.saveProviders();
-            App.showNotification('Partenaire supprimé.', 'success');
+            try {
+                await Storage.delete(Storage.KEYS.PROVIDERS, id);
+                this.loadProviders();
+                this.render();
+                App.showNotification('Partenaire supprimé.', 'success');
+            } catch (err) {
+                App.showNotification('Erreur lors de la suppression.', 'error');
+            }
         }
     }
 };
