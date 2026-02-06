@@ -60,8 +60,9 @@ const Marketplace = {
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-        const activeTab = document.querySelector(`.settings-tab[onclick*="${tabId}"]`);
+        if (typeof App !== 'undefined') App.checkFreemiumLimits(); // Added line
+        document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active')); // Changed .settings-tab to .m-tab
+        const activeTab = document.querySelector(`.m-tab[onclick*="${tabId}"]`); // Changed .settings-tab to .m-tab
         if (activeTab) activeTab.classList.add('active');
 
         const container = document.getElementById('marketplace-dynamic-content');
@@ -450,8 +451,7 @@ const Marketplace = {
     },
 
     async convertMissionToQuote(id) {
-        if (App.isFeatureProGated('marketplace_automation')) {
-            App.showUpgradeModal('marketplace_automation');
+        if (!App.enforceLimit('marketplace_response')) {
             return;
         }
 
@@ -481,19 +481,30 @@ const Marketplace = {
             client = await Storage.addClient(client);
         }
 
-        // 2. Créer le devis
+        // 2. Créer le devis avec répartition automatique (Commission DomTomConnect)
+        const rawBudget = parseFloat(mission.budget) || 0;
+        const commissionRate = 0.20; // 20% commission par défaut
+        const commissionAmount = Math.round(rawBudget * commissionRate);
+        const expertAmount = rawBudget - commissionAmount;
+
         const quoteData = {
             clientId: client.id,
             status: 'draft',
             title: mission.title,
             items: [
                 {
-                    description: `Prestation : ${mission.title}\n(${mission.description})`,
+                    description: `Prestation : ${mission.title}`,
                     quantity: 1,
-                    unitPrice: parseFloat(mission.budget) || 0
+                    unitPrice: expertAmount
+                },
+                {
+                    description: `Frais de mise en relation & Plateforme DomTomConnect (20%)`,
+                    quantity: 1,
+                    unitPrice: commissionAmount,
+                    locked: true // Indicateur visuel (logique métier à renforcer)
                 }
             ],
-            notes: `Opportunité issue du Radar DomTomConnect. Zone: ${mission.zone}. Urgence: ${mission.urgency}.`
+            notes: `Opportunité issue du Radar DomTomConnect.\nZone: ${mission.zone}. Urgence: ${mission.urgency}.\n\nIMPORTANT : Ce devis inclut les frais de mise en relation de la plateforme.`
         };
 
         const newQuote = await Storage.addQuote(quoteData);

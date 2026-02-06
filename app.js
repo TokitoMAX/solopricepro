@@ -211,7 +211,10 @@ const App = {
         if (page === 'leads' && typeof Leads !== 'undefined') {
             this.navigateTo('network', 'leads'); // Redirect to Cercle > Prospects
         }
-        if (page === 'marketplace' && typeof Marketplace !== 'undefined') Marketplace.render('marketplace-content', ...args);
+        if (page === 'marketplace' && typeof Marketplace !== 'undefined') {
+            this.checkFreemiumLimits(); // Refresh limits before rendering
+            Marketplace.render('marketplace-content', ...args);
+        }
         if (page === 'expenses' && typeof Expenses !== 'undefined') Expenses.render();
         if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();
         if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render();
@@ -335,6 +338,22 @@ const App = {
             return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         }).length;
 
+        const marketplaceMissions = Storage.getPublicMissions() || [];
+        const myUserId = user?.id;
+        const monthlyMarketplaceCount = marketplaceMissions.filter(m => {
+            const d = new Date(m.createdAt);
+            // On compte les devis générés depuis le marketplace (ou missions répondues)
+            // Pour l'instant, on va vérifier dans les devis si la note mentionne "Marketplace"
+            return m.user_id === myUserId; // Mais ici on veut les réponses, pas les posts.
+        }).length;
+
+        // Plus précis : filter les devis qui viennent du marketplace
+        const marketplaceQuotesCount = quotes.filter(q => {
+            const d = new Date(q.createdAt);
+            const isMarketplace = q.notes && q.notes.includes('Radar DomTomConnect');
+            return isMarketplace && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        }).length;
+
         // Banner visibility
         const banner = document.getElementById('freemium-banner');
         if (banner) banner.style.display = isPro ? 'none' : 'flex';
@@ -344,6 +363,7 @@ const App = {
             canAddClient: isPro || clients.length < 1,
             canAddQuote: isPro || monthlyQuotesCount < 2,
             canAddInvoice: isPro || monthlyInvoicesCount < 2,
+            canAddMarketplaceResponse: isPro || marketplaceQuotesCount < 1,
             canExportPDF: isPro,
             canAutomateMarketplace: isPro,
             isExpert: isExpert,
@@ -389,12 +409,10 @@ const App = {
             }
         }
 
-        // 3. Gestion de l'Estimateur (Scoper) - STRICT PRO ONLY
-        if (feature === 'scoper') {
-            // L'estimateur est PRO uniquement, pas de notion de quota
-            const isPro = limits.tier === 'pro' || limits.tier === 'expert';
-            if (!isPro) {
-                this.showUpgradeModal('scoper_limit'); // Ou feature réservée
+        // 4. Gestion du Marketplace (Réponses aux missions)
+        if (feature === 'marketplace_response') {
+            if (!limits.canAddMarketplaceResponse) {
+                this.showUpgradeModal('marketplace_limit');
                 return false;
             }
         }
@@ -509,6 +527,7 @@ const App = {
             pdf: 'Logo personnalisé & exports illimités.',
             feature: 'Fonctionnalité réservée aux membres PRO.',
             scoper_limit: 'Analyse illimitée réservée aux membres PRO.',
+            marketplace_limit: 'Limite de réponse atteinte (1/mois). Passez PRO pour débloquer le Radar.',
             marketplace_automation: 'Automatisation réservée aux membres PRO.'
         };
 
@@ -538,7 +557,7 @@ const App = {
                 <div class="card-tier">STANDARD</div>
                 <div class="card-price">0€<span>/mois</span></div>
                 <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> Marketplace Gratuite</li>
+                    <li><i class="fas fa-check-circle"></i> Marketplace : 1 réponse/mois</li>
                     <li><i class="fas fa-minus"></i> 1 Client Actif</li>
                     <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
                 </ul>
