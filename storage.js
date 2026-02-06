@@ -78,7 +78,14 @@ const Storage = {
                     headers: this.getHeaders()
                 });
                 if (res.ok) {
-                    const data = await res.json();
+                    const responseJson = await res.json();
+                    let data = responseJson;
+
+                    // Unwrap success pattern
+                    if (responseJson.success && responseJson.data !== undefined) {
+                        data = responseJson.data;
+                    }
+
                     if ((table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR) && Array.isArray(data)) {
                         this._cache[table] = data[0] || {};
                     } else {
@@ -207,13 +214,22 @@ const Storage = {
                 throw new Error(msg);
             }
 
-            const savedItems = await res.json();
-            const confirmedItem = Array.isArray(savedItems) ? savedItems[0] : savedItems;
+            const responseJson = await res.json();
+
+            // Extract data from { success: true, data: [...] } wrapper
+            let confirmedItem = null;
+            if (responseJson.success && responseJson.data) {
+                const data = responseJson.data;
+                confirmedItem = Array.isArray(data) ? data[0] : data;
+            } else {
+                // Fallback for direct array/object response
+                confirmedItem = Array.isArray(responseJson) ? responseJson[0] : responseJson;
+            }
 
             // Re-sync local cache with real DB object (with ids, timestamps etc)
-            this._cache[table] = this._cache[table].map(i => i.id === id ? confirmedItem : i);
+            this._cache[table] = this._cache[table].map(i => i.id === id ? { ...i, ...confirmedItem } : i);
 
-            console.log(`[STORAGE] ${table} synced successfully.`);
+            console.log(`[STORAGE] ${table} synced successfully.`, confirmedItem);
             this.broadcastSync();
             return confirmedItem;
         } catch (e) {
@@ -249,6 +265,21 @@ const Storage = {
                 const errorData = await res.json();
                 throw new Error(errorData.message || `Erreur API ${res.status}`);
             }
+
+            const responseJson = await res.json();
+            if (responseJson.success && responseJson.data) {
+                const serverData = Array.isArray(responseJson.data) ? responseJson.data[0] : responseJson.data;
+                // Merge server updates into cache to preserve local keys if needed
+                if (serverData) {
+                    if (table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR) {
+                        this._cache[table] = { ...this._cache[table], ...serverData };
+                    } else {
+                        const idx = this._cache[table].findIndex(item => item.id === id);
+                        if (idx !== -1) this._cache[table][idx] = { ...this._cache[table][idx], ...serverData };
+                    }
+                }
+            }
+
             this.broadcastSync();
             return updatedItem;
         } catch (e) {

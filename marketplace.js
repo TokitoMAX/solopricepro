@@ -126,9 +126,19 @@ const Marketplace = {
                             <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Budget Alloué</div>
                         </div>
 
-                        <p style="font-size: 0.95rem; line-height: 1.7; color: rgba(255,255,255,0.6); margin: 0 0 2.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400;">
+                        <p style="font-size: 0.95rem; line-height: 1.7; color: rgba(255,255,255,0.6); margin: 0 0 2rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400;">
                             ${this.escapeHtml(desc)}
                         </p>
+
+                        <div class="poster-info" style="display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 800; font-size: 0.8rem;">
+                                ${(m.poster_name || m.Poster_name || 'E').charAt(0)}
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.75rem; color: var(--white); font-weight: 700; line-height: 1.2;">${this.escapeHtml(m.poster_name || m.Poster_name || 'Expert SoloPrice')}</span>
+                                <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">${this.escapeHtml(m.poster_company || m.Poster_company || 'Pro Vérifié')}</span>
+                            </div>
+                        </div>
 
                         <div style="display: flex; gap: 1rem; margin-top: auto;">
                             <button class="button-primary elite-btn" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" onclick="Marketplace.convertMissionToQuote('${m.id}')">
@@ -216,6 +226,12 @@ const Marketplace = {
                     <p class="form-subtitle" style="color: var(--text-muted); opacity: 0.8;">
                         ${missionData ? 'Ajustez les détails de votre besoin pour attirer les bons experts.' : 'Décrivez votre besoin pour mobiliser le réseau.'}
                     </p>
+                    ${!missionData ? `
+                        <div style="margin-top: 1rem; padding: 10px 15px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-check" style="color: var(--primary);"></i>
+                            <span style="font-size: 0.85rem; color: var(--white); font-weight: 600;">Publication en tant que : ${Storage.getUser()?.name || 'Utilisateur'} ${Storage.getUser()?.company?.name ? `(${Storage.getUser().company.name})` : ''}</span>
+                        </div>
+                    ` : ''}
                 </div>
                 <form onsubmit="Marketplace.saveMission(event)">
                     ${missionData ? `<input type="hidden" name="id" value="${missionData.id}">` : ''}
@@ -276,12 +292,15 @@ const Marketplace = {
         const formData = new FormData(e.target);
         const missionId = formData.get('id');
 
+        const user = Storage.getUser();
         const mission = {
             title: formData.get('title'),
             budget: formData.get('budget'),
             zone: formData.get('zone'),
             urgency: formData.get('urgency'),
             description: formData.get('description'),
+            poster_name: user?.name || 'Expert SoloPrice',
+            poster_company: user?.company?.name || '',
             status: 'open'
         };
 
