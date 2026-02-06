@@ -359,6 +359,9 @@ const Storage = {
         // Normalisation pour correspondre au schéma (on peut stocker l'urgence/zone car Supabase l'accepte si on ajoute les colonnes)
         return this.add(this.KEYS.MARKETPLACE_MISSIONS, mission);
     },
+    async updateMission(id, updates) {
+        return this.update(this.KEYS.MARKETPLACE_MISSIONS, id, updates);
+    },
     async deleteMission(id) { return this.delete(this.KEYS.MARKETPLACE_MISSIONS, id); },
 
     getNetworkProviders() { return this.get(this.KEYS.PROVIDERS); },

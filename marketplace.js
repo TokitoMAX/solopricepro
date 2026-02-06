@@ -126,8 +126,8 @@ const Marketplace = {
                             <button class="button-primary elite-btn" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" onclick="Marketplace.convertMissionToQuote('${m.id}')">
                                 <i class="fas fa-bolt" style="margin-right: 10px;"></i> Répondre
                             </button>
-                            <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')">
-                                <i class="fas fa-envelope"></i>
+                            <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')" title="Postuler via DomTomConnect">
+                                <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
                     </div>
@@ -195,58 +195,62 @@ const Marketplace = {
     },
 
     // ===== POST MISSION FORM =====
-    showPostMissionForm() {
+    showPostMissionForm(missionData = null) {
         const container = document.getElementById('mission-form-container');
         if (!container) return;
 
-        const user = Auth.getUser();
-        const companyName = user?.company?.name || '';
-
         container.innerHTML = `
-            <div class="form-card" style="margin-bottom: 2rem; animation: slideDown 0.3s ease; background: #0a0a0a; border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h3 style="margin: 0; color: var(--white);">Poster une nouvelle mission</h3>
-                    <button class="btn-close" onclick="Marketplace.hidePostMissionForm()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">✕</button>
+            <div class="elite-form-card" style="animation: slideDown 0.4s ease-out;">
+                <div class="form-header" style="margin-bottom: 2rem;">
+                    <h3 class="form-title" style="color: var(--primary); font-size: 1.5rem; font-weight: 800;">
+                        ${missionData ? '<i class="fas fa-edit"></i> Modifier l\'annonce' : '<i class="fas fa-plus-circle"></i> Publier sur le Marketplace'}
+                    </h3>
+                    <p class="form-subtitle" style="color: var(--text-muted); opacity: 0.8;">
+                        ${missionData ? 'Ajustez les détails de votre besoin pour attirer les bons experts.' : 'Décrivez votre besoin pour mobiliser le réseau.'}
+                    </p>
                 </div>
                 <form onsubmit="Marketplace.saveMission(event)">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                    ${missionData ? `<input type="hidden" name="id" value="${missionData.id}">` : ''}
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                         <div class="form-group">
                             <label class="form-label">Titre de la mission *</label>
-                            <input type="text" name="title" class="form-input" required placeholder="Ex: Développement d'une app mobile">
+                            <input type="text" name="title" class="form-input" required placeholder="Ex: Création de site e-commerce" value="${missionData ? this.escapeHtml(missionData.title) : ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Budget estimé (€) *</label>
-                            <input type="number" name="budget" class="form-input" required placeholder="Ex: 3500">
+                            <input type="number" name="budget" class="form-input" required placeholder="Ex: 2500" value="${missionData ? missionData.budget : ''}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Zone géographique *</label>
                             <select name="zone" class="form-input" required>
                                 <option value="">-- Sélectionner --</option>
-                                <option value="Guadeloupe">Guadeloupe (971)</option>
-                                <option value="Martinique">Martinique (972)</option>
-                                <option value="Guyane">Guyane (973)</option>
-                                <option value="La Réunion">La Réunion (974)</option>
-                                <option value="Mayotte">Mayotte (976)</option>
-                                <option value="France Métropolitaine">France Métropolitaine</option>
-                                <option value="Remote">100% Remote</option>
+                                <option value="Guadeloupe" ${missionData?.zone === 'Guadeloupe' ? 'selected' : ''}>Guadeloupe (971)</option>
+                                <option value="Martinique" ${missionData?.zone === 'Martinique' ? 'selected' : ''}>Martinique (972)</option>
+                                <option value="Guyane" ${missionData?.zone === 'Guyane' ? 'selected' : ''}>Guyane (973)</option>
+                                <option value="La Réunion" ${missionData?.zone === 'La Réunion' ? 'selected' : ''}>La Réunion (974)</option>
+                                <option value="Mayotte" ${missionData?.zone === 'Mayotte' ? 'selected' : ''}>Mayotte (976)</option>
+                                <option value="France Métropolitaine" ${missionData?.zone === 'France Métropolitaine' ? 'selected' : ''}>France Métropolitaine</option>
+                                <option value="Remote" ${missionData?.zone === 'Remote' ? 'selected' : ''}>100% Remote</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Urgence</label>
                             <select name="urgency" class="form-input">
-                                <option value="Basse">Basse (flexible)</option>
-                                <option value="Moyenne" selected>Moyenne (quelques semaines)</option>
-                                <option value="Haute">Haute (urgent)</option>
+                                <option value="Basse" ${missionData?.urgency === 'Basse' ? 'selected' : ''}>Basse (Largo)</option>
+                                <option value="Moyenne" ${missionData?.urgency === 'Moyenne' || !missionData ? 'selected' : ''}>Moyenne (Standard)</option>
+                                <option value="Haute" ${missionData?.urgency === 'Haute' ? 'selected' : ''}>Haute (ASAP)</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-group" style="margin-top: 1.5rem;">
-                        <label class="form-label">Description de la mission *</label>
-                        <textarea name="description" class="form-input" rows="4" required placeholder="Décrivez le projet, les compétences recherchées, les délais..."></textarea>
+                        <label class="form-label">Description détaillée *</label>
+                        <textarea name="description" class="form-input" rows="5" required placeholder="Détaillez vos attentes, délais et livrables...">${missionData ? this.escapeHtml(missionData.description) : ''}</textarea>
                     </div>
                     <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
                         <button type="button" class="button-secondary" onclick="Marketplace.hidePostMissionForm()">Annuler</button>
-                        <button type="submit" class="button-primary">Publier la mission</button>
+                        <button type="submit" class="button-primary" style="padding: 0 2rem;">
+                            ${missionData ? 'Mettre à jour l\'annonce' : 'Lancer l\'appel d\'offre'}
+                        </button>
                     </div>
                 </form>
             </div>
@@ -262,22 +266,28 @@ const Marketplace = {
     async saveMission(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
+        const missionId = formData.get('id');
+
         const mission = {
-            id: Date.now().toString(),
             title: formData.get('title'),
             budget: formData.get('budget'),
             zone: formData.get('zone'),
             urgency: formData.get('urgency'),
             description: formData.get('description'),
-            status: 'open' // Match database default 'open'
+            status: 'open'
         };
 
-        // Saving via Central Storage (Cloud-First)
         try {
-            console.log('[MARKETPLACE-UI] 🚀 Preparing save with payload:', mission);
-            const result = await Storage.addMission(mission);
-            console.log('[MARKETPLACE] Mission saved successfully:', result);
-            App.showNotification('Mission publiée et synchronisée !', 'success');
+            if (missionId) {
+                console.log('[MARKETPLACE] Updating existing mission:', missionId);
+                await Storage.updateMission(missionId, mission);
+                App.showNotification('Annonce mise à jour avec succès.', 'success');
+            } else {
+                mission.id = Date.now().toString();
+                console.log('[MARKETPLACE-UI] 🚀 Preparing save with payload:', mission);
+                await Storage.addMission(mission);
+                App.showNotification('Mission publiée sur le Marketplace !', 'success');
+            }
         } catch (err) {
             console.error('[MARKETPLACE] Sync error:', err);
             App.showNotification('Erreur de synchronisation : ' + err.message, 'error');
@@ -290,8 +300,6 @@ const Marketplace = {
     getMyMissions() {
         const user = Auth.getUser();
         if (!user) return [];
-
-        // Filter the collective marketplace missions to find "my" announcements
         return (Storage.getPublicMissions() || []).filter(m => m.user_id === user.id);
     },
 
@@ -310,8 +318,7 @@ const Marketplace = {
     },
 
     handleSearch(value) {
-        this.render(undefined, this.activeTab); // Re-render with existing tab but could use logic to filter
-        // Optimized: only filter current view
+        this.render(undefined, this.activeTab);
         const query = value.toLowerCase();
         const cards = document.querySelectorAll('.mission-card');
         cards.forEach(card => {
@@ -321,7 +328,13 @@ const Marketplace = {
     },
 
     editMission(id) {
-        App.showNotification('Fonctionnalité d\'édition à venir.', 'info');
+        const missions = Storage.getPublicMissions() || [];
+        const mission = missions.find(m => m.id == id);
+        if (!mission) {
+            App.showNotification('Annonce introuvable.', 'error');
+            return;
+        }
+        this.showPostMissionForm(mission);
     },
 
     // ===== PROVIDERS (Mes Prestataires) =====
