@@ -506,7 +506,6 @@ const Marketplace = {
             const quoteData = {
                 clientId: client.id,
                 status: 'draft',
-                title: title,
                 items: [
                     {
                         description: `Prestation : ${title} (Radar: ${zone}, ${urgency})`,
@@ -516,8 +515,7 @@ const Marketplace = {
                     {
                         description: `Frais de mise en relation & Plateforme DomTomConnect (20%)`,
                         quantity: 1,
-                        unitPrice: commissionAmount,
-                        locked: true
+                        unitPrice: commissionAmount
                     }
                 ]
                 // Notes removed to avoid SQL error (column missing in sp_quotes)
