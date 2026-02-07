@@ -178,7 +178,7 @@ const Marketplace = {
                                     <i class="fas fa-edit"></i>
                                 </button>
                             ` : `
-                                <button class="button-primary elite-btn" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" onclick="Marketplace.convertMissionToQuote('${m.id}')">
+                                <button class="button-primary elite-btn" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" onclick="Marketplace.showPitchModal('${m.id}')">
                                     <i class="fas fa-bolt" style="margin-right: 10px;"></i> Proposer mes services
                                 </button>
                                 <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')" title="Contacter l'auteur de l'annonce">
@@ -526,11 +526,122 @@ const Marketplace = {
         return div.innerHTML;
     },
 
-    async convertMissionToQuote(id) {
+    async showPitchModal(id) {
+        if (!App.enforceLimit('marketplace_response')) return;
+
+        const missions = this.getPublicMissions();
+        const mission = missions.find(m => m.id == id);
+        if (!mission) return;
+
+        const user = Auth.getUser();
+        const portfolio = user?.company?.portfolio || '';
+
+        // Create modal overlay if it doesn't exist
+        let modal = document.getElementById('pitch-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'pitch-modal';
+            modal.className = 'modal-overlay';
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div class="modal-content glass" style="max-width: 600px; padding: 2.5rem;">
+                <button class="modal-close" onclick="document.getElementById('pitch-modal').classList.remove('active')">✕</button>
+                
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--white); margin-bottom: 0.5rem;">Pitch de Mission</h2>
+                    <p class="text-muted" style="font-size: 0.9rem;">Convainquez le client par la <strong>valeur</strong> que vous apportez.</p>
+                </div>
+
+                <div class="mission-mini-card" style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+                    <div style="font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase;">PROJET</div>
+                    <div style="font-size: 1.1rem; color: var(--white); font-weight: 700;">${this.escapeHtml(mission.title)}</div>
+                </div>
+
+                <form onsubmit="Marketplace.submitPitch(event, '${id}')">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label" style="display: flex; justify-content: space-between;">
+                            Projection de Valeur (ROI) 
+                            <span style="font-size: 0.7rem; color: var(--primary); font-weight: 900;">CONCEPT UNIQUE <i class="fas fa-crown"></i></span>
+                        </label>
+                        <textarea id="pitch-roi" class="form-input" rows="2" placeholder="Ex: 'Ce projet vous fera gagner 10h/semaine via l'automatisation' ou 'Je vise +15% de CA'..." required></textarea>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">C'est ici que vous faites la différence. Vendez le résultat, pas votre temps.</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label">Message d'accroche personnel</label>
+                        <textarea id="pitch-message" class="form-input" rows="4" placeholder="Bonjour, votre projet m'intéresse car..." required></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                        <div class="form-group">
+                            <label class="form-label">Budget estimé (€)</label>
+                            <input type="number" id="pitch-budget" class="form-input" value="${mission.budget}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Délai estimé</label>
+                            <input type="text" id="pitch-deadline" class="form-input" placeholder="Ex: 10 jours" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 2.5rem;">
+                        <label class="form-label">Lien Portfolio / Référence</label>
+                        <input type="url" id="pitch-portfolio" class="form-input" value="${portfolio}" placeholder="https://votre-site.com">
+                    </div>
+
+                    <button type="submit" class="button-primary full-width" style="height: 55px; font-size: 1.1rem; font-weight: 800; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+                        <i class="fas fa-paper-plane" style="margin-right: 12px;"></i> Envoyer ma proposition
+                    </button>
+                </form>
+            </div>
+        `;
+
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+    },
+
+    async submitPitch(e, missionId) {
+        e.preventDefault();
+        const roi = document.getElementById('pitch-roi').value.trim();
+        const message = document.getElementById('pitch-message').value.trim();
+        const budget = document.getElementById('pitch-budget').value.trim();
+        const deadline = document.getElementById('pitch-deadline').value.trim();
+        const portfolio = document.getElementById('pitch-portfolio').value.trim();
+
+        const missions = this.getPublicMissions();
+        const mission = missions.find(m => m.id == missionId);
+        if (!mission) return;
+
+        const user = Auth.getUser();
+        const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
+        const subject = encodeURIComponent(`Proposition Smart Pitch : ${mission.title} (Via Radar SoloPrice)`);
+
+        let bodyText = `Bonjour ${posterName},\n\nJ'ai analysé votre besoin pour "${mission.title}" et je souhaite vous proposer mes services.\n\n`;
+        bodyText += `🚀 MA PROJECTION DE VALEUR :\n${roi}\n\n`;
+        bodyText += `Message d'accroche :\n${message}\n\n`;
+        bodyText += `ESTIMATION :\n- Budget indicatif : ${budget}€\n- Délai estimé : ${deadline}\n`;
+
+        if (portfolio) {
+            bodyText += `\nMon Portfolio : ${portfolio}\n`;
+        }
+
+        bodyText += `\nCordialement,\n${user?.name || 'Un expert du réseau SoloPrice'}`;
+
+        window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+
+        document.getElementById('pitch-modal').classList.remove('active');
+        App.showNotification('Pitch généré ! Ouverture de votre messagerie...', 'success');
+
+        // Optionnel: Créer un devis en brouillon quand même en arrière plan
+        this.convertMissionToQuote(missionId, true);
+    },
+
+    async convertMissionToQuote(id, silent = false) {
         try {
             console.log('[MARKETPLACE] Initiating conversion for mission:', id);
 
-            if (!App.enforceLimit('marketplace_response')) {
+            if (!silent && !App.enforceLimit('marketplace_response')) {
                 console.warn('[MARKETPLACE] Response limit reached.');
                 return;
             }
@@ -539,7 +650,7 @@ const Marketplace = {
             const mission = missions.find(m => m.id == id);
 
             if (!mission) {
-                App.showNotification('Mission introuvable.', 'error');
+                if (!silent) App.showNotification('Mission introuvable.', 'error');
                 return;
             }
 
@@ -549,7 +660,9 @@ const Marketplace = {
             const zone = mission.zone || mission.Zone || 'Outre-Mer';
             const urgency = mission.urgency || mission.Urgence || 'Moyenne';
 
-            if (!confirm(`Voulez-vous créer automatiquement un devis pour la mission "${title}" ?\n\nCela va créer un client temporaire et pré-remplir le devis.`)) return;
+            if (!silent) {
+                if (!confirm(`Voulez-vous créer automatiquement un devis pour la mission "${title}" ?\n\nCela va créer un client temporaire et pré-remplir le devis.`)) return;
+            }
 
             // 1. Créer le client (si besoin, ou client générique "Opportunité Radar")
             const clients = Storage.getClients();
@@ -587,24 +700,24 @@ const Marketplace = {
                         unitPrice: commissionAmount
                     }
                 ]
-                // Notes removed to avoid SQL error (column missing in sp_quotes)
             };
 
             const newQuote = await Storage.addQuote(quoteData);
             if (!newQuote) throw new Error("Échec de la création du devis.");
 
-            App.showNotification('Devis et client créés avec succès !', 'success');
-
-            // 3. Rediriger vers l'édition du devis
-            App.navigateTo('quotes');
-            setTimeout(() => {
-                if (typeof Quotes !== 'undefined') {
-                    Quotes.edit(newQuote.id);
-                }
-            }, 500);
+            if (!silent) {
+                App.showNotification('Devis et client créés avec succès !', 'success');
+                // 3. Rediriger vers l'édition du devis
+                App.navigateTo('quotes');
+                setTimeout(() => {
+                    if (typeof Quotes !== 'undefined') {
+                        Quotes.edit(newQuote.id);
+                    }
+                }, 500);
+            }
         } catch (error) {
             console.error('[MARKETPLACE] Conversion error:', error);
-            App.showNotification('Erreur lors de la conversion : ' + error.message, 'error');
+            if (!silent) App.showNotification('Erreur lors de la conversion : ' + error.message, 'error');
         }
     }
 };
