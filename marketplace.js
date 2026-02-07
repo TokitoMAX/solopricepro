@@ -117,13 +117,21 @@ const Marketplace = {
             let posterCompany = m.poster_company || m.Poster_company || 'Membre du réseau';
 
             if (!posterName && desc.includes('(Publié par :')) {
-                // Match patterns: (Publié par : role - name / Enterprise : company) OR (Publié par : role - name)
-                const match = desc.match(/\(Publié par : (.*?) - (.*?) \/ Enterprise : (.*?)\)/) ||
+                // Match patterns: role - name / Email : email / Enterprise : company ...
+                const match = desc.match(/\(Publié par : (.*?) - (.*?) \/ Email : (.*?) \/ Enterprise : (.*?)\)/) ||
+                    desc.match(/\(Publié par : (.*?) - (.*?) \/ Email : (.*?)\)/) ||
+                    desc.match(/\(Publié par : (.*?) - (.*?) \/ Enterprise : (.*?)\)/) ||
                     desc.match(/\(Publié par : (.*?) - (.*?)\)/);
+
                 if (match) {
                     posterRole = match[1];
                     posterName = match[2];
-                    if (match[3]) posterCompany = match[3];
+                    if (match[3] && match[3].includes('@')) {
+                        m.poster_email = match[3];
+                        if (match[4]) posterCompany = match[4];
+                    } else if (match[3]) {
+                        posterCompany = match[3];
+                    }
                 }
             }
 
@@ -343,7 +351,7 @@ const Marketplace = {
             budget: formData.get('budget'),
             zone: formData.get('zone'),
             urgency: formData.get('urgency'),
-            description: formData.get('description') + `\n\n(Publié par : ${roleLabel} - ${user?.name || 'Utilisateur'} ${user?.company?.name ? ` / Enterprise : ${user.company.name}` : ''}${portfolio ? ` / Portfolio : ${portfolio}` : ''})`,
+            description: formData.get('description') + `\n\n(Publié par : ${roleLabel} - ${user?.name || 'Utilisateur'} / Email : ${user?.email || ''} ${user?.company?.name ? ` / Enterprise : ${user.company.name}` : ''}${portfolio ? ` / Portfolio : ${portfolio}` : ''})`,
             status: 'open'
         };
 
@@ -564,6 +572,7 @@ const Marketplace = {
                 </div>
 
                 <form onsubmit="Marketplace.submitPitch(event, '${id}')">
+                    <input type="hidden" id="pitch-poster-email" value="${mission.poster_email || ''}">
                     <div class="form-group" style="margin-bottom: 1.5rem;">
                         <label class="form-label" style="display: flex; justify-content: space-between;">
                             Projection de Valeur (ROI) 
@@ -622,6 +631,7 @@ const Marketplace = {
         const budget = parseFloat(document.getElementById('pitch-budget').value) || 0;
         const deadline = document.getElementById('pitch-deadline').value.trim();
         const portfolio = document.getElementById('pitch-portfolio').value.trim();
+        const posterEmail = document.getElementById('pitch-poster-email').value || 'domtomconnect@gmail.com';
 
         const commission = Math.round(budget * 0.2);
         const netExpert = budget - commission;
@@ -645,7 +655,10 @@ const Marketplace = {
 
         bodyText += `\nCordialement,\n${user?.name || 'Un expert du réseau SoloPrice'}`;
 
-        window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+        // Send to poster, Cc to platform
+        const mailTo = posterEmail;
+        const cc = posterEmail === 'domtomconnect@gmail.com' ? '' : '&cc=domtomconnect@gmail.com';
+        window.location.href = `mailto:${mailTo}?subject=${subject}${cc}&body=${encodeURIComponent(bodyText)}`;
 
         this.hidePitchModal();
         App.showNotification('Pitch généré ! Votre messagerie va s\'ouvrir et un brouillon de devis a été créé dans "Documents".', 'success');
