@@ -645,7 +645,7 @@ const Marketplace = {
         const subject = encodeURIComponent(`Proposition Smart Pitch : ${mission.title} (Via Radar SoloPrice)`);
 
         let bodyText = `Bonjour ${posterName},\n\nJ'ai analysé votre besoin pour "${mission.title}" et je souhaite vous proposer mes services.\n\n`;
-        bodyText += `🚀 MA PROJECTION DE VALEUR :\n${roi}\n\n`;
+        bodyText += `PROJECTION DE VALEUR :\n${roi}\n\n`;
         bodyText += `Message d'accroche :\n${message}\n\n`;
         bodyText += `ESTIMATION :\n- Budget Total (Plateforme DomTomConnect incluse) : ${budget}€\n- Délai estimé : ${deadline}\n`;
 
@@ -653,18 +653,49 @@ const Marketplace = {
             bodyText += `\nMon Portfolio : ${portfolio}\n`;
         }
 
-        bodyText += `\nCordialement,\n${user?.name || 'Un expert du réseau SoloPrice'}`;
-
         // Send to poster, Cc to platform
         const mailTo = posterEmail;
-        const cc = posterEmail === 'domtomconnect@gmail.com' ? '' : '&cc=domtomconnect@gmail.com';
-        window.location.href = `mailto:${mailTo}?subject=${subject}${cc}&body=${encodeURIComponent(bodyText)}`;
+        const cc = posterEmail === 'domtomconnect@gmail.com' ? '' : 'domtomconnect@gmail.com';
 
-        this.hidePitchModal();
-        App.showNotification('Pitch généré ! Votre messagerie va s\'ouvrir et un brouillon de devis a été créé dans "Documents".', 'success');
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalBtnHtml = submitBtn.innerHTML;
 
-        // Optionnel: Créer un devis en brouillon quand même en arrière plan
-        this.convertMissionToQuote(missionId, true);
+        try {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+
+            const response = await fetch(`${Auth.apiBase}/api/marketplace/apply`, {
+                method: 'POST',
+                headers: Storage.getHeaders(),
+                body: JSON.stringify({
+                    to: mailTo,
+                    subject: decodeURIComponent(subject),
+                    body: bodyText,
+                    cc: cc
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Erreur lors de l'envoi");
+            }
+
+            this.hidePitchModal();
+            App.showNotification('Votre proposition a été envoyée avec succès !', 'success');
+
+            // Optionnel: Créer un devis en brouillon quand même en arrière plan
+            this.convertMissionToQuote(missionId, true);
+
+        } catch (error) {
+            console.error('[MARKETPLACE] Application error:', error);
+            App.showNotification(`Erreur : ${error.message}. Assurez-vous que le service SMTP est configuré.`, 'error');
+
+            // Fallback: If direct send fails and user is desperate, offer the old mailto?
+            // For now, just re-enable the button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
     },
 
     hidePitchModal() {
