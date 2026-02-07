@@ -77,7 +77,12 @@ app.get('/api/health', (req, res) => {
             hasSupabaseKey: !!process.env.SUPABASE_ANON_KEY,
             supabaseInitialized: !!supabase,
             supabaseUrlPrefix: process.env.SUPABASE_URL ? process.env.SUPABASE_URL.substring(0, 15) + '...' : 'missing',
-            appUrl: process.env.APP_URL || 'not set'
+            appUrl: process.env.APP_URL || 'not set',
+            smtp: {
+                host: process.env.SMTP_HOST || 'not set',
+                user: process.env.SMTP_USER ? 'configured' : 'not set',
+                pass: process.env.SMTP_PASS ? 'configured' : 'not set'
+            }
         }
     });
 });

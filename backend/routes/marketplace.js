@@ -58,16 +58,23 @@ router.post('/apply', async (req, res) => {
     }
 
     try {
-        console.log(`[MAILER] 📧 Attempting to send application to ${to}`);
+        console.log(`[MAILER] 📧 Attempting to send application to ${to} (Cc: ${cc || 'none'})`);
+
+        if (!smtpHost) {
+            throw new Error('SMTP_HOST is not defined in environment variables.');
+        }
 
         const transporter = nodemailer.createTransport({
             host: smtpHost,
             port: smtpPort,
-            secure: smtpPort == 465, // Use true for 465, false for other ports
+            secure: smtpPort == 465,
             auth: {
                 user: smtpUser,
                 pass: smtpPass,
             },
+            tls: {
+                rejectUnauthorized: false
+            }
         });
 
         const mailOptions = {
