@@ -280,7 +280,11 @@ const Marketplace = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Budget estimé (€) *</label>
-                            <input type="number" name="budget" class="form-input" required placeholder="Ex: 2500" value="${missionData ? missionData.budget : ''}">
+                            <input type="number" name="budget" id="post-mission-budget" class="form-input" required placeholder="Ex: 2500" value="${missionData ? missionData.budget : ''}" oninput="Marketplace.updateCommissionBreakdown(this.value, 'commission-breakdown-post')">
+                            <div id="commission-breakdown-post" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <span>Part Reçue par l'Expert (80%) : <strong>${missionData ? Math.round(missionData.budget * 0.8) : 0}€</strong></span><br>
+                                <span>Frais Plateforme (20%) : <span style="color: var(--warning);">${missionData ? Math.round(missionData.budget * 0.2) : 0}€</span></span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Zone géographique *</label>
@@ -644,16 +648,23 @@ const Marketplace = {
         this.convertMissionToQuote(missionId, true);
     },
 
-    updateCommissionBreakdown(val) {
+    updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
         const budget = parseFloat(val) || 0;
-        const breakdown = document.getElementById('commission-breakdown');
+        const breakdown = document.getElementById(elementId);
         if (breakdown) {
             const commission = Math.round(budget * 0.2);
             const net = budget - commission;
-            breakdown.innerHTML = `
-                <span>Net Expert : <strong>${net}€</strong></span><br>
-                <span>Commission (20%) : <span style="color: var(--warning);">${commission}€</span></span>
-            `;
+            if (elementId === 'commission-breakdown-post') {
+                breakdown.innerHTML = `
+                    <span>Part Reçue par l'Expert (80%) : <strong>${net}€</strong></span><br>
+                    <span>Frais Plateforme (20%) : <span style="color: var(--warning);">${commission}€</span></span>
+                `;
+            } else {
+                breakdown.innerHTML = `
+                    <span>Net Expert : <strong>${net}€</strong></span><br>
+                    <span>Commission (20%) : <span style="color: var(--warning);">${commission}€</span></span>
+                `;
+            }
         }
     },
 
