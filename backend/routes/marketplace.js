@@ -34,7 +34,10 @@ router.use(authenticateUser);
 router.post('/apply', async (req, res) => {
     const { to, subject, body, cc } = req.body;
 
+    console.log('[MARKETPLACE-APPLY] 📩 Request received:', { to, subjectLength: subject?.length, bodyLength: body?.length, cc });
+
     if (!to || !subject || !body) {
+        console.warn('[MARKETPLACE-APPLY] ⚠️ Missing fields:', { to: !!to, subject: !!subject, body: !!body });
         return res.status(400).json({ success: false, message: "Missing recipients, subject, or body." });
     }
 
