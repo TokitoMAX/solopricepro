@@ -1,4 +1,8 @@
 // SoloPrice Pro - Backend Server
+console.log("\n\n*****************************************");
+console.log("      🚀  SOLOPRICE PRO  v1.2           ");
+console.log("       BACKEND IS STARTING...          ");
+console.log("*****************************************\n\n");
 const express = require('express');
 const path = require('path');
 const cors = require('cors');

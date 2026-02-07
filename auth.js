@@ -1,5 +1,5 @@
 // SoloPrice Pro - Authentication Module
-console.log("auth.js loading...");
+console.log("🔐 [v1.2] auth.js loading...");
 
 const Auth = {
     // Définir l'URL de base pour l'API
