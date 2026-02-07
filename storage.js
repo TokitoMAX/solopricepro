@@ -482,4 +482,16 @@ const Storage = {
 };
 
 // Auto-init
-Storage.init();
+// Initialisation sécurisée
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof Auth !== 'undefined') {
+            Storage.init();
+        } else {
+            console.error("❌ Auth module not found. Storage init delayed.");
+            setTimeout(() => Storage.init(), 500); // Retry once
+        }
+    });
+} else {
+    Storage.init();
+}
