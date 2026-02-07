@@ -92,11 +92,12 @@ const App = {
         const valueEl = document.getElementById('landing-pipeline-value');
         const progressEl = document.getElementById('landing-pipeline-progress');
 
-        if (valueEl) valueEl.textContent = this.formatCurrency(monthlyGoal);
+        if (valueEl) {
+            // valueEl.textContent = this.formatCurrency(monthlyGoal); // Disabled to keep motivational phrase
+        }
         if (progressEl) {
-            // Sur la landing, on montre un état "objectif" inspirant
-            const progress = pipelineValue > 0 ? Math.min(100, Math.round((pipelineValue / monthlyGoal) * 100)) : 75; // 75% par défaut pour le style si 0
-            progressEl.style.width = `${progress}%`;
+            // Sur la landing, on montre un état "objectif" inspirant à 100% pour la thématique "PRO"
+            progressEl.style.width = '100%';
         }
     },
 
