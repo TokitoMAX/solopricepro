@@ -48,6 +48,14 @@ router.post('/apply', async (req, res) => {
     const smtpPass = process.env.SMTP_PASS;
     const smtpFrom = process.env.SMTP_FROM || smtpUser;
 
+    console.log('[MARKETPLACE-APPLY] 🔍 Environment Trace:', {
+        has_host: !!smtpHost,
+        host_val: smtpHost,
+        has_user: !!smtpUser,
+        has_pass: !!smtpPass,
+        env_keys: Object.keys(process.env).filter(k => k.startsWith('SMTP_'))
+    });
+
     if (!smtpHost || !smtpUser || !smtpPass) {
         console.warn('⚠️ SMTP Configuration is missing in .env');
         return res.status(503).json({
