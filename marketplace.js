@@ -551,7 +551,7 @@ const Marketplace = {
 
         modal.innerHTML = `
             <div class="modal-content glass" style="max-width: 600px; padding: 2.5rem;">
-                <button class="modal-close" onclick="document.getElementById('pitch-modal').classList.remove('active')">✕</button>
+                <button class="modal-close" onclick="Marketplace.hidePitchModal()">✕</button>
                 
                 <div style="margin-bottom: 2rem;">
                     <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--white); margin-bottom: 0.5rem;">Pitch de Mission</h2>
@@ -598,6 +598,12 @@ const Marketplace = {
                         <input type="url" id="pitch-portfolio" class="form-input" value="${portfolio}" placeholder="https://votre-site.com">
                     </div>
 
+                    <div style="background: rgba(16, 185, 129, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 2rem; border: 1px solid rgba(16, 185, 129, 0.1);">
+                        <p style="font-size: 0.8rem; color: var(--primary-light); margin: 0; line-height: 1.4;">
+                            <i class="fas fa-info-circle"></i> <strong>Ce qui va se passer :</strong> 1. Votre messagerie s'ouvre avec le pitch prêt à l'envoi. 2. Un devis brouillon est créé pour vous dans "Documents".
+                        </p>
+                    </div>
+
                     <button type="submit" class="button-primary full-width" style="height: 55px; font-size: 1.1rem; font-weight: 800; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
                         <i class="fas fa-paper-plane" style="margin-right: 12px;"></i> Envoyer ma proposition
                     </button>
@@ -641,11 +647,19 @@ const Marketplace = {
 
         window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
-        document.getElementById('pitch-modal').classList.remove('active');
-        App.showNotification('Pitch généré ! Ouverture de votre messagerie...', 'success');
+        this.hidePitchModal();
+        App.showNotification('Pitch généré ! Votre messagerie va s\'ouvrir et un brouillon de devis a été créé dans "Documents".', 'success');
 
         // Optionnel: Créer un devis en brouillon quand même en arrière plan
         this.convertMissionToQuote(missionId, true);
+    },
+
+    hidePitchModal() {
+        const modal = document.getElementById('pitch-modal');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+        }
     },
 
     updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
