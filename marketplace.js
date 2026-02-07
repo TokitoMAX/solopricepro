@@ -576,8 +576,12 @@ const Marketplace = {
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                         <div class="form-group">
-                            <label class="form-label">Budget estimé (€)</label>
-                            <input type="number" id="pitch-budget" class="form-input" value="${mission.budget}" required>
+                            <label class="form-label">Budget PROJET (€)</label>
+                            <input type="number" id="pitch-budget" class="form-input" value="${mission.budget}" oninput="Marketplace.updateCommissionBreakdown(this.value)" required>
+                            <div id="commission-breakdown" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <span>Net Expert : <strong>${Math.round(mission.budget * 0.8)}€</strong></span><br>
+                                <span>Commission (20%) : <span style="color: var(--warning);">${Math.round(mission.budget * 0.2)}€</span></span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Délai estimé</label>
@@ -605,9 +609,12 @@ const Marketplace = {
         e.preventDefault();
         const roi = document.getElementById('pitch-roi').value.trim();
         const message = document.getElementById('pitch-message').value.trim();
-        const budget = document.getElementById('pitch-budget').value.trim();
+        const budget = parseFloat(document.getElementById('pitch-budget').value) || 0;
         const deadline = document.getElementById('pitch-deadline').value.trim();
         const portfolio = document.getElementById('pitch-portfolio').value.trim();
+
+        const commission = Math.round(budget * 0.2);
+        const netExpert = budget - commission;
 
         const missions = this.getPublicMissions();
         const mission = missions.find(m => m.id == missionId);
@@ -620,7 +627,7 @@ const Marketplace = {
         let bodyText = `Bonjour ${posterName},\n\nJ'ai analysé votre besoin pour "${mission.title}" et je souhaite vous proposer mes services.\n\n`;
         bodyText += `🚀 MA PROJECTION DE VALEUR :\n${roi}\n\n`;
         bodyText += `Message d'accroche :\n${message}\n\n`;
-        bodyText += `ESTIMATION :\n- Budget indicatif : ${budget}€\n- Délai estimé : ${deadline}\n`;
+        bodyText += `ESTIMATION :\n- Budget Total (Plateforme DomTomConnect incluse) : ${budget}€\n- Délai estimé : ${deadline}\n`;
 
         if (portfolio) {
             bodyText += `\nMon Portfolio : ${portfolio}\n`;
@@ -635,6 +642,19 @@ const Marketplace = {
 
         // Optionnel: Créer un devis en brouillon quand même en arrière plan
         this.convertMissionToQuote(missionId, true);
+    },
+
+    updateCommissionBreakdown(val) {
+        const budget = parseFloat(val) || 0;
+        const breakdown = document.getElementById('commission-breakdown');
+        if (breakdown) {
+            const commission = Math.round(budget * 0.2);
+            const net = budget - commission;
+            breakdown.innerHTML = `
+                <span>Net Expert : <strong>${net}€</strong></span><br>
+                <span>Commission (20%) : <span style="color: var(--warning);">${commission}€</span></span>
+            `;
+        }
     },
 
     async convertMissionToQuote(id, silent = false) {
