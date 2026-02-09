@@ -1,9 +1,12 @@
 /**
- * SoloPrice Pro - Marketplace Module v2.0
+ * SoloPrice Pro - Marketplace & Hub Module
+ * v2.1 - UNIFIED & REPAIRED
  */
-console.log('📡 [MARKETPLACE-v2.0] Script loading...');
+console.log('📡 [MARKETPLACE-v2.1] Script loading...');
 
 const Marketplace = {
+    activeTab: 'missions',
+
     render(containerId = 'marketplace-content') {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -12,24 +15,28 @@ const Marketplace = {
             <div class="page-header" style="margin-bottom: 2rem;">
                 <div>
                     <h1 class="page-title" style="display: flex; align-items: center; gap: 10px;">
-                        MARKETPLACE v2.0 <span class="badge-pro" style="background: var(--primary); font-size: 0.7rem; color: white; padding: 4px 8px; border-radius: 6px;">REFRESHED</span>
+                        Marketplace <span class="badge-pro" style="background: var(--primary); font-size: 0.7rem; color: white; padding: 4px 8px; border-radius: 6px;">DOMTOM CONNECT</span>
                     </h1>
-                    <p class="page-subtitle">Opportunités et collaborations (Cache-Bust Active).</p>
+                    <p class="page-subtitle">Opportunités et collaborations v2.1.</p>
                 </div>
                 <div style="display: flex; gap: 1rem; align-items: center;">
-                    <button class="button-primary" onclick="Marketplace.showPostMissionForm()">
+                    <div class="search-box" style="position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: var(--text-muted); font-size: 0.9rem;"></i>
+                        <input type="text" id="marketplace-search" class="form-input" placeholder="Filtrer..." style="padding-left: 35px; width: 180px; background: rgba(255,255,255,0.03);" oninput="Marketplace.handleSearch(this.value)">
+                    </div>
+                    <button class="button-primary" onclick="Marketplace.showPostMissionForm()" style="box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
                         <i class="fas fa-plus"></i> Poster
                     </button>
                 </div>
             </div>
 
             <div id="mission-form-container"></div>
-            <div id="marketplace-dynamic-content" class="marketplace-container">
-                <p style="text-align: center; color: var(--text-muted); padding: 4rem;">📡 Recherche des opportunités en cours...</p>
+            <div id="marketplace-dynamic-content" class="marketplace-container" style="animation: fadeIn 0.4s ease;">
+                <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Chargement du Radar...</p>
             </div>
         `;
 
-        setTimeout(() => this.renderMissions(), 200);
+        this.renderMissions();
     },
 
     getPublicMissions() {
@@ -37,7 +44,6 @@ const Marketplace = {
     },
 
     renderMissions() {
-        console.log('📡 [MARKETPLACE-v2.0] Rendering mission list');
         const container = document.getElementById('marketplace-dynamic-content');
         if (!container) return;
 
@@ -48,8 +54,8 @@ const Marketplace = {
             container.innerHTML = `
                 <div class="empty-state" style="text-align: center; padding: 4rem 1rem; background: rgba(255,255,255,0.01); border-radius: 20px; border: 1px dashed var(--border);">
                     <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;">📡</div>
-                    <h3 style="color: var(--white); margin-bottom: 0.5rem;">Aucune mission trouvée</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Le radar est actif. Les missions s'afficheront ici dès leur publication.</p>
+                    <h3 style="color: var(--white); margin-bottom: 0.5rem;">Radar Activé</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Aucune mission trouvée pour le moment.</p>
                 </div>
             `;
             return;
@@ -61,19 +67,23 @@ const Marketplace = {
             const isOwner = currentUser && (m.user_id === currentUser.id);
             const title = this.escapeHtml(m.title || m.Title || 'Sans titre');
             const budget = this.escapeHtml(m.budget || m.Budget || '0');
+            const zone = this.escapeHtml(m.zone || m.Zone || 'Outre-Mer');
+            const urgency = m.urgency || 'Normal';
+            const urgencyColor = urgency === 'Urgent' ? '#ef4444' : (urgency === 'Prioritaire' ? '#f59e0b' : '#10b981');
+
             return `
-                        <div class="mission-card elite-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(255,255,255,0.02); border: 1px solid ${isOwner ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'};">
+                        <div class="mission-card elite-card" style="padding: 1.5rem; border-radius: 20px; background: ${isOwner ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isOwner ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'};">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                                <span style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Radar Direct</span>
-                                ${isOwner ? '<span style="background: var(--primary); color: #000; font-size: 0.55rem; padding: 2px 6px; border-radius: 4px;">MA MISSION</span>' : ''}
+                                <span style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">${zone}</span>
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: ${urgencyColor};"></div>
                             </div>
                             <h3 style="color: var(--white); margin: 0 0 1rem 0;">${title}</h3>
-                            <div style="font-size: 1.5rem; color: var(--primary); font-weight: 800;">${budget}€</div>
-                            <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                            <div style="font-size: 1.8rem; color: var(--primary); font-weight: 800; margin-bottom: 1rem;">${budget}€</div>
+                            <div style="display: flex; gap: 0.5rem;">
                                 ${isOwner ? `
-                                    <button class="button-secondary" style="flex: 1;" onclick="Marketplace.editMission('${m.id}')">Gérer</button>
+                                    <button class="button-secondary" style="flex: 1;" onclick="Marketplace.editMission('${m.id}')">Modifier</button>
                                 ` : `
-                                    <button class="button-primary" style="flex: 1;" onclick="Marketplace.applyForMission('${m.id}')">Répondre</button>
+                                    <button class="button-primary" style="flex: 1;" onclick="Marketplace.showPitchModal('${m.id}')">Proposer</button>
                                 `}
                             </div>
                         </div>
@@ -81,7 +91,7 @@ const Marketplace = {
         }).join('')}
             </div>
             <style>
-                .elite-card:hover { transform: translateY(-5px); transition: transform 0.2s ease; }
+                .elite-card:hover { transform: translateY(-5px); border-color: var(--primary); transition: all 0.3s ease; }
             </style>
         `;
     },
@@ -91,12 +101,12 @@ const Marketplace = {
         if (!container) return;
         container.innerHTML = `
             <div class="glass" style="padding: 2rem; border-radius: 20px; margin-bottom: 2rem; border: 1px solid var(--border);">
-                <h3>${missionData ? 'Modifier' : 'Poster une mission'}</h3>
+                <h3 style="color: var(--primary);">${missionData ? 'Modifier l\'annonce' : 'Poster une mission'}</h3>
                 <form onsubmit="Marketplace.saveMission(event)">
                     ${missionData ? `<input type="hidden" name="id" value="${missionData.id}">` : ''}
                     <input type="text" name="title" class="form-input" required placeholder="Titre" value="${missionData ? this.escapeHtml(missionData.title) : ''}" style="margin-bottom: 1rem; width: 100%;">
                     <input type="number" name="budget" class="form-input" required placeholder="Budget" value="${missionData ? missionData.budget : ''}" style="margin-bottom: 1rem; width: 100%;">
-                    <textarea name="description" class="form-input" rows="4" style="margin-bottom: 1rem; width: 100%;" required placeholder="Description...">${missionData ? this.escapeHtml(missionData.description) : ''}</textarea>
+                    <textarea name="description" class="form-input" rows="4" style="margin-bottom: 1rem; width: 100%;" required placeholder="Détails...">${missionData ? this.escapeHtml(missionData.description) : ''}</textarea>
                     <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                         <button type="button" class="button-secondary" onclick="Marketplace.hidePostMissionForm()">Annuler</button>
                         <button type="submit" class="button-primary">Publier</button>
@@ -125,16 +135,20 @@ const Marketplace = {
         try {
             if (missionId) await Storage.updateMission(missionId, mission);
             else await Storage.addMission(mission);
-            App.showNotification('Publication réussie !', 'success');
+            App.showNotification('Succès !', 'success');
             this.hidePostMissionForm();
             this.renderMissions();
-        } catch (err) { App.showNotification('Erreur de sauvegarde', 'error'); }
+        } catch (err) { App.showNotification('Erreur', 'error'); }
     },
 
     editMission(id) {
         const missions = this.getPublicMissions();
-        const mission = missions.find(m => m.id === id);
+        const mission = missions.find(m => m.id == id);
         if (mission) this.showPostMissionForm(mission);
+    },
+
+    showPitchModal(id) {
+        this.applyForMission(id);
     },
 
     applyForMission(id) {
@@ -142,6 +156,13 @@ const Marketplace = {
         if (mission) {
             window.location.href = `mailto:domtomconnect@gmail.com?subject=Mission: ${encodeURIComponent(mission.title)}`;
         }
+    },
+
+    handleSearch(val) {
+        const q = val.toLowerCase();
+        document.querySelectorAll('.mission-card').forEach(c => {
+            c.style.display = c.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+        });
     },
 
     escapeHtml(text) {
@@ -153,4 +174,4 @@ const Marketplace = {
 };
 
 window.Marketplace = Marketplace;
-console.log('📡 [MARKETPLACE-v2.0] Initialized and Globalized.');
+console.log('📡 [MARKETPLACE-v2.1] Initialized.');
