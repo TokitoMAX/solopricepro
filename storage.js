@@ -91,6 +91,9 @@ const Storage = {
                     } else {
                         this._cache[table] = data;
                     }
+                    console.log(`📡 Table [${table}] synced: ${Array.isArray(data) ? data.length : 'Object'} items`);
+                } else {
+                    console.warn(`⚠️ Table [${table}] fetch failed: ${res.status}`);
                 }
             }
             console.log('☁️ All data fetched from Supabase');
