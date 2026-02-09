@@ -7,74 +7,42 @@ const Marketplace = {
 
     missions: [],
 
-    render(containerId = 'marketplace-content', startTab = null) {
+    render(containerId = 'marketplace-content') {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        if (startTab) this.activeTab = startTab;
-
         container.innerHTML = `
-            <div class="page-header" style="margin-bottom: 2.5rem;">
+            <div class="page-header" style="margin-bottom: 2rem;">
                 <div>
                     <h1 class="page-title" style="display: flex; align-items: center; gap: 10px;">
                         Marketplace <span class="badge-pro" style="background: var(--primary); font-size: 0.7rem; color: white; padding: 4px 8px; border-radius: 6px;">DOMTOM CONNECT</span>
                     </h1>
-                    <p class="page-subtitle">Exploitez le premier réseau d'affaires des outre-mer.</p>
+                    <p class="page-subtitle">Opportunités et collaborations dans les outre-mer.</p>
                 </div>
-                <div style="display: flex; gap: 1rem;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
                     <div class="search-box" style="position: relative;">
                         <i class="fas fa-search" style="position: absolute; left: 12px; top: 12px; color: var(--text-muted); font-size: 0.9rem;"></i>
-                        <input type="text" id="marketplace-search" class="form-input" placeholder="Rechercher une mission..." style="padding-left: 35px; width: 250px; background: rgba(255,255,255,0.03);" oninput="Marketplace.handleSearch(this.value)">
+                        <input type="text" id="marketplace-search" class="form-input" placeholder="Filtrer..." style="padding-left: 35px; width: 180px; background: rgba(255,255,255,0.03);" oninput="Marketplace.handleSearch(this.value)">
                     </div>
                     <button class="button-primary" onclick="Marketplace.showPostMissionForm()" style="box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
-                        <i class="fas fa-plus" style="margin-right: 8px;"></i> Poster une Mission
+                        <i class="fas fa-plus"></i> Poster
                     </button>
                 </div>
             </div>
 
             <div id="mission-form-container"></div>
 
-            <div class="marketplace-tabs-container" style="background: rgba(255,255,255,0.02); padding: 0.4rem; border-radius: 14px; display: inline-flex; gap: 0.5rem; margin-bottom: 2.5rem; border: 1px solid var(--border);">
-                <button class="m-tab ${this.activeTab === 'missions' ? 'active' : ''}" onclick="Marketplace.switchTab('missions')">Radar Opportunités</button>
-                <button class="m-tab ${this.activeTab === 'my-missions' ? 'active' : ''}" onclick="Marketplace.switchTab('my-missions')">Mes Annonces</button>
-                <button class="m-tab ${this.activeTab === 'experts' ? 'active' : ''}" onclick="Marketplace.switchTab('experts')">Annuaire Experts</button>
-            </div>
-
             <div id="marketplace-dynamic-content" class="marketplace-container" style="animation: fadeIn 0.4s ease;">
-                <!-- Content -->
+                <!-- Content via renderMissions -->
             </div>
-            
-            <style>
-                .m-tab { padding: 0.6rem 1.2rem; border-radius: 10px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease; }
-                .m-tab.active { background: var(--white); color: #000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-                .m-tab:hover:not(.active) { color: var(--white); background: rgba(255,255,255,0.05); }
-                .mission-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-                .mission-card:hover { transform: translateY(-5px); border-color: var(--primary-glass); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-                .btn-icon { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-muted); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-                .btn-icon:hover { background: rgba(255,255,255,0.08); color: var(--white); }
-            </style>
         `;
 
-        this.switchTab(this.activeTab);
+        this.renderMissions();
     },
 
     switchTab(tabId) {
-        this.activeTab = tabId;
-        if (typeof App !== 'undefined') App.checkFreemiumLimits(); // Added line
-        document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active')); // Changed .settings-tab to .m-tab
-        const activeTab = document.querySelector(`.m-tab[onclick*="${tabId}"]`); // Changed .settings-tab to .m-tab
-        if (activeTab) activeTab.classList.add('active');
-
-        const container = document.getElementById('marketplace-dynamic-content');
-        if (!container) return;
-
-        if (tabId === 'missions') {
-            this.renderMissions(container);
-        } else if (tabId === 'my-missions') {
-            this.renderMyMissions(container);
-        } else if (tabId === 'experts') {
-            this.renderExperts(container);
-        }
+        // Obsolete but kept for compatibility during transition
+        this.renderMissions();
     },
 
     getPublicMissions() {
@@ -83,17 +51,19 @@ const Marketplace = {
     },
 
     // ===== MISSIONS RADAR (from others) =====
-    renderMissions(container) {
+    renderMissions() {
+        const container = document.getElementById('marketplace-dynamic-content');
+        if (!container) return;
+
         const missions = this.getPublicMissions();
+        const currentUser = Storage.getUser();
 
         if (missions.length === 0) {
             container.innerHTML = `
-                <div class="empty-state" style="text-align: center; padding: 6rem 2rem; background: rgba(255,255,255,0.01); border-radius: 32px; border: 1px dashed var(--border);">
-                    <div style="font-size: 5rem; margin-bottom: 2rem; opacity: 0.4; filter: grayscale(1);">🚀</div>
-                    <h2 style="color: var(--white); margin-bottom: 0.75rem; font-weight: 800; letter-spacing: -0.5px;">Le Radar est en Scan...</h2>
-                    <p style="color: var(--text-muted); max-width: 420px; margin: 0 auto; line-height: 1.7; font-size: 0.95rem;">
-                        Nous surveillons le réseau DomTom Connect. Les nouvelles opportunités apparaîtront ici dès qu'elles seront publiées.
-                    </p>
+                <div class="empty-state" style="text-align: center; padding: 4rem 1rem; background: rgba(255,255,255,0.01); border-radius: 20px; border: 1px dashed var(--border);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;">📡</div>
+                    <h3 style="color: var(--white); margin-bottom: 0.5rem;">Radar Activé</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Aucune mission trouvée pour le moment. Elles s'afficheront ici dès leur publication.</p>
                 </div>
             `;
             return;
@@ -144,24 +114,28 @@ const Marketplace = {
             const roleTextColor = isProPoster ? '#000' : 'rgba(255,255,255,0.6)';
 
             return `
-                    <div class="mission-card elite-card" style="position: relative; padding: 2.25rem; border-radius: 28px; background: rgba(15, 15, 15, 0.6); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(12px);">
-                        <div class="glow-edge" style="position: absolute; top: -1px; left: -1px; right: -1px; height: 3px; background: linear-gradient(90deg, transparent, ${urgencyColor}, transparent); opacity: 0.5;"></div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                            <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); letter-spacing: 2.5px; text-transform: uppercase; background: rgba(255,255,255,0.03); padding: 5px 12px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.05);">${this.escapeHtml(zone)}</span>
-                            <div style="width: 10px; height: 10px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 10px ${urgencyColor};" title="Urgence: ${urgency}"></div>
+            const isOwner = currentUser && (m.user_id === currentUser.id);
+            const title = m.title || m.Title || 'Mission sans titre';
+            const urgencyColor = m.urgency === 'Haute' ? '#ef4444' : (m.urgency === 'Moyenne' ? '#f59e0b' : '#10b981');
+
+            return `
+                < div class="mission-card elite-card" style = "position: relative; padding: 1.5rem; border-radius: 20px; background: ${isOwner ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isOwner ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; display: flex; flex-direction: column; gap: 1rem;" >
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">${this.escapeHtml(m.zone || 'Outre-Mer')}</span>
+                                ${isOwner ? '<span style="background: var(--primary); color: #000; font-size: 0.55rem; font-weight: 900; padding: 2px 6px; border-radius: 4px;">MA MISSION</span>' : ''}
+                            </div>
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 8px ${urgencyColor};"></div>
                         </div>
 
-                        <h3 style="margin: 0 0 1.5rem 0; font-size: 1.5rem; color: var(--white); font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;">${this.escapeHtml(title)}</h3>
+                        <h3 style="margin: 0; font-size: 1.2rem; color: var(--white); font-weight: 700;">${this.escapeHtml(title)}</h3>
                         
-                        <div style="margin-bottom: 2.5rem; display: flex; align-items: flex-end; gap: 4px;">
-                            <div style="font-size: 2.5rem; font-weight: 900; color: var(--primary); font-family: 'Inter', sans-serif; line-height: 1;">${this.escapeHtml(budget)}</div>
-                            <div style="font-size: 1.1rem; color: var(--primary); font-weight: 700; margin-bottom: 5px;">€</div>
-                            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-left: 10px; margin-bottom: 8px;">Budget Radar</div>
+                        <div style="display: flex; align-items: baseline; gap: 4px;">
+                            <span style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">${this.escapeHtml(m.budget || '0')}€</span>
                         </div>
 
-                        <p style="font-size: 0.95rem; line-height: 1.7; color: rgba(255,255,255,0.6); margin: 0 0 2rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400;">
-                            ${this.escapeHtml(desc)}
+                        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">
+                            ${this.escapeHtml(m.description || '')}
                         </p>
 
                         <div class="poster-info" style="display: flex; align-items: center; gap: 12px; margin-bottom: 2.5rem; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.04);">
@@ -194,8 +168,8 @@ const Marketplace = {
                                 </button>
                             `}
                         </div>
-                    </div>
-                `}).join('')}
+                    </div >
+    `}).join('')}
             </div>
             <style>
                 .elite-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
@@ -205,12 +179,12 @@ const Marketplace = {
         `;
     },
 
-    // ===== MY MISSIONS (posted by user) =====
-    renderMyMissions(container) {
-        const myMissions = this.getMyMissions();
+// ===== MY MISSIONS (posted by user) =====
+renderMyMissions(container) {
+    const myMissions = this.getMyMissions();
 
-        if (myMissions.length === 0) {
-            container.innerHTML = `
+    if (myMissions.length === 0) {
+        container.innerHTML = `
                 <div class="empty-state" style="text-align: center; padding: 5rem 2rem; background: var(--bg-sidebar); border-radius: 24px; border: 1px dashed var(--border);">
                     <div style="font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.6;">�</div>
                     <h3 style="color: var(--white); margin-bottom: 0.5rem; font-weight: 800;">Votre vitrine est vide</h3>
@@ -218,10 +192,10 @@ const Marketplace = {
                     <button class="button-primary" onclick="Marketplace.showPostMissionForm()" style="border-radius: 12px; font-weight: 700;">Poster ma première mission</button>
                 </div>
             `;
-            return;
-        }
+        return;
+    }
 
-        container.innerHTML = `
+    container.innerHTML = `
             <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
                 ${myMissions.map(m => `
                     <div class="mission-card elite-card" style="position: relative; padding: 2.25rem; border-radius: 28px; background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); display: flex; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(12px);">
@@ -256,14 +230,14 @@ const Marketplace = {
                 `).join('')}
             </div>
         `;
-    },
+},
 
-    // ===== POST MISSION FORM =====
-    showPostMissionForm(missionData = null) {
-        const container = document.getElementById('mission-form-container');
-        if (!container) return;
+// ===== POST MISSION FORM =====
+showPostMissionForm(missionData = null) {
+    const container = document.getElementById('mission-form-container');
+    if (!container) return;
 
-        container.innerHTML = `
+    container.innerHTML = `
             <div class="elite-form-card" style="animation: slideDown 0.4s ease-out;">
                 <div class="form-header" style="margin-bottom: 2rem;">
                     <h3 class="form-title" style="color: var(--primary); font-size: 1.5rem; font-weight: 800;">
@@ -329,99 +303,99 @@ const Marketplace = {
                 </form>
             </div>
         `;
-        container.scrollIntoView({ behavior: 'smooth' });
-    },
+    container.scrollIntoView({ behavior: 'smooth' });
+},
 
-    hidePostMissionForm() {
-        const container = document.getElementById('mission-form-container');
-        if (container) container.innerHTML = '';
-    },
+hidePostMissionForm() {
+    const container = document.getElementById('mission-form-container');
+    if (container) container.innerHTML = '';
+},
 
     async saveMission(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const missionId = formData.get('id');
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const missionId = formData.get('id');
 
-        const user = Storage.getUser();
-        const roleLabel = user?.isPro ? 'Expert Pro' : 'Client';
-        const portfolio = user?.company?.portfolio || '';
+    const user = Storage.getUser();
+    const roleLabel = user?.isPro ? 'Expert Pro' : 'Client';
+    const portfolio = user?.company?.portfolio || '';
 
-        const mission = {
-            title: formData.get('title'),
-            budget: formData.get('budget'),
-            zone: formData.get('zone'),
-            urgency: formData.get('urgency'),
-            description: formData.get('description') + `\n\n(Publié par : ${roleLabel} - ${user?.name || 'Utilisateur'} / Email : ${user?.email || ''} ${user?.company?.name ? ` / Enterprise : ${user.company.name}` : ''}${portfolio ? ` / Portfolio : ${portfolio}` : ''})`,
-            status: 'open'
-        };
+    const mission = {
+        title: formData.get('title'),
+        budget: formData.get('budget'),
+        zone: formData.get('zone'),
+        urgency: formData.get('urgency'),
+        description: formData.get('description') + `\n\n(Publié par : ${roleLabel} - ${user?.name || 'Utilisateur'} / Email : ${user?.email || ''} ${user?.company?.name ? ` / Enterprise : ${user.company.name}` : ''}${portfolio ? ` / Portfolio : ${portfolio}` : ''})`,
+        status: 'open'
+    };
 
-        try {
-            if (missionId) {
-                console.log('[MARKETPLACE] Updating existing mission:', missionId);
-                await Storage.updateMission(missionId, mission);
-                App.showNotification('Annonce mise à jour avec succès.', 'success');
-            } else {
-                mission.id = Date.now().toString();
-                console.log('[MARKETPLACE-UI] 🚀 Preparing save with payload:', mission);
-                await Storage.addMission(mission);
-                App.showNotification('Mission publiée sur le Marketplace !', 'success');
-            }
-        } catch (err) {
-            console.error('[MARKETPLACE] Sync error:', err);
-            App.showNotification('Erreur de synchronisation : ' + err.message, 'error');
+    try {
+        if (missionId) {
+            console.log('[MARKETPLACE] Updating existing mission:', missionId);
+            await Storage.updateMission(missionId, mission);
+            App.showNotification('Annonce mise à jour avec succès.', 'success');
+        } else {
+            mission.id = Date.now().toString();
+            console.log('[MARKETPLACE-UI] 🚀 Preparing save with payload:', mission);
+            await Storage.addMission(mission);
+            App.showNotification('Mission publiée sur le Marketplace !', 'success');
         }
+    } catch (err) {
+        console.error('[MARKETPLACE] Sync error:', err);
+        App.showNotification('Erreur de synchronisation : ' + err.message, 'error');
+    }
 
-        this.hidePostMissionForm();
-        this.switchTab('my-missions');
-    },
+    this.hidePostMissionForm();
+    this.switchTab('my-missions');
+},
 
-    getMyMissions() {
-        const user = Auth.getUser();
-        if (!user) return [];
-        return (Storage.getPublicMissions() || []).filter(m => m.user_id === user.id);
-    },
+getMyMissions() {
+    const user = Auth.getUser();
+    if (!user) return [];
+    return (Storage.getPublicMissions() || []).filter(m => m.user_id === user.id);
+},
 
     async deleteMission(id) {
-        if (!confirm('Voulez-vous vraiment retirer cette annonce du Marketplace ?')) return;
+    if (!confirm('Voulez-vous vraiment retirer cette annonce du Marketplace ?')) return;
 
-        try {
-            console.log('[MARKETPLACE] Deleting mission:', id);
-            await Storage.deleteMission(id);
-            App.showNotification('Annonce retirée du Marketplace.', 'success');
-            this.switchTab(this.activeTab);
-        } catch (e) {
-            console.error('[MARKETPLACE] Delete error:', e);
-            App.showNotification('Erreur lors de la suppression sur le serveur.', 'error');
-        }
-    },
+    try {
+        console.log('[MARKETPLACE] Deleting mission:', id);
+        await Storage.deleteMission(id);
+        App.showNotification('Annonce retirée du Marketplace.', 'success');
+        this.switchTab(this.activeTab);
+    } catch (e) {
+        console.error('[MARKETPLACE] Delete error:', e);
+        App.showNotification('Erreur lors de la suppression sur le serveur.', 'error');
+    }
+},
 
-    handleSearch(value) {
-        this.render(undefined, this.activeTab);
-        const query = value.toLowerCase();
-        const cards = document.querySelectorAll('.mission-card');
-        cards.forEach(card => {
-            const text = card.textContent.toLowerCase();
-            card.style.display = text.includes(query) ? 'flex' : 'none';
-        });
-    },
+handleSearch(value) {
+    this.render(undefined, this.activeTab);
+    const query = value.toLowerCase();
+    const cards = document.querySelectorAll('.mission-card');
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(query) ? 'flex' : 'none';
+    });
+},
 
-    editMission(id) {
-        const missions = Storage.getPublicMissions() || [];
-        const mission = missions.find(m => m.id == id);
-        if (!mission) {
-            App.showNotification('Annonce introuvable.', 'error');
-            return;
-        }
-        this.showPostMissionForm(mission);
-    },
+editMission(id) {
+    const missions = Storage.getPublicMissions() || [];
+    const mission = missions.find(m => m.id == id);
+    if (!mission) {
+        App.showNotification('Annonce introuvable.', 'error');
+        return;
+    }
+    this.showPostMissionForm(mission);
+},
 
-    // ===== PROVIDERS (Mes Prestataires) =====
-    renderProviders(container) {
-        // Unifié avec le module Network
-        const providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
+// ===== PROVIDERS (Mes Prestataires) =====
+renderProviders(container) {
+    // Unifié avec le module Network
+    const providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
 
-        if (providers.length === 0) {
-            container.innerHTML = `
+    if (providers.length === 0) {
+        container.innerHTML = `
                 <div class="empty-state" style="text-align: center; padding: 4rem 2rem;">
                     <div style="font-size: 3rem; margin-bottom: 1.5rem;"></div>
                     <h3 style="color: var(--white); margin-bottom: 1rem;">Vos collaborations actives</h3>
@@ -431,10 +405,10 @@ const Marketplace = {
                     <button class="button-primary" onclick="Marketplace.switchTab('experts')">Trouver un Expert</button>
                 </div>
             `;
-            return;
-        }
+        return;
+    }
 
-        container.innerHTML = `
+    container.innerHTML = `
             <div class="section-header-inline">
                 <h3 class="section-title-small">Mes Prestataires Actifs</h3>
             </div>
@@ -448,14 +422,14 @@ const Marketplace = {
                 `).join('')}
             </div>
         `;
-    },
+},
 
-    // ===== EXPERTS =====
-    renderExperts(container) {
-        // Liste des experts (dynamique dans le futur)
-        const experts = []; // Initialement vide pour éviter le "fake" content
+// ===== EXPERTS =====
+renderExperts(container) {
+    // Liste des experts (dynamique dans le futur)
+    const experts = []; // Initialement vide pour éviter le "fake" content
 
-        container.innerHTML = `
+    container.innerHTML = `
             <div class="experts-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 2rem; flex-wrap: wrap;">
                 <div style="flex: 1; min-width: 300px;">
                     <h3 class="section-title-small">Annuaire des Experts Vérifiés</h3>
@@ -489,75 +463,75 @@ const Marketplace = {
                 `).join('')}
             </div>
         `;
-    },
+},
 
-    addExpertToCircle(id) {
-        // Dans une version réelle, on récupèrerait les données de l'API
-        App.showNotification('Fonctionnalité d\'ajout en cours de développement.', 'info');
-    },
+addExpertToCircle(id) {
+    // Dans une version réelle, on récupèrerait les données de l'API
+    App.showNotification('Fonctionnalité d\'ajout en cours de développement.', 'info');
+},
 
-    applyForMission(id) {
-        // Use Storage cache
-        const mission = this.getPublicMissions().find(m => m.id === id);
-        if (mission) {
-            const user = Storage.getUser();
-            const portfolio = user?.company?.portfolio || '';
-            const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
-            const subject = encodeURIComponent(`Intérêt pour votre mission : ${mission.title} (Via Radar SoloPrice)`);
+applyForMission(id) {
+    // Use Storage cache
+    const mission = this.getPublicMissions().find(m => m.id === id);
+    if (mission) {
+        const user = Storage.getUser();
+        const portfolio = user?.company?.portfolio || '';
+        const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
+        const subject = encodeURIComponent(`Intérêt pour votre mission : ${mission.title} (Via Radar SoloPrice)`);
 
-            let bodyText = `Bonjour ${posterName},\n\nJ'ai vu votre annonce "${mission.title}" sur le Radar SoloPrice Pro et votre projet m'intéresse vivement.\n\nEn tant qu'expert sur le réseau, je souhaiterais vous proposer mes services pour vous accompagner sur ce besoin (Budget: ${mission.budget}€).\n\nVoici pourquoi mon profil pourrait correspondre :\n- [Décrivez votre expertise ici...]\n`;
+        let bodyText = `Bonjour ${posterName},\n\nJ'ai vu votre annonce "${mission.title}" sur le Radar SoloPrice Pro et votre projet m'intéresse vivement.\n\nEn tant qu'expert sur le réseau, je souhaiterais vous proposer mes services pour vous accompagner sur ce besoin (Budget: ${mission.budget}€).\n\nVoici pourquoi mon profil pourrait correspondre :\n- [Décrivez votre expertise ici...]\n`;
 
-            if (portfolio) {
-                bodyText += `\nVous pouvez consulter mon portfolio ici : ${portfolio}\n`;
-            }
-
-            bodyText += `\nDans l'attente de votre retour,\n\nCordialement,`;
-
-            window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
-            App.showNotification('Préparation de votre message de contact...', 'success');
-        } else {
-            window.location.href = `mailto:domtomconnect@gmail.com`;
+        if (portfolio) {
+            bodyText += `\nVous pouvez consulter mon portfolio ici : ${portfolio}\n`;
         }
-    },
 
-    contactExpert(name) {
-        App.showNotification(`Lancer une conversation avec ${name} via DomTomConnect...`, 'info');
-    },
+        bodyText += `\nDans l'attente de votre retour,\n\nCordialement,`;
 
-    becomeExpert() {
-        const subject = encodeURIComponent("Candidature Expert Vérifié DomTom Connect");
-        const body = encodeURIComponent("Bonjour,\n\nJe souhaite rejoindre le réseau d'experts DomTom Connect.\n\nVoici mon profil et mes compétences :\n\nCordialement,");
-        window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${body}`;
-        App.showNotification('Ouverture de votre messagerie...', 'success');
-    },
+        window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+        App.showNotification('Préparation de votre message de contact...', 'success');
+    } else {
+        window.location.href = `mailto:domtomconnect@gmail.com`;
+    }
+},
 
-    escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    },
+contactExpert(name) {
+    App.showNotification(`Lancer une conversation avec ${name} via DomTomConnect...`, 'info');
+},
+
+becomeExpert() {
+    const subject = encodeURIComponent("Candidature Expert Vérifié DomTom Connect");
+    const body = encodeURIComponent("Bonjour,\n\nJe souhaite rejoindre le réseau d'experts DomTom Connect.\n\nVoici mon profil et mes compétences :\n\nCordialement,");
+    window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${body}`;
+    App.showNotification('Ouverture de votre messagerie...', 'success');
+},
+
+escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+},
 
     async showPitchModal(id) {
-        if (!App.enforceLimit('marketplace_response')) return;
+    if (!App.enforceLimit('marketplace_response')) return;
 
-        const missions = this.getPublicMissions();
-        const mission = missions.find(m => m.id == id);
-        if (!mission) return;
+    const missions = this.getPublicMissions();
+    const mission = missions.find(m => m.id == id);
+    if (!mission) return;
 
-        const user = Auth.getUser();
-        const portfolio = user?.company?.portfolio || '';
+    const user = Auth.getUser();
+    const portfolio = user?.company?.portfolio || '';
 
-        // Create modal overlay if it doesn't exist
-        let modal = document.getElementById('pitch-modal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'pitch-modal';
-            modal.className = 'modal-overlay';
-            document.body.appendChild(modal);
-        }
+    // Create modal overlay if it doesn't exist
+    let modal = document.getElementById('pitch-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'pitch-modal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+    }
 
-        modal.innerHTML = `
+    modal.innerHTML = `
             <div class="modal-content glass" style="max-width: 600px; padding: 2.5rem;">
                 <button class="modal-close" onclick="Marketplace.hidePitchModal()">✕</button>
                 
@@ -620,195 +594,195 @@ const Marketplace = {
             </div>
         `;
 
-        modal.classList.add('active');
-        modal.style.display = 'flex';
-    },
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+},
 
     async submitPitch(e, missionId) {
-        e.preventDefault();
-        const roi = document.getElementById('pitch-roi').value.trim();
-        const message = document.getElementById('pitch-message').value.trim();
-        const budget = parseFloat(document.getElementById('pitch-budget').value) || 0;
-        const deadline = document.getElementById('pitch-deadline').value.trim();
-        const portfolio = document.getElementById('pitch-portfolio').value.trim();
-        const posterEmail = document.getElementById('pitch-poster-email').value || 'domtomconnect@gmail.com';
+    e.preventDefault();
+    const roi = document.getElementById('pitch-roi').value.trim();
+    const message = document.getElementById('pitch-message').value.trim();
+    const budget = parseFloat(document.getElementById('pitch-budget').value) || 0;
+    const deadline = document.getElementById('pitch-deadline').value.trim();
+    const portfolio = document.getElementById('pitch-portfolio').value.trim();
+    const posterEmail = document.getElementById('pitch-poster-email').value || 'domtomconnect@gmail.com';
 
+    const commission = Math.round(budget * 0.2);
+    const netExpert = budget - commission;
+
+    const missions = this.getPublicMissions();
+    const mission = missions.find(m => m.id == missionId);
+    if (!mission) return;
+
+    const user = Auth.getUser();
+    const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
+    const subject = encodeURIComponent(`Proposition Smart Pitch : ${mission.title} (Via Radar SoloPrice)`);
+
+    let bodyText = `Bonjour ${posterName},\n\nJ'ai analysé votre besoin pour "${mission.title}" et je souhaite vous proposer mes services.\n\n`;
+    bodyText += `PROJECTION DE VALEUR :\n${roi}\n\n`;
+    bodyText += `Message d'accroche :\n${message}\n\n`;
+    bodyText += `ESTIMATION :\n- Budget Total (Plateforme DomTomConnect incluse) : ${budget}€\n- Délai estimé : ${deadline}\n`;
+
+    if (portfolio) {
+        bodyText += `\nMon Portfolio : ${portfolio}\n`;
+    }
+
+    // Send to poster, Cc to platform
+    const mailTo = posterEmail;
+    const cc = posterEmail === 'domtomconnect@gmail.com' ? '' : 'domtomconnect@gmail.com';
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn.innerHTML;
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+
+        const response = await fetch(`${Auth.apiBase}/api/marketplace/apply`, {
+            method: 'POST',
+            headers: Storage.getHeaders(),
+            body: JSON.stringify({
+                to: mailTo,
+                subject: decodeURIComponent(subject),
+                body: bodyText,
+                cc: cc
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || "Erreur lors de l'envoi");
+        }
+
+        this.hidePitchModal();
+        App.showNotification('Votre proposition a été envoyée avec succès !', 'success');
+
+        // Optionnel: Créer un devis en brouillon quand même en arrière plan
+        this.convertMissionToQuote(missionId, true);
+
+    } catch (error) {
+        console.error('[MARKETPLACE] Application error:', error);
+        App.showNotification(`Erreur : ${error.message}. Assurez-vous que le service SMTP est configuré.`, 'error');
+
+        // Fallback: If direct send fails and user is desperate, offer the old mailto?
+        // For now, just re-enable the button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+    }
+},
+
+hidePitchModal() {
+    const modal = document.getElementById('pitch-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    }
+},
+
+updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
+    const budget = parseFloat(val) || 0;
+    const breakdown = document.getElementById(elementId);
+    if (breakdown) {
         const commission = Math.round(budget * 0.2);
-        const netExpert = budget - commission;
-
-        const missions = this.getPublicMissions();
-        const mission = missions.find(m => m.id == missionId);
-        if (!mission) return;
-
-        const user = Auth.getUser();
-        const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
-        const subject = encodeURIComponent(`Proposition Smart Pitch : ${mission.title} (Via Radar SoloPrice)`);
-
-        let bodyText = `Bonjour ${posterName},\n\nJ'ai analysé votre besoin pour "${mission.title}" et je souhaite vous proposer mes services.\n\n`;
-        bodyText += `PROJECTION DE VALEUR :\n${roi}\n\n`;
-        bodyText += `Message d'accroche :\n${message}\n\n`;
-        bodyText += `ESTIMATION :\n- Budget Total (Plateforme DomTomConnect incluse) : ${budget}€\n- Délai estimé : ${deadline}\n`;
-
-        if (portfolio) {
-            bodyText += `\nMon Portfolio : ${portfolio}\n`;
-        }
-
-        // Send to poster, Cc to platform
-        const mailTo = posterEmail;
-        const cc = posterEmail === 'domtomconnect@gmail.com' ? '' : 'domtomconnect@gmail.com';
-
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalBtnHtml = submitBtn.innerHTML;
-
-        try {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
-
-            const response = await fetch(`${Auth.apiBase}/api/marketplace/apply`, {
-                method: 'POST',
-                headers: Storage.getHeaders(),
-                body: JSON.stringify({
-                    to: mailTo,
-                    subject: decodeURIComponent(subject),
-                    body: bodyText,
-                    cc: cc
-                })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || "Erreur lors de l'envoi");
-            }
-
-            this.hidePitchModal();
-            App.showNotification('Votre proposition a été envoyée avec succès !', 'success');
-
-            // Optionnel: Créer un devis en brouillon quand même en arrière plan
-            this.convertMissionToQuote(missionId, true);
-
-        } catch (error) {
-            console.error('[MARKETPLACE] Application error:', error);
-            App.showNotification(`Erreur : ${error.message}. Assurez-vous que le service SMTP est configuré.`, 'error');
-
-            // Fallback: If direct send fails and user is desperate, offer the old mailto?
-            // For now, just re-enable the button
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnHtml;
-        }
-    },
-
-    hidePitchModal() {
-        const modal = document.getElementById('pitch-modal');
-        if (modal) {
-            modal.classList.remove('active');
-            modal.style.display = 'none';
-        }
-    },
-
-    updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
-        const budget = parseFloat(val) || 0;
-        const breakdown = document.getElementById(elementId);
-        if (breakdown) {
-            const commission = Math.round(budget * 0.2);
-            const net = budget - commission;
-            if (elementId === 'commission-breakdown-post') {
-                breakdown.innerHTML = `
+        const net = budget - commission;
+        if (elementId === 'commission-breakdown-post') {
+            breakdown.innerHTML = `
                     <span>Part Reçue par l'Expert (80%) : <strong>${net}€</strong></span><br>
                     <span>Frais Plateforme (20%) : <span style="color: var(--warning);">${commission}€</span></span>
                 `;
-            } else {
-                breakdown.innerHTML = `
+        } else {
+            breakdown.innerHTML = `
                     <span>Net Expert : <strong>${net}€</strong></span><br>
                     <span>Commission (20%) : <span style="color: var(--warning);">${commission}€</span></span>
                 `;
-            }
-        }
-    },
-
-    async convertMissionToQuote(id, silent = false) {
-        try {
-            console.log('[MARKETPLACE] Initiating conversion for mission:', id);
-
-            if (!silent && !App.enforceLimit('marketplace_response')) {
-                console.warn('[MARKETPLACE] Response limit reached.');
-                return;
-            }
-
-            const missions = this.getPublicMissions();
-            const mission = missions.find(m => m.id == id);
-
-            if (!mission) {
-                if (!silent) App.showNotification('Mission introuvable.', 'error');
-                return;
-            }
-
-            // Robust data mapping
-            const title = mission.title || mission.Title || 'Mission sans titre';
-            const budget = mission.budget || mission.Budget || '0';
-            const zone = mission.zone || mission.Zone || 'Outre-Mer';
-            const urgency = mission.urgency || mission.Urgence || 'Moyenne';
-
-            if (!silent) {
-                if (!confirm(`Voulez-vous créer automatiquement un devis pour la mission "${title}" ?\n\nCela va créer un client temporaire et pré-remplir le devis.`)) return;
-            }
-
-            // 1. Créer le client (si besoin, ou client générique "Opportunité Radar")
-            const clients = Storage.getClients();
-            let client = clients.find(c => c.name === 'Prospect Radar');
-
-            if (!client) {
-                console.log('[MARKETPLACE] Creating generic prospect...');
-                const newClientData = {
-                    name: 'Prospect Radar',
-                    email: 'contact@domtomconnect.com',
-                    activity: 'Opportunité Marketplace'
-                };
-                client = await Storage.addClient(newClientData);
-            }
-
-            // 2. Créer le devis avec répartition automatique (Commission DomTomConnect)
-            console.log('[MARKETPLACE] Creating quote with commission...');
-            const rawBudget = parseFloat(budget) || 0;
-            const commissionRate = 0.20; // 20% commission par défaut
-            const commissionAmount = Math.round(rawBudget * commissionRate);
-            const expertAmount = rawBudget - commissionAmount;
-
-            const quoteData = {
-                clientId: client.id,
-                status: 'draft',
-                items: [
-                    {
-                        description: `Prestation : ${title} (Radar: ${zone}, ${urgency})`,
-                        quantity: 1,
-                        unitPrice: expertAmount
-                    },
-                    {
-                        description: `Frais de mise en relation & Plateforme DomTomConnect (20%)`,
-                        quantity: 1,
-                        unitPrice: commissionAmount
-                    }
-                ]
-            };
-
-            const newQuote = await Storage.addQuote(quoteData);
-            if (!newQuote) throw new Error("Échec de la création du devis.");
-
-            if (!silent) {
-                App.showNotification('Devis et client créés avec succès !', 'success');
-                // 3. Rediriger vers l'édition du devis
-                App.navigateTo('quotes');
-                setTimeout(() => {
-                    if (typeof Quotes !== 'undefined') {
-                        Quotes.edit(newQuote.id);
-                    }
-                }, 500);
-            }
-        } catch (error) {
-            console.error('[MARKETPLACE] Conversion error:', error);
-            if (!silent) App.showNotification('Erreur lors de la conversion : ' + error.message, 'error');
         }
     }
+},
+
+    async convertMissionToQuote(id, silent = false) {
+    try {
+        console.log('[MARKETPLACE] Initiating conversion for mission:', id);
+
+        if (!silent && !App.enforceLimit('marketplace_response')) {
+            console.warn('[MARKETPLACE] Response limit reached.');
+            return;
+        }
+
+        const missions = this.getPublicMissions();
+        const mission = missions.find(m => m.id == id);
+
+        if (!mission) {
+            if (!silent) App.showNotification('Mission introuvable.', 'error');
+            return;
+        }
+
+        // Robust data mapping
+        const title = mission.title || mission.Title || 'Mission sans titre';
+        const budget = mission.budget || mission.Budget || '0';
+        const zone = mission.zone || mission.Zone || 'Outre-Mer';
+        const urgency = mission.urgency || mission.Urgence || 'Moyenne';
+
+        if (!silent) {
+            if (!confirm(`Voulez-vous créer automatiquement un devis pour la mission "${title}" ?\n\nCela va créer un client temporaire et pré-remplir le devis.`)) return;
+        }
+
+        // 1. Créer le client (si besoin, ou client générique "Opportunité Radar")
+        const clients = Storage.getClients();
+        let client = clients.find(c => c.name === 'Prospect Radar');
+
+        if (!client) {
+            console.log('[MARKETPLACE] Creating generic prospect...');
+            const newClientData = {
+                name: 'Prospect Radar',
+                email: 'contact@domtomconnect.com',
+                activity: 'Opportunité Marketplace'
+            };
+            client = await Storage.addClient(newClientData);
+        }
+
+        // 2. Créer le devis avec répartition automatique (Commission DomTomConnect)
+        console.log('[MARKETPLACE] Creating quote with commission...');
+        const rawBudget = parseFloat(budget) || 0;
+        const commissionRate = 0.20; // 20% commission par défaut
+        const commissionAmount = Math.round(rawBudget * commissionRate);
+        const expertAmount = rawBudget - commissionAmount;
+
+        const quoteData = {
+            clientId: client.id,
+            status: 'draft',
+            items: [
+                {
+                    description: `Prestation : ${title} (Radar: ${zone}, ${urgency})`,
+                    quantity: 1,
+                    unitPrice: expertAmount
+                },
+                {
+                    description: `Frais de mise en relation & Plateforme DomTomConnect (20%)`,
+                    quantity: 1,
+                    unitPrice: commissionAmount
+                }
+            ]
+        };
+
+        const newQuote = await Storage.addQuote(quoteData);
+        if (!newQuote) throw new Error("Échec de la création du devis.");
+
+        if (!silent) {
+            App.showNotification('Devis et client créés avec succès !', 'success');
+            // 3. Rediriger vers l'édition du devis
+            App.navigateTo('quotes');
+            setTimeout(() => {
+                if (typeof Quotes !== 'undefined') {
+                    Quotes.edit(newQuote.id);
+                }
+            }, 500);
+        }
+    } catch (error) {
+        console.error('[MARKETPLACE] Conversion error:', error);
+        if (!silent) App.showNotification('Erreur lors de la conversion : ' + error.message, 'error');
+    }
+}
 };
 
 window.Marketplace = Marketplace;
