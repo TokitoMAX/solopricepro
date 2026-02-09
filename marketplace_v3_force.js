@@ -47,7 +47,7 @@ const Marketplace = {
         if (!container) return;
 
         const missions = this.getPublicMissions();
-        const currentUser = (typeof Storage !== 'undefined') ? Storage.getUser() : null;
+        const mktUser = (typeof Storage !== 'undefined') ? Storage.getUser() : null;
 
         if (missions.length === 0) {
             container.innerHTML = `
@@ -63,7 +63,7 @@ const Marketplace = {
         container.innerHTML = `
             <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
                 ${missions.map(m => {
-            const isOwner = currentUser && (m.user_id === currentUser.id);
+            const isOwner = mktUser && (m.user_id === mktUser.id);
             const title = this.escapeHtml(m.title || 'Sans titre');
             const budget = this.escapeHtml(m.budget || '0');
             return `
