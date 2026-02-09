@@ -1,13 +1,19 @@
 /**
  * SoloPrice Pro - Marketplace & Hub Module
- * Fusion des Opportunités DomTomConnect, de la Prospection et du Réseau.
+ * v1.5 - REPAIRED & DEBUGGED
  */
+console.log('📡 [MARKETPLACE] Script loading...');
+
 const Marketplace = {
     activeTab: 'missions',
 
     render(containerId = 'marketplace-content') {
+        console.log('📡 [MARKETPLACE] Render called on container:', containerId);
         const container = document.getElementById(containerId);
-        if (!container) return;
+        if (!container) {
+            console.error('📡 [MARKETPLACE] Container not found:', containerId);
+            return;
+        }
 
         container.innerHTML = `
             <div class="page-header" style="margin-bottom: 2rem;">
@@ -31,7 +37,7 @@ const Marketplace = {
             <div id="mission-form-container"></div>
 
             <div id="marketplace-dynamic-content" class="marketplace-container" style="animation: fadeIn 0.4s ease;">
-                <!-- Content via renderMissions -->
+                <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Chargement des missions...</p>
             </div>
         `;
 
@@ -39,15 +45,20 @@ const Marketplace = {
     },
 
     getPublicMissions() {
+        if (typeof Storage === 'undefined') {
+            console.error('📡 [MARKETPLACE] Storage module not found');
+            return [];
+        }
         return Storage.getPublicMissions() || [];
     },
 
     renderMissions() {
+        console.log('📡 [MARKETPLACE] Rendering missions...');
         const container = document.getElementById('marketplace-dynamic-content');
         if (!container) return;
 
         const missions = this.getPublicMissions();
-        const currentUser = Storage.getUser();
+        const currentUser = (typeof Storage !== 'undefined') ? Storage.getUser() : null;
 
         if (missions.length === 0) {
             container.innerHTML = `
@@ -69,55 +80,50 @@ const Marketplace = {
             const zone = m.zone || m.Zone || 'Outre-Mer';
             const urgency = m.urgency || m.Urgency || 'Normal';
             const desc = m.description || m.Description || '';
-
-            let posterName = m.poster_name || 'Utilisateur';
-            const initials = (posterName).charAt(0).toUpperCase();
             const urgencyColor = urgency === 'Urgent' ? '#ef4444' : (urgency === 'Prioritaire' ? '#f59e0b' : '#10b981');
 
             return `
-                    <div class="mission-card elite-card" style="position: relative; padding: 1.5rem; border-radius: 20px; background: ${isOwner ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isOwner ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; display: flex; flex-direction: column; gap: 1rem; min-height: 280px;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">${this.escapeHtml(zone)}</span>
-                                ${isOwner ? '<span style="background: var(--primary); color: #000; font-size: 0.55rem; font-weight: 900; padding: 2px 6px; border-radius: 4px;">MA MISSION</span>' : ''}
+                        <div class="mission-card elite-card" style="position: relative; padding: 1.5rem; border-radius: 20px; background: ${isOwner ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isOwner ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; display: flex; flex-direction: column; gap: 1rem; min-height: 280px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">${this.escapeHtml(zone)}</span>
+                                    ${isOwner ? '<span style="background: var(--primary); color: #000; font-size: 0.55rem; font-weight: 900; padding: 2px 6px; border-radius: 4px;">MA MISSION</span>' : ''}
+                                </div>
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 8px ${urgencyColor};"></div>
                             </div>
-                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 8px ${urgencyColor};"></div>
-                        </div>
 
-                        <h3 style="margin: 0; font-size: 1.2rem; color: var(--white); font-weight: 700;">${this.escapeHtml(title)}</h3>
-                        
-                        <div style="display: flex; align-items: baseline; gap: 4px;">
-                            <span style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">${this.escapeHtml(budget)}€</span>
-                        </div>
+                            <h3 style="margin: 0; font-size: 1.2rem; color: var(--white); font-weight: 700;">${this.escapeHtml(title)}</h3>
+                            
+                            <div style="display: flex; align-items: baseline; gap: 4px;">
+                                <span style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">${this.escapeHtml(budget)}€</span>
+                            </div>
 
-                        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; flex-grow: 1;">
-                            ${this.escapeHtml(desc)}
-                        </p>
+                            <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; flex-grow: 1;">
+                                ${this.escapeHtml(desc)}
+                            </p>
 
-                        <div style="display: flex; gap: 0.8rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                            ${isOwner ? `
-                                <button class="button-secondary" style="flex: 1; height: 40px; font-weight: 700; border-radius: 10px; opacity: 0.7; cursor: default;" disabled>
-                                    C'est votre annonce
-                                </button>
-                                <button class="button-secondary" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.editMission('${m.id}')" title="Modifier l'annonce">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            ` : `
-                                <button class="button-primary elite-btn" style="flex: 1; height: 40px; font-weight: 700; border-radius: 10px;" onclick="Marketplace.showPitchModal('${m.id}')">
-                                    <i class="fas fa-bolt" style="margin-right: 8px;"></i> Proposer
-                                </button>
-                                <button class="button-secondary" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            `}
+                            <div style="display: flex; gap: 0.8rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                                ${isOwner ? `
+                                    <button class="button-secondary" style="flex: 1; height: 40px; font-weight: 700; border-radius: 10px; opacity: 0.7; cursor: default;" disabled>C'est votre annonce</button>
+                                    <button class="button-secondary" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.editMission('${m.id}')" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                ` : `
+                                    <button class="button-primary elite-btn" style="flex: 1; height: 40px; font-weight: 700; border-radius: 10px;" onclick="Marketplace.showPitchModal('${m.id}')">
+                                        <i class="fas fa-bolt" style="margin-right: 8px;"></i> Proposer
+                                    </button>
+                                    <button class="button-secondary" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                `}
+                            </div>
                         </div>
-                    </div>
-                `}).join('')}
+                    `;
+        }).join('')}
             </div>
             <style>
                 .elite-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
                 .elite-card:hover { transform: translateY(-8px); border-color: var(--primary-glass); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
-                .elite-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
             </style>
         `;
     },
@@ -127,28 +133,15 @@ const Marketplace = {
         if (!container) return;
 
         container.innerHTML = `
-            <div class="elite-form-card" style="animation: slideDown 0.4s ease-out; background: rgba(255,255,255,0.02); padding: 2rem; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 2rem;">
-                <div class="form-header" style="margin-bottom: 1.5rem;">
-                    <h3 style="color: var(--primary); font-size: 1.2rem; font-weight: 800; margin: 0;">
-                        ${missionData ? 'Modifier l\'annonce' : 'Publier une mission'}
-                    </h3>
-                </div>
+            <div class="elite-form-card" style="background: rgba(255,255,255,0.02); padding: 2rem; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 2rem;">
+                <h3 style="color: var(--primary); margin-top: 0;">${missionData ? 'Modifier' : 'Poster une mission'}</h3>
                 <form onsubmit="Marketplace.saveMission(event)">
                     ${missionData ? `<input type="hidden" name="id" value="${missionData.id}">` : ''}
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
-                        <input type="text" name="title" class="form-input" required placeholder="Titre de la mission" value="${missionData ? this.escapeHtml(missionData.title) : ''}">
-                        <input type="number" name="budget" class="form-input" required placeholder="Budget (€)" value="${missionData ? missionData.budget : ''}">
-                        <select name="zone" class="form-input" required>
-                            <option value="Guadeloupe" ${missionData?.zone === 'Guadeloupe' ? 'selected' : ''}>Guadeloupe (971)</option>
-                            <option value="Martinique" ${missionData?.zone === 'Martinique' ? 'selected' : ''}>Martinique (972)</option>
-                            <option value="Guyane" ${missionData?.zone === 'Guyane' ? 'selected' : ''}>Guyane (973)</option>
-                            <option value="La Réunion" ${missionData?.zone === 'La Réunion' ? 'selected' : ''}>La Réunion (974)</option>
-                            <option value="Mayotte" ${missionData?.zone === 'Mayotte' ? 'selected' : ''}>Mayotte (976)</option>
-                            <option value="France Métropolitaine" ${missionData?.zone === 'France Métropolitaine' ? 'selected' : ''}>France Métropolitaine</option>
-                            <option value="Remote" ${missionData?.zone === 'Remote' || !missionData ? 'selected' : ''}>Remote</option>
-                        </select>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <input type="text" name="title" class="form-input" required placeholder="Titre" value="${missionData ? this.escapeHtml(missionData.title) : ''}">
+                        <input type="number" name="budget" class="form-input" required placeholder="Budget" value="${missionData ? missionData.budget : ''}">
                     </div>
-                    <textarea name="description" class="form-input" rows="4" style="margin-top: 1rem;" required placeholder="Détaillez votre besoin...">${missionData ? this.escapeHtml(missionData.description) : ''}</textarea>
+                    <textarea name="description" class="form-input" rows="4" style="margin-top: 1rem; width: 100%;" required placeholder="Description...">${missionData ? this.escapeHtml(missionData.description) : ''}</textarea>
                     <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: flex-end;">
                         <button type="button" class="button-secondary" onclick="Marketplace.hidePostMissionForm()">Annuler</button>
                         <button type="submit" class="button-primary">Publier</button>
@@ -168,13 +161,11 @@ const Marketplace = {
         e.preventDefault();
         const formData = new FormData(e.target);
         const missionId = formData.get('id');
-        const user = Storage.getUser();
-
         const mission = {
             title: formData.get('title'),
             budget: formData.get('budget'),
-            zone: formData.get('zone'),
             description: formData.get('description'),
+            zone: 'Outre-Mer',
             urgency: 'Normal',
             status: 'open'
         };
@@ -182,15 +173,14 @@ const Marketplace = {
         try {
             if (missionId) {
                 await Storage.updateMission(missionId, mission);
-                App.showNotification('Mise à jour réussie', 'success');
             } else {
                 await Storage.addMission(mission);
-                App.showNotification('Publication réussie', 'success');
             }
+            App.showNotification('Opération réussie', 'success');
             this.hidePostMissionForm();
             this.renderMissions();
         } catch (err) {
-            App.showNotification('Erreur: ' + err.message, 'error');
+            App.showNotification('Erreur', 'error');
         }
     },
 
@@ -198,8 +188,7 @@ const Marketplace = {
         const query = value.toLowerCase();
         const cards = document.querySelectorAll('.mission-card');
         cards.forEach(card => {
-            const text = card.textContent.toLowerCase();
-            card.style.display = text.includes(query) ? 'flex' : 'none';
+            card.style.display = card.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
         });
     },
 
@@ -212,18 +201,11 @@ const Marketplace = {
     applyForMission(id) {
         const mission = this.getPublicMissions().find(m => m.id === id);
         if (mission) {
-            const subject = encodeURIComponent(`Intérêt : ${mission.title}`);
-            const body = encodeURIComponent(`Bonjour,\n\nJe suis intéressé par votre mission "${mission.title}".`);
-            window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${body}`;
+            window.location.href = `mailto:domtomconnect@gmail.com?subject=Intérêt: ${encodeURIComponent(mission.title)}`;
         }
     },
 
-    async showPitchModal(id) {
-        const mission = this.getPublicMissions().find(m => m.id === id);
-        if (!mission) return;
-
-        // Simple alert for now as pitch modal is complex to rewrite perfectly without reference
-        App.showNotification('Pitch en cours d\'ouverture...', 'info');
+    showPitchModal(id) {
         this.applyForMission(id);
     },
 
@@ -236,3 +218,4 @@ const Marketplace = {
 };
 
 window.Marketplace = Marketplace;
+console.log('📡 [MARKETPLACE] Script initialized.');
