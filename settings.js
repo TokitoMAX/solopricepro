@@ -114,6 +114,9 @@ const Settings = {
         if (typeof Legal !== 'undefined') Legal.render('legal-content');
 
         if (typeof TaxEngine !== 'undefined') {
+            // Force re-init to sync with current Storage state
+            TaxEngine.init();
+
             TaxEngine.renderSelector('settings-tax-selector-container', (ctxId) => {
                 const ctx = TaxEngine.contexts[ctxId];
                 if (!ctx) return;

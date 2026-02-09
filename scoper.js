@@ -154,9 +154,11 @@ const Scoper = {
     updateTask(index, field, value) {
         if (field === 'name') this.tasks[index].name = value;
         else if (field === 'manualPrice') {
-            this.tasks[index].manualPrice = value === '' ? null : parseFloat(value);
+            const val = parseFloat(value);
+            this.tasks[index].manualPrice = (isNaN(val) || value === '') ? null : Math.max(0, val);
         } else {
-            this.tasks[index][field] = parseFloat(value) || 0;
+            const val = parseFloat(value);
+            this.tasks[index][field] = Math.max(0, val) || 0;
         }
         this.calculate();
     },

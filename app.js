@@ -32,7 +32,7 @@ const App = {
 
         if (isLoggedIn || inApp) {
             this.enterApp(false);
-            if (isLoggedIn) Storage.fetchAllData();
+            if (isLoggedIn) Storage.fetchAllData(true);
             this.navigateTo(savedPage);
         } else {
             // Landing page by default if never entered
@@ -433,7 +433,10 @@ const App = {
                     company: { name: user.user_metadata.company_name },
                     isPro: user.user_metadata.is_pro
                 };
-                Storage.setUser(userData);
+                if (typeof Storage !== 'undefined') {
+                    Storage.setUser(userData);
+                    Storage.fetchAllData(true);
+                }
                 this.renderUserInfo();
             } else if (error) {
                 // Session probablement expirée
