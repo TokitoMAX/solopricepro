@@ -69,60 +69,29 @@ const Marketplace = {
             return;
         }
 
-        const currentUser = Storage.getUser();
         container.innerHTML = `
-            <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
+            <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem;">
                 ${missions.map(m => {
             const isOwner = currentUser && (m.user_id === currentUser.id);
-            // Robust mapping (Handle case-sensitivity if DB has capitalized keys)
             const title = m.title || m.Title || 'Mission sans titre';
             const budget = m.budget || m.Budget || '0';
             const zone = m.zone || m.Zone || 'Outre-Mer';
             const urgency = m.urgency || m.Urgency || 'Normal';
             const desc = m.description || m.Description || '';
 
-            // Extract identity from description if missing in DB (Schema fallback)
-            let posterName = m.poster_name || m.Poster_name;
-            let posterRole = 'Utilisateur';
-            let posterCompany = m.poster_company || m.Poster_company || 'Membre du réseau';
-
-            if (!posterName && desc.includes('(Publié par :')) {
-                // Match patterns: role - name / Email : email / Enterprise : company ...
-                const match = desc.match(/\(Publié par : (.*?) - (.*?) \/ Email : (.*?) \/ Enterprise : (.*?)\)/) ||
-                    desc.match(/\(Publié par : (.*?) - (.*?) \/ Email : (.*?)\)/) ||
-                    desc.match(/\(Publié par : (.*?) - (.*?) \/ Enterprise : (.*?)\)/) ||
-                    desc.match(/\(Publié par : (.*?) - (.*?)\)/);
-
-                if (match) {
-                    posterRole = match[1];
-                    posterName = match[2];
-                    if (match[3] && match[3].includes('@')) {
-                        m.poster_email = match[3];
-                        if (match[4]) posterCompany = match[4];
-                    } else if (match[3]) {
-                        posterCompany = match[3];
-                    }
-                }
-            }
-
-            const isProPoster = posterRole.toLowerCase().includes('pro') || posterRole.toLowerCase().includes('expert');
-            const roleLabelText = posterRole === 'Utilisateur' ? (isProPoster ? 'Expert Pro' : 'Client') : posterRole;
-            const initials = (posterName || 'U').charAt(0).toUpperCase();
+            // Poster info extraction or fallback
+            let posterName = m.poster_name || 'Utilisateur';
+            let posterCompany = m.poster_company || 'Membre du réseau';
+            const isProPoster = (m.poster_role || '').toLowerCase().includes('pro');
+            const initials = (posterName).charAt(0).toUpperCase();
 
             const urgencyColor = urgency === 'Urgent' ? '#ef4444' : (urgency === 'Prioritaire' ? '#f59e0b' : '#10b981');
-            const roleBadgeColor = isProPoster ? 'var(--primary)' : 'rgba(255,255,255,0.1)';
-            const roleTextColor = isProPoster ? '#000' : 'rgba(255,255,255,0.6)';
 
             return `
-            const isOwner = currentUser && (m.user_id === currentUser.id);
-            const title = m.title || m.Title || 'Mission sans titre';
-            const urgencyColor = m.urgency === 'Haute' ? '#ef4444' : (m.urgency === 'Moyenne' ? '#f59e0b' : '#10b981');
-
-            return `
-                < div class="mission-card elite-card" style = "position: relative; padding: 1.5rem; border-radius: 20px; background: ${isOwner ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isOwner ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; display: flex; flex-direction: column; gap: 1rem;" >
+                    <div class="mission-card elite-card" style="position: relative; padding: 1.5rem; border-radius: 20px; background: ${isOwner ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isOwner ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; display: flex; flex-direction: column; gap: 1rem; min-height: 280px;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">${this.escapeHtml(m.zone || 'Outre-Mer')}</span>
+                                <span style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">${this.escapeHtml(zone)}</span>
                                 ${isOwner ? '<span style="background: var(--primary); color: #000; font-size: 0.55rem; font-weight: 900; padding: 2px 6px; border-radius: 4px;">MA MISSION</span>' : ''}
                             </div>
                             <div style="width: 8px; height: 8px; border-radius: 50%; background: ${urgencyColor}; box-shadow: 0 0 8px ${urgencyColor};"></div>
@@ -131,197 +100,143 @@ const Marketplace = {
                         <h3 style="margin: 0; font-size: 1.2rem; color: var(--white); font-weight: 700;">${this.escapeHtml(title)}</h3>
                         
                         <div style="display: flex; align-items: baseline; gap: 4px;">
-                            <span style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">${this.escapeHtml(m.budget || '0')}€</span>
+                            <span style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">${this.escapeHtml(budget)}€</span>
                         </div>
 
-                        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">
-                            ${this.escapeHtml(m.description || '')}
+                        <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; flex-grow: 1;">
+                            ${this.escapeHtml(desc)}
                         </p>
 
-                        <div class="poster-info" style="display: flex; align-items: center; gap: 12px; margin-bottom: 2.5rem; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.04);">
-                            <div style="width: 40px; height: 40px; border-radius: 12px; background: ${isProPoster ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; display: flex; align-items: center; justify-content: center; color: ${isProPoster ? 'var(--primary)' : 'var(--text-muted)'}; font-weight: 900; font-size: 1rem; border: 1px solid ${isProPoster ? 'rgba(16, 185, 129, 0.2)' : 'transparent'};">
-                                ${initials}
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 2px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 0.85rem; color: var(--white); font-weight: 700; line-height: 1;">${this.escapeHtml(posterName || 'Utilisateur')}</span>
-                                    <span style="font-size: 0.55rem; padding: 3px 8px; border-radius: 6px; background: ${roleBadgeColor}; color: ${roleTextColor}; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid ${isProPoster ? 'transparent' : 'rgba(255,255,255,0.05)'};">${roleLabelText}</span>
-                                </div>
-                                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; opacity: 0.7;">${this.escapeHtml(posterCompany)}</span>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; gap: 1rem; margin-top: auto;">
+                        <div style="display: flex; gap: 0.8rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
                             ${isOwner ? `
-                                <button class="button-secondary" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; opacity: 0.7; cursor: default;" disabled>
+                                <button class="button-secondary" style="flex: 1; height: 40px; font-weight: 700; border-radius: 10px; opacity: 0.7; cursor: default;" disabled>
                                     C'est votre annonce
                                 </button>
-                                <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.showPostMissionForm(${JSON.stringify(m).replace(/"/g, '&quot;')})" title="Modifier l'annonce">
+                                <button class="button-secondary" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.showPostMissionForm(${JSON.stringify(m).replace(/"/g, '&quot;')})" title="Modifier l'annonce">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             ` : `
-                                <button class="button-primary elite-btn" style="flex: 1; height: 50px; font-weight: 700; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);" onclick="Marketplace.showPitchModal('${m.id}')">
-                                    <i class="fas fa-bolt" style="margin-right: 10px;"></i> Proposer mes services
+                                <button class="button-primary elite-btn" style="flex: 1; height: 40px; font-weight: 700; border-radius: 10px;" onclick="Marketplace.showPitchModal('${m.id}')">
+                                    <i class="fas fa-bolt" style="margin-right: 8px;"></i> Proposer
                                 </button>
-                                <button class="button-secondary" style="width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')" title="Contacter l'auteur de l'annonce">
+                                <button class="button-secondary" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03);" onclick="Marketplace.applyForMission('${m.id}')">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             `}
                         </div>
-                    </div >
-    `}).join('')}
+                    </div>
+                `}).join('')}
             </div>
-            <style>
-                .elite-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-                .elite-btn { transition: all 0.3s ease; }
-                .elite-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
-            </style>
+        `;
+    },
+            </div >
+    <style>
+        .elite-card:hover {transform: translateY(-8px) scale(1.02); border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        <style>
+            .elite-card:hover {transform: translateY(-8px) scale(1.02); border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+            .elite-btn {transition: all 0.3s ease; }
+            .elite-btn:hover {filter: brightness(1.1); transform: scale(1.02); }
+        </style>
         `;
     },
 
-// ===== MY MISSIONS (posted by user) =====
-renderMyMissions(container) {
-    const myMissions = this.getMyMissions();
+        // Simplified My Missions getter
+        getMyMissions() {
+        const user = Auth.getUser();
+        if (!user) return [];
+        return (Storage.getPublicMissions() || []).filter(m => m.user_id === user.id);
+    },
 
-    if (myMissions.length === 0) {
-        container.innerHTML = `
-                <div class="empty-state" style="text-align: center; padding: 5rem 2rem; background: var(--bg-sidebar); border-radius: 24px; border: 1px dashed var(--border);">
-                    <div style="font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.6;">�</div>
-                    <h3 style="color: var(--white); margin-bottom: 0.5rem; font-weight: 800;">Votre vitrine est vide</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6;">Publiez vos besoins et mobilisez les talents du réseau DomTomConnect.</p>
-                    <button class="button-primary" onclick="Marketplace.showPostMissionForm()" style="border-radius: 12px; font-weight: 700;">Poster ma première mission</button>
-                </div>
-            `;
-        return;
-    }
-
-    container.innerHTML = `
-            <div class="marketplace-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
-                ${myMissions.map(m => `
-                    <div class="mission-card elite-card" style="position: relative; padding: 2.25rem; border-radius: 28px; background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); display: flex; flex-direction: column; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(12px);">
-                        <div class="glow-edge" style="position: absolute; top: -1px; left: -1px; right: -1px; height: 3px; background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.6;"></div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <span style="font-size: 0.65rem; color: var(--primary); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">MA PUBLICATION</span>
-                                <h3 style="margin: 0; font-size: 1.4rem; color: var(--white); font-weight: 800; line-height: 1.25;">${this.escapeHtml(m.title)}</h3>
-                            </div>
-                            <div class="status-dot" style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 15px var(--primary);" title="En ligne"></div>
-                        </div>
-
-                        <div style="background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 18px; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.04);">
-                            <div style="font-size: 2.2rem; font-weight: 900; color: var(--white); font-family: 'Inter', sans-serif; letter-spacing: -1px;">${this.escapeHtml(m.budget)}<span style="font-size: 1.2rem; margin-left: 4px; color: var(--primary);">€</span></div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Budget Radar</div>
-                        </div>
-
-                        <p style="font-size: 1rem; line-height: 1.7; color: rgba(255,255,255,0.65); margin: 0 0 2.5rem 0; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; font-weight: 400;">
-                            ${this.escapeHtml(m.description)}
-                        </p>
-
-                        <div style="display: flex; gap: 1rem; margin-top: auto; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.06);">
-                            <button class="button-secondary" style="flex: 2; height: 50px; border-radius: 14px; font-weight: 700; background: rgba(255,255,255,0.03); font-size: 0.9rem;" onclick="Marketplace.editMission('${m.id}')">
-                                <i class="fas fa-edit" style="margin-right: 10px;"></i> Corriger
-                            </button>
-                            <button class="button-secondary" style="flex: 1; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; border-color: rgba(239, 68, 68, 0.3); color: #ff4757; background: rgba(239, 68, 68, 0.05);" onclick="Marketplace.deleteMission('${m.id}')">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-},
-
-// ===== POST MISSION FORM =====
-showPostMissionForm(missionData = null) {
+        // ===== POST MISSION FORM =====
+        showPostMissionForm(missionData = null) {
     const container = document.getElementById('mission-form-container');
-    if (!container) return;
+        if (!container) return;
 
-    container.innerHTML = `
-            <div class="elite-form-card" style="animation: slideDown 0.4s ease-out;">
-                <div class="form-header" style="margin-bottom: 2rem;">
-                    <h3 class="form-title" style="color: var(--primary); font-size: 1.5rem; font-weight: 800;">
-                        ${missionData ? '<i class="fas fa-edit"></i> Modifier l\'annonce' : '<i class="fas fa-plus-circle"></i> Publier sur le Marketplace'}
-                    </h3>
-                    <p class="form-subtitle" style="color: var(--text-muted); opacity: 0.8;">
-                        ${missionData ? 'Ajustez les détails de votre besoin pour attirer les bons experts.' : 'Décrivez votre besoin pour mobiliser le réseau.'}
-                    </p>
-                    ${!missionData ? `
+        container.innerHTML = `
+        <div class="elite-form-card" style="animation: slideDown 0.4s ease-out;">
+            <div class="form-header" style="margin-bottom: 2rem;">
+                <h3 class="form-title" style="color: var(--primary); font-size: 1.5rem; font-weight: 800;">
+                    ${missionData ? '<i class="fas fa-edit"></i> Modifier l\'annonce' : '<i class="fas fa-plus-circle"></i> Publier sur le Marketplace'}
+                </h3>
+                <p class="form-subtitle" style="color: var(--text-muted); opacity: 0.8;">
+                    ${missionData ? 'Ajustez les détails de votre besoin pour attirer les bons experts.' : 'Décrivez votre besoin pour mobiliser le réseau.'}
+                </p>
+                ${!missionData ? `
                         <div style="margin-top: 1rem; padding: 10px 15px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); display: inline-flex; align-items: center; gap: 8px;">
                             <i class="fas fa-user-check" style="color: var(--primary);"></i>
                             <span style="font-size: 0.85rem; color: var(--white); font-weight: 600;">Publication en tant que : ${Storage.getUser()?.name || 'Utilisateur'} ${Storage.getUser()?.company?.name ? `(${Storage.getUser().company.name})` : ''}</span>
                         </div>
                     ` : ''}
-                </div>
-                <form onsubmit="Marketplace.saveMission(event)">
-                    ${missionData ? `<input type="hidden" name="id" value="${missionData.id}">` : ''}
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-                        <div class="form-group">
-                            <label class="form-label">Titre de la mission *</label>
-                            <input type="text" name="title" class="form-input" required placeholder="Ex: Création de site e-commerce" value="${missionData ? this.escapeHtml(missionData.title) : ''}">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Budget estimé (€) *</label>
-                            <input type="number" name="budget" id="post-mission-budget" class="form-input" required placeholder="Ex: 2500" value="${missionData ? missionData.budget : ''}" oninput="Marketplace.updateCommissionBreakdown(this.value, 'commission-breakdown-post')">
+            </div>
+            <form onsubmit="Marketplace.saveMission(event)">
+                ${missionData ? `<input type="hidden" name="id" value="${missionData.id}">` : ''}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Titre de la mission *</label>
+                        <input type="text" name="title" class="form-input" required placeholder="Ex: Création de site e-commerce" value="${missionData ? this.escapeHtml(missionData.title) : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Budget estimé (€) *</label>
+                        <input type="number" name="budget" id="post-mission-budget" class="form-input" required placeholder="Ex: 2500" value="${missionData ? missionData.budget : ''}" oninput="Marketplace.updateCommissionBreakdown(this.value, 'commission-breakdown-post')">
                             <div id="commission-breakdown-post" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
                                 <span>Part Reçue par l'Expert (80%) : <strong>${missionData ? Math.round(missionData.budget * 0.8) : 0}€</strong></span><br>
-                                <span>Frais Plateforme (20%) : <span style="color: var(--warning);">${missionData ? Math.round(missionData.budget * 0.2) : 0}€</span></span>
+                                    <span>Frais Plateforme (20%) : <span style="color: var(--warning);">${missionData ? Math.round(missionData.budget * 0.2) : 0}€</span></span>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Zone géographique *</label>
-                            <select name="zone" class="form-input" required>
-                                <option value="">-- Sélectionner --</option>
-                                <option value="Guadeloupe" ${missionData?.zone === 'Guadeloupe' ? 'selected' : ''}>Guadeloupe (971)</option>
-                                <option value="Martinique" ${missionData?.zone === 'Martinique' ? 'selected' : ''}>Martinique (972)</option>
-                                <option value="Guyane" ${missionData?.zone === 'Guyane' ? 'selected' : ''}>Guyane (973)</option>
-                                <option value="La Réunion" ${missionData?.zone === 'La Réunion' ? 'selected' : ''}>La Réunion (974)</option>
-                                <option value="Mayotte" ${missionData?.zone === 'Mayotte' ? 'selected' : ''}>Mayotte (976)</option>
-                                <option value="France Métropolitaine" ${missionData?.zone === 'France Métropolitaine' ? 'selected' : ''}>France Métropolitaine</option>
-                                <option value="Remote" ${missionData?.zone === 'Remote' ? 'selected' : ''}>100% Remote</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Urgence</label>
-                            <select name="urgency" class="form-input">
-                                <option value="Basse" ${missionData?.urgency === 'Basse' ? 'selected' : ''}>Basse (Largo)</option>
-                                <option value="Moyenne" ${missionData?.urgency === 'Moyenne' || !missionData ? 'selected' : ''}>Moyenne (Standard)</option>
-                                <option value="Haute" ${missionData?.urgency === 'Haute' ? 'selected' : ''}>Haute (ASAP)</option>
-                            </select>
-                        </div>
                     </div>
-                    <div class="form-group" style="margin-top: 1.5rem;">
-                        <label class="form-label">Description détaillée *</label>
-                        <textarea name="description" class="form-input" rows="5" required placeholder="Détaillez vos attentes, délais et livrables...">${missionData ? this.escapeHtml(missionData.description) : ''}</textarea>
+                    <div class="form-group">
+                        <label class="form-label">Zone géographique *</label>
+                        <select name="zone" class="form-input" required>
+                            <option value="">-- Sélectionner --</option>
+                            <option value="Guadeloupe" ${missionData?.zone === 'Guadeloupe' ? 'selected' : ''}>Guadeloupe (971)</option>
+                            <option value="Martinique" ${missionData?.zone === 'Martinique' ? 'selected' : ''}>Martinique (972)</option>
+                            <option value="Guyane" ${missionData?.zone === 'Guyane' ? 'selected' : ''}>Guyane (973)</option>
+                            <option value="La Réunion" ${missionData?.zone === 'La Réunion' ? 'selected' : ''}>La Réunion (974)</option>
+                            <option value="Mayotte" ${missionData?.zone === 'Mayotte' ? 'selected' : ''}>Mayotte (976)</option>
+                            <option value="France Métropolitaine" ${missionData?.zone === 'France Métropolitaine' ? 'selected' : ''}>France Métropolitaine</option>
+                            <option value="Remote" ${missionData?.zone === 'Remote' ? 'selected' : ''}>100% Remote</option>
+                        </select>
                     </div>
-                    <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
-                        <button type="button" class="button-secondary" onclick="Marketplace.hidePostMissionForm()">Annuler</button>
-                        <button type="submit" class="button-primary" style="padding: 0 2rem;">
-                            ${missionData ? 'Mettre à jour l\'annonce' : 'Lancer l\'appel d\'offre'}
-                        </button>
+                    <div class="form-group">
+                        <label class="form-label">Urgence</label>
+                        <select name="urgency" class="form-input">
+                            <option value="Basse" ${missionData?.urgency === 'Basse' ? 'selected' : ''}>Basse (Largo)</option>
+                            <option value="Moyenne" ${missionData?.urgency === 'Moyenne' || !missionData ? 'selected' : ''}>Moyenne (Standard)</option>
+                            <option value="Haute" ${missionData?.urgency === 'Haute' ? 'selected' : ''}>Haute (ASAP)</option>
+                        </select>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label class="form-label">Description détaillée *</label>
+                    <textarea name="description" class="form-input" rows="5" required placeholder="Détaillez vos attentes, délais et livrables...">${missionData ? this.escapeHtml(missionData.description) : ''}</textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
+                    <button type="button" class="button-secondary" onclick="Marketplace.hidePostMissionForm()">Annuler</button>
+                    <button type="submit" class="button-primary" style="padding: 0 2rem;">
+                        ${missionData ? 'Mettre à jour l\'annonce' : 'Lancer l\'appel d\'offre'}
+                    </button>
+                </div>
+            </form>
+        </div>
         `;
-    container.scrollIntoView({ behavior: 'smooth' });
+        container.scrollIntoView({behavior: 'smooth' });
 },
 
-hidePostMissionForm() {
+        hidePostMissionForm() {
     const container = document.getElementById('mission-form-container');
-    if (container) container.innerHTML = '';
+        if (container) container.innerHTML = '';
 },
 
-    async saveMission(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const missionId = formData.get('id');
+        async saveMission(e) {
+            e.preventDefault();
+        const formData = new FormData(e.target);
+        const missionId = formData.get('id');
 
-    const user = Storage.getUser();
-    const roleLabel = user?.isPro ? 'Expert Pro' : 'Client';
-    const portfolio = user?.company?.portfolio || '';
+        const user = Storage.getUser();
+        const roleLabel = user?.isPro ? 'Expert Pro' : 'Client';
+        const portfolio = user?.company?.portfolio || '';
 
-    const mission = {
-        title: formData.get('title'),
+        const mission = {
+            title: formData.get('title'),
         budget: formData.get('budget'),
         zone: formData.get('zone'),
         urgency: formData.get('urgency'),
@@ -329,73 +244,66 @@ hidePostMissionForm() {
         status: 'open'
     };
 
-    try {
-        if (missionId) {
+        try {
+    if (missionId) {
             console.log('[MARKETPLACE] Updating existing mission:', missionId);
-            await Storage.updateMission(missionId, mission);
-            App.showNotification('Annonce mise à jour avec succès.', 'success');
-        } else {
+        await Storage.updateMission(missionId, mission);
+        App.showNotification('Annonce mise à jour avec succès.', 'success');
+    } else {
             mission.id = Date.now().toString();
-            console.log('[MARKETPLACE-UI] 🚀 Preparing save with payload:', mission);
-            await Storage.addMission(mission);
-            App.showNotification('Mission publiée sur le Marketplace !', 'success');
-        }
-    } catch (err) {
-        console.error('[MARKETPLACE] Sync error:', err);
-        App.showNotification('Erreur de synchronisation : ' + err.message, 'error');
+        console.log('[MARKETPLACE-UI] 🚀 Preparing save with payload:', mission);
+        await Storage.addMission(mission);
+        App.showNotification('Mission publiée sur le Marketplace !', 'success');
     }
+} catch (err) {
+            console.error('[MARKETPLACE] Sync error:', err);
+        App.showNotification('Erreur de synchronisation : ' + err.message, 'error');
+}
 
-    this.hidePostMissionForm();
-    this.switchTab('my-missions');
+        this.hidePostMissionForm();
+        this.renderMissions();
 },
 
-getMyMissions() {
-    const user = Auth.getUser();
-    if (!user) return [];
-    return (Storage.getPublicMissions() || []).filter(m => m.user_id === user.id);
-},
-
-    async deleteMission(id) {
+        async deleteMission(id) {
     if (!confirm('Voulez-vous vraiment retirer cette annonce du Marketplace ?')) return;
 
-    try {
-        console.log('[MARKETPLACE] Deleting mission:', id);
+        try {
+            console.log('[MARKETPLACE] Deleting mission:', id);
         await Storage.deleteMission(id);
         App.showNotification('Annonce retirée du Marketplace.', 'success');
         this.switchTab(this.activeTab);
     } catch (e) {
-        console.error('[MARKETPLACE] Delete error:', e);
+            console.error('[MARKETPLACE] Delete error:', e);
         App.showNotification('Erreur lors de la suppression sur le serveur.', 'error');
     }
 },
 
-handleSearch(value) {
-    this.render(undefined, this.activeTab);
+        handleSearch(value) {
     const query = value.toLowerCase();
-    const cards = document.querySelectorAll('.mission-card');
+        const cards = document.querySelectorAll('.mission-card');
     cards.forEach(card => {
         const text = card.textContent.toLowerCase();
         card.style.display = text.includes(query) ? 'flex' : 'none';
     });
 },
 
-editMission(id) {
+        editMission(id) {
     const missions = Storage.getPublicMissions() || [];
     const mission = missions.find(m => m.id == id);
-    if (!mission) {
-        App.showNotification('Annonce introuvable.', 'error');
+        if (!mission) {
+            App.showNotification('Annonce introuvable.', 'error');
         return;
     }
-    this.showPostMissionForm(mission);
+        this.showPostMissionForm(mission);
 },
 
-// ===== PROVIDERS (Mes Prestataires) =====
-renderProviders(container) {
+        // ===== PROVIDERS (Mes Prestataires) =====
+        renderProviders(container) {
     // Unifié avec le module Network
     const providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
 
-    if (providers.length === 0) {
-        container.innerHTML = `
+        if (providers.length === 0) {
+            container.innerHTML = `
                 <div class="empty-state" style="text-align: center; padding: 4rem 2rem;">
                     <div style="font-size: 3rem; margin-bottom: 1.5rem;"></div>
                     <h3 style="color: var(--white); margin-bottom: 1rem;">Vos collaborations actives</h3>
@@ -408,42 +316,42 @@ renderProviders(container) {
         return;
     }
 
-    container.innerHTML = `
-            <div class="section-header-inline">
-                <h3 class="section-title-small">Mes Prestataires Actifs</h3>
-            </div>
-            <div class="partners-grid">
-                ${providers.map(p => `
+        container.innerHTML = `
+        <div class="section-header-inline">
+            <h3 class="section-title-small">Mes Prestataires Actifs</h3>
+        </div>
+        <div class="partners-grid">
+            ${providers.map(p => `
                     <div class="network-card glass" style="background: #0a0a0a; border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px;">
                         <h3 style="margin: 0; font-size: 1.1rem; color: var(--white);">${p.name}</h3>
                         <p style="color: var(--text-muted); font-size: 0.9rem;">${p.role}</p>
                         <button class="button-secondary small" style="margin-top: 1rem; width: 100%;">Contacter</button>
                     </div>
                 `).join('')}
-            </div>
+        </div>
         `;
 },
 
-// ===== EXPERTS =====
-renderExperts(container) {
+        // ===== EXPERTS =====
+        renderExperts(container) {
     // Liste des experts (dynamique dans le futur)
     const experts = []; // Initialement vide pour éviter le "fake" content
 
-    container.innerHTML = `
-            <div class="experts-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 2rem; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 300px;">
-                    <h3 class="section-title-small">Annuaire des Experts Vérifiés</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Retrouvez des professionnels qualifiés et recommandés par DomTomConnect.</p>
-                </div>
-                <div style="background: var(--primary-glass); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--primary); max-width: 400px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-light);">Vous êtes un expert ?</h4>
-                    <p style="font-size: 0.8rem; margin-bottom: 1rem; opacity: 0.9;">Boostez votre visibilité et recevez des missions qualifiées en rejoignant le réseau.</p>
-                    <button class="button-primary small" onclick="Marketplace.becomeExpert()" style="width: 100%;">Postuler au programme Expert</button>
-                </div>
+        container.innerHTML = `
+        <div class="experts-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 2rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 300px;">
+                <h3 class="section-title-small">Annuaire des Experts Vérifiés</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Retrouvez des professionnels qualifiés et recommandés par DomTomConnect.</p>
             </div>
+            <div style="background: var(--primary-glass); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--primary); max-width: 400px;">
+                <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-light);">Vous êtes un expert ?</h4>
+                <p style="font-size: 0.8rem; margin-bottom: 1rem; opacity: 0.9;">Boostez votre visibilité et recevez des missions qualifiées en rejoignant le réseau.</p>
+                <button class="button-primary small" onclick="Marketplace.becomeExpert()" style="width: 100%;">Postuler au programme Expert</button>
+            </div>
+        </div>
 
-            <div class="partners-grid">
-                ${experts.length === 0 ? `
+        <div class="partners-grid">
+            ${experts.length === 0 ? `
                     <div class="empty-state" style="grid-column: 1 / -1; padding: 2rem;">
                          <p class="text-muted">Chargement des profils vérifiés...</p>
                     </div>
@@ -461,19 +369,19 @@ renderExperts(container) {
                         </div>
                     </div>
                 `).join('')}
-            </div>
+        </div>
         `;
 },
 
-addExpertToCircle(id) {
-    // Dans une version réelle, on récupèrerait les données de l'API
-    App.showNotification('Fonctionnalité d\'ajout en cours de développement.', 'info');
+        addExpertToCircle(id) {
+            // Dans une version réelle, on récupèrerait les données de l'API
+            App.showNotification('Fonctionnalité d\'ajout en cours de développement.', 'info');
 },
 
-applyForMission(id) {
+        applyForMission(id) {
     // Use Storage cache
     const mission = this.getPublicMissions().find(m => m.id === id);
-    if (mission) {
+        if (mission) {
         const user = Storage.getUser();
         const portfolio = user?.company?.portfolio || '';
         const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
@@ -490,66 +398,66 @@ applyForMission(id) {
         window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
         App.showNotification('Préparation de votre message de contact...', 'success');
     } else {
-        window.location.href = `mailto:domtomconnect@gmail.com`;
+            window.location.href = `mailto:domtomconnect@gmail.com`;
     }
 },
 
-contactExpert(name) {
-    App.showNotification(`Lancer une conversation avec ${name} via DomTomConnect...`, 'info');
+        contactExpert(name) {
+            App.showNotification(`Lancer une conversation avec ${name} via DomTomConnect...`, 'info');
 },
 
-becomeExpert() {
+        becomeExpert() {
     const subject = encodeURIComponent("Candidature Expert Vérifié DomTom Connect");
-    const body = encodeURIComponent("Bonjour,\n\nJe souhaite rejoindre le réseau d'experts DomTom Connect.\n\nVoici mon profil et mes compétences :\n\nCordialement,");
-    window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${body}`;
-    App.showNotification('Ouverture de votre messagerie...', 'success');
+        const body = encodeURIComponent("Bonjour,\n\nJe souhaite rejoindre le réseau d'experts DomTom Connect.\n\nVoici mon profil et mes compétences :\n\nCordialement,");
+        window.location.href = `mailto:domtomconnect@gmail.com?subject=${subject}&body=${body}`;
+        App.showNotification('Ouverture de votre messagerie...', 'success');
 },
 
-escapeHtml(text) {
+        escapeHtml(text) {
     if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
 },
 
-    async showPitchModal(id) {
+        async showPitchModal(id) {
     if (!App.enforceLimit('marketplace_response')) return;
 
-    const missions = this.getPublicMissions();
+        const missions = this.getPublicMissions();
     const mission = missions.find(m => m.id == id);
-    if (!mission) return;
+        if (!mission) return;
 
-    const user = Auth.getUser();
-    const portfolio = user?.company?.portfolio || '';
+        const user = Auth.getUser();
+        const portfolio = user?.company?.portfolio || '';
 
-    // Create modal overlay if it doesn't exist
-    let modal = document.getElementById('pitch-modal');
-    if (!modal) {
-        modal = document.createElement('div');
+        // Create modal overlay if it doesn't exist
+        let modal = document.getElementById('pitch-modal');
+        if (!modal) {
+            modal = document.createElement('div');
         modal.id = 'pitch-modal';
         modal.className = 'modal-overlay';
         document.body.appendChild(modal);
     }
 
-    modal.innerHTML = `
-            <div class="modal-content glass" style="max-width: 600px; padding: 2.5rem;">
-                <button class="modal-close" onclick="Marketplace.hidePitchModal()">✕</button>
-                
-                <div style="margin-bottom: 2rem;">
-                    <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--white); margin-bottom: 0.5rem;">Pitch de Mission</h2>
-                    <p class="text-muted" style="font-size: 0.9rem;">Convainquez le client par la <strong>valeur</strong> que vous apportez.</p>
-                </div>
+        modal.innerHTML = `
+        <div class="modal-content glass" style="max-width: 600px; padding: 2.5rem;">
+            <button class="modal-close" onclick="Marketplace.hidePitchModal()">✕</button>
 
-                <div class="mission-mini-card" style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
-                    <div style="font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase;">PROJET</div>
-                    <div style="font-size: 1.1rem; color: var(--white); font-weight: 700;">${this.escapeHtml(mission.title)}</div>
-                </div>
+            <div style="margin-bottom: 2rem;">
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--white); margin-bottom: 0.5rem;">Pitch de Mission</h2>
+                <p class="text-muted" style="font-size: 0.9rem;">Convainquez le client par la <strong>valeur</strong> que vous apportez.</p>
+            </div>
 
-                <form onsubmit="Marketplace.submitPitch(event, '${id}')">
-                    <input type="hidden" id="pitch-poster-email" value="${mission.poster_email || ''}">
+            <div class="mission-mini-card" style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+                <div style="font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase;">PROJET</div>
+                <div style="font-size: 1.1rem; color: var(--white); font-weight: 700;">${this.escapeHtml(mission.title)}</div>
+            </div>
+
+            <form onsubmit="Marketplace.submitPitch(event, '${id}')">
+                <input type="hidden" id="pitch-poster-email" value="${mission.poster_email || ''}">
                     <div class="form-group" style="margin-bottom: 1.5rem;">
                         <label class="form-label" style="display: flex; justify-content: space-between;">
-                            Projection de Valeur (ROI) 
+                            Projection de Valeur (ROI)
                             <span style="font-size: 0.7rem; color: var(--primary); font-weight: 900;">CONCEPT UNIQUE <i class="fas fa-crown"></i></span>
                         </label>
                         <textarea id="pitch-roi" class="form-input" rows="2" placeholder="Ex: 'Ce projet vous fera gagner 10h/semaine via l'automatisation' ou 'Je vise +15% de CA'..." required></textarea>
@@ -565,10 +473,10 @@ escapeHtml(text) {
                         <div class="form-group">
                             <label class="form-label">Budget PROJET (€)</label>
                             <input type="number" id="pitch-budget" class="form-input" value="${mission.budget}" oninput="Marketplace.updateCommissionBreakdown(this.value)" required>
-                            <div id="commission-breakdown" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                                <span>Net Expert : <strong>${Math.round(mission.budget * 0.8)}€</strong></span><br>
-                                <span>Commission (20%) : <span style="color: var(--warning);">${Math.round(mission.budget * 0.2)}€</span></span>
-                            </div>
+                                <div id="commission-breakdown" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <span>Net Expert : <strong>${Math.round(mission.budget * 0.8)}€</strong></span><br>
+                                        <span>Commission (20%) : <span style="color: var(--warning);">${Math.round(mission.budget * 0.2)}€</span></span>
+                                </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Délai estimé</label>
@@ -590,62 +498,62 @@ escapeHtml(text) {
                     <button type="submit" class="button-primary full-width" style="height: 55px; font-size: 1.1rem; font-weight: 800; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
                         <i class="fas fa-paper-plane" style="margin-right: 12px;"></i> Envoyer ma proposition
                     </button>
-                </form>
-            </div>
+            </form>
+        </div>
         `;
 
-    modal.classList.add('active');
-    modal.style.display = 'flex';
+        modal.classList.add('active');
+        modal.style.display = 'flex';
 },
 
-    async submitPitch(e, missionId) {
-    e.preventDefault();
-    const roi = document.getElementById('pitch-roi').value.trim();
-    const message = document.getElementById('pitch-message').value.trim();
-    const budget = parseFloat(document.getElementById('pitch-budget').value) || 0;
-    const deadline = document.getElementById('pitch-deadline').value.trim();
-    const portfolio = document.getElementById('pitch-portfolio').value.trim();
-    const posterEmail = document.getElementById('pitch-poster-email').value || 'domtomconnect@gmail.com';
+        async submitPitch(e, missionId) {
+            e.preventDefault();
+        const roi = document.getElementById('pitch-roi').value.trim();
+        const message = document.getElementById('pitch-message').value.trim();
+        const budget = parseFloat(document.getElementById('pitch-budget').value) || 0;
+        const deadline = document.getElementById('pitch-deadline').value.trim();
+        const portfolio = document.getElementById('pitch-portfolio').value.trim();
+        const posterEmail = document.getElementById('pitch-poster-email').value || 'domtomconnect@gmail.com';
 
-    const commission = Math.round(budget * 0.2);
-    const netExpert = budget - commission;
+        const commission = Math.round(budget * 0.2);
+        const netExpert = budget - commission;
 
-    const missions = this.getPublicMissions();
+        const missions = this.getPublicMissions();
     const mission = missions.find(m => m.id == missionId);
-    if (!mission) return;
+        if (!mission) return;
 
-    const user = Auth.getUser();
-    const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
-    const subject = encodeURIComponent(`Proposition Smart Pitch : ${mission.title} (Via Radar SoloPrice)`);
+        const user = Auth.getUser();
+        const posterName = mission.poster_name || mission.Poster_name || 'Recruteur';
+        const subject = encodeURIComponent(`Proposition Smart Pitch : ${mission.title} (Via Radar SoloPrice)`);
 
-    let bodyText = `Bonjour ${posterName},\n\nJ'ai analysé votre besoin pour "${mission.title}" et je souhaite vous proposer mes services.\n\n`;
-    bodyText += `PROJECTION DE VALEUR :\n${roi}\n\n`;
-    bodyText += `Message d'accroche :\n${message}\n\n`;
-    bodyText += `ESTIMATION :\n- Budget Total (Plateforme DomTomConnect incluse) : ${budget}€\n- Délai estimé : ${deadline}\n`;
+        let bodyText = `Bonjour ${posterName},\n\nJ'ai analysé votre besoin pour "${mission.title}" et je souhaite vous proposer mes services.\n\n`;
+        bodyText += `PROJECTION DE VALEUR :\n${roi}\n\n`;
+        bodyText += `Message d'accroche :\n${message}\n\n`;
+        bodyText += `ESTIMATION :\n- Budget Total (Plateforme DomTomConnect incluse) : ${budget}€\n- Délai estimé : ${deadline}\n`;
 
-    if (portfolio) {
-        bodyText += `\nMon Portfolio : ${portfolio}\n`;
+        if (portfolio) {
+            bodyText += `\nMon Portfolio : ${portfolio}\n`;
     }
 
-    // Send to poster, Cc to platform
-    const mailTo = posterEmail;
-    const cc = posterEmail === 'domtomconnect@gmail.com' ? '' : 'domtomconnect@gmail.com';
+        // Send to poster, Cc to platform
+        const mailTo = posterEmail;
+        const cc = posterEmail === 'domtomconnect@gmail.com' ? '' : 'domtomconnect@gmail.com';
 
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalBtnHtml = submitBtn.innerHTML;
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalBtnHtml = submitBtn.innerHTML;
 
-    try {
-        submitBtn.disabled = true;
+        try {
+            submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
 
         const response = await fetch(`${Auth.apiBase}/api/marketplace/apply`, {
             method: 'POST',
-            headers: Storage.getHeaders(),
-            body: JSON.stringify({
-                to: mailTo,
-                subject: decodeURIComponent(subject),
-                body: bodyText,
-                cc: cc
+        headers: Storage.getHeaders(),
+        body: JSON.stringify({
+            to: mailTo,
+        subject: decodeURIComponent(subject),
+        body: bodyText,
+        cc: cc
             })
         });
 
@@ -662,7 +570,7 @@ escapeHtml(text) {
         this.convertMissionToQuote(missionId, true);
 
     } catch (error) {
-        console.error('[MARKETPLACE] Application error:', error);
+            console.error('[MARKETPLACE] Application error:', error);
         App.showNotification(`Erreur : ${error.message}. Assurez-vous que le service SMTP est configuré.`, 'error');
 
         // Fallback: If direct send fails and user is desperate, offer the old mailto?
@@ -672,18 +580,18 @@ escapeHtml(text) {
     }
 },
 
-hidePitchModal() {
+        hidePitchModal() {
     const modal = document.getElementById('pitch-modal');
-    if (modal) {
-        modal.classList.remove('active');
+        if (modal) {
+            modal.classList.remove('active');
         modal.style.display = 'none';
     }
 },
 
-updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
+        updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
     const budget = parseFloat(val) || 0;
-    const breakdown = document.getElementById(elementId);
-    if (breakdown) {
+        const breakdown = document.getElementById(elementId);
+        if (breakdown) {
         const commission = Math.round(budget * 0.2);
         const net = budget - commission;
         if (elementId === 'commission-breakdown-post') {
@@ -700,13 +608,13 @@ updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
     }
 },
 
-    async convertMissionToQuote(id, silent = false) {
+        async convertMissionToQuote(id, silent = false) {
     try {
-        console.log('[MARKETPLACE] Initiating conversion for mission:', id);
+            console.log('[MARKETPLACE] Initiating conversion for mission:', id);
 
         if (!silent && !App.enforceLimit('marketplace_response')) {
             console.warn('[MARKETPLACE] Response limit reached.');
-            return;
+        return;
         }
 
         const missions = this.getPublicMissions();
@@ -714,7 +622,7 @@ updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
 
         if (!mission) {
             if (!silent) App.showNotification('Mission introuvable.', 'error');
-            return;
+        return;
         }
 
         // Robust data mapping
@@ -733,12 +641,12 @@ updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
 
         if (!client) {
             console.log('[MARKETPLACE] Creating generic prospect...');
-            const newClientData = {
-                name: 'Prospect Radar',
-                email: 'contact@domtomconnect.com',
-                activity: 'Opportunité Marketplace'
+        const newClientData = {
+            name: 'Prospect Radar',
+        email: 'contact@domtomconnect.com',
+        activity: 'Opportunité Marketplace'
             };
-            client = await Storage.addClient(newClientData);
+        client = await Storage.addClient(newClientData);
         }
 
         // 2. Créer le devis avec répartition automatique (Commission DomTomConnect)
@@ -750,19 +658,19 @@ updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
 
         const quoteData = {
             clientId: client.id,
-            status: 'draft',
-            items: [
-                {
-                    description: `Prestation : ${title} (Radar: ${zone}, ${urgency})`,
-                    quantity: 1,
-                    unitPrice: expertAmount
+        status: 'draft',
+        items: [
+        {
+            description: `Prestation : ${title} (Radar: ${zone}, ${urgency})`,
+        quantity: 1,
+        unitPrice: expertAmount
                 },
-                {
-                    description: `Frais de mise en relation & Plateforme DomTomConnect (20%)`,
-                    quantity: 1,
-                    unitPrice: commissionAmount
+        {
+            description: `Frais de mise en relation & Plateforme DomTomConnect (20%)`,
+        quantity: 1,
+        unitPrice: commissionAmount
                 }
-            ]
+        ]
         };
 
         const newQuote = await Storage.addQuote(quoteData);
@@ -770,19 +678,19 @@ updateCommissionBreakdown(val, elementId = 'commission-breakdown') {
 
         if (!silent) {
             App.showNotification('Devis et client créés avec succès !', 'success');
-            // 3. Rediriger vers l'édition du devis
-            App.navigateTo('quotes');
+        // 3. Rediriger vers l'édition du devis
+        App.navigateTo('quotes');
             setTimeout(() => {
                 if (typeof Quotes !== 'undefined') {
-                    Quotes.edit(newQuote.id);
+            Quotes.edit(newQuote.id);
                 }
             }, 500);
         }
     } catch (error) {
-        console.error('[MARKETPLACE] Conversion error:', error);
+            console.error('[MARKETPLACE] Conversion error:', error);
         if (!silent) App.showNotification('Erreur lors de la conversion : ' + error.message, 'error');
     }
 }
 };
 
-window.Marketplace = Marketplace;
+        window.Marketplace = Marketplace;
