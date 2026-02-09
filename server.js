@@ -121,12 +121,13 @@ app.use('/api/marketplace', marketplaceRoutes); // [NEW] Mount Marketplace API
 app.use(express.static(process.cwd()));
 
 // 3. SPA Fallback (LAST)
-app.use((req, res, next) => {
+app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/')) {
-        // Si on arrive ici pour un /api/, c'est que la route n'existe pas
         console.warn(`[404] API route not found: ${req.method} ${req.path}`);
         return res.status(404).json({ message: `API route ${req.method} ${req.path} non trouvée.` });
     }
+    // Disable caching for the entry file to force updates
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
