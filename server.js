@@ -121,7 +121,7 @@ app.use('/api/marketplace', marketplaceRoutes); // [NEW] Mount Marketplace API
 app.use(express.static(process.cwd()));
 
 // 3. SPA Fallback (LAST)
-app.get('*', (req, res, next) => {
+app.get('/*', (req, res, next) => {
     if (req.path.startsWith('/api/')) {
         console.warn(`[404] API route not found: ${req.method} ${req.path}`);
         return res.status(404).json({ message: `API route ${req.method} ${req.path} non trouvée.` });
