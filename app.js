@@ -214,7 +214,13 @@ const App = {
         }
         if (page === 'marketplace' && typeof Marketplace !== 'undefined') {
             this.checkFreemiumLimits(); // Refresh limits before rendering
-            Marketplace.render('marketplace-content', ...args);
+            try {
+                console.log('📡 [MARKETPLACE-ROOT] Rendering v3.0...');
+                Marketplace.render('marketplace-root', ...args);
+            } catch (err) {
+                alert('Marketplace Render Error: ' + err.message);
+                console.error(err);
+            }
         }
         if (page === 'expenses' && typeof Expenses !== 'undefined') Expenses.render();
         if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();

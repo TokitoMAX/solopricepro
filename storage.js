@@ -115,7 +115,8 @@ const Storage = {
     },
 
     get(key) {
-        return this._cache[key] || [];
+        const val = this._cache[key];
+        return Array.isArray(val) ? val : [];
     },
 
     async set(table, data) {
