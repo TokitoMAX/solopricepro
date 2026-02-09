@@ -84,8 +84,10 @@ app.get('/api/health', (req, res) => {
             appUrl: process.env.APP_URL || 'not set',
             smtp: {
                 host: process.env.SMTP_HOST || 'not set',
-                user: process.env.SMTP_USER ? 'configured' : 'not set',
-                pass: process.env.SMTP_PASS ? 'configured' : 'not set'
+                user: process.env.SMTP_USER ? process.env.SMTP_USER.substring(0, 3) + '...' : 'not set',
+                pass: process.env.SMTP_PASS ? 'configured' : 'not set',
+                from: process.env.SMTP_FROM || 'not set',
+                debug_trace: `H:${!!process.env.SMTP_HOST} U:${!!process.env.SMTP_USER} P:${!!process.env.SMTP_PASS}`
             }
         }
     });

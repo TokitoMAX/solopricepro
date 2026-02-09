@@ -109,6 +109,7 @@ router.delete('/:table/:id', async (req, res) => {
     const supabase = req.app.get('supabase');
 
     try {
+        console.log(`[DATA-DELETE] 🗑️ Attempting delete from ${actualTable} | ID: ${id} | User: ${req.user.id}`);
         const { error } = await supabase
             .from(actualTable)
             .delete()

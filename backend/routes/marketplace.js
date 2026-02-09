@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
+const fs = require('fs');
 
 // Middleware to extract user from Supabase token (Shared with data.js)
 async function authenticateUser(req, res, next) {
@@ -24,25 +25,27 @@ async function authenticateUser(req, res, next) {
     }
 }
 
-router.use(authenticateUser);
-
 /**
  * @route   GET /api/marketplace/debug-env
- * @desc    Check environment variable visibility for SMTP
+ * @desc    Check environment variable visibility for SMTP (Public Diagnostic)
  */
 router.get('/debug-env', (req, res) => {
     res.json({
-        v: '1.2-diagnostic',
+        v: '1.3-public-diag',
         timestamp: new Date().toISOString(),
-        user_id: req.user?.id,
         smtp_keys: Object.keys(process.env).filter(k => k.startsWith('SMTP_')),
         trace: {
             host: process.env.SMTP_HOST ? 'PRESENT' : 'MISSING',
             user: process.env.SMTP_USER ? 'PRESENT' : 'MISSING',
-            pass: process.env.SMTP_PASS ? 'PRESENT' : 'MISSING'
-        }
+            pass: process.env.SMTP_PASS ? 'PRESENT' : 'MISSING',
+            from: process.env.SMTP_FROM ? 'PRESENT' : 'MISSING'
+        },
+        process_cwd: process.cwd(),
+        env_files: fs.existsSync('.env') ? '.env exists' : '.env MISSING'
     });
 });
+
+router.use(authenticateUser);
 
 /**
  * @route   POST /api/marketplace/apply
@@ -52,7 +55,11 @@ router.get('/debug-env', (req, res) => {
 router.post('/apply', async (req, res) => {
     const { to, subject, body, cc } = req.body;
 
-    console.log('[MARKETPLACE-APPLY] 📩 Request received:', { to, subjectLength: subject?.length, bodyLength: body?.length, cc });
+    console.log('\n--- 📧 MAIL ATTEMPT ---');
+    console.log('TO:', to);
+    console.log('SMTP_HOST:', process.env.SMTP_HOST);
+    console.log('SMTP_USER:', process.env.SMTP_USER);
+    console.log('-----------------------\n');
 
     if (!to || !subject || !body) {
         console.warn('[MARKETPLACE-APPLY] ⚠️ Missing fields:', { to: !!to, subject: !!subject, body: !!body });
