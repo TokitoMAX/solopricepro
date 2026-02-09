@@ -27,6 +27,24 @@ async function authenticateUser(req, res, next) {
 router.use(authenticateUser);
 
 /**
+ * @route   GET /api/marketplace/debug-env
+ * @desc    Check environment variable visibility for SMTP
+ */
+router.get('/debug-env', (req, res) => {
+    res.json({
+        v: '1.2-diagnostic',
+        timestamp: new Date().toISOString(),
+        user_id: req.user?.id,
+        smtp_keys: Object.keys(process.env).filter(k => k.startsWith('SMTP_')),
+        trace: {
+            host: process.env.SMTP_HOST ? 'PRESENT' : 'MISSING',
+            user: process.env.SMTP_USER ? 'PRESENT' : 'MISSING',
+            pass: process.env.SMTP_PASS ? 'PRESENT' : 'MISSING'
+        }
+    });
+});
+
+/**
  * @route   POST /api/marketplace/apply
  * @desc    Send a pitch application via SMTP
  * @access  Private

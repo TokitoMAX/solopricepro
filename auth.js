@@ -5,8 +5,11 @@ const Auth = {
     // Définir l'URL de base pour l'API
     // Si on est en local (localhost ou file://), on force le port 5050
     // Sinon (production), on utilise le chemin relatif
-    apiBase: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
-        ? 'http://localhost:5050'
+    apiBase: (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.protocol === 'file:' ||
+        /^192\.168\./.test(window.location.hostname))
+        ? `http://${window.location.hostname}:5050`
         : '',
 
     init() {

@@ -468,6 +468,11 @@ const Storage = {
         return !!(user && (user.user_metadata?.is_pro || user.is_pro));
     },
 
+    async fetchAllData(triggerRender = false) {
+        const Auth = window.Auth;
+        if (!Auth || !Auth.isLoggedIn()) return;
+    },
+
     getTier() {
         return this.isPro() ? 'expert' : 'standard';
     },
@@ -476,22 +481,36 @@ const Storage = {
         return 0;
     },
 
+    getHeaders() {
+        const token = localStorage.getItem('sp_token');
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
+    },
+
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
 };
 
-// Auto-init
+// Auto-init at end of file:
 // Initialisation sécurisée
+async function safeInit() {
+    console.log("🛠️ Attempting safe Storage initialization...");
+    if (typeof window.Auth !== 'undefined') {
+        Storage.init();
+    } else {
+        console.warn("⏳ Auth module not found yet, retrying in 100ms...");
+        setTimeout(safeInit, 100);
+    }
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof Auth !== 'undefined') {
-            Storage.init();
-        } else {
-            console.error("❌ Auth module not found. Storage init delayed.");
-            setTimeout(() => Storage.init(), 500); // Retry once
-        }
-    });
+    document.addEventListener('DOMContentLoaded', safeInit);
 } else {
-    Storage.init();
+    safeInit();
 }

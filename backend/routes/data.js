@@ -118,7 +118,13 @@ router.delete('/:table/:id', async (req, res) => {
         if (error) throw error;
         res.json({ message: 'Deleted successfully' });
     } catch (err) {
-        res.status(500).json({ message: `Error deleting from ${table}`, error: err.message });
+        console.error(`[DATA-DELETE] ❌ Error deleting from ${table} (id: ${id}):`, err);
+        res.status(500).json({
+            success: false,
+            message: `Error deleting from ${table}`,
+            error: err.message,
+            hint: 'Check RLS policies or database constraints'
+        });
     }
 });
 
