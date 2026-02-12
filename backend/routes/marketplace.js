@@ -31,7 +31,7 @@ async function authenticateUser(req, res, next) {
  */
 router.get('/debug-env', (req, res) => {
     res.json({
-        v: '1.3-public-diag',
+        v: '1.4-ANTIGRAVITY-DIAG',
         timestamp: new Date().toISOString(),
         smtp_keys: Object.keys(process.env).filter(k => k.startsWith('SMTP_')),
         trace: {
