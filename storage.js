@@ -436,6 +436,21 @@ const Storage = {
         return this.add('sp_marketplace_applications', application);
     },
 
+    async getInbox() {
+        const res = await fetch(`${Auth.apiBase}/api/marketplace/inbox`, {
+            headers: { 'Authorization': `Bearer ${Auth.token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch inbox');
+        return await res.json();
+    },
+
+    // Get missions owned by specific user (Client-side filtering helper)
+    getMyMissions(userId) {
+        const all = this.getPublicMissions() || [];
+        if (!userId) return [];
+        return all.filter(m => m.user_id === userId);
+    },
+
     getNetworkProviders() { return this.get(this.KEYS.PROVIDERS); },
     async addProvider(provider) { return this.add(this.KEYS.PROVIDERS, provider); },
     async deleteProvider(id) { return this.delete(this.KEYS.PROVIDERS, id); },

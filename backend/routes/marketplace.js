@@ -48,6 +48,53 @@ router.get('/debug-env', (req, res) => {
 router.use(authenticateUser);
 
 /**
+ * @route   GET /api/marketplace/inbox
+ * @desc    Get applications received for my missions
+ * @access  Private
+ */
+router.get('/inbox', async (req, res) => {
+    const supabase = req.app.get('supabase');
+    const userId = req.user.id;
+
+    try {
+        // 1. Get my missions
+        const { data: myMissions, error: missionError } = await supabase
+            .from('sp_marketplace_missions')
+            .select('id, title')
+            .eq('user_id', userId);
+
+        if (missionError) throw missionError;
+
+        if (!myMissions || myMissions.length === 0) {
+            return res.json([]);
+        }
+
+        const missionIds = myMissions.map(m => m.id);
+
+        // 2. Get applications for these missions
+        const { data: applications, error: appError } = await supabase
+            .from('sp_marketplace_applications')
+            .select('*')
+            .in('mission_id', missionIds);
+
+        if (appError) throw appError;
+
+        // 3. Map mission titles
+        const missionMap = Object.fromEntries(myMissions.map(m => [m.id, m.title]));
+        const inbox = applications.map(app => ({
+            ...app,
+            mission_title: missionMap[app.mission_id]
+        }));
+
+        res.json(inbox);
+
+    } catch (err) {
+        console.error('[MARKETPLACE-INBOX] Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * @route   POST /api/marketplace/apply
  * @desc    Send a pitch application via SMTP
  * @access  Private
