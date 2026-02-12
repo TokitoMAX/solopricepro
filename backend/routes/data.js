@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const upload = multer({ limits: { fileSize: 500 * 1024 } }); // 500KB limit
 
 // Middleware to extract user from Supabase token
 async function authenticateUser(req, res, next) {
@@ -126,6 +128,51 @@ router.delete('/:table/:id', async (req, res) => {
             error: err.message,
             hint: 'Check RLS policies or database constraints'
         });
+    }
+});
+
+// Storage Upload (Logos)
+router.post('/storage/upload/logos', upload.single('file'), async (req, res) => {
+    const supabase = req.app.get('supabase');
+    const file = req.file;
+    const bodyPath = req.body.path;
+
+    if (!file) return res.status(400).json({ message: "No file uploaded" });
+
+    try {
+        console.log(`[STORAGE-UPLOAD] 📤 Uploading to bucket: logos | Path: ${bodyPath}`);
+
+        // Ensure bucket exists (requires Service Role Key)
+        // Note: In a production environment, you might want to do this once at startup
+        const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+        if (bucketError) throw bucketError;
+
+        if (!buckets.find(b => b.id === 'logos')) {
+            console.log("[STORAGE-UPLOAD] 🏗️ Creating 'logos' bucket...");
+            const { error: createError } = await supabase.storage.createBucket('logos', {
+                public: true,
+                allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg'],
+                fileSizeLimit: 524288 // 500KB
+            });
+            if (createError) throw createError;
+        }
+
+        // Upload to bucket
+        const { data, error: uploadError } = await supabase.storage.from('logos').upload(bodyPath, file.buffer, {
+            contentType: file.mimetype,
+            upsert: true
+        });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage.from('logos').getPublicUrl(bodyPath);
+
+        console.log(`[STORAGE-UPLOAD] ✅ Upload successful: ${publicUrl}`);
+        res.json({ success: true, publicUrl });
+    } catch (err) {
+        console.error(`[STORAGE-UPLOAD] ❌ Error:`, err);
+        res.status(500).json({ message: "Error uploading file", error: err.message });
     }
 });
 

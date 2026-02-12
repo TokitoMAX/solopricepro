@@ -127,12 +127,24 @@ const Profile = {
             btn.textContent = 'Enregistrement...';
             btn.disabled = true;
 
+            // Handle Logo Upload if pending
+            if (window.pendingLogoFile) {
+                try {
+                    const publicUrl = await Storage.uploadLogo(window.pendingLogoFile);
+                    companyData.logo = publicUrl;
+                    window.pendingLogoFile = null;
+                } catch (uploadErr) {
+                    console.error("Logo upload failed, continuing with previous logo:", uploadErr);
+                    App.showNotification("Échec de l'upload du logo, mais le reste a été enregistré.", 'warning');
+                }
+            }
+
             // On met à jour via Storage qui gère maintenant la normalisation
             await Storage.updateUser({ company: companyData });
 
-            App.renderUserInfo(); // Kept from original, as it updates user info in UI
+            App.renderUserInfo();
             App.showNotification('Profil mis à jour avec succès !', 'success');
-            this.render(); // Render the profile again to reflect changes
+            this.render();
 
             btn.textContent = originalText;
             btn.disabled = false;
@@ -152,20 +164,24 @@ const Profile = {
             return;
         }
 
+        // Store for upload on save
+        window.pendingLogoFile = file;
+
         const reader = new FileReader();
         reader.onload = (event) => {
-            const base64 = event.target.result;
-            document.getElementById('logo-base64').value = base64;
-            document.getElementById('logo-preview').innerHTML = `<img src="${base64}" style="width:100%; height:100%; object-fit:contain;">`;
-            App.showNotification('Logo chargé. N\'oubliez pas d\'enregistrer.', 'info');
+            const previewBase64 = event.target.result;
+            document.getElementById('logo-preview').innerHTML = `<img src="${previewBase64}" style="width:100%; height:100%; object-fit:contain;">`;
+            App.showNotification('Logo sélectionné. N\'oubliez pas d\'enregistrer.', 'info');
         };
         reader.readAsDataURL(file);
     },
 
     removeLogo() {
-        document.getElementById('logo-base64').value = '';
+        window.pendingLogoFile = null;
+        const logoInput = document.getElementById('logo-base64');
+        if (logoInput) logoInput.value = '';
         document.getElementById('logo-preview').innerHTML = '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>';
-        App.showNotification('Logo supprimé. N\'oubliez pas d\'enregistrer.', 'info');
+        App.showNotification('Logo supprimé dans la prévisualisation. Enregistrez pour confirmer.', 'info');
     }
 };
 

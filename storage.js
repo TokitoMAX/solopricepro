@@ -5,18 +5,18 @@ const Storage = {
     // Clés pour le cache mémoire (ne persiste pas au refresh)
     KEYS: {
         USER: 'sp_user',
-        CLIENTS: 'clients',
-        QUOTES: 'quotes',
-        INVOICES: 'invoices',
-        SERVICES: 'services',
-        LEADS: 'leads',
-        REVENUES: 'revenues',
-        EXPENSES: 'expenses',
-        SETTINGS: 'settings',
-        CALCULATOR: 'calculator_data',
-        MARKETPLACE_MISSIONS: 'marketplace_missions',
-        MY_MISSIONS: 'my_missions',
-        PROVIDERS: 'network_providers'
+        CLIENTS: 'sp_clients',
+        QUOTES: 'sp_quotes',
+        INVOICES: 'sp_invoices',
+        SERVICES: 'sp_services',
+        LEADS: 'sp_leads',
+        REVENUES: 'sp_revenues',
+        EXPENSES: 'sp_expenses',
+        SETTINGS: 'sp_settings',
+        CALCULATOR: 'sp_calculator_data',
+        MARKETPLACE_MISSIONS: 'sp_marketplace_missions',
+        MY_MISSIONS: 'sp_my_missions',
+        PROVIDERS: 'sp_network_providers'
     },
 
     // Cache mémoire
@@ -165,6 +165,38 @@ const Storage = {
             console.error("Error updating profile:", e);
         }
         return merged;
+    },
+
+    // --- Storage Methods (Supabase Bucket) ---
+
+    async uploadLogo(file) {
+        const user = this.getUser();
+        if (!user) throw new Error("Utilisateur non connecté");
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('path', `logos/${user.id}_${Date.now()}_${file.name}`);
+
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/data/storage/upload/logos`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('sp_token')}`
+                },
+                body: formData
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message || "Échec de l'upload");
+            }
+
+            const data = await res.json();
+            return data.publicUrl;
+        } catch (e) {
+            console.error("[STORAGE] Upload failed:", e);
+            throw e;
+        }
     },
 
     // --- CRUD Core ---
@@ -409,7 +441,7 @@ const Storage = {
         this._cache[this.KEYS.SETTINGS] = newSettings;
         try {
             console.log('[STORAGE] Updating settings', newSettings);
-            const res = await fetch(`${Auth.apiBase}/api/data/settings`, {
+            const res = await fetch(`${Auth.apiBase}/api/data/${this.KEYS.SETTINGS}`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(newSettings)
@@ -428,7 +460,7 @@ const Storage = {
         this._cache[this.KEYS.CALCULATOR] = newData;
         try {
             console.log('[STORAGE] Updating calculator', newData);
-            const res = await fetch(`${Auth.apiBase}/api/data/calculator_data`, {
+            const res = await fetch(`${Auth.apiBase}/api/data/${this.KEYS.CALCULATOR}`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(newData)
@@ -475,6 +507,25 @@ const Storage = {
     async fetchAllData(triggerRender = false) {
         const Auth = window.Auth;
         if (!Auth || !Auth.isLoggedIn()) return;
+
+        console.log('🔄 All sync started...');
+        const tables = [
+            this.KEYS.CLIENTS, this.KEYS.QUOTES, this.KEYS.INVOICES,
+            this.KEYS.SERVICES, this.KEYS.LEADS, this.KEYS.REVENUES,
+            this.KEYS.EXPENSES, this.KEYS.SETTINGS, this.KEYS.CALCULATOR,
+            this.KEYS.MARKETPLACE_MISSIONS, this.KEYS.MY_MISSIONS, this.KEYS.PROVIDERS
+        ];
+
+        try {
+            await Promise.all(tables.map(table => this.fetch(table)));
+            console.log('✅ Sync complete.');
+
+            if (triggerRender && typeof App !== 'undefined') {
+                App.renderAll();
+            }
+        } catch (e) {
+            console.error('❌ Sync failed:', e);
+        }
     },
 
     getTier() {
