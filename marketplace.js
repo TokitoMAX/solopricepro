@@ -114,8 +114,7 @@ const Marketplace = {
             budget: formData.get('budget'),
             description: formData.get('description'),
             zone: formData.get('zone'),
-            status: 'open',
-            created_at: new Date().toISOString()
+            status: 'open'
         };
 
         console.log('📦 [MARKETPLACE] Payload:', mission);
