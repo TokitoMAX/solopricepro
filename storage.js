@@ -386,6 +386,17 @@ const Storage = {
         };
     },
 
+    // Restoration of missing methods for app.js compatibility
+    getTier() {
+        // Return 'free', 'pro', etc. based on settings or subscription
+        const settings = this.getSettings();
+        return settings.plan || 'free';
+    },
+
+    isPro() {
+        return this.getTier() === 'pro' || this.getTier() === 'growth' || this.getTier() === 'scale';
+    },
+
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
