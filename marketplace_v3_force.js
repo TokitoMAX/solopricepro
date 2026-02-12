@@ -9,7 +9,7 @@ const Marketplace = {
         console.log('📡 [MARKETPLACE-v3.0] Render called on:', containerId);
         const container = document.getElementById(containerId);
         if (!container) {
-            alert('CRITICAL: Marketplace container not found: ' + containerId);
+            console.error('CRITICAL: Marketplace container not found:', containerId);
             return;
         }
 

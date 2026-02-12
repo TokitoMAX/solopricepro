@@ -33,7 +33,10 @@ const App = {
         if (isLoggedIn || inApp) {
             this.enterApp(false);
             if (isLoggedIn) Storage.fetchAllData(true);
-            this.navigateTo(savedPage);
+
+            // Priorité au hash (#page=xxx) sur le localStorage
+            const hashPage = this.getPageFromHash();
+            this.navigateTo(hashPage || savedPage);
         } else {
             // Landing page by default if never entered
             const landing = document.getElementById('landing-page');
@@ -153,6 +156,12 @@ const App = {
         if (pageElement) {
             pageElement.classList.add('active');
             this.currentPage = page;
+            localStorage.setItem('sp_last_page', page);
+
+            // Update URL Hash without triggering hashchange
+            this.updatingHashManually = true;
+            window.location.hash = `page=${page}`;
+            setTimeout(() => this.updatingHashManually = false, 100);
 
             // Render specific page content with args
             this.renderPageContent(page, ...args);
@@ -168,6 +177,14 @@ const App = {
             // Update mobile header
             this.updateMobileHeader(page);
         }
+    },
+
+    getPageFromHash() {
+        const hash = window.location.hash.substring(1);
+        if (hash.startsWith('page=')) {
+            return hash.split('=')[1];
+        }
+        return null;
     },
 
     // Update mobile header title and home button visibility
@@ -874,10 +891,24 @@ const App = {
         }
     },
 
-    // Gestion du reset password via hash URL
+    // Gestion du reset password via hash URL ou navigation
     handleUrlHash() {
         const hash = window.location.hash.substring(1);
         if (!hash) return;
+
+        // Écouter les changements de hash pour la navigation SPA
+        if (!this.hashListenerSetup) {
+            window.addEventListener('hashchange', () => {
+                if (this.updatingHashManually) return;
+                const page = this.getPageFromHash();
+                if (page && page !== this.currentPage) {
+                    this.navigateTo(page);
+                }
+            });
+            this.hashListenerSetup = true;
+        }
+
+        if (hash.startsWith('page=')) return; // Géré par l'init ou listener
 
         const params = new URLSearchParams(hash);
         const type = params.get('type');

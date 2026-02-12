@@ -33,7 +33,7 @@ const Dashboard = {
                 <p class="page-subtitle">Vue d'ensemble de votre activité</p>
             </div>
 
-            ${typeof Coach !== 'undefined' ? (App.isFeatureProGated('coach') ? PremiumWall.renderTeaser('Coaching Stratégique', 'Obtenez des analyses automatiques sur votre cash dormant et vos objectifs de salairenet.', '📈') : Coach.renderWidget()) : ''}
+            ${typeof Coach !== 'undefined' ? (App.isFeatureProGated('coach') ? PremiumWall.renderTeaser('Coaching Stratégique', 'Obtenez des analyses automatiques sur votre cash dormant et vos objectifs de salairenet.', '') : Coach.renderWidget()) : ''}
 
             <div class="stats-grid dashboard-stats">
                 <!-- Goal Card -->
@@ -81,7 +81,7 @@ const Dashboard = {
                     
                     ${App.isFeatureProGated('expenses') ? `
                         <div style="margin-top: 1.5rem;">
-                            ${PremiumWall.renderTeaser('Profitabilité en Temps Réel', 'Suivez vos dépenses, vos charges sociales et votre salaire net réel automatiquement.', '💰')}
+                            ${PremiumWall.renderTeaser('Profitabilité en Temps Réel', 'Suivez vos dépenses, vos charges sociales et votre salaire net réel automatiquement.', '')}
                         </div>
                     ` : `
                     <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 1.5rem;">
@@ -114,7 +114,7 @@ const Dashboard = {
                     </div>
                     
                     <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); display: flex; align-items: center; gap: 1rem;">
-                        <div style="font-size: 1.5rem;">✅</div>
+                        <div style="font-size: 1.5rem;">📊</div>
                         <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
                             <strong>Santé Financière :</strong> Votre bénéfice net représente ${Math.round(((Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) - (Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) * (TaxEngine.getSocialRate() / 100)) - Storage.getExpenses().reduce((sum, e) => sum + e.amount, 0)) / (Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) || 1)) * 100)}% de votre CA encaissé.
                         </p>
