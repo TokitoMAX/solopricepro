@@ -431,6 +431,11 @@ const Storage = {
     },
     async deleteMission(id) { return this.delete(this.KEYS.MARKETPLACE_MISSIONS, id); },
 
+    // Applications (Centralized Flow)
+    async addApplication(application) {
+        return this.add('sp_marketplace_applications', application);
+    },
+
     getNetworkProviders() { return this.get(this.KEYS.PROVIDERS); },
     async addProvider(provider) { return this.add(this.KEYS.PROVIDERS, provider); },
     async deleteProvider(id) { return this.delete(this.KEYS.PROVIDERS, id); },
