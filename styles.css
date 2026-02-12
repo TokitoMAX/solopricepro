@@ -5,51 +5,53 @@
     /* Vibrant Emerald */
     --primary-dark: #059669;
     --primary-light: #34d399;
-    --primary-glass: rgba(16, 185, 129, 0.1);
+    --primary-glass: rgba(16, 185, 129, 0.15);
 
-    --secondary: #ffffff;
-    --secondary-glass: rgba(255, 255, 255, 0.05);
+    --secondary: #6366f1;
+    --secondary-glass: rgba(99, 102, 241, 0.1);
 
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
 
-    --dark: #000000;
-    --dark-light: #0a0a0a;
+    --dark: #111827;
+    /* Gray-900 instead of #000 */
+    --dark-light: #1f2937;
+    /* Gray-800 */
     --gray: #374151;
     --gray-light: #4b5563;
     --white: #ffffff;
 
-    --bg: #000000;
-    /* Pure Pitch Black */
-    --bg-sidebar: #050505;
-    /* Deepest Black */
-    --bg-card: #0a0a0a;
-    /* Onyx */
-    --bg-glass: rgba(10, 10, 10, 0.8);
+    /* REFINED DARK THEME (No more pitch black) */
+    --bg: #0f1115;
+    /* Deep rich blue-grey */
+    --bg-sidebar: #13161c;
+    /* Slightly lighter than bg */
+    --bg-card: #181b21;
+    /* Visible card background */
+    --bg-glass: rgba(24, 27, 33, 0.85);
 
-    --text: #ffffff;
-    /* Pure White Text */
+    --text: #f3f4f6;
+    /* Off-white for better readability */
     --text-muted: #9ca3af;
-    /* Silver Gray */
 
-    --border: #1f2937;
-    /* Razor Sharp Dark Border */
-    --border-light: #111827;
+    --border: #2d3748;
+    /* Visible border */
+    --border-light: #1f2937;
 
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 15px rgba(16, 185, 129, 0.15);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.2);
 
-    --backdrop-blur: blur(12px);
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
+    --backdrop-blur: blur(16px);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
     --radius-full: 9999px;
 
     --gradient-1: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    --gradient-dark: linear-gradient(135deg, #0a0a0a 0%, #000000 100%);
+    --gradient-dark: linear-gradient(135deg, #181b21 0%, #0f1115 100%);
 }
 
 * {

@@ -475,30 +475,46 @@ const App = {
         const user = Auth.getUser();
         if (!user) return;
 
-        const infoContainer = document.getElementById('user-info-sidebar');
-        const isPro = Storage.isPro();
-        if (infoContainer) {
-            infoContainer.innerHTML = `
-                <div class="user-profile" onclick="App.navigateTo('profile')" style="cursor: pointer;">
-                    <div class="user-avatar">${user.company?.name?.charAt(0) || user.email?.charAt(0) || 'U'}</div>
-                    <div class="user-details">
-                        <span class="user-name">${user.company?.name || user.email} ${Storage.getStreak() > 0 ? '<span title="Série de jours actifs" style="cursor:help;">🔥 ' + Storage.getStreak() + '</span>' : ''}</span>
-                        ${isPro ? '<span class="user-status"><span class="pro-badge-small">PRO</span></span>' : '<span class="user-status text-muted" style="font-size:0.7rem;">Version Standard</span>'}
-                    </div>
-                </div>
-                </div>
-            `;
-        }
-
         // Show Admin Nav if Role is Admin
         const adminNav = document.getElementById('nav-item-admin');
         if (adminNav) {
             if (user.role === 'admin') {
                 adminNav.style.display = 'flex';
-                // Move to bottom of nav if needed, but current position is fine
             } else {
                 adminNav.style.display = 'none';
             }
+        }
+
+        // Sidebar Cleanup (v4.5)
+        // Hide "Estimator" (Scoper) if user is not Pro OR if they find it useless (as per feedback)
+        // For now, let's hide it for everyone unless they have data in it, or just move it to "Tools" in settings
+        const scoperNav = document.querySelector('[data-nav="scoper"]');
+        if (scoperNav) {
+            // User feedback: "I don't need this". 
+            // Logic: Hide it by default for simplicity, or move it? 
+            // Let's hide it for standard users to clean up.
+            if (!isPro) scoperNav.closest('.nav-item').style.display = 'none';
+        }
+
+        // Add "Subscription" shortcut in User Profile
+        const infoContainer = document.getElementById('user-info-sidebar');
+        if (infoContainer) {
+            infoContainer.innerHTML = `
+                <div class="user-profile" style="cursor: pointer;">
+                    <div class="user-avatar" onclick="App.navigateTo('profile')">${user.company?.name?.charAt(0) || user.email?.charAt(0) || 'U'}</div>
+                    <div class="user-details">
+                        <div onclick="App.navigateTo('profile')">
+                            <span class="user-name">${user.company?.name || user.email}</span>
+                            ${isPro ? '<span class="user-status"><span class="pro-badge-small">PRO</span></span>' : '<span class="user-status text-muted" style="font-size:0.7rem;">Standard</span>'}
+                        </div>
+                        <div style="margin-top: 4px; font-size: 0.75rem;">
+                             <a href="#" onclick="App.showUpgradeModal('limit'); return false;" style="color: var(--primary); text-decoration: none;">
+                                ${isPro ? 'Gérer mon offre' : '👑 Passer PRO'}
+                             </a>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Afficher les badges PRO dans la sidebar pour les fonctions limitées
