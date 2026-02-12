@@ -101,7 +101,10 @@ const Marketplace = {
 
     async submitMission(e) {
         e.preventDefault();
+        console.log('🚀 [MARKETPLACE] Submit triggered');
+
         const output = document.querySelector('#post-mission-modal button[type="submit"]');
+        const originalText = output.textContent;
         output.disabled = true;
         output.textContent = 'Envoi...';
 
@@ -115,17 +118,23 @@ const Marketplace = {
             created_at: new Date().toISOString()
         };
 
+        console.log('📦 [MARKETPLACE] Payload:', mission);
+
         try {
-            await Storage.addMission(mission);
-            App.showNotification('Mission publiée !', 'success');
+            console.log('☁️ [MARKETPLACE] Sending to Storage...');
+            const result = await Storage.addMission(mission);
+            console.log('✅ [MARKETPLACE] Storage response:', result);
+
+            if (typeof App !== 'undefined') App.showNotification('Mission publiée !', 'success');
             this.closePostForm();
             this.loadMissions();
             e.target.reset();
         } catch (err) {
-            App.showNotification('Erreur lors de la publication', 'error');
+            console.error('❌ [MARKETPLACE] Submit Error:', err);
+            if (typeof App !== 'undefined') App.showNotification('Erreur: ' + (err.message || 'Inconnue'), 'error');
         } finally {
             output.disabled = false;
-            output.textContent = 'Diffuser';
+            output.textContent = originalText;
         }
     },
 
