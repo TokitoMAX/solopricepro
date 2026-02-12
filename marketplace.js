@@ -210,6 +210,20 @@ const Marketplace = {
     // --- ACTIONS ---
 
     showPostForm() {
+        // Check Authentication FIRST
+        if (!Auth.isLoggedIn()) {
+            if (typeof App !== 'undefined') {
+                App.showNotification('Vous devez être connecté pour diffuser une offre.', 'error');
+            }
+            // Optionally redirect to auth
+            setTimeout(() => {
+                if (confirm('Vous devez créer un compte pour diffuser une offre. Rediriger vers l\'inscription ?')) {
+                    window.location.href = '/auth.html';
+                }
+            }, 500);
+            return;
+        }
+
         // Check Limits
         const limits = App.checkFreemiumLimits();
         if (!limits.canAddMarketplaceResponse && !Storage.isPro()) {
@@ -226,7 +240,6 @@ const Marketplace = {
     },
 
     closePostForm() {
-        const modal = document.getElementById('post-mission-modal');
         if (modal) modal.style.display = 'none';
     },
 
@@ -290,6 +303,19 @@ const Marketplace = {
     // --- CANDIDATE ACTIONS ---
 
     openApplyForm(missionId, missionTitle) {
+        // Check Authentication FIRST
+        if (!Auth.isLoggedIn()) {
+            if (typeof App !== 'undefined') {
+                App.showNotification('Vous devez être connecté pour postuler.', 'error');
+            }
+            setTimeout(() => {
+                if (confirm('Vous devez créer un compte pour postuler. Rediriger vers l\'inscription ?')) {
+                    window.location.href = '/auth.html';
+                }
+            }, 500);
+            return;
+        }
+
         // Check Limits for Candidates
         const limits = App.checkFreemiumLimits();
         if (!limits.canAddMarketplaceResponse && !Storage.isPro()) {
