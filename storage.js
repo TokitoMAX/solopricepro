@@ -504,51 +504,12 @@ const Storage = {
         return !!(user && (user.user_metadata?.is_pro || user.is_pro));
     },
 
-    async fetchAllData(triggerRender = false) {
-        const Auth = window.Auth;
-        if (!Auth || !Auth.isLoggedIn()) return;
-
-        console.log('🔄 All sync started...');
-        const tables = [
-            this.KEYS.CLIENTS, this.KEYS.QUOTES, this.KEYS.INVOICES,
-            this.KEYS.SERVICES, this.KEYS.LEADS, this.KEYS.REVENUES,
-            this.KEYS.EXPENSES, this.KEYS.SETTINGS, this.KEYS.CALCULATOR,
-            this.KEYS.MARKETPLACE_MISSIONS, this.KEYS.MY_MISSIONS, this.KEYS.PROVIDERS
-        ];
-
-        try {
-            await Promise.all(tables.map(table => this.fetch(table)));
-            console.log('✅ Sync complete.');
-
-            if (triggerRender && typeof App !== 'undefined') {
-                App.renderAll();
-            }
-        } catch (e) {
-            console.error('❌ Sync failed:', e);
-        }
-    },
-
     getTier() {
         return this.isPro() ? 'expert' : 'standard';
     },
 
     getStreak() {
         return 0;
-    },
-
-    getHeaders() {
-        const token = localStorage.getItem('sp_token');
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-        return headers;
-    },
-
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
 };
 

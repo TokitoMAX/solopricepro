@@ -232,7 +232,7 @@ const App = {
         if (page === 'marketplace' && typeof Marketplace !== 'undefined') {
             this.checkFreemiumLimits(); // Refresh limits before rendering
             try {
-                console.log('📡 [MARKETPLACE-ROOT] Rendering v3.0...');
+                console.log('📡 [MARKETPLACE-ROOT] Rendering v4.0 (Lite)...');
                 Marketplace.render('marketplace-root', ...args);
             } catch (err) {
                 alert('Marketplace Render Error: ' + err.message);
