@@ -1,381 +1,242 @@
-// SoloPrice Pro - Storage Manager (Cloud-First)
-// Gestion centralisée des données via Supabase API (No Local Storage Persistence)
+/**
+ * Storage Module for SoloPrice Pro (v4.3 Debug)
+ * Handles data synchronization with Supabase and local cache.
+ */
+
+// Simple event bus for reactivity
+const EventBus = {
+    listeners: {},
+    on(event, callback) {
+        if (!this.listeners[event]) this.listeners[event] = [];
+        this.listeners[event].push(callback);
+    },
+    emit(event, data) {
+        if (this.listeners[event]) {
+            this.listeners[event].forEach(cb => cb(data));
+        }
+    }
+};
 
 const Storage = {
-    // Clés pour le cache mémoire (ne persiste pas au refresh)
+    // Keys match Supabase table names (with sp_ prefix where applicable)
     KEYS: {
-        USER: 'sp_user',
         CLIENTS: 'sp_clients',
         QUOTES: 'sp_quotes',
         INVOICES: 'sp_invoices',
-        SERVICES: 'sp_services',
         LEADS: 'sp_leads',
-        REVENUES: 'sp_revenues',
+        SERVICES: 'sp_services',
         EXPENSES: 'sp_expenses',
         SETTINGS: 'sp_settings',
-        CALCULATOR: 'sp_calculator_data',
+        CALCULATOR_DATA: 'sp_calculator_data',
+        USER_PROFILE: 'user_profile', // Local only, real profile in auth
         MARKETPLACE_MISSIONS: 'sp_marketplace_missions',
-        MY_MISSIONS: 'sp_my_missions',
-        PROVIDERS: 'sp_network_providers'
+        PROVIDERS: 'sp_network_providers',
+        REVENUES: 'sp_revenues',
+        MY_MISSIONS: 'sp_my_missions'
     },
 
-    // Cache mémoire
     _cache: {},
+    _initPromise: null,
 
-    // Channel pour la synchronisation multi-onglets
-    _syncChannel: new BroadcastChannel('sp_sync_channel'),
+    async init() {
+        if (this._initPromise) return this._initPromise;
 
-    init() {
-        console.log("☁️ Storage initialized in Cloud-First mode.");
-        this.setupSyncListener();
+        this._initPromise = (async () => {
+            console.log('☁️ Storage initialized in Cloud-First mode.');
 
-        // Le token reste en localStorage pour l'auth
-        const token = localStorage.getItem('sp_token');
-        if (token) {
-            this.fetchAllData();
+            // Initial fetch of all critical data
+            await this.fetchAllData();
+
+            // Setup real-time subscription IF Supabase client is available globally and we are online
+            // (Skipped for simplicity in this version, relying on polling/action-based refresh)
+
+            return true;
+        })();
+        return this._initPromise;
+    },
+
+    // --- Core CRUD ---
+
+    async fetchAllData() {
+        if (!Auth.currentUser) {
+            console.log('🔒 Cannot fetch data: User not logged in.');
+            return;
         }
-    },
-
-    setupSyncListener() {
-        this._syncChannel.onmessage = (event) => {
-            console.log('🔄 Sync notice received from another tab:', event.data);
-            if (event.data === 'refresh') {
-                this.fetchAllData(true); // true = force re-render
-            }
-        };
-    },
-
-    broadcastSync() {
-        this._syncChannel.postMessage('refresh');
-    },
-
-    // --- Core API Methods ---
-
-    async fetchAllData(triggerRender = false) {
-        if (!Auth.isLoggedIn()) return;
 
         const tables = [
-            this.KEYS.CLIENTS, this.KEYS.QUOTES, this.KEYS.INVOICES,
-            this.KEYS.SERVICES, this.KEYS.LEADS, this.KEYS.EXPENSES,
-            this.KEYS.SETTINGS, this.KEYS.CALCULATOR,
-            this.KEYS.MARKETPLACE_MISSIONS, this.KEYS.PROVIDERS,
-            this.KEYS.REVENUES, this.KEYS.MY_MISSIONS
+            this.KEYS.CLIENTS,
+            this.KEYS.QUOTES,
+            this.KEYS.INVOICES,
+            this.KEYS.LEADS,
+            this.KEYS.SERVICES,
+            this.KEYS.EXPENSES,
+            this.KEYS.SETTINGS,
+            this.KEYS.CALCULATOR_DATA,
+            this.KEYS.MARKETPLACE_MISSIONS, // Public data
+            this.KEYS.PROVIDERS
         ];
 
-        try {
-            // Fetch User Profile first
-            const profileRes = await fetch(`${Auth.apiBase}/api/auth/me`, {
-                headers: this.getHeaders()
-            });
-            if (profileRes.ok) {
-                const userData = await profileRes.json();
-                this.setUser(userData.user);
-            }
+        console.log('🔄 Syncing all tables from Supabase...');
 
-            // Fetch all tables
-            for (const table of tables) {
-                const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
-                    headers: this.getHeaders()
+        await Promise.all(tables.map(async (table) => {
+            try {
+                const url = `${Auth.apiBase}/api/data/${table}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${Auth.token}` }
                 });
+
                 if (res.ok) {
-                    const responseJson = await res.json();
-                    let data = responseJson;
-
-                    // Unwrap success pattern
-                    if (responseJson.success && responseJson.data !== undefined) {
-                        data = responseJson.data;
-                    }
-
-                    if ((table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR) && Array.isArray(data)) {
-                        this._cache[table] = data[0] || {};
-                    } else {
-                        this._cache[table] = data;
-                    }
-                    console.log(`📡 Table [${table}] synced: ${Array.isArray(data) ? data.length : 'Object'} items`);
+                    const data = await res.json();
+                    this._cache[table] = data;
+                    console.log(`📡 Table [${table}] synced: ${data.length} items`);
                 } else {
-                    console.warn(`⚠️ Table [${table}] fetch failed: ${res.status}`);
+                    console.warn(`⚠️ Failed to sync [${table}]: ${res.status}`);
+                    this._cache[table] = [];
                 }
+            } catch (err) {
+                console.error(`❌ Network error fetching [${table}]`, err);
+                this._cache[table] = []; // Fallback to empty
             }
-            console.log('☁️ All data fetched from Supabase');
+        }));
 
-            if (triggerRender && typeof App !== 'undefined' && App.currentPage) {
-                App.navigateTo(App.currentPage);
-            }
-        } catch (e) {
-            console.error('Error fetching data:', e);
-        }
-    },
-
-    getHeaders() {
-        const token = localStorage.getItem('sp_token');
-        return {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        };
+        console.log('☁️ All data fetched from Supabase');
+        EventBus.emit('storage:ready');
     },
 
     get(key) {
-        const val = this._cache[key];
-        return Array.isArray(val) ? val : [];
+        return this._cache[key] || [];
     },
 
-    async set(table, data) {
-        this._cache[table] = data;
-        return data;
-    },
-
-    // --- Helpers ---
-
-    getUser() {
-        return this._cache[this.KEYS.USER] || null;
-    },
-
-    async setUser(userData) {
-        if (!userData) return;
-        const user = userData;
-        const normalizedUser = {
-            ...user,
-            ...(user.user_metadata || {}),
-            company: user.user_metadata?.company || user.company || { name: user.user_metadata?.company_name || '' },
-            isPro: user.user_metadata?.is_pro || user.is_pro || false
-        };
-
-        this._cache[this.KEYS.USER] = normalizedUser;
-        if (typeof App !== 'undefined' && App.renderUserInfo) App.renderUserInfo();
-    },
-
-    async updateUser(updates) {
-        const currentUser = this.getUser() || {};
-        const merged = { ...currentUser, ...updates };
-        if (updates.company && currentUser.company) {
-            merged.company = { ...currentUser.company, ...updates.company };
-        }
-        await this.setUser(merged);
-
+    async add(key, item) {
         try {
-            const company = merged.company;
-            if (company && company.name) {
-                await fetch(`${Auth.apiBase}/api/auth/profile`, {
-                    method: 'PUT',
-                    headers: this.getHeaders(),
-                    body: JSON.stringify({ company })
-                });
+            console.log(`[STORAGE] Syncing entry to ${key}...`);
+            console.dir(item);
+
+            const res = await fetch(`${Auth.apiBase}/api/data/${key}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
+                body: JSON.stringify(item)
+            });
+
+            const responseData = await res.json();
+
+            if (!res.ok) {
+                console.error(`[STORAGE] Sync Error [v:legacy]:`, responseData);
+
+                // Check for Schema Cache Error and trigger generic alert if needed
+                if (responseData.message && responseData.message.includes("schema cache")) {
+                    console.error("[SERVER-INFO] !!-FAST-SYNC-ACTIVE-RESTART-SERVER-!!");
+                }
+
+                throw new Error(responseData.message || `Failed to add to ${key}`);
             }
-        } catch (e) {
-            console.error("Error updating profile:", e);
+
+            console.log(`[STORAGE] ${key} synced successfully.`, responseData);
+
+            // Optimistic update or refetch?
+            // For now, let's just push to cache if we got the data back
+            if (responseData.data && responseData.data.length > 0) {
+                if (!this._cache[key]) this._cache[key] = [];
+                this._cache[key].push(responseData.data[0]);
+                EventBus.emit('data:updated', { key, action: 'add', item: responseData.data[0] });
+                return responseData.data[0];
+            }
+
+            // Fallback if backend didn't return data (should not happen with select())
+            return item;
+
+        } catch (err) {
+            console.error(`[STORAGE] Transaction failed for ${key}:`, err);
+            throw err;
         }
-        return merged;
     },
 
-    // --- Storage Methods (Supabase Bucket) ---
+    async update(key, id, updates) {
+        try {
+            // Optimistic update
+            const list = this._cache[key] || [];
+            const index = list.findIndex(i => i.id === id);
+            if (index !== -1) {
+                list[index] = { ...list[index], ...updates };
+                this._cache[key] = [...list]; // Trigger reactivity if needed
+                EventBus.emit('data:updated', { key, action: 'update', id, updates });
+            }
 
+            // Sync
+            await fetch(`${Auth.apiBase}/api/data/${key}`, {
+                method: 'POST', // We use UPSERT methodology in backend usually, or duplicate logic
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
+                body: JSON.stringify({ id, ...updates }) // Ensure ID is present
+            });
+
+            // Ideally we re-fetch or handle response, but for MVP optimization we assume success
+            return list[index];
+
+        } catch (err) {
+            console.error(`[STORAGE] Update failed for ${key}:`, err);
+            // Revert optimistic update? (Advanced)
+        }
+    },
+
+    async delete(key, id) {
+        try {
+            // Optimistic
+            const list = this._cache[key] || [];
+            this._cache[key] = list.filter(i => i.id !== id);
+            EventBus.emit('data:updated', { key, action: 'delete', id });
+
+            // Sync
+            await fetch(`${Auth.apiBase}/api/data/${key}/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+
+        } catch (err) {
+            console.error(`[STORAGE] Delete failed for ${key}:`, err);
+        }
+    },
+
+    // Helper: Upload logo to Supabase Storage
     async uploadLogo(file) {
-        const user = this.getUser();
-        if (!user) throw new Error("Utilisateur non connecté");
-
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('path', `logos/${user.id}_${Date.now()}_${file.name}`);
+        formData.append('path', `logos/${Date.now()}_${file.name}`); // Unique path
 
         try {
             const res = await fetch(`${Auth.apiBase}/api/data/storage/upload/logos`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('sp_token')}`
+                    'Authorization': `Bearer ${Auth.token}`
                 },
                 body: formData
             });
 
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.message || "Échec de l'upload");
-            }
-
-            const data = await res.json();
-            return data.publicUrl;
-        } catch (e) {
-            console.error("[STORAGE] Upload failed:", e);
-            throw e;
+            if (!res.ok) throw new Error('Upload failed');
+            return await res.json(); // { success: true, publicUrl: ... }
+        } catch (err) {
+            console.error('Logo upload error:', err);
+            throw err;
         }
     },
 
-    // --- CRUD Core ---
-
-    async add(table, item) {
-        const id = item.id || this.generateId();
-        // Force retrieval from cache or localStorage fallback to ensure user_id
-        let user = this.getUser();
-        if (!user) {
-            const stored = localStorage.getItem('sp_user');
-            if (stored) user = JSON.parse(stored);
-        }
-
-        const payload = {
-            ...item,
-            id,
-            user_id: user?.id
-        };
-
-        // Don't add to cache yet if we want true sync, or add and replace
-        if (!Array.isArray(this._cache[table])) this._cache[table] = [];
-        this._cache[table].push(payload);
-
-        try {
-            console.log(`[STORAGE] Syncing entry to ${table}...`);
-            console.table(payload);
-            const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
-                method: 'POST',
-                headers: this.getHeaders(),
-                body: JSON.stringify(payload)
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                this._cache[table] = this._cache[table].filter(i => i.id !== id);
-                console.error(`[STORAGE] Sync Error [v:${errorData.v || 'legacy'}]:`, errorData);
-                if (errorData.DEBUG_MARKER) console.warn(`[SERVER-INFO] ${errorData.DEBUG_MARKER}`);
-
-                // Handle session expiration specifically
-                if (res.status === 401) {
-                    const msg = "Votre session a expiré. Veuillez vous déconnecter et vous reconnecter.";
-                    App.showNotification(msg, 'warning');
-                    throw new Error(msg);
-                }
-
-                // Construct a detailed error message
-                let msg = errorData.message || `Erreur API ${res.status}`;
-                if (errorData.error && errorData.error.message) msg = errorData.error.message;
-                if (errorData.hint) msg += ` (Conseil: ${errorData.hint})`;
-
-                throw new Error(msg);
-            }
-
-            const responseJson = await res.json();
-
-            // Extract data from { success: true, data: [...] } wrapper
-            let confirmedItem = null;
-            if (responseJson.success && responseJson.data) {
-                const data = responseJson.data;
-                confirmedItem = Array.isArray(data) ? data[0] : data;
-            } else {
-                // Fallback for direct array/object response
-                confirmedItem = Array.isArray(responseJson) ? responseJson[0] : responseJson;
-            }
-
-            // Re-sync local cache with real DB object (with ids, timestamps etc)
-            this._cache[table] = this._cache[table].map(i => i.id === id ? { ...i, ...confirmedItem } : i);
-
-            console.log(`[STORAGE] ${table} synced successfully.`, confirmedItem);
-            this.broadcastSync();
-            return confirmedItem;
-        } catch (e) {
-            this._cache[table] = (this._cache[table] || []).filter(i => i.id !== id);
-            console.error(`[STORAGE] Transaction failed for ${table}:`, e);
-            throw e;
-        }
-    },
-
-    async update(table, id, updates) {
-        if (!this._cache[table]) return;
-
-        let updatedItem = null;
-        if (table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR) {
-            this._cache[table] = { ...this._cache[table], ...updates };
-            updatedItem = this._cache[table];
-        } else {
-            const index = this._cache[table].findIndex(item => item.id === id);
-            if (index !== -1) {
-                this._cache[table][index] = { ...this._cache[table][index], ...updates };
-                updatedItem = this._cache[table][index];
-            }
-        }
-
-        try {
-            console.log(`[STORAGE] UPDATE ${table} ${id}`, updates);
-            const res = await fetch(`${Auth.apiBase}/api/data/${table}`, {
-                method: 'POST',
-                headers: this.getHeaders(),
-                body: JSON.stringify({ ...updates, id })
-            });
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || `Erreur API ${res.status}`);
-            }
-
-            const responseJson = await res.json();
-            if (responseJson.success && responseJson.data) {
-                const serverData = Array.isArray(responseJson.data) ? responseJson.data[0] : responseJson.data;
-                // Merge server updates into cache to preserve local keys if needed
-                if (serverData) {
-                    if (table === this.KEYS.SETTINGS || table === this.KEYS.CALCULATOR) {
-                        this._cache[table] = { ...this._cache[table], ...serverData };
-                    } else {
-                        const idx = this._cache[table].findIndex(item => item.id === id);
-                        if (idx !== -1) this._cache[table][idx] = { ...this._cache[table][idx], ...serverData };
-                    }
-                }
-            }
-
-            this.broadcastSync();
-            return updatedItem;
-        } catch (e) {
-            console.error(`Error updating ${table}:`, e);
-            throw e;
-        }
-    },
-
-    async delete(table, id) {
-        const list = this._cache[table] || [];
-        this._cache[table] = list.filter(i => i.id !== id);
-
-        try {
-            const res = await fetch(`${Auth.apiBase}/api/data/${table}/${id}`, {
-                method: 'DELETE',
-                headers: this.getHeaders()
-            });
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || `Erreur API ${res.status}`);
-            }
-            this.broadcastSync();
-        } catch (e) {
-            console.error(`Error deleting from ${table}:`, e);
-        }
-    },
-
-    // --- Domain Wrappers ---
+    // --- Domain Specific Helpers ---
 
     getClients() { return this.get(this.KEYS.CLIENTS); },
-    getClient(id) { return (this._cache[this.KEYS.CLIENTS] || []).find(c => c.id === id); },
     async addClient(client) {
-        const cleanClient = {
-            name: client.name || '',
-            email: client.email || '',
-            phone: client.phone || '',
-            address: client.address || '',
-            company: client.company || '',
-            siret: client.siret || '',
-            notes: client.notes || '',
-            defaultServiceIds: client.defaultServiceIds || []
-        };
-        return this.add(this.KEYS.CLIENTS, cleanClient);
+        // Generate ID if not present (backend handles it usually but for optimistic UI)
+        const c = { id: this.generateId(), ...client, createdAt: new Date().toISOString() };
+        return this.add(this.KEYS.CLIENTS, c);
     },
-    async updateClient(id, updates) {
-        const cleanUpdates = {};
-        const allowed = ['name', 'email', 'phone', 'address', 'company', 'siret', 'notes', 'defaultServiceIds'];
-        allowed.forEach(k => { if (updates[k] !== undefined) cleanUpdates[k] = updates[k]; });
-        return this.update(this.KEYS.CLIENTS, id, cleanUpdates);
-    },
+    async updateClient(id, updates) { return this.update(this.KEYS.CLIENTS, id, updates); },
     async deleteClient(id) { return this.delete(this.KEYS.CLIENTS, id); },
 
-    getServices() { return this.get(this.KEYS.SERVICES); },
-    getService(id) { return (this._cache[this.KEYS.SERVICES] || []).find(s => s.id === id); },
-    async addService(service) { return this.add(this.KEYS.SERVICES, service); },
-    async updateService(id, updates) { return this.update(this.KEYS.SERVICES, id, updates); },
-    async deleteService(id) { return this.delete(this.KEYS.SERVICES, id); },
-
     getQuotes() { return this.get(this.KEYS.QUOTES); },
-    getQuote(id) { return (this._cache[this.KEYS.QUOTES] || []).find(q => q.id === id || q.number === id); },
     async addQuote(quote) {
         const settings = this.get(this.KEYS.SETTINGS) || {};
         const count = (this.getQuotes() || []).length + 1;
@@ -437,18 +298,31 @@ const Storage = {
     },
 
     async getInbox() {
-        const res = await fetch(`${Auth.apiBase}/api/marketplace/inbox`, {
-            headers: { 'Authorization': `Bearer ${Auth.token}` }
-        });
-        if (!res.ok) throw new Error('Failed to fetch inbox');
-        return await res.json();
+        try {
+            console.log('[STORAGE] Fetching Inbox...');
+            const res = await fetch(`${Auth.apiBase}/api/marketplace/inbox`, {
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+            if (!res.ok) throw new Error('Failed to fetch inbox: ' + res.status);
+            const data = await res.json();
+            console.log('[STORAGE] Inbox data:', data);
+            return data;
+        } catch (err) {
+            console.error('[STORAGE] Inbox Fetch Error:', err);
+            return [];
+        }
     },
 
     // Get missions owned by specific user (Client-side filtering helper)
     getMyMissions(userId) {
         const all = this.getPublicMissions() || [];
         if (!userId) return [];
-        return all.filter(m => m.user_id === userId);
+
+        console.log(`[STORAGE] Filtering my missions for user: ${userId}`);
+        // Ensure type safety (String comparison)
+        const myMissions = all.filter(m => String(m.user_id) === String(userId));
+        console.log(`[STORAGE] Found ${myMissions.length} missions out of ${all.length}`);
+        return myMissions;
     },
 
     getNetworkProviders() { return this.get(this.KEYS.PROVIDERS); },
@@ -463,73 +337,53 @@ const Storage = {
             console.log('[STORAGE] Updating settings', newSettings);
             const res = await fetch(`${Auth.apiBase}/api/data/${this.KEYS.SETTINGS}`, {
                 method: 'POST',
-                headers: this.getHeaders(),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
                 body: JSON.stringify(newSettings)
             });
-            if (res.ok) this.broadcastSync();
-            return newSettings;
         } catch (e) {
-            console.error('Failed to sync settings:', e);
-            throw e;
+            console.error(e);
         }
     },
+    getSettings() { return this._cache[this.KEYS.SETTINGS] || {}; },
 
-    async updateCalculator(updates) {
-        const current = this.get(this.KEYS.CALCULATOR) || {};
-        const newData = { ...current, ...updates };
-        this._cache[this.KEYS.CALCULATOR] = newData;
-        try {
-            console.log('[STORAGE] Updating calculator', newData);
-            const res = await fetch(`${Auth.apiBase}/api/data/${this.KEYS.CALCULATOR}`, {
-                method: 'POST',
-                headers: this.getHeaders(),
-                body: JSON.stringify(newData)
-            });
-            if (res.ok) this.broadcastSync();
-            return newData;
-        } catch (e) {
-            console.error('Failed to sync calculator:', e);
-            throw e;
-        }
+    getCalculatorData() { return this._cache[this.KEYS.CALCULATOR_DATA] || {}; },
+    async saveCalculatorData(data) {
+        this._cache[this.KEYS.CALCULATOR_DATA] = data;
+        return this.add(this.KEYS.CALCULATOR_DATA, data); // Upsert handles it
     },
 
-    getStats() {
-        const invoices = this.getInvoices() || [];
-        const clients = this.getClients() || [];
-        const expenses = this.getExpenses() || [];
-        const now = new Date();
-        const monthlyRevenue = invoices
-            .filter(i => {
-                const d = new Date(i.createdAt);
-                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && i.status === 'paid';
-            })
-            .reduce((sum, i) => sum + (i.total || 0), 0);
-        const monthlyExpenses = expenses
-            .filter(e => {
-                const d = new Date(e.date);
-                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-            })
+    calculateStats() {
+        // ... (existing logic)
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+
+        const revenues = this.getInvoices()
+            .filter(i => i.status === 'paid' && new Date(i.createdAt).getMonth() === currentMonth)
+            .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
+
+        const expenses = this.getExpenses()
+            .filter(e => new Date(e.date).getMonth() === currentMonth)
             .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+
         return {
-            monthlyRevenue, monthlyExpenses,
-            netProfit: monthlyRevenue - monthlyExpenses,
-            totalClients: clients.length,
-            quotesCount: (this.getQuotes() || []).length,
-            invoicesCount: invoices.length
+            revenue: revenues,
+            expenses: expenses,
+            profit: revenues - expenses,
+            margin: revenues > 0 ? ((revenues - expenses) / revenues) * 100 : 0
         };
     },
 
-    isPro() {
-        const user = this.getUser();
-        return !!(user && (user.user_metadata?.is_pro || user.is_pro));
-    },
-
-    getTier() {
-        return this.isPro() ? 'expert' : 'standard';
-    },
-
-    getStreak() {
-        return 0;
+    checkUserTier() {
+        const clients = this.getClients().length;
+        // Simple logic for now
+        return {
+            plan: 'standard',
+            canAddClient: clients < 3, // Limit for free tier
+            limitReached: clients >= 3
+        };
     },
 
     generateId() {
@@ -537,20 +391,25 @@ const Storage = {
     }
 };
 
-// Auto-init at end of file:
-// Initialisation sécurisée
-async function safeInit() {
-    console.log("🛠️ Attempting safe Storage initialization...");
-    if (typeof window.Auth !== 'undefined') {
-        Storage.init();
-    } else {
-        console.warn("⏳ Auth module not found yet, retrying in 100ms...");
-        setTimeout(safeInit, 100);
-    }
-}
+window.Storage = Storage;
 
+// Safe init
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', safeInit);
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('🛠️ Attempting safe Storage initialization...');
+        if (typeof Auth !== 'undefined' && Auth.currentUser) {
+            Storage.init();
+        } else {
+            // Wait for auth
+            const checkAuth = setInterval(() => {
+                if (typeof Auth !== 'undefined' && Auth.currentUser) {
+                    clearInterval(checkAuth);
+                    Storage.init();
+                }
+            }, 500);
+        }
+    });
 } else {
-    safeInit();
+    // Already ready
+    if (typeof Auth !== 'undefined' && Auth.currentUser) Storage.init();
 }

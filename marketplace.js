@@ -1,10 +1,11 @@
 /**
- * SoloPrice Pro - Marketplace v4.2 (Professional Flow)
+ * SoloPrice Pro - Marketplace v4.3 (Refined Pro Flow)
  * - Tabs: Radar / Mes Missions / Inbox
  * - Commission: Add-on 15% (Client pays fees)
  * - Portfolio-First Applications
+ * - Debug Mode: Type Coercion & Explicit Feedback
  */
-console.log('⚡ [MARKETPLACE-v4.2-PRO] Module Initializing...');
+console.log('⚡ [MARKETPLACE-v4.3-REFINED] Module Initializing...');
 
 const Marketplace = {
     // Configuration
@@ -20,7 +21,7 @@ const Marketplace = {
         container.innerHTML = `
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">MARKETPLACE <span class="badge-pro">PRO v4.2</span></h1>
+                    <h1 class="page-title">MARKETPLACE <span class="badge-pro">PRO v4.3</span></h1>
                     <p class="page-subtitle">Réseau d'Opportunités DomTomConnect</p>
                 </div>
                 <button class="button-primary" onclick="Marketplace.showPostForm()">
@@ -48,7 +49,7 @@ const Marketplace = {
     switchTab(tab) {
         this.currentTab = tab;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active'); // Simple active class toggle
+        if (event && event.target) event.target.classList.add('active');
         this.loadTabContent();
     },
 
@@ -57,6 +58,9 @@ const Marketplace = {
         container.innerHTML = '<div class="loading-spinner">Chargement...</div>';
 
         try {
+            // Force data sync to ensure freshness
+            if (Storage.getPublicMissions().length === 0) await Storage.fetchAllData();
+
             if (this.currentTab === 'radar') await this.renderRadar(container);
             else if (this.currentTab === 'mymissions') await this.renderMyMissions(container);
             else if (this.currentTab === 'inbox') await this.renderInbox(container);
@@ -103,9 +107,17 @@ const Marketplace = {
             return;
         }
 
+        // Force explicit reload of "My Missions" via Storage helper
         const missions = Storage.getMyMissions(user.id);
+
+        console.log('[MARKETPLACE] Render MyMissions:', missions);
+
         if (!missions || missions.length === 0) {
-            container.innerHTML = '<div class="empty-state">Vous n\'avez posté aucune mission.</div>';
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>Vous n'avez posté aucune mission.</p>
+                    <small>Debug: User ID ${user.id}</small>
+                </div>`;
             return;
         }
 
@@ -117,7 +129,7 @@ const Marketplace = {
                 </div>
                 <p class="mission-desc">${this.escape(m.description)}</p>
                 <div class="mission-footer">
-                    <span>Budget: ${m.budget}€ (Client)</span>
+                    <span>Budget Cible: ${m.budget}€</span>
                     <button onclick="Marketplace.deleteMission('${m.id}')" class="button-danger small">
                        🗑️ Supprimer
                     </button>
@@ -127,6 +139,7 @@ const Marketplace = {
     },
 
     async renderInbox(container) {
+        // Fetch Inbox Data via dedicated backend route
         const inbox = await Storage.getInbox();
 
         if (!inbox || inbox.length === 0) {
@@ -138,26 +151,32 @@ const Marketplace = {
             <div class="application-card">
                 <div class="app-header">
                     <div class="app-mission">
-                        <small>Pour la mission :</small>
+                        <small>Candidature pour :</small>
                         <strong>${this.escape(app.mission_title || 'Mission Inconnue')}</strong>
                     </div>
                     <div class="app-price">
-                        <span class="expert-price">${app.expert_price}€ Net</span>
-                        <span class="client-price">Total Client: ${app.total_price}€</span>
+                        <span class="expert-price">Demande Expert: ${app.expert_price}€ Net</span>
+                        <span class="client-price" style="color:var(--accent); font-weight:bold;">Total à Payer: ${app.total_price}€</span>
                     </div>
                 </div>
                 
-                <div class="app-candidate">
-                    <strong>👤 ${this.escape(app.applicant_name || 'Anonyme')}</strong>
-                    ${app.portfolio_url ? `<a href="${this.escape(app.portfolio_url)}" target="_blank" class="portfolio-link">🌐 Voir Portfolio</a>` : ''}
+                <div class="app-candidate" style="display:flex; gap:10px; margin: 15px 0; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+                    <div class="candidate-avatar" style="font-size:2em;">👤</div>
+                    <div class="candidate-info">
+                        <strong>${this.escape(app.applicant_name || 'Candidat Anonyme')}</strong>
+                        <div style="font-size:0.9em; margin-top:5px;">
+                            ${app.portfolio_url ? `<a href="${this.escape(app.portfolio_url)}" target="_blank" class="portfolio-link">🌐 Voir Portfolio</a>` : '<span class="no-portfolio" style="opacity:0.5">Pas de portfolio</span>'}
+                        </div>
+                    </div>
                 </div>
 
-                <div class="app-message">
+                <div class="app-message" style="font-style:italic; margin-bottom:15px; padding-left:10px; border-left:3px solid var(--primary);">
                     "${this.escape(app.message)}"
                 </div>
 
                 <div class="app-actions">
-                    <button class="button-success small" onclick="Marketplace.validateApplication('${app.id}')">✅ Valider le Devis</button>
+                    <button class="button-danger small" onclick="Marketplace.rejectApplication('${app.id}')">❌ Refuser</button>
+                    <button class="button-success small" onclick="Marketplace.validateApplication('${app.id}')">✅ Accepter & Payer</button>
                 </div>
             </div>
         `).join('');
@@ -170,7 +189,8 @@ const Marketplace = {
         try {
             await Storage.deleteMission(id);
             if (typeof App !== 'undefined') App.showNotification('Mission supprimée', 'success');
-            this.loadTabContent(); // Refresh
+            // Refresh current tab
+            this.loadTabContent();
         } catch (e) {
             alert('Erreur: ' + e.message);
         }
@@ -180,6 +200,11 @@ const Marketplace = {
         if (!confirm('Valider ce devis et assigner la mission ? (Simulation)')) return;
         alert("✅ Candidature validée ! (Le flux de paiement sera intégré en v5)");
         // TODO: Update status in DB
+    },
+
+    async rejectApplication(id) {
+        if (!confirm('Refuser cette candidature ?')) return;
+        alert('Candidature refusée (Simulation)');
     },
 
     // --- MODALES ---
@@ -274,7 +299,8 @@ const Marketplace = {
     showPostForm() {
         document.getElementById('post-mission-modal').style.display = 'flex';
         // Hack: Enable budget input for users who want to set a "Target Budget" even if it's auction based
-        document.querySelector('input[name="budget"]').disabled = false;
+        const budgetInput = document.querySelector('input[name="budget"]');
+        if (budgetInput) budgetInput.disabled = false;
     },
 
     closePostForm() { document.getElementById('post-mission-modal').style.display = 'none'; },
@@ -304,8 +330,6 @@ const Marketplace = {
 
         const formData = new FormData(e.target);
 
-        // Note: Le budget ici est "indicatif" ou "max" selon la logique d'enchère, 
-        // mais on le stocke comme référence.
         const mission = {
             title: formData.get('title'),
             budget: parseFloat(formData.get('budget')), // Target Budget
