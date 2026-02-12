@@ -475,6 +475,8 @@ const App = {
         const user = Auth.getUser();
         if (!user) return;
 
+        const isPro = Storage.isPro(); // Restore checking Pro status
+
         // Show Admin Nav if Role is Admin
         const adminNav = document.getElementById('nav-item-admin');
         if (adminNav) {
