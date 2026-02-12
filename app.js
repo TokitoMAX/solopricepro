@@ -487,16 +487,20 @@ const App = {
             }
         }
 
-        // Sidebar Cleanup (v4.5)
-        // Hide "Estimator" (Scoper) if user is not Pro OR if they find it useless (as per feedback)
-        // For now, let's hide it for everyone unless they have data in it, or just move it to "Tools" in settings
+        // Sidebar Cleanup (v4.6)
+        // Hide "Estimator" (Scoper) ONLY. Ensure we don't accidentally hide the parent if it's shared (unlikely, but safe).
         const scoperNav = document.querySelector('[data-nav="scoper"]');
-        if (scoperNav) {
-            // User feedback: "I don't need this". 
-            // Logic: Hide it by default for simplicity, or move it? 
-            // Let's hide it for standard users to clean up.
-            if (!isPro) scoperNav.closest('.nav-item').style.display = 'none';
+        if (scoperNav && !isPro) {
+            const parent = scoperNav.closest('.nav-item');
+            if (parent) parent.style.display = 'none';
         }
+
+        // Ensure "Marketplace" and "Pipeline" (Kanban) are visible
+        const marketNav = document.querySelector('[data-nav="marketplace"]');
+        const kanbanNav = document.querySelector('[data-nav="kanban"]');
+        if (marketNav && marketNav.closest('.nav-item')) marketNav.closest('.nav-item').style.display = 'flex';
+        if (kanbanNav && kanbanNav.closest('.nav-item')) kanbanNav.closest('.nav-item').style.display = 'flex';
+
 
         // Add "Subscription" shortcut in User Profile
         const infoContainer = document.getElementById('user-info-sidebar');

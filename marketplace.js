@@ -212,18 +212,38 @@ const Marketplace = {
     showPostForm() {
         // Check Limits
         const limits = App.checkFreemiumLimits();
-        if (!limits.canAddMarketplaceResponse && !Storage.isPro()) { // Reusing generic limit logic logic, maybe specific one needed?
-            // Actually posting is usually free, responding is what we limit? 
-            // Or posting limits? Let's assume posting is free to drive content, dealing is limited?
-            // For now, let's open it.
+        if (!limits.canAddMarketplaceResponse && !Storage.isPro()) {
+            // Logic kept as is
         }
 
-        document.getElementById('post-mission-modal').style.display = 'flex';
-        const budgetInput = document.querySelector('input[name="budget"]');
-        if (budgetInput) budgetInput.disabled = false;
+        const modal = document.getElementById('post-mission-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            // Reset calculator
+            document.getElementById('post-budget-input').value = '';
+            this.updatePostCalc();
+        }
     },
 
-    closePostForm() { document.getElementById('post-mission-modal').style.display = 'none'; },
+    closePostForm() {
+        const modal = document.getElementById('post-mission-modal');
+        if (modal) modal.style.display = 'none';
+    },
+
+    updatePostCalc() {
+        const input = document.getElementById('post-budget-input');
+        const net = parseFloat(input.value) || 0;
+        const fees = net * this.COMMISSION_RATE;
+        const total = net + fees;
+
+        const feeEl = document.getElementById('post-fee-display');
+        const budgetEl = document.getElementById('post-budget-display');
+        const totalEl = document.getElementById('post-total-display');
+
+        if (feeEl) feeEl.textContent = fees.toFixed(2) + ' €';
+        if (budgetEl) budgetEl.textContent = net.toFixed(2) + ' €';
+        if (totalEl) totalEl.textContent = total.toFixed(2) + ' €';
+    },
 
     async submitMission(e) {
         e.preventDefault();
@@ -355,20 +375,22 @@ const Marketplace = {
     renderModals() {
         return `
             <!-- POST FORM -->
-            <div id="post-mission-modal" class="modal-overlay" style="display:none;">
-                <div class="modal-content glass">
+            <div id="post-mission-modal" class="modal-overlay">
+                <div class="modal-content glass" style="max-width: 600px;">
                     <button class="modal-close" onclick="Marketplace.closePostForm()">✕</button>
                     <h2>📢 Diffuser une Offre</h2>
+                    
                     <form onsubmit="Marketplace.submitMission(event)">
-                        <label>Poste / Mission Rechechée
+                        <label>Titre de la Mission
                             <input type="text" name="title" required placeholder="Ex: Développeur React Freelance..." class="form-input">
                         </label>
+                        
                         <div class="form-row">
-                            <label>Budget Client (€)
-                                <input type="number" name="budget" required placeholder="1000" class="form-input">
-                                <small>Budget indicatif que vous êtes prêt à investir.</small>
+                            <label>Budget "Net Expert" (€)
+                                <input type="number" name="budget" id="post-budget-input" required placeholder="1000" class="form-input" oninput="Marketplace.updatePostCalc()" onkeyup="Marketplace.updatePostCalc()">
+                                <small>Montant versé au freelance.</small>
                             </label>
-                            <label>Zone Géographique
+                            <label>Zone
                                 <select name="zone" class="form-input">
                                     <option>Outre-Mer</option>
                                     <option>Métropole</option>
@@ -376,20 +398,37 @@ const Marketplace = {
                                 </select>
                             </label>
                         </div>
+                        
+                        <!-- Real-time Cost Preview for Client (Highlighted) -->
+                        <div class="fee-calculator-box info-box" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <div class="line" style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span class="text-muted">Budget Expert :</span>
+                                <span id="post-budget-display" style="font-weight:bold;">0.00 €</span>
+                            </div>
+                             <div class="line" style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
+                                <span class="text-muted">+ Frais de Service (15%) :</span>
+                                <span id="post-fee-display">0.00 €</span>
+                            </div>
+                            <div class="line total" style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
+                                <span style="font-size: 1.1em; color: var(--text);">💰 Total à Payer (Estimate) :</span>
+                                <strong id="post-total-display" style="font-size: 1.4em; color: var(--primary);">0.00 €</strong>
+                            </div>
+                        </div>
+
                         <label>Description du besoin
-                            <textarea name="description" required rows="4" class="form-input" placeholder="Détaillez votre besoin, les compétences attendues..."></textarea>
+                            <textarea name="description" required rows="4" class="form-input" placeholder="Détaillez votre besoin..."></textarea>
                         </label>
-                        <button type="submit" class="button-primary full-width">Diffuser l'Offre</button>
+                        <button type="submit" class="button-primary full-width" style="font-size: 1.1rem; padding: 12px;">Diffuser l'Offre</button>
                     </form>
                 </div>
             </div>
 
             <!-- APPLY FORM -->
-            <div id="apply-modal" class="modal-overlay" style="display:none;">
+            <div id="apply-modal" class="modal-overlay">
                 <div class="modal-content glass">
                     <button class="modal-close" onclick="Marketplace.closeApplyForm()">✕</button>
                     <h2>⚡ Postuler à l'offre</h2>
-                    <div class="mission-reminder" id="apply-mission-title"></div>
+                    <div class="mission-reminder" id="apply-mission-title" style="margin-bottom: 1rem; font-weight: bold; color: var(--primary);"></div>
                     
                     <form onsubmit="Marketplace.submitApplication(event)">
                         <input type="hidden" name="mission_id" id="apply-mission-id">
@@ -398,7 +437,7 @@ const Marketplace = {
                             <label>Votre Nom / Agence
                                 <input type="text" name="applicant_name" required placeholder="Votre Identité Pro" class="form-input">
                             </label>
-                            <label>Lien Portfolio (Important)
+                            <label>Lien Portfolio
                                 <input type="url" name="portfolio_url" placeholder="https://..." class="form-input">
                             </label>
                         </div>
@@ -407,17 +446,18 @@ const Marketplace = {
                             <textarea name="message" required rows="4" class="form-input" placeholder="Bonjour, je suis l'expert qu'il vous faut car..."></textarea>
                         </label>
                          
-                        <div class="fee-calculator-box">
+                        <div class="fee-calculator-box" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0;">
                             <label>Votre Prétention (Net Vendeur)
-                                <input type="number" name="expert_price" id="expert-price-input" required class="form-input" placeholder="Ex: 500" oninput="Marketplace.updateApplyCalc()">
+                                <input type="number" name="expert_price" id="expert-price-input" required class="form-input" placeholder="Ex: 500" oninput="Marketplace.updateApplyCalc()" onkeyup="Marketplace.updateApplyCalc()">
+                                <small>Ce que vous recevrez réellement.</small>
                             </label>
-                            <div class="breakdown">
-                                <div class="line">
-                                    <span>+ Frais de Service (15%):</span>
+                            <div class="breakdown" style="margin-top: 10px; font-size: 0.9rem;">
+                                <div class="line" style="display: flex; justify-content: space-between;">
+                                    <span>+ Frais Client (15%):</span>
                                     <span id="apply-fee">0.00 €</span>
                                 </div>
-                                <div class="line total">
-                                    <span>Total facturé au Client :</span>
+                                <div class="line total" style="display: flex; justify-content: space-between; margin-top: 5px; font-weight: bold; color: var(--text);">
+                                    <span>Prix affiché au Client :</span>
                                     <span id="apply-total">0.00 €</span>
                                 </div>
                             </div>

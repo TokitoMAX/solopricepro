@@ -1626,10 +1626,33 @@ section {
     animation: slideInUp 0.5s ease 1s backwards;
 }
 
-}
-
 .freemium-banner-bottom {
     display: none;
+}
+
+/* Fix Modal Close Button Z-Index */
+.modal-close {
+    z-index: 10001;
+    /* Above modal content */
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    padding: 5px;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: var(--danger);
+    transform: scale(1.1);
+}
+
+.modal-overlay {
+    z-index: 10000;
 }
 
 @keyframes slideInUp {
