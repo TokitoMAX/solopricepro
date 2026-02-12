@@ -397,6 +397,50 @@ const Storage = {
         return this.getTier() === 'pro' || this.getTier() === 'growth' || this.getTier() === 'scale';
     },
 
+    // --- Legacy / Compatibility Helpers ---
+
+    getUser() {
+        // Return local profile or Auth user if available
+        return this._cache[this.KEYS.USER_PROFILE] || (typeof Auth !== 'undefined' ? Auth.currentUser : null);
+    },
+
+    setUser(user) {
+        this._cache[this.KEYS.USER_PROFILE] = user;
+        // In a real app, we might persist this to localStorage or DB
+        localStorage.setItem('sp_user_cache', JSON.stringify(user));
+    },
+
+    getStreak() {
+        // Simple streak calculation stub
+        return 1; // Todo: Implement real streak logic based on daily login/activity
+    },
+
+    getStats() {
+        // Aggregated stats for Dashboard
+        const quotes = this.getQuotes();
+        const invoices = this.getInvoices();
+        const clients = this.getClients();
+        const expenses = this.getExpenses();
+
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+
+        const monthlyRevenue = invoices
+            .filter(i => i.status === 'paid' && new Date(i.createdAt).getMonth() === currentMonth && new Date(i.createdAt).getFullYear() === currentYear)
+            .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
+
+        const totalRevenue = invoices
+            .filter(i => i.status === 'paid')
+            .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
+
+        return {
+            monthlyRevenue,
+            totalRevenue,
+            totalClients: clients.length,
+            activeQuotes: quotes.filter(q => q.status === 'sent' || q.status === 'draft').length
+        };
+    },
+
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
