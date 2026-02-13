@@ -30,6 +30,7 @@ const Storage = {
         CALCULATOR_DATA: 'sp_calculator_data',
         USER_PROFILE: 'user_profile', // Local only, real profile in auth
         MARKETPLACE_MISSIONS: 'sp_marketplace_missions',
+        MARKETPLACE_APPLICATIONS: 'sp_marketplace_applications',
         PROVIDERS: 'sp_network_providers',
         REVENUES: 'sp_revenues',
         MY_MISSIONS: 'sp_my_missions'
@@ -73,6 +74,7 @@ const Storage = {
             this.KEYS.SETTINGS,
             this.KEYS.CALCULATOR_DATA,
             this.KEYS.MARKETPLACE_MISSIONS, // Public data
+            this.KEYS.MARKETPLACE_APPLICATIONS,
             this.KEYS.PROVIDERS
         ];
 

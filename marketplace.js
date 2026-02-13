@@ -215,49 +215,71 @@ const Marketplace = {
                 <div class="empty-state">
                     <div class="icon">📥</div>
                     <h3>Inbox Vide</h3>
-                    <p>Aucune candidature reçue pour vos offres.</p>
+                    <p>Aucune candidature reçue pour vos ordres de mission.</p>
                 </div>`;
             return;
         }
 
-        container.innerHTML = inbox.map(app => `
-            <div class="application-card">
-                <div class="app-header-row">
-                    <span class="app-mission-ref">Réf: ${this.escape(app.mission_title)}</span>
-                    <span class="app-date">Reçu récemment</span>
-                </div>
-                
-                <div class="candidate-profile">
-                    <div class="avatar-circle">👤</div>
-                    <div class="candidate-identity">
-                        <strong>${this.escape(app.applicant_name || 'Candidat')}</strong>
-                        ${app.portfolio_url ? `<a href="${this.escape(app.portfolio_url)}" target="_blank" class="link-portfolio">🌐 Voir Portfolio</a>` : '<span class="text-muted">Pas de portfolio</span>'}
+        container.innerHTML = inbox.map(app => {
+            const statusClass = app.status || 'pending';
+            const statusLabel = statusClass === 'pending' ? 'En attente' : (statusClass === 'accepted' ? 'Validé' : 'Refusé');
+
+            return `
+                <div class="application-card glass ${statusClass}">
+                    <div class="app-header-row">
+                        <span class="app-mission-ref">Mission: <strong>${this.escape(app.mission_title)}</strong></span>
+                        <span class="status-pill ${statusClass}">${statusLabel}</span>
+                    </div>
+                    
+                    <div class="candidate-profile-row">
+                        <div class="candidate-avatar">${this.escape(app.applicant_name?.[0]) || '👤'}</div>
+                        <div class="candidate-meta">
+                            <div class="candidate-name-row">
+                                <strong>${this.escape(app.applicant_name || 'Candidat')}</strong>
+                                ${app.portfolio_url ? `<a href="${this.escape(app.portfolio_url)}" target="_blank" class="portfolio-link"><i class="fas fa-external-link-alt"></i> Portfolio</a>` : ''}
+                            </div>
+                            <div class="candidate-contact-info">
+                                <span><i class="fas fa-envelope"></i> ${this.escape(app.applicant_email || 'N/A')}</span>
+                                ${app.applicant_phone ? `<span><i class="fas fa-phone"></i> ${this.escape(app.applicant_phone)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pitch-content">
+                        <p class="pitch-text">"${this.escape(app.message)}"</p>
+                    </div>
+
+                    <div class="app-footer-grid">
+                        <div class="financial-summary">
+                            <div class="fin-row">
+                                <span class="label">Expert Net</span>
+                                <span class="value">${app.expert_price}€</span>
+                            </div>
+                            <div class="fin-row total">
+                                <span class="label">Coût Total</span>
+                                <span class="value">${app.total_price}€</span>
+                            </div>
+                        </div>
+                        
+                        <div class="inbox-actions">
+                            ${statusClass === 'pending' ? `
+                                <button class="action-btn danger-text" onclick="Marketplace.rejectApplication('${app.id}')">
+                                    <i class="fas fa-times"></i> Écarter
+                                </button>
+                                <button class="action-btn success-text" onclick="Marketplace.validateApplication('${app.id}')">
+                                    <i class="fas fa-check-circle"></i> Retenir & Contacter
+                                </button>
+                                <a href="mailto:${app.applicant_email}?subject=Suite à votre candidature pour : ${this.escape(app.mission_title)}" class="action-btn primary-text">
+                                    <i class="fas fa-paper-plane"></i> Écrire
+                                </a>
+                            ` : `
+                                <span class="status-summary">Dossier ${statusLabel.toLowerCase()}</span>
+                            `}
+                        </div>
                     </div>
                 </div>
-
-                <div class="pitch-box">
-                    <strong>Message du candidat :</strong>
-                    <p>"${this.escape(app.message)}"</p>
-                </div>
-
-                <div class="financial-breakdown">
-                    <div class="row">
-                        <span>Prétention Expert (Net)</span>
-                        <strong>${app.expert_price}€</strong>
-                    </div>
-                    <div class="row total">
-                        <span>Total à Payer (Vous)</span>
-                        <strong class="highlight">${app.total_price}€</strong>
-                    </div>
-                    <small>Inclut 15% de frais de service plateforme.</small>
-                </div>
-
-                <div class="app-actions-row">
-                    <button class="button-outline-danger" onclick="Marketplace.rejectApplication('${app.id}')">Refuser</button>
-                    <button class="button-success" onclick="Marketplace.validateApplication('${app.id}')">✅ Valider & Recruter</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     },
 
     // --- ACTIONS ---
@@ -457,6 +479,8 @@ const Marketplace = {
         const application = {
             mission_id: formData.get('mission_id'),
             applicant_name: formData.get('applicant_name'),
+            applicant_email: Auth.user?.email || '',
+            applicant_phone: Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || '',
             portfolio_url: formData.get('portfolio_url'),
             message: formData.get('message'),
             expert_price: expertPrice,
@@ -479,15 +503,29 @@ const Marketplace = {
     },
 
     async validateApplication(id) {
-        if (!confirm('Valider ce recrutement ?\nCela confirmera votre accord pour travailler avec cet expert.')) return;
-        alert("✅ Recrutement Validé !");
-        // Update Logic here
+        if (!confirm('Souhaitez-vous retenir cette candidature ?\nCela marquera le dossier comme accepté dans votre interface.')) return;
+
+        try {
+            await Storage.update(Storage.KEYS.MARKETPLACE_APPLICATIONS, id, { status: 'accepted' });
+            if (typeof App !== 'undefined') App.showNotification('Candidature acceptée !', 'success');
+            this.render(); // Refresh UI
+        } catch (err) {
+            console.error(err);
+            if (typeof App !== 'undefined') App.showNotification('Erreur de mise à jour', 'error');
+        }
     },
 
     async rejectApplication(id) {
-        if (!confirm('Refuser ce candidat ?')) return;
-        // Update Logic here
-        alert("Candidature refusée.");
+        if (!confirm('Souhaitez-vous écarter ce candidat ?')) return;
+
+        try {
+            await Storage.update(Storage.KEYS.MARKETPLACE_APPLICATIONS, id, { status: 'rejected' });
+            if (typeof App !== 'undefined') App.showNotification('Candidature écartée.', 'info');
+            this.render(); // Refresh UI
+        } catch (err) {
+            console.error(err);
+            if (typeof App !== 'undefined') App.showNotification('Erreur de mise à jour', 'error');
+        }
     },
 
     // --- UPDATE CALC ---
