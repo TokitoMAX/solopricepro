@@ -631,19 +631,25 @@ const Marketplace = {
         const m = missions.find(x => x.id === missionId);
 
         if (m) {
-            // Display client budget clearly
+            // Display remuneration info clearly
             const budgetDisplay = document.getElementById('apply-mission-budget');
             if (budgetDisplay) {
                 const totalCost = Math.round(parseFloat(m.budget) * (1 + this.COMMISSION_RATE));
-                budgetDisplay.innerHTML = `💰 <strong>Budget Client: ${totalCost}€</strong> | ⚡ Budget Expert Net: ${m.budget}€`;
+                const netExpert = Math.round(parseFloat(m.budget));
+                budgetDisplay.innerHTML = `
+                    <div style="font-size: 1.1rem; color: var(--success); margin-bottom: 5px;">
+                        💰 <strong>Rémunération : ${netExpert}€ Net</strong>
+                    </div>
+                    <div style="font-size: 0.85rem; opacity: 0.7;">
+                        (Budget Client : ${totalCost}€ TTC)
+                    </div>
+                `;
             }
 
-            const input = document.getElementById('total-price-input');
-            if (input) {
-                // Pre-fill with Total Cost (Budget + 15%)
-                const totalBudget = Math.round(parseFloat(m.budget) * (1 + this.COMMISSION_RATE));
-                input.value = totalBudget;
-                this.updateApplyCalc();
+            // Hidden Price for submission
+            const priceInput = document.getElementById('total-price-hidden');
+            if (priceInput) {
+                priceInput.value = Math.round(parseFloat(m.budget) * (1 + this.COMMISSION_RATE));
             }
         }
 
@@ -917,8 +923,9 @@ const Marketplace = {
                     
                     <form onsubmit="Marketplace.submitApplication(event)">
                         <input type="hidden" name="mission_id" id="apply-mission-id">
+                        <input type="hidden" name="total_price" id="total-price-hidden">
                         
-                        <div class="mission-budget-info" id="apply-mission-budget" style="background: rgba(var(--primary-rgb), 0.1); padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border-left: 3px solid var(--primary);">
+                        <div class="mission-budget-info" id="apply-mission-budget" style="background: rgba(var(--success-rgb), 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--success); text-align: center;">
                              <!-- Dynamic budget info -->
                         </div>
 
@@ -932,29 +939,18 @@ const Marketplace = {
                         </div>
 
                         <div class="form-row">
-                             <label>Durée estimée
-                                <input type="text" name="estimated_duration" placeholder="Ex: 3 jours, 1 mois..." class="form-input">
+                             <label>Disponibilité / Durée
+                                <input type="text" name="estimated_duration" placeholder="Ex: Disponible de suite, 1 semaine..." class="form-input">
                             </label>
                         </div>
 
-                        <label>Détails de votre Proposition / Pitch
-                            <textarea name="message" required rows="4" class="form-input" placeholder="Décrivez votre compréhension du besoin et comment vous allez y répondre..."></textarea>
+                        <label>Détails de votre Proposition / Motivation
+                            <textarea name="message" required rows="5" class="form-input" placeholder="Bonjour, je suis très intéressé par cette mission car..."></textarea>
                         </label>
-                         
-                        <div class="fee-calculator-box" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0;">
-                            <label>Votre Proposition Financière (Tout Compris)
-                                <input type="number" name="total_price" id="total-price-input" required class="form-input" placeholder="Ex: 600" oninput="Marketplace.updateApplyCalc()" onkeyup="Marketplace.updateApplyCalc()">
-                                <small>Prix global (frais plateforme inclus) que le client devra payer.</small>
-                            </label>
-                            <div class="breakdown" style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">
-                                <div class="line" style="display: flex; justify-content: space-between;">
-                                    <span>💡 Vous recevrez environ (~85%) :</span>
-                                    <span id="apply-net">0.00 €</span>
-                                </div>
-                            </div>
-                        </div>
 
-                        <button type="submit" class="button-primary full-width" style="margin-top:10px;">📩 Envoyer ma Proposition</button>
+                        <button type="submit" class="button-primary full-width" style="margin-top:20px; padding: 15px; font-size: 1.1rem;">
+                            🚀 Envoyer ma Proposition
+                        </button>
                     </form>
                 </div>
             </div>
