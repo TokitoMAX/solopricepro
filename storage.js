@@ -75,7 +75,8 @@ const Storage = {
             this.KEYS.SETTINGS,
             this.KEYS.CALCULATOR_DATA,
             this.KEYS.MARKETPLACE_MISSIONS, // Public data
-            this.KEYS.MARKETPLACE_APPLICATIONS,
+            this.KEYS.MARKETPLACE_APPLICATIONS, // Generic fetch (Candidate view)
+            this.KEYS.MARKETPLACE_INVITATIONS,   // Add Invitations Sync
             this.KEYS.PROVIDERS
         ];
 
@@ -84,8 +85,11 @@ const Storage = {
         await Promise.all(tables.map(async (table) => {
             try {
                 let endpoint = `${Auth.apiBase}/api/data/${table}`;
-                if (table === this.KEYS.MARKETPLACE_APPLICATIONS) {
-                    endpoint = `${Auth.apiBase}/api/marketplace/inbox`;
+                // APPLICATIONS: Generic endpoint (Filtered by user_id in data.js) 
+                // gives the candidate their own applications.
+                // INVITIATIONS: Filtered for both recruiter and candidate in marketplace.js
+                if (table === this.KEYS.MARKETPLACE_INVITATIONS) {
+                    endpoint = `${Auth.apiBase}/api/marketplace/invitations`;
                 }
 
                 const res = await fetch(endpoint, {

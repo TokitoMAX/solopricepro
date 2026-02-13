@@ -246,15 +246,8 @@ const Marketplace = {
             const allApps = Storage.get(Storage.KEYS.MARKETPLACE_APPLICATIONS) || [];
             const myApps = allApps.filter(app => app.applicant_id === Auth.user?.id);
 
-            const res = await fetch(`${Auth.apiBase}/api/marketplace/invitations`, {
-                headers: { 'Authorization': `Bearer ${Auth.token}` }
-            });
-
-            let invitations = [];
-            if (res.ok) {
-                const allInvites = await res.json();
-                invitations = allInvites.filter(inv => inv.candidate_id === Auth.user?.id);
-            }
+            const invitations = Storage.get(Storage.KEYS.MARKETPLACE_INVITATIONS) || [];
+            // invitations already filtered by candidate_id or recruiter_id in backend
 
             const appDetails = myApps.map(app => {
                 const invitation = invitations.find(inv => inv.application_id === app.id);
