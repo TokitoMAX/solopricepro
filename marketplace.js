@@ -472,6 +472,7 @@ const Marketplace = {
         const total = expertPrice + fees;
 
         const application = {
+            id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : this.generateFailsafeId(),
             mission_id: formData.get('mission_id'),
             // PACKING EVERYTHING into message because the table schema has No applicant_name column
             message: `CANDIDAT: ${formData.get('applicant_name') || 'Anonyme'}\n` +
@@ -636,6 +637,10 @@ const Marketplace = {
                 </div>
             </div>
         `;
+    },
+
+    generateFailsafeId() {
+        return Math.random().toString(36).substring(2, 11) + '-' + Date.now().toString(36);
     },
 
     escape(str) {
