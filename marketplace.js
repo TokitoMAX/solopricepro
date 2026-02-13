@@ -240,6 +240,7 @@ const Marketplace = {
     },
 
     closePostForm() {
+        const modal = document.getElementById('post-mission-modal');
         if (modal) modal.style.display = 'none';
     },
 
@@ -260,6 +261,16 @@ const Marketplace = {
 
     async submitMission(e) {
         e.preventDefault();
+
+        // CRITICAL: Double-check authentication (fail-safe)
+        if (!Auth.isLoggedIn()) {
+            if (typeof App !== 'undefined') {
+                App.showNotification('Session expirée. Veuillez vous reconnecter.', 'error');
+            }
+            this.closePostForm();
+            return;
+        }
+
         const output = e.target.querySelector('button[type="submit"]');
         output.disabled = true;
         output.textContent = 'Diffusion en cours...';
