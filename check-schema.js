@@ -4,25 +4,18 @@ require('dotenv').config();
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-async function megaAudit() {
-    console.log('--- 📊 MEGA MARKETPLACE AUDIT ---');
+async function checkMissionIdType() {
+    console.log('--- 🔍 MISSION ID TYPE CHECK ---');
 
-    const queries = [
-        { name: 'Applications Columns', sql: "SELECT column_name FROM information_schema.columns WHERE table_name = 'sp_marketplace_applications'" },
-        { name: 'Invitations Columns', sql: "SELECT column_name FROM information_schema.columns WHERE table_name = 'sp_marketplace_invitations'" },
-        { name: 'FK: App -> Mission', sql: "SELECT conname FROM pg_constraint WHERE contype = 'f' AND conrelid = 'sp_marketplace_applications'::regclass" },
-        { name: 'FK: Invite -> App', sql: "SELECT conname FROM pg_constraint WHERE contype = 'f' AND conrelid = 'sp_marketplace_invitations'::regclass" }
-    ];
+    const { data: cols, error } = await supabase.rpc('query_sql', {
+        sql_query: "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'sp_marketplace_missions' AND column_name = 'id'"
+    });
 
-    for (const q of queries) {
-        console.log(`\n> Testing: ${q.name}`);
-        const { data, error } = await supabase.rpc('query_sql', { sql_query: q.sql });
-        if (error) {
-            console.log(`❌ FAILED: ${error.message}`);
-        } else {
-            console.log(`✅ SUCCESS: ${JSON.stringify(data)}`);
-        }
+    if (error) {
+        console.error('❌ SQL Error:', error.message);
+    } else {
+        console.log('✅ id type:', cols[0]?.data_type);
     }
 }
 
-megaAudit();
+checkMissionIdType();

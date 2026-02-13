@@ -1,19 +1,23 @@
 -- ==========================================
 -- SOLOPRICE PRO - FINAL MARKETPLACE GLUE (v4.9.13)
+-- Version 2: With Automatic Data Cleanup
 -- Run this in your Supabase SQL Editor
--- This script fixes relationships for PostgREST joins.
 -- ==========================================
 
--- 1. Ensure Columns Exist
+-- 1. Ensure Columns Exist & Correct Types
 ALTER TABLE sp_marketplace_applications ADD COLUMN IF NOT EXISTS applicant_id UUID;
 ALTER TABLE sp_marketplace_applications ADD COLUMN IF NOT EXISTS proposed_price NUMERIC;
 
--- 2. Performance & Relations (Indices)
+-- 2. Performance Indices
 CREATE INDEX IF NOT EXISTS idx_applications_applicant ON sp_marketplace_applications(applicant_id);
 CREATE INDEX IF NOT EXISTS idx_applications_mission ON sp_marketplace_applications(mission_id);
 
--- 3. FORCED FOREIGN KEYS (The "Glue" for Joins)
--- We use a DO block to safely add constraints if they don't exist
+-- 3. DATA CLEANUP: Remove orphaned applications
+-- This is necessary to allow the Foreign Key constraint to be established.
+DELETE FROM sp_marketplace_applications 
+WHERE mission_id NOT IN (SELECT id FROM sp_marketplace_missions);
+
+-- 4. FORCED FOREIGN KEYS (The "Glue" for Joins)
 DO $$ 
 BEGIN
     -- Link Applications to Missions
@@ -31,11 +35,10 @@ BEGIN
     END IF;
 END $$;
 
--- 4. CRITICAL: Force Supabase to reload the schema cache
--- This is what clears the "column not found in schema cache" error
+-- 5. CRITICAL: Force Supabase to reload the schema cache
 NOTIFY pgrst, 'reload schema';
 
--- 5. Verification
+-- 6. Verification
 SELECT 
     tc.table_name, 
     kcu.column_name, 
