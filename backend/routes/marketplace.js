@@ -185,4 +185,107 @@ router.post('/apply', async (req, res) => {
     }
 });
 
+/**
+ * @route   GET /api/marketplace/invitations
+ * @desc    Get all invitations for current user (as recruiter or candidate)
+ * @access  Private
+ */
+router.get('/invitations', async (req, res) => {
+    const supabase = req.app.get('supabase');
+
+    try {
+        const { data, error } = await supabase
+            .from('sp_marketplace_invitations')
+            .select(`
+                *,
+                application:sp_marketplace_applications(
+                    id,
+                    message,
+                    proposed_price,
+                    mission:sp_marketplace_missions(
+                        title,
+                        description
+                    )
+                )
+            `)
+            .or(`recruiter_id.eq.${req.user.id},candidate_id.eq.${req.user.id}`)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        console.error('[INVITATIONS] Error:', err);
+        res.status(500).json({ message: 'Error fetching invitations', error: err.message });
+    }
+});
+
+/**
+ * @route   POST /api/marketplace/invitations
+ * @desc    Create new interview invitation
+ * @access  Private (Recruiter)
+ */
+router.post('/invitations', async (req, res) => {
+    const supabase = req.app.get('supabase');
+    const { application_id, candidate_id, message, proposed_slots } = req.body;
+
+    if (!application_id || !candidate_id || !message || !proposed_slots) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('sp_marketplace_invitations')
+            .insert([{
+                application_id,
+                recruiter_id: req.user.id,
+                candidate_id,
+                message,
+                proposed_slots,
+                status: 'pending'
+            }])
+            .select();
+
+        if (error) throw error;
+
+        console.log('[INVITATIONS] Created:', data[0].id);
+        res.status(201).json({ success: true, data: data[0] });
+    } catch (err) {
+        console.error('[INVITATIONS] Error:', err);
+        res.status(500).json({ message: 'Error creating invitation', error: err.message });
+    }
+});
+
+/**
+ * @route   PATCH /api/marketplace/invitations/:id
+ * @desc    Update invitation (candidate response)
+ * @access  Private (Candidate)
+ */
+router.patch('/invitations/:id', async (req, res) => {
+    const supabase = req.app.get('supabase');
+    const { id } = req.params;
+    const { status, selected_slot, candidate_response } = req.body;
+
+    try {
+        const updates = {};
+        if (status) updates.status = status;
+        if (selected_slot !== undefined) updates.selected_slot = selected_slot;
+        if (candidate_response !== undefined) updates.candidate_response = candidate_response;
+
+        const { data, error } = await supabase
+            .from('sp_marketplace_invitations')
+            .update(updates)
+            .eq('id', id)
+            .eq('candidate_id', req.user.id) // Ensure only candidate can respond
+            .select();
+
+        if (error) throw error;
+
+        console.log('[INVITATIONS] Updated:', id);
+        res.json({ success: true, data: data[0] });
+    } catch (err) {
+        console.error('[INVITATIONS] Error:', err);
+        res.status(500).json({ message: 'Error updating invitation', error: err.message });
+    }
+});
+
 module.exports = router;

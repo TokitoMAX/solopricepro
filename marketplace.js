@@ -467,7 +467,7 @@ const Marketplace = {
         btn.textContent = 'Envoi...';
 
         const formData = new FormData(e.target);
-        const expertPrice = parseFloat(formData.get('expert_price'));
+        const totalPrice = parseFloat(formData.get('total_price'));
         const fees = expertPrice * this.COMMISSION_RATE;
         const total = expertPrice + fees;
 
@@ -524,15 +524,13 @@ const Marketplace = {
         }
     },
 
-    // --- UPDATE CALC ---
+    // --- UPDATE CALC (Simplified v4.9.2) ---
     updateApplyCalc() {
-        const input = document.getElementById('expert-price-input');
-        const expertPrice = parseFloat(input.value) || 0;
-        const fees = expertPrice * this.COMMISSION_RATE;
-        const total = expertPrice + fees;
+        const input = document.getElementById('total-price-input');
+        const totalPrice = parseFloat(input.value) || 0;
+        const netEarnings = totalPrice * 0.85; // 15% platform fee
 
-        document.getElementById('apply-fee').textContent = fees.toFixed(2) + ' €';
-        document.getElementById('apply-total').textContent = total.toFixed(2) + ' €';
+        document.getElementById('apply-net').textContent = netEarnings.toFixed(2) + ' €';
     },
 
     // --- MODALES (Job Board Style) ---
@@ -616,19 +614,16 @@ const Marketplace = {
                         </label>
                          
                         <div class="fee-calculator-box" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0;">
-                            <label>Votre Prétention (Net Vendeur)
-                                <input type="number" name="expert_price" id="expert-price-input" required class="form-input" placeholder="Ex: 500" oninput="Marketplace.updateApplyCalc()" onkeyup="Marketplace.updateApplyCalc()">
-                                <small>Ce que vous recevrez réellement.</small>
+                            <label>Votre Proposition (Tout Compris)
+                                <input type="number" name="total_price" id="total-price-input" required class="form-input" placeholder="Ex: 600" oninput="Marketplace.updateApplyCalc()" onkeyup="Marketplace.updateApplyCalc()">
+                                <small>Prix global que le client devra payer.</small>
                             </label>
-                            <div class="breakdown" style="margin-top: 10px; font-size: 0.9rem;">
+                            <div class="breakdown" style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">
                                 <div class="line" style="display: flex; justify-content: space-between;">
-                                    <span>+ Frais Client (15%):</span>
-                                    <span id="apply-fee">0.00 €</span>
+                                    <span>💡 Vous recevrez environ (~85%) :</span>
+                                    <span id="apply-net">0.00 €</span>
                                 </div>
-                                <div class="line total" style="display: flex; justify-content: space-between; margin-top: 5px; font-weight: bold; color: var(--text);">
-                                    <span>Prix affiché au Client :</span>
-                                    <span id="apply-total">0.00 €</span>
-                                </div>
+                                <small style="display: block; margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">Après déduction des frais de plateforme (15%).</small>
                             </div>
                         </div>
 

@@ -31,6 +31,7 @@ const Storage = {
         USER_PROFILE: 'user_profile', // Local only, real profile in auth
         MARKETPLACE_MISSIONS: 'sp_marketplace_missions',
         MARKETPLACE_APPLICATIONS: 'sp_marketplace_applications',
+        MARKETPLACE_INVITATIONS: 'sp_marketplace_invitations',
         PROVIDERS: 'sp_network_providers',
         REVENUES: 'sp_revenues',
         MY_MISSIONS: 'sp_my_missions'
