@@ -245,81 +245,127 @@ const Marketplace = {
         try {
             const allApps = Storage.get(Storage.KEYS.MARKETPLACE_APPLICATIONS) || [];
             const myApps = allApps.filter(app => app.applicant_id === Auth.user?.id);
-
             const invitations = Storage.get(Storage.KEYS.MARKETPLACE_INVITATIONS) || [];
-            // invitations already filtered by candidate_id or recruiter_id in backend
 
-            const appDetails = myApps.map(app => {
-                const invitation = invitations.find(inv => inv.application_id === app.id);
-                return { ...app, invitation };
-            });
+            // Identify priority invitations (Pending/Unanswered)
+            const myInvitations = invitations.filter(inv => inv.candidate_id === Auth.user?.id);
+            const pendingInvites = myInvitations.filter(inv => inv.status === 'pending');
 
-            if (appDetails.length === 0) {
-                container.innerHTML = `
+            let html = '';
+
+            // 1. TOP SECTION: PRIORITY INVITATIONS
+            if (pendingInvites.length > 0) {
+                html += `
+                    <div class="marketplace-priority-alert glass" style="margin-bottom: 30px; border-left: 4px solid var(--primary);">
+                        <div style="padding: 20px;">
+                            <h2 style="margin: 0 0 10px 0; color: var(--primary-light); display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-calendar-star"></i> 
+                                Vous avez ${pendingInvites.length} invitation(s) en attente !
+                            </h2>
+                            <p style="opacity: 0.8; margin-bottom: 20px;">Des recruteurs souhaitent vous rencontrer. Choisissez un créneau pour confirmer l'entretien.</p>
+                            
+                            <div class="pending-invitations-list" style="display: grid; gap: 15px;">
+                                ${pendingInvites.map(inv => {
+                    const app = myApps.find(a => a.id === inv.application_id);
+                    const missionTitle = inv.application?.mission?.title || app?.mission_title || 'Mission';
+                    const slots = inv.proposed_slots || [];
+
+                    return `
+                                        <div class="invitation-card-premium glass" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary-glass); padding: 20px; border-radius: 12px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                                <div>
+                                                    <h3 style="margin: 0; font-size: 1.1rem;">${this.escape(missionTitle)}</h3>
+                                                    <span style="font-size: 0.8rem; opacity: 0.6;">Invitation reçue le ${new Date(inv.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                                <div class="price-tag" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold;">
+                                                    ${inv.application?.proposed_price || app?.proposed_price || '?'}€
+                                                </div>
+                                            </div>
+                                            
+                                            <p class="invitation-msg" style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; font-size: 0.95rem; margin-bottom: 20px; border-left: 2px solid var(--primary-light);">
+                                                "${this.escape(inv.message)}"
+                                            </p>
+
+                                            <div class="slot-response-area">
+                                                <h4 style="margin-bottom: 15px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;">Disponibilités proposées :</h4>
+                                                <div class="slots-selector" style="display: grid; gap: 10px; margin-bottom: 20px;">
+                                                    ${slots.map((slot, idx) => `
+                                                        <label class="slot-option-premium">
+                                                            <input type="radio" name="slot-choice-${inv.id}" value="${idx}">
+                                                            <div class="slot-box">
+                                                                <i class="far fa-calendar-alt"></i>
+                                                                <span>${new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                                                                <i class="far fa-clock" style="margin-left: 10px;"></i>
+                                                                <strong>${slot.time}</strong>
+                                                            </div>
+                                                        </label>
+                                                    `).join('')}
+                                                </div>
+                                                
+                                                <div class="action-footer" style="display: flex; gap: 10px; align-items: center;">
+                                                    <textarea id="reply-msg-${inv.id}" placeholder="Un petit mot pour le recruteur... (optionnel)" class="form-input" style="flex: 1; min-height: 44px; padding: 10px;"></textarea>
+                                                    <button onclick="Marketplace.respondToInvitation('${inv.id}', '${inv.application_id}', true)" class="button-primary" style="padding: 12px 25px;">
+                                                        <i class="fas fa-check"></i> C'est ok !
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 2. MAIN FEED: ALL CANDIDATURES
+            if (myApps.length === 0) {
+                html += `
                     <div class="empty-state">
                         <div class="icon"><i class="fas fa-file-alt" style="font-size: 3rem; opacity: 0.3;"></i></div>
                         <p>Vous n'avez encore postulé à aucune mission</p>
                         <button onclick="Marketplace.switchTab('radar')" class="button-primary">Découvrir les opportunités</button>
                     </div>`;
-                return;
-            }
+            } else {
+                html += `<h2 style="margin: 20px 0 15px 0; font-size: 1.2rem; opacity: 0.8;">Suivi de mes candidatures</h2>`;
+                html += myApps.map(app => {
+                    const invitation = myInvitations.find(inv => inv.application_id === app.id);
+                    const statusClass = app.status || 'pending';
+                    const statusLabel = { 'pending': 'En attente', 'accepted': 'Retenue', 'rejected': 'Refusée' }[statusClass] || statusClass;
 
-            container.innerHTML = appDetails.map(app => {
-                const statusClass = app.status || 'pending';
-                const statusLabel = { 'pending': 'En attente', 'accepted': 'Retenue', 'rejected': 'Refusée' }[statusClass] || statusClass;
-
-                let invitationSection = '';
-                if (app.invitation) {
-                    const inv = app.invitation;
-                    const slots = inv.proposed_slots || [];
-
-                    invitationSection = `
-                        <div class="invitation-section" style="background: rgba(0,200,100,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;">
-                            <h4 style="margin: 0 0 10px 0; color: var(--success);">Invitation à un Entretien</h4>
-                            <p style="white-space: pre-wrap; font-size: 0.9rem; margin-bottom: 15px;">${this.escape(inv.message)}</p>
-                            
-                            ${inv.status === 'pending' ? `
-                                <div class="slot-picker">
-                                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Choisissez un créneau:</label>
-                                    ${slots.map((slot, idx) => `
-                                        <label style="display: block; margin: 5px 0; cursor: pointer;">
-                                            <input type="radio" name="selected-slot-${app.id}" value="${idx}" style="margin-right: 8px;">
-                                            ${new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${slot.time}
-                                        </label>
-                                    `).join('')}
-                                    <textarea id="response-${app.id}" placeholder="Votre message (optionnel)" class="form-input" rows="2" style="margin-top: 10px;"></textarea>
-                                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${app.id}', true)" class="button-primary">Accepter ce créneau</button>
-                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${app.id}', false)" class="button-secondary">Décliner poliment</button>
-                                    </div>
+                    let invStatusDisplay = '';
+                    if (invitation) {
+                        if (invitation.status === 'confirmed') {
+                            invStatusDisplay = `
+                                <div class="confirmed-badge" style="background: var(--primary-glass); color: var(--primary-light); padding: 10px; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Entretien confirmé : <strong>${new Date(invitation.selected_slot.date).toLocaleDateString()} à ${invitation.selected_slot.time}</strong></span>
                                 </div>
-                            ` : `
-                                <div class="invitation-status" style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                                    <strong>Statut:</strong> ${inv.status === 'confirmed' ? 'Entretien confirmé' : inv.status === 'declined' ? 'Déclinée' : inv.status}
-                                    ${inv.selected_slot ? `<br><strong>Créneau choisi:</strong> ${new Date(inv.selected_slot.date).toLocaleDateString('fr-FR')} à ${inv.selected_slot.time}` : ''}
-                                    ${inv.candidate_response ? `<br><strong>Votre message:</strong> ${this.escape(inv.candidate_response)}` : ''}
+                            `;
+                        } else if (invitation.status === 'declined') {
+                            invStatusDisplay = `<div style="margin-top: 10px; opacity: 0.6; font-size: 0.85rem;">(Invitation déclinée)</div>`;
+                        }
+                    }
+
+                    return `
+                        <div class="application-card glass" style="margin-bottom: 20px; opacity: ${statusClass === 'rejected' ? '0.6' : '1'}">
+                            <div class="app-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 1.1rem;">${this.escape(app.mission_title || 'Mission')}</h3>
+                                    <span class="status-pill ${statusClass}" style="font-size: 0.8rem; margin-top: 5px; display: inline-block;">${statusLabel}</span>
                                 </div>
-                            `}
+                                <div style="text-align: right;">
+                                    <strong style="color: var(--primary);">${app.proposed_price || '?'}€</strong>
+                                    <small style="display: block; opacity: 0.6; font-size: 0.7rem;">Ma proposition</small>
+                                </div>
+                            </div>
+                            ${invStatusDisplay}
                         </div>
                     `;
-                }
+                }).join('');
+            }
 
-                return `
-                    <div class="application-card glass" style="margin-bottom: 20px;">
-                        <div class="app-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <div>
-                                <h3 style="margin: 0;">${this.escape(app.mission_title || 'Mission')}</h3>
-                                <span class="status-pill ${statusClass}" style="font-size: 0.85rem; margin-top: 5px; display: inline-block;">${statusLabel}</span>
-                            </div>
-                            <div style="text-align: right;">
-                                <strong style="font-size: 1.2rem; color: var(--primary);">${app.proposed_price}€</strong>
-                                <small style="display: block; opacity: 0.7;">Votre proposition</small>
-                            </div>
-                        </div>
-                        ${invitationSection}
-                    </div>
-                `;
-            }).join('');
+            container.innerHTML = `<div class="my-candidatures-wrapper">${html}</div>`;
 
         } catch (err) {
             console.error('[MYCANDIDATURES] Error:', err);
@@ -329,28 +375,38 @@ const Marketplace = {
 
     async respondToInvitation(invitationId, appId, accept) {
         try {
-            const selectedSlotInput = document.querySelector(`input[name="selected-slot-${appId}"]:checked`);
+            // New logic: Check for new premium IDs first, then fallback to old ones
+            const selectedSlotInput = document.querySelector(`input[name="slot-choice-${invitationId}"]:checked`)
+                || document.querySelector(`input[name="selected-slot-${appId}"]:checked`);
 
             if (accept && !selectedSlotInput) {
                 App.showNotification('Veuillez choisir un créneau', 'warning');
                 return;
             }
 
-            const response = document.getElementById(`response-${appId}`)?.value || '';
+            const response = document.getElementById(`reply-msg-${invitationId}`)?.value
+                || document.getElementById(`response-${appId}`)?.value
+                || '';
 
             let updateData = { candidate_response: response };
 
             if (accept) {
                 const slotIdx = parseInt(selectedSlotInput.value);
+
+                // Fetch invitation data carefully
                 const res = await fetch(`${Auth.apiBase}/api/marketplace/invitations`, {
                     headers: { 'Authorization': `Bearer ${Auth.token}` }
                 });
+                if (!res.ok) throw new Error('Fetch failed');
+
                 const invitations = await res.json();
                 const invitation = invitations.find(inv => inv.id === invitationId);
 
-                if (invitation && invitation.proposed_slots[slotIdx]) {
+                if (invitation && invitation.proposed_slots && invitation.proposed_slots[slotIdx]) {
                     updateData.selected_slot = invitation.proposed_slots[slotIdx];
                     updateData.status = 'confirmed';
+                } else {
+                    throw new Error('Créneau invalide');
                 }
             } else {
                 updateData.status = 'declined';
@@ -365,13 +421,16 @@ const Marketplace = {
                 body: JSON.stringify(updateData)
             });
 
-            if (!updateRes.ok) throw new Error('Erreur serveur');
+            if (!updateRes.ok) throw new Error('Erreur serveur lors de la mise à jour');
 
             App.showNotification(accept ? 'Entretien confirmé !' : 'Réponse envoyée', 'success');
+
+            // Background sync
+            Storage.fetchAllData();
             this.render(); // Refresh view
         } catch (err) {
-            console.error(err);
-            App.showNotification('Erreur lors de la réponse', 'error');
+            console.error('[RESPOND] Error:', err);
+            App.showNotification(err.message || 'Erreur lors de la réponse', 'error');
         }
     },
 
