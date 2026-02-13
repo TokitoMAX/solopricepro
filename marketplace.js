@@ -293,7 +293,31 @@ const Marketplace = {
             e.target.reset();
         } catch (err) {
             console.error(err);
-            if (typeof App !== 'undefined') App.showNotification('Erreur lors de la diffusion', 'error');
+
+            // Intelligent error handling for expired tokens
+            if (err.message && err.message.includes('Invalid or expired token')) {
+                if (typeof App !== 'undefined') {
+                    App.showNotification('⚠️ Session expirée. Reconnexion nécessaire.', 'error');
+                }
+
+                // Auto-logout and redirect
+                setTimeout(() => {
+                    if (confirm('Votre session a expiré.\n\nCliquez OK pour vous reconnecter.')) {
+                        // Clear expired token
+                        localStorage.removeItem('sp_token');
+                        localStorage.removeItem('sp_user');
+
+                        // Redirect to auth
+                        window.location.href = '/auth.html';
+                    } else {
+                        // Just reload to show logged-out state
+                        window.location.reload();
+                    }
+                }, 500);
+            } else {
+                // Other errors
+                if (typeof App !== 'undefined') App.showNotification('Erreur lors de la diffusion', 'error');
+            }
         } finally {
             output.disabled = false;
             output.textContent = 'Diffuser l\'Offre';
