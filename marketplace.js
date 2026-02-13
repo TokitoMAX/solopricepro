@@ -114,7 +114,11 @@ const Marketplace = {
 
         container.innerHTML = sorted.map(m => {
             const isOwner = currentUser && String(m.user_id) === String(currentUser.id);
-            const dateStr = m.created_at ? new Date(m.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : 'Récemment';
+
+            // Robust Date Parsing
+            const d = new Date(m.created_at);
+            const dateStr = (m.created_at && !isNaN(d)) ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : 'Récemment';
+
             const companyName = m.company_name || m.user_metadata?.company_name || 'Entreprise';
 
             return `
@@ -165,7 +169,7 @@ const Marketplace = {
 
     async renderMyMissions(container) {
         // Nécessite l'utilisateur connecté
-        const user = (typeof Auth !== 'undefined') ? Auth.currentUser : null;
+        const user = (typeof Auth !== 'undefined') ? Auth.user : null;
         if (!user) {
             container.innerHTML = '<div class="error">Veuillez vous connecter pour gérer vos recrutements.</div>';
             return;
@@ -331,7 +335,10 @@ const Marketplace = {
             budget: parseFloat(formData.get('budget')),
             description: formData.get('description'),
             zone: formData.get('zone'),
-            status: 'open'
+            status: 'open',
+            // Metadata for feed visibility
+            company_name: Auth.user?.company?.name || Auth.user?.user_metadata?.company_name || 'Entreprise',
+            user_metadata: Auth.user?.user_metadata || {}
         };
 
         try {
@@ -426,10 +433,10 @@ const Marketplace = {
         document.getElementById('apply-modal').style.display = 'flex';
 
         // Auto-fill
-        if (typeof Auth !== 'undefined' && Auth.currentUser) {
+        if (typeof Auth !== 'undefined' && Auth.user) {
             const nameInput = document.querySelector('input[name="applicant_name"]');
             if (nameInput && !nameInput.value) {
-                nameInput.value = Auth.currentUser.user_metadata?.company || Auth.currentUser.user_metadata?.full_name || '';
+                nameInput.value = Auth.user.user_metadata?.company || Auth.user.user_metadata?.full_name || '';
             }
         }
     },

@@ -58,7 +58,7 @@ const Storage = {
     // --- Core CRUD ---
 
     async fetchAllData() {
-        if (!Auth.currentUser) {
+        if (!Auth.user) {
             console.log('🔒 Cannot fetch data: User not logged in.');
             return;
         }
@@ -401,7 +401,7 @@ const Storage = {
 
     getUser() {
         // Return local profile or Auth user if available
-        return this._cache[this.KEYS.USER_PROFILE] || (typeof Auth !== 'undefined' ? Auth.currentUser : null);
+        return this._cache[this.KEYS.USER_PROFILE] || (typeof Auth !== 'undefined' ? Auth.user : null);
     },
 
     setUser(user) {
@@ -452,12 +452,12 @@ window.Storage = Storage;
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         console.log('🛠️ Attempting safe Storage initialization...');
-        if (typeof Auth !== 'undefined' && Auth.currentUser) {
+        if (typeof Auth !== 'undefined' && Auth.user) {
             Storage.init();
         } else {
             // Wait for auth
             const checkAuth = setInterval(() => {
-                if (typeof Auth !== 'undefined' && Auth.currentUser) {
+                if (typeof Auth !== 'undefined' && Auth.user) {
                     clearInterval(checkAuth);
                     Storage.init();
                 }
@@ -466,5 +466,5 @@ if (document.readyState === 'loading') {
     });
 } else {
     // Already ready
-    if (typeof Auth !== 'undefined' && Auth.currentUser) Storage.init();
+    if (typeof Auth !== 'undefined' && Auth.user) Storage.init();
 }
