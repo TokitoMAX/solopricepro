@@ -498,16 +498,122 @@ const Marketplace = {
         }
     },
 
-    async validateApplication(id) {
-        if (!confirm('Souhaitez-vous retenir cette candidature ?\nCela marquera le dossier comme accepté dans votre interface.')) return;
+    async validateApplication(appId) {
+        // Open interview invitation modal instead of direct validation
+        this.openInterviewModal(appId);
+    },
+
+    openInterviewModal(appId) {
+        const app = this.getApplicationById(appId);
+        if (!app) {
+            App.showNotification('Candidature introuvable', 'error');
+            return;
+        }
+
+        // Parse candidate info from message
+        const candidateInfo = this.parseApplicationMessage(app.message);
+
+        // Populate modal
+        document.getElementById('interview-app-id').value = appId;
+        document.getElementById('interview-candidate-id').value = candidateInfo.userId || app.user_id;
+        document.getElementById('interview-candidate-name').textContent = candidateInfo.name || 'Candidat';
+        document.getElementById('interview-mission-title').textContent = app.mission_title || 'Mission';
+        document.getElementById('interview-price').textContent = app.proposed_price + '€';
+        document.getElementById('interview-pitch').textContent = candidateInfo.pitch || app.message;
+
+        // Pre-fill message template
+        const defaultMessage = `Bonjour ${candidateInfo.name || ''},\n\nNous avons le plaisir de vous informer que votre candidature pour "${app.mission_title}" a retenu notre attention.\n\nNous souhaitons vous rencontrer pour échanger sur cette opportunité. Merci de choisir l'un des créneaux ci-dessous qui vous conviendrait le mieux.\n\nCordialement`;
+        document.getElementById('interview-message').value = defaultMessage;
+
+        // Show modal
+        document.getElementById('interview-modal').style.display = 'flex';
+    },
+
+    closeInterviewModal() {
+        document.getElementById('interview-modal').style.display = 'none';
+    },
+
+    parseApplicationMessage(message) {
+        // Extract structured data from packed message
+        const lines = message.split('\n');
+        const info = { pitch: '' };
+
+        lines.forEach(line => {
+            if (line.startsWith('CANDIDAT:')) info.name = line.replace('CANDIDAT:', '').trim();
+            else if (line.startsWith('EMAIL:')) info.email = line.replace('EMAIL:', '').trim();
+            else if (line.startsWith('TEL:')) info.phone = line.replace('TEL:', '').trim();
+            else if (line.startsWith('PORTFOLIO:')) info.portfolio = line.replace('PORTFOLIO:', '').trim();
+            else if (line.startsWith('MESSAGE:')) {
+                const idx = lines.indexOf(line);
+                info.pitch = lines.slice(idx + 1).join('\n').trim();
+            }
+        });
+
+        return info;
+    },
+
+    getApplicationById(appId) {
+        const inbox = Storage.get(Storage.KEYS.MARKETPLACE_APPLICATIONS) || [];
+        return inbox.find(app => app.id === appId);
+    },
+
+    async sendInterviewInvitation(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Envoi...';
+
+        const formData = new FormData(e.target);
+        const appId = formData.get('application_id');
+        const candidateId = formData.get('candidate_id');
+        const message = formData.get('message');
+
+        // Gather slots
+        const slots = [];
+        for (let i = 1; i <= 3; i++) {
+            const date = formData.get(`slot${i}_date`);
+            const time = formData.get(`slot${i}_time`);
+            if (date && time) {
+                slots.push({ date, time, duration: '60min' });
+            }
+        }
+
+        if (slots.length === 0) {
+            App.showNotification('Veuillez proposer au moins un créneau', 'warning');
+            btn.disabled = false;
+            btn.textContent = 'Envoyer l\'Invitation';
+            return;
+        }
 
         try {
-            await Storage.update(Storage.KEYS.MARKETPLACE_APPLICATIONS, id, { status: 'accepted' });
-            if (typeof App !== 'undefined') App.showNotification('Candidature acceptée !', 'success');
-            this.render(); // Refresh UI
+            const res = await fetch(`${Auth.apiBase}/api/marketplace/invitations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
+                body: JSON.stringify({
+                    application_id: appId,
+                    candidate_id: candidateId,
+                    message,
+                    proposed_slots: slots
+                })
+            });
+
+            if (!res.ok) throw new Error('Erreur serveur');
+
+            // Mark application as accepted
+            await Storage.update(Storage.KEYS.MARKETPLACE_APPLICATIONS, appId, { status: 'accepted' });
+
+            App.showNotification('✅ Invitation envoyée avec succès !', 'success');
+            this.closeInterviewModal();
+            this.render(); // Refresh
         } catch (err) {
             console.error(err);
-            if (typeof App !== 'undefined') App.showNotification('Erreur de mise à jour', 'error');
+            App.showNotification('Erreur lors de l\'envoi', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Envoyer l\'Invitation';
         }
     },
 
@@ -628,6 +734,61 @@ const Marketplace = {
                         </div>
 
                         <button type="submit" class="button-primary full-width" style="margin-top:15px;">Envoyer ma Candidature</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- INTERVIEW INVITATION MODAL -->
+            <div id="interview-modal" class="modal-overlay">
+                <div class="modal-content glass" style="max-width: 700px;">
+                    <button class="modal-close" onclick="Marketplace.closeInterviewModal()">✕</button>
+                    <h2>📅 Inviter à un Entretien</h2>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                            <div>
+                                <strong>Candidat:</strong> <span id="interview-candidate-name"></span>
+                            </div>
+                            <div>
+                                <strong>Prix proposé:</strong> <span id="interview-price"></span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <strong>Mission:</strong> <span id="interview-mission-title"></span>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.85rem; opacity: 0.7;">
+                            <strong>Pitch:</strong>
+                            <p id="interview-pitch" style="margin: 5px 0; white-space: pre-wrap;"></p>
+                        </div>
+                    </div>
+
+                    <form onsubmit="Marketplace.sendInterviewInvitation(event)">
+                        <input type="hidden" name="application_id" id="interview-app-id">
+                        <input type="hidden" name="candidate_id" id="interview-candidate-id">
+
+                        <label>Votre Message d'Invitation
+                            <textarea name="message" id="interview-message" rows="5" class="form-input" required></textarea>
+                        </label>
+
+                        <h3 style="margin-top: 20px; margin-bottom: 10px;">Proposer des Créneaux</h3>
+                        <small style="display: block; margin-bottom: 15px; opacity: 0.7;">Le candidat choisira celui qui lui convient le mieux.</small>
+
+                        <div style="display: grid; gap: 12px;">
+                            <div class="slot-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <input type="date" name="slot1_date" class="form-input" required>
+                                <input type="time" name="slot1_time" class="form-input" required>
+                            </div>
+                            <div class="slot-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <input type="date" name="slot2_date" class="form-input">
+                                <input type="time" name="slot2_time" class="form-input">
+                            </div>
+                            <div class="slot-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <input type="date" name="slot3_date" class="form-input">
+                                <input type="time" name="slot3_time" class="form-input">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="button-primary full-width" style="margin-top: 20px;">📩 Envoyer l'Invitation</button>
                     </form>
                 </div>
             </div>
