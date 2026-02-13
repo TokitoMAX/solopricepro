@@ -4,7 +4,7 @@
  * - UI: Job Cards, Clear Actions, "Black Screen" fix
  * - Terminology: "Diffuser une Offre" / "Postuler"
  */
-console.log('⚡ [MARKETPLACE-v4.4-UX] Module Initializing...');
+console.log('[MARKETPLACE-v4.4-UX] Module Initializing...');
 
 const Marketplace = {
     // Configuration
@@ -27,11 +27,11 @@ const Marketplace = {
                         <div class="user-avatar-circle">${Auth.user?.email?.[0].toUpperCase() || 'U'}</div>
                         <div class="user-info">
                             <h3>${Auth.user?.company?.name || Auth.user?.email || 'Visiteur'}</h3>
-                            <p>${Auth.user?.isPro ? 'Membre Pro 💎' : 'Membre Standard'}</p>
+                            <p>${Auth.user?.isPro ? 'Membre Pro' : 'Membre Standard'}</p>
                         </div>
                         <div class="user-stats">
                             <div class="stat">
-                                <span>Mes Offres</span>
+                                <span>Prix de la Mission :</span>
                                 <strong>${Storage.getMyMissions(Auth.user?.id).length}</strong>
                             </div>
                         </div>
@@ -57,7 +57,6 @@ const Marketplace = {
                 <!-- Central Feed -->
                 <main class="marketplace-main-feed">
                     <div class="post-trigger-box glass" onclick="Marketplace.showPostForm()">
-                        <div class="search-avatar-mini">${Auth.user?.email?.[0].toUpperCase() || 'U'}</div>
                         <div class="search-placeholder">Diffuser une offre de mission...</div>
                     </div>
 
@@ -160,7 +159,7 @@ const Marketplace = {
             return `
                 <article class="feed-item glass" id="mission-${m.id}">
                     <div class="feed-item-header">
-                        <div class="author-avatar">${this.escape(companyName[0]) || '🏢'}</div>
+                        <div class="author-avatar">${this.escape(companyName[0]) || 'M'}</div>
                         <div class="author-meta">
                             <strong>${this.escape(companyName)}</strong>
                             <span>Mission diffusée le ${dateStr}</span>
@@ -216,7 +215,7 @@ const Marketplace = {
         if (!missions || missions.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="icon">💼</div>
+                    <div class="icon"><i class="fas fa-briefcase" style="font-size: 3rem; opacity: 0.3;"></i></div>
                     <h3>Aucun recrutement en cours</h3>
                     <p>Vous n'avez diffusé aucune offre pour le moment.</p>
                 </div>`;
@@ -234,9 +233,9 @@ const Marketplace = {
                 </div>
                 <div class="job-footer managed">
                     <span class="budget-info">Budget: ${m.budget}€</span>
-                    <button onclick="Marketplace.deleteMission('${m.id}')" class="button-danger small">
-                       🗑️ Supprimer l'offre
-                    </button>
+                     <button onclick="Marketplace.deleteMission('${m.id}')" class="button-danger small">
+                         Supprimer l'offre
+                     </button>
                 </div>
             </div>
         `).join('');
@@ -265,7 +264,7 @@ const Marketplace = {
             if (appDetails.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="icon">📄</div>
+                        <div class="icon"><i class="fas fa-file-alt" style="font-size: 3rem; opacity: 0.3;"></i></div>
                         <p>Vous n'avez encore postulé à aucune mission</p>
                         <button onclick="Marketplace.switchTab('radar')" class="button-primary">Découvrir les opportunités</button>
                     </div>`;
@@ -274,7 +273,7 @@ const Marketplace = {
 
             container.innerHTML = appDetails.map(app => {
                 const statusClass = app.status || 'pending';
-                const statusLabel = { 'pending': '⏳ En attente', 'accepted': '✅ Retenue', 'rejected': '❌ Refusée' }[statusClass] || statusClass;
+                const statusLabel = { 'pending': 'En attente', 'accepted': 'Retenue', 'rejected': 'Refusée' }[statusClass] || statusClass;
 
                 let invitationSection = '';
                 if (app.invitation) {
@@ -283,7 +282,7 @@ const Marketplace = {
 
                     invitationSection = `
                         <div class="invitation-section" style="background: rgba(0,200,100,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;">
-                            <h4 style="margin: 0 0 10px 0; color: var(--success);">📅 Invitation à un Entretien</h4>
+                            <h4 style="margin: 0 0 10px 0; color: var(--success);">Invitation à un Entretien</h4>
                             <p style="white-space: pre-wrap; font-size: 0.9rem; margin-bottom: 15px;">${this.escape(inv.message)}</p>
                             
                             ${inv.status === 'pending' ? `
@@ -292,18 +291,18 @@ const Marketplace = {
                                     ${slots.map((slot, idx) => `
                                         <label style="display: block; margin: 5px 0; cursor: pointer;">
                                             <input type="radio" name="selected-slot-${app.id}" value="${idx}" style="margin-right: 8px;">
-                                            📅 ${new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${slot.time}
+                                            ${new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${slot.time}
                                         </label>
                                     `).join('')}
                                     <textarea id="response-${app.id}" placeholder="Votre message (optionnel)" class="form-input" rows="2" style="margin-top: 10px;"></textarea>
                                     <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${app.id}', true)" class="button-primary">✅ Accepter ce créneau</button>
-                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${app.id}', false)" class="button-secondary">❌ Décliner poliment</button>
+                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${app.id}', true)" class="button-primary">Accepter ce créneau</button>
+                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${app.id}', false)" class="button-secondary">Décliner poliment</button>
                                     </div>
                                 </div>
                             ` : `
                                 <div class="invitation-status" style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                                    <strong>Statut:</strong> ${inv.status === 'confirmed' ? '✅ Entretien confirmé' : inv.status === 'declined' ? '❌ Déclinée' : inv.status}
+                                    <strong>Statut:</strong> ${inv.status === 'confirmed' ? 'Entretien confirmé' : inv.status === 'declined' ? 'Déclinée' : inv.status}
                                     ${inv.selected_slot ? `<br><strong>Créneau choisi:</strong> ${new Date(inv.selected_slot.date).toLocaleDateString('fr-FR')} à ${inv.selected_slot.time}` : ''}
                                     ${inv.candidate_response ? `<br><strong>Votre message:</strong> ${this.escape(inv.candidate_response)}` : ''}
                                 </div>
@@ -375,7 +374,7 @@ const Marketplace = {
 
             if (!updateRes.ok) throw new Error('Erreur serveur');
 
-            App.showNotification(accept ? '✅ Entretien confirmé !' : 'Réponse envoyée', 'success');
+            App.showNotification(accept ? 'Entretien confirmé !' : 'Réponse envoyée', 'success');
             this.render(); // Refresh view
         } catch (err) {
             console.error(err);
@@ -390,7 +389,7 @@ const Marketplace = {
         if (!inbox || inbox.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="icon">📥</div>
+                    <div class="icon"><i class="fas fa-user-clock" style="font-size: 3rem; opacity: 0.3;"></i></div>
                     <h3>Inbox Vide</h3>
                     <p>Aucune candidature reçue pour vos ordres de mission.</p>
                 </div>`;
@@ -412,7 +411,7 @@ const Marketplace = {
                     </div>
                     
                     <div class="candidate-profile-row">
-                        <div class="candidate-avatar">👤</div>
+                        <div class="candidate-avatar"><i class="fas fa-user-circle"></i></div>
                         <div class="candidate-meta">
                             <div class="candidate-name-row">
                                 <strong>Candidat sur le réseau</strong>
@@ -638,7 +637,7 @@ const Marketplace = {
                 const netExpert = Math.round(parseFloat(m.budget));
                 budgetDisplay.innerHTML = `
                     <div style="font-size: 1.1rem; color: var(--success); margin-bottom: 5px;">
-                        💰 <strong>Rémunération : ${netExpert}€ Net</strong>
+                        <strong>Rémunération : ${netExpert}€ Net</strong>
                     </div>
                     <div style="font-size: 0.85rem; opacity: 0.7;">
                         (Budget Client : ${totalCost}€ TTC)
@@ -733,7 +732,15 @@ const Marketplace = {
 
         // Populate modal
         document.getElementById('interview-app-id').value = appId;
-        document.getElementById('interview-candidate-id').value = app.applicant_id || Auth.user?.id; // Use stored applicant_id
+        // CRITICAL FIX: Ensure candidate_id is ALWAYS the applicant from the application record
+        // Never default to current user if missing in record, instead log error
+        const targetCandidateId = app.applicant_id;
+        if (!targetCandidateId) {
+            console.error('[MARKETPLACE] Missing applicant_id on application:', appId);
+            App.showNotification('Erreur critique : ID candidat manquant sur cette application.', 'error');
+            return;
+        }
+        document.getElementById('interview-candidate-id').value = targetCandidateId;
         document.getElementById('interview-candidate-name').textContent = candidateInfo.name || 'Candidat';
         document.getElementById('interview-mission-title').textContent = app.mission_title || 'Mission';
         document.getElementById('interview-price').textContent = app.proposed_price + '€';
@@ -865,7 +872,7 @@ const Marketplace = {
             <div id="post-mission-modal" class="modal-overlay">
                 <div class="modal-content glass" style="max-width: 600px;">
                     <button class="modal-close" onclick="Marketplace.closePostForm()">✕</button>
-                    <h2>📢 Diffuser une Offre</h2>
+                    <h2>Diffuser une Offre</h2>
                     
                     <form onsubmit="Marketplace.submitMission(event)">
                         <label>Titre de la Mission
@@ -918,7 +925,7 @@ const Marketplace = {
             <div id="apply-modal" class="modal-overlay">
                 <div class="modal-content glass">
                     <button class="modal-close" onclick="Marketplace.closeApplyForm()">✕</button>
-                    <h2>⚡ Postuler à l'offre</h2>
+                    <h2>Postuler à l'offre</h2>
                     <div class="mission-reminder" id="apply-mission-title" style="margin-bottom: 1rem; font-weight: bold; color: var(--primary);"></div>
                     
                     <form onsubmit="Marketplace.submitApplication(event)">
@@ -949,7 +956,7 @@ const Marketplace = {
                         </label>
 
                         <button type="submit" class="button-primary full-width" style="margin-top:20px; padding: 15px; font-size: 1.1rem;">
-                            🚀 Envoyer ma Proposition
+                            Envoyer ma Proposition
                         </button>
                     </form>
                 </div>
@@ -959,7 +966,7 @@ const Marketplace = {
             <div id="interview-modal" class="modal-overlay">
                 <div class="modal-content glass" style="max-width: 700px;">
                     <button class="modal-close" onclick="Marketplace.closeInterviewModal()">✕</button>
-                    <h2>📅 Inviter à un Entretien</h2>
+                    <h2>Inviter à un Entretien</h2>
                     
                     <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
@@ -1024,7 +1031,7 @@ const Marketplace = {
     init() {
         if (this._initialized) return;
         this._initialized = true;
-        console.log('🔄 Marketplace Background Polling Started...');
+        console.log('Marketplace Background Polling Started...');
         // Poll for invitations every 45 seconds
         setInterval(() => this.updateInvitationBadge(), 45000);
     }
