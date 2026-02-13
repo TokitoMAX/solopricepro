@@ -235,10 +235,10 @@ const Marketplace = {
                     </div>
                     
                     <div class="candidate-profile-row">
-                        <div class="candidate-avatar">${this.escape(app.applicant_name?.[0]) || '👤'}</div>
+                        <div class="candidate-avatar">👤</div>
                         <div class="candidate-meta">
                             <div class="candidate-name-row">
-                                <strong>${this.escape(app.applicant_name || 'Candidat')}</strong>
+                                <strong>Candidat sur le réseau</strong>
                             </div>
                             <div class="candidate-contact-info">
                                 <span class="hint-text">Détails de contact dans le pitch ci-dessous</span>
@@ -473,12 +473,12 @@ const Marketplace = {
 
         const application = {
             mission_id: formData.get('mission_id'),
-            applicant_name: formData.get('applicant_name'),
-            // Packing info into message as there is no metadata column in APP table
-            message: formData.get('message') +
-                `\n\n--- CONTACTS ---\nEmail: ${Auth.user?.email || 'N/A'}\n` +
-                `Tel: ${Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || 'N/A'}\n` +
-                `Portfolio: ${formData.get('portfolio_url') || 'Non renseigné'}`,
+            // PACKING EVERYTHING into message because the table schema has No applicant_name column
+            message: `CANDIDAT: ${formData.get('applicant_name') || 'Anonyme'}\n` +
+                `EMAIL: ${Auth.user?.email || 'N/A'}\n` +
+                `TEL: ${Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || 'N/A'}\n` +
+                `PORTFOLIO: ${formData.get('portfolio_url') || 'Non renseigné'}\n\n` +
+                `MESSAGE:\n${formData.get('message')}`,
             proposed_price: total,
             status: 'pending'
         };
