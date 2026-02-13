@@ -97,6 +97,8 @@ const Marketplace = {
 
     async renderRadar(container) {
         const missions = await Storage.getPublicMissions();
+        const currentUser = Auth.getUser();
+
         if (!missions || missions.length === 0) {
             container.innerHTML = `
                 <div class="empty-feed glass">
@@ -110,36 +112,55 @@ const Marketplace = {
         // Sort by date (latest first)
         const sorted = [...missions].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-        container.innerHTML = sorted.map(m => `
-            <article class="feed-item glass">
-                <div class="feed-item-header">
-                    <div class="author-avatar">${this.escape(m.company_name?.[0]) || '🏢'}</div>
-                    <div class="author-meta">
-                        <strong>${this.escape(m.company_name || 'Entreprise anonyme')}</strong>
-                        <span>Mission diffusée le ${new Date(m.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <div class="item-badge">${m.zone || 'Remote'}</div>
-                </div>
-                
-                <div class="feed-item-content">
-                    <h2 class="feed-title">${this.escape(m.title)}</h2>
-                    <p class="feed-description">${this.escape(m.description)}</p>
-                </div>
+        container.innerHTML = sorted.map(m => {
+            const isOwner = currentUser && String(m.user_id) === String(currentUser.id);
+            const dateStr = m.created_at ? new Date(m.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : 'Récemment';
+            const companyName = m.company_name || m.user_metadata?.company_name || 'Entreprise';
 
-                <div class="feed-item-pricing">
-                    <div class="price-pill">
-                        <span class="label">Budget Net Expert</span>
-                        <span class="value">${m.budget}€</span>
+            return `
+                <article class="feed-item glass" id="mission-${m.id}">
+                    <div class="feed-item-header">
+                        <div class="author-avatar">${this.escape(companyName[0]) || '🏢'}</div>
+                        <div class="author-meta">
+                            <strong>${this.escape(companyName)}</strong>
+                            <span>Mission diffusée le ${dateStr}</span>
+                        </div>
+                        <div class="item-badge">${m.zone || 'Remote'}</div>
                     </div>
-                </div>
+                    
+                    <div class="feed-item-content">
+                        <h2 class="feed-title">${this.escape(m.title)}</h2>
+                        <p class="feed-description">${this.escape(m.description)}</p>
+                    </div>
 
-                <div class="feed-item-actions">
-                    <button onclick="Marketplace.openApplyForm('${m.id}', '${this.escape(m.title)}')" class="action-btn primary">
-                        <i class="fas fa-paper-plane"></i> Postuler / Contacter
-                    </button>
-                </div>
-            </article>
-        `).join('');
+                    <div class="feed-item-pricing">
+                        <div class="price-pill">
+                            <span class="label">Budget Net Expert</span>
+                            <span class="value">${m.budget}€</span>
+                        </div>
+                        <div class="price-pill">
+                            <span class="label">Coût Client (Total)</span>
+                            <span class="value">${(m.budget * (1 + this.COMMISSION_RATE)).toFixed(0)}€</span>
+                        </div>
+                    </div>
+
+                    <div class="feed-item-actions">
+                        ${isOwner ? `
+                            <button onclick="Marketplace.deleteMission('${m.id}')" class="action-btn danger">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                            <button class="action-btn" onclick="App.showNotification('Édition bientôt disponible', 'info')">
+                                <i class="fas fa-edit"></i> Modifier
+                            </button>
+                        ` : `
+                            <button onclick="Marketplace.openApplyForm('${m.id}', '${this.escape(m.title)}')" class="action-btn primary">
+                                <i class="fas fa-paper-plane"></i> Postuler / Contacter
+                            </button>
+                        `}
+                    </div>
+                </article>
+            `;
+        }).join('');
     },
 
     async renderMyMissions(container) {
@@ -479,11 +500,12 @@ const Marketplace = {
                                 <input type="number" name="budget" id="post-budget-input" required placeholder="1000" class="form-input" oninput="Marketplace.updatePostCalc()" onkeyup="Marketplace.updatePostCalc()">
                                 <small>Montant versé au freelance.</small>
                             </label>
-                            <label>Zone
+                            <label>Zone Géographique
                                 <select name="zone" class="form-input">
                                     <option>Outre-Mer</option>
                                     <option>Métropole</option>
-                                    <option>Full Remote</option>
+                                    <option>Diaspora</option>
+                                    <option>International</option>
                                 </select>
                             </label>
                         </div>
