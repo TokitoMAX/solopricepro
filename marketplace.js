@@ -16,35 +16,49 @@ const Marketplace = {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        // Header + Navigation (Job Board Style)
         container.innerHTML = `
-            <div class="page-header job-board-header">
-                <div>
-                    <h1 class="page-title">Marketplace <span class="badge-pro">v4.4</span></h1>
-                    <p class="page-subtitle">Le Réseau d'Opportunités DomTomConnect</p>
-                </div>
-                <div class="header-actions">
-                    <button class="button-primary" onclick="Marketplace.showPostForm()">
-                        <i class="fas fa-briefcase"></i> Diffuser une Offre
-                    </button>
-                </div>
-            </div>
+            <div class="marketplace-feed-container">
+                <!-- Sidebar (User Info / Quick Actions) -->
+                <aside class="marketplace-sidebar">
+                    <div class="user-quick-card glass">
+                        <div class="user-banner"></div>
+                        <div class="user-avatar-circle">${Auth.user?.email?.[0].toUpperCase() || 'U'}</div>
+                        <div class="user-info">
+                            <h3>${Auth.user?.company?.name || Auth.user?.email || 'Visiteur'}</h3>
+                            <p>${Auth.user?.isPro ? 'Membre Pro 💎' : 'Membre Standard'}</p>
+                        </div>
+                        <div class="user-stats">
+                            <div class="stat">
+                                <span>Mes Offres</span>
+                                <strong>${Storage.getMyMissions(Auth.user?.id).length}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="marketplace-nav glass">
+                        <button class="nav-btn ${this.currentTab === 'radar' ? 'active' : ''}" onclick="Marketplace.switchTab('radar')">
+                            <i class="fas fa-rss"></i> Fil d'actualité
+                        </button>
+                        <button class="nav-btn ${this.currentTab === 'mymissions' ? 'active' : ''}" onclick="Marketplace.switchTab('mymissions')">
+                            <i class="fas fa-briefcase"></i> Mes Recrutements
+                        </button>
+                        <button class="nav-btn ${this.currentTab === 'inbox' ? 'active' : ''}" onclick="Marketplace.switchTab('inbox')">
+                            <i class="fas fa-envelope-open-text"></i> Inbox Candidatures
+                        </button>
+                    </div>
+                </aside>
 
-            <!-- Tab Navigation (Clear Roles) -->
-            <div class="marketplace-tabs">
-                <button class="tab-btn ${this.currentTab === 'radar' ? 'active' : ''}" onclick="Marketplace.switchTab('radar')">
-                    <i class="fas fa-satellite-dish"></i> Radar des Offres
-                </button>
-                <button class="tab-btn ${this.currentTab === 'mymissions' ? 'active' : ''}" onclick="Marketplace.switchTab('mymissions')">
-                    <i class="fas fa-user-tie"></i> Mes Recrutements
-                </button>
-                <button class="tab-btn ${this.currentTab === 'inbox' ? 'active' : ''}" onclick="Marketplace.switchTab('inbox')">
-                    <i class="fas fa-inbox"></i> Candidatures Reçues
-                </button>
-            </div>
+                <!-- Central Feed -->
+                <main class="marketplace-main-feed">
+                    <div class="post-trigger-box glass" onclick="Marketplace.showPostForm()">
+                        <div class="search-avatar-mini">${Auth.user?.email?.[0].toUpperCase() || 'U'}</div>
+                        <div class="search-placeholder">Diffuser une offre de mission...</div>
+                    </div>
 
-            <div id="marketplace-content" class="marketplace-grid-jobs">
-                <div class="loading-spinner">Chargement des opportunités...</div>
+                    <div id="marketplace-content">
+                        <!-- Content injected by loadTabContent -->
+                    </div>
+                </main>
             </div>
             
             ${this.renderModals()}
@@ -55,62 +69,76 @@ const Marketplace = {
 
     switchTab(tab) {
         this.currentTab = tab;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if (event && event.currentTarget) event.currentTarget.classList.add('active');
-        this.loadTabContent();
+        this.render(); // Full re-render for layout consistency
     },
 
     async loadTabContent() {
         const container = document.getElementById('marketplace-content');
-        container.innerHTML = '<div class="loading-spinner">Chargement...</div>';
+        if (!container) return;
 
         try {
-            // Force data sync
-            if (Storage.getPublicMissions().length === 0) await Storage.fetchAllData();
+            // Force data sync if cache empty
+            const missions = Storage.getPublicMissions();
+            if (missions.length === 0) {
+                container.innerHTML = '<div class="loading-spinner">Mise à jour du feed...</div>';
+                await Storage.fetchAllData();
+            }
 
             if (this.currentTab === 'radar') await this.renderRadar(container);
             else if (this.currentTab === 'mymissions') await this.renderMyMissions(container);
             else if (this.currentTab === 'inbox') await this.renderInbox(container);
         } catch (err) {
             console.error(err);
-            container.innerHTML = `<div class="error">Erreur d'affichage: ${err.message}</div>`;
+            container.innerHTML = `<div class="error-box">Erreur: ${err.message}</div>`;
         }
     },
 
-    // --- VUES (Job Board Style) ---
+    // --- VUES (LinkedIn Style) ---
 
     async renderRadar(container) {
         const missions = await Storage.getPublicMissions();
         if (!missions || missions.length === 0) {
             container.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon">📭</div>
-                    <h3>Aucune offre disponible</h3>
-                    <p>Soyez le premier à diffuser une opportunité !</p>
-                    <button class="button-primary" onclick="Marketplace.showPostForm()">Diffuser une Offre</button>
+                <div class="empty-feed glass">
+                    <h3>C'est bien calme ici...</h3>
+                    <p>Soyez le premier à dynamiser le réseau DomTomConnect !</p>
+                    <button class="button-primary" onclick="Marketplace.showPostForm()">Diffuser la 1ère offre</button>
                 </div>`;
             return;
         }
 
-        container.innerHTML = missions.map(m => `
-            <div class="job-card">
-                <div class="job-card-header">
-                    <h3 class="job-title">${this.escape(m.title)}</h3>
-                    <span class="job-budget">${m.budget}€ <small>Budget Client</small></span>
+        // Sort by date (latest first)
+        const sorted = [...missions].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+        container.innerHTML = sorted.map(m => `
+            <article class="feed-item glass">
+                <div class="feed-item-header">
+                    <div class="author-avatar">${this.escape(m.company_name?.[0]) || '🏢'}</div>
+                    <div class="author-meta">
+                        <strong>${this.escape(m.company_name || 'Entreprise anonyme')}</strong>
+                        <span>Mission diffusée le ${new Date(m.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div class="item-badge">${m.zone || 'Remote'}</div>
                 </div>
-                <div class="job-tags">
-                    <span class="tag zone">📍 ${m.zone || 'Global'}</span>
-                    <span class="tag fees">Frais incl. 15%</span>
+                
+                <div class="feed-item-content">
+                    <h2 class="feed-title">${this.escape(m.title)}</h2>
+                    <p class="feed-description">${this.escape(m.description)}</p>
                 </div>
-                <div class="job-body">
-                    <p>${this.escape(m.description)}</p>
+
+                <div class="feed-item-pricing">
+                    <div class="price-pill">
+                        <span class="label">Budget Net Expert</span>
+                        <span class="value">${m.budget}€</span>
+                    </div>
                 </div>
-                <div class="job-footer">
-                    <button onclick="Marketplace.openApplyForm('${m.id}', '${this.escape(m.title)}')" class="button-secondary full-width">
-                       ⚡ Postuler à cette offre
+
+                <div class="feed-item-actions">
+                    <button onclick="Marketplace.openApplyForm('${m.id}', '${this.escape(m.title)}')" class="action-btn primary">
+                        <i class="fas fa-paper-plane"></i> Postuler / Contacter
                     </button>
                 </div>
-            </div>
+            </article>
         `).join('');
     },
 

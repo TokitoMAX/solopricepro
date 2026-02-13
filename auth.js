@@ -12,6 +12,9 @@ const Auth = {
         ? `http://${window.location.hostname}:5050`
         : '',
 
+    token: localStorage.getItem('sp_token') || null,
+    user: localStorage.getItem('sp_user') ? JSON.parse(localStorage.getItem('sp_user')) : null,
+
     init() {
         // Mode Backend Local - Initialisation standard
         console.log("Auth initialized. API Base:", this.apiBase);
@@ -235,6 +238,9 @@ const Auth = {
             isPro: !!(user.user_metadata?.is_pro || user.is_pro),
             token: session?.access_token
         };
+
+        this.token = userData.token;
+        this.user = userData;
 
         localStorage.setItem('sp_token', userData.token);
         localStorage.setItem('sp_user', JSON.stringify(userData));
