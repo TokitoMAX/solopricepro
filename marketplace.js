@@ -624,13 +624,40 @@ const Marketplace = {
         document.getElementById('apply-mission-title').textContent = missionTitle;
         document.getElementById('apply-modal').style.display = 'flex';
 
-        // Auto-fill
+        // Pre-fill budget (Proposed Price = Total Mission Budget)
+        const missions = Storage.getPublicMissions();
+        const m = missions.find(x => x.id === missionId);
+        if (m) {
+            const input = document.getElementById('total-price-input');
+            if (input) {
+                // Pre-fill with Total Cost (Budget + 15%)
+                const totalBudget = Math.round(parseFloat(m.budget) * (1 + this.COMMISSION_RATE));
+                input.value = totalBudget;
+                this.updateApplyCalc();
+            }
+        }
+
+        // Auto-fill Profile Data
         if (typeof Auth !== 'undefined' && Auth.user) {
             const nameInput = document.querySelector('input[name="applicant_name"]');
             if (nameInput && !nameInput.value) {
                 nameInput.value = Auth.user.user_metadata?.company || Auth.user.user_metadata?.full_name || '';
             }
+            const portfolioInput = document.querySelector('input[name="portfolio_url"]');
+            if (portfolioInput && !portfolioInput.value) {
+                portfolioInput.value = Auth.user.user_metadata?.portfolio_url || '';
+            }
         }
+    },
+
+    updateApplyCalc() {
+        const input = document.getElementById('total-price-input');
+        if (!input) return;
+        const totalPrice = parseFloat(input.value) || 0;
+        const netEarnings = totalPrice * 0.85; // 15% platform fee
+
+        const display = document.getElementById('apply-net');
+        if (display) display.textContent = netEarnings.toFixed(2) + ' €';
     },
 
     closeApplyForm() { document.getElementById('apply-modal').style.display = 'none'; },
@@ -643,8 +670,6 @@ const Marketplace = {
 
         const formData = new FormData(e.target);
         const totalPrice = parseFloat(formData.get('total_price'));
-        const fees = expertPrice * this.COMMISSION_RATE;
-        const total = expertPrice + fees;
 
         const application = {
             id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : this.generateFailsafeId(),
@@ -656,7 +681,7 @@ const Marketplace = {
                 `TEL: ${Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || 'N/A'}\n` +
                 `PORTFOLIO: ${formData.get('portfolio_url') || 'Non renseigné'}\n\n` +
                 `MESSAGE:\n${formData.get('message')}`,
-            proposed_price: total,
+            proposed_price: totalPrice,
             status: 'pending'
         };
 
