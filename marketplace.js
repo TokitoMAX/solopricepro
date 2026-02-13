@@ -649,6 +649,7 @@ const Marketplace = {
         const application = {
             id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : this.generateFailsafeId(),
             mission_id: formData.get('mission_id'),
+            applicant_id: Auth.user?.id, // CRITICAL: Store applicant user ID for invitations
             // PACKING EVERYTHING into message because the table schema has No applicant_name column
             message: `CANDIDAT: ${formData.get('applicant_name') || 'Anonyme'}\n` +
                 `EMAIL: ${Auth.user?.email || 'N/A'}\n` +
@@ -690,7 +691,7 @@ const Marketplace = {
 
         // Populate modal
         document.getElementById('interview-app-id').value = appId;
-        document.getElementById('interview-candidate-id').value = candidateInfo.userId || app.user_id;
+        document.getElementById('interview-candidate-id').value = app.applicant_id || Auth.user?.id; // Use stored applicant_id
         document.getElementById('interview-candidate-name').textContent = candidateInfo.name || 'Candidat';
         document.getElementById('interview-mission-title').textContent = app.mission_title || 'Mission';
         document.getElementById('interview-price').textContent = app.proposed_price + '€';
