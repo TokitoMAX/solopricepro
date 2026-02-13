@@ -16,6 +16,8 @@ const Marketplace = {
         const container = document.getElementById(containerId);
         if (!container) return;
 
+        this.init(); // Start polling & background tasks
+
         container.innerHTML = `
             <div class="marketplace-feed-container">
                 <!-- Sidebar (User Info / Quick Actions) -->
@@ -627,7 +629,15 @@ const Marketplace = {
         // Pre-fill budget (Proposed Price = Total Mission Budget)
         const missions = Storage.getPublicMissions();
         const m = missions.find(x => x.id === missionId);
+
         if (m) {
+            // Display client budget clearly
+            const budgetDisplay = document.getElementById('apply-mission-budget');
+            if (budgetDisplay) {
+                const totalCost = Math.round(parseFloat(m.budget) * (1 + this.COMMISSION_RATE));
+                budgetDisplay.innerHTML = `💰 <strong>Budget Client: ${totalCost}€</strong> | ⚡ Budget Expert Net: ${m.budget}€`;
+            }
+
             const input = document.getElementById('total-price-input');
             if (input) {
                 // Pre-fill with Total Cost (Budget + 15%)
@@ -679,11 +689,13 @@ const Marketplace = {
             message: `CANDIDAT: ${formData.get('applicant_name') || 'Anonyme'}\n` +
                 `EMAIL: ${Auth.user?.email || 'N/A'}\n` +
                 `TEL: ${Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || 'N/A'}\n` +
-                `PORTFOLIO: ${formData.get('portfolio_url') || 'Non renseigné'}\n\n` +
+                `PORTFOLIO: ${formData.get('portfolio_url') || 'Non renseigné'}\n` +
+                `DUREE: ${formData.get('estimated_duration') || 'Non précisée'}\n\n` +
                 `MESSAGE:\n${formData.get('message')}`,
             proposed_price: totalPrice,
             status: 'pending'
         };
+        console.log('Final Application Payload:', application);
 
         try {
             await Storage.addApplication(application);
@@ -907,6 +919,10 @@ const Marketplace = {
                     <form onsubmit="Marketplace.submitApplication(event)">
                         <input type="hidden" name="mission_id" id="apply-mission-id">
                         
+                        <div class="mission-budget-info" id="apply-mission-budget" style="background: rgba(var(--primary-rgb), 0.1); padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; border-left: 3px solid var(--primary);">
+                             <!-- Dynamic budget info -->
+                        </div>
+
                         <div class="form-row">
                             <label>Votre Nom / Agence
                                 <input type="text" name="applicant_name" required placeholder="Votre Identité Pro" class="form-input">
@@ -916,25 +932,30 @@ const Marketplace = {
                             </label>
                         </div>
 
-                        <label>Votre Pitch
-                            <textarea name="message" required rows="4" class="form-input" placeholder="Bonjour, je suis l'expert qu'il vous faut car..."></textarea>
+                        <div class="form-row">
+                             <label>Durée estimée
+                                <input type="text" name="estimated_duration" placeholder="Ex: 3 jours, 1 mois..." class="form-input">
+                            </label>
+                        </div>
+
+                        <label>Détails de votre Proposition / Pitch
+                            <textarea name="message" required rows="4" class="form-input" placeholder="Décrivez votre compréhension du besoin et comment vous allez y répondre..."></textarea>
                         </label>
                          
                         <div class="fee-calculator-box" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0;">
-                            <label>Votre Proposition (Tout Compris)
+                            <label>Votre Proposition Financière (Tout Compris)
                                 <input type="number" name="total_price" id="total-price-input" required class="form-input" placeholder="Ex: 600" oninput="Marketplace.updateApplyCalc()" onkeyup="Marketplace.updateApplyCalc()">
-                                <small>Prix global que le client devra payer.</small>
+                                <small>Prix global (frais plateforme inclus) que le client devra payer.</small>
                             </label>
                             <div class="breakdown" style="margin-top: 10px; font-size: 0.9rem; opacity: 0.7;">
                                 <div class="line" style="display: flex; justify-content: space-between;">
                                     <span>💡 Vous recevrez environ (~85%) :</span>
                                     <span id="apply-net">0.00 €</span>
                                 </div>
-                                <small style="display: block; margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary);">Après déduction des frais de plateforme (15%).</small>
                             </div>
                         </div>
 
-                        <button type="submit" class="button-primary full-width" style="margin-top:15px;">Envoyer ma Candidature</button>
+                        <button type="submit" class="button-primary full-width" style="margin-top:10px;">📩 Envoyer ma Proposition</button>
                     </form>
                 </div>
             </div>
@@ -1003,6 +1024,14 @@ const Marketplace = {
     escape(str) {
         if (!str) return '';
         return String(str).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    },
+
+    init() {
+        if (this._initialized) return;
+        this._initialized = true;
+        console.log('🔄 Marketplace Background Polling Started...');
+        // Poll for invitations every 45 seconds
+        setInterval(() => this.updateInvitationBadge(), 45000);
     }
 };
 
