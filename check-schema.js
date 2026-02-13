@@ -4,34 +4,25 @@ require('dotenv').config();
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-async function dumpKeys() {
-    console.log('--- 🧪 KEY DUMP ---');
+async function megaAudit() {
+    console.log('--- 📊 MEGA MARKETPLACE AUDIT ---');
 
-    const { data, error } = await supabase.from('sp_marketplace_applications').select('*').limit(1);
+    const queries = [
+        { name: 'Applications Columns', sql: "SELECT column_name FROM information_schema.columns WHERE table_name = 'sp_marketplace_applications'" },
+        { name: 'Invitations Columns', sql: "SELECT column_name FROM information_schema.columns WHERE table_name = 'sp_marketplace_invitations'" },
+        { name: 'FK: App -> Mission', sql: "SELECT conname FROM pg_constraint WHERE contype = 'f' AND conrelid = 'sp_marketplace_applications'::regclass" },
+        { name: 'FK: Invite -> App', sql: "SELECT conname FROM pg_constraint WHERE contype = 'f' AND conrelid = 'sp_marketplace_invitations'::regclass" }
+    ];
 
-    if (error) {
-        console.error('❌ FETCH FAILED:', error.message);
-    } else if (data && data.length > 0) {
-        console.log('✅ Found record. Keys:', Object.keys(data[0]));
-        console.log('Data sample:', data[0]);
-    } else {
-        console.log('⚠️ No records found in sp_marketplace_applications to inspect.');
-
-        // Try to insert a dummy row to see what happens
-        console.log('--- 🧪 TEST INSERT ---');
-        const testPayload = {
-            id: '00000000-0000-0000-0000-000000000000',
-            mission_id: '00000000-0000-0000-0000-000000000000',
-            message: 'test',
-            status: 'pending'
-        };
-        const { error: insError } = await supabase.from('sp_marketplace_applications').insert([testPayload]).select();
-        if (insError) {
-            console.log('❌ Insert failed:', insError.message);
+    for (const q of queries) {
+        console.log(`\n> Testing: ${q.name}`);
+        const { data, error } = await supabase.rpc('query_sql', { sql_query: q.sql });
+        if (error) {
+            console.log(`❌ FAILED: ${error.message}`);
         } else {
-            console.log('✅ Insert worked with basic fields.');
+            console.log(`✅ SUCCESS: ${JSON.stringify(data)}`);
         }
     }
 }
 
-dumpKeys();
+megaAudit();
