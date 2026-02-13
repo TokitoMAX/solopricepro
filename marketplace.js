@@ -450,58 +450,99 @@ const Marketplace = {
 
         container.innerHTML = inbox.map(app => {
             const statusClass = app.status || 'pending';
-            const statusLabel = statusClass === 'pending' ? 'En attente' : (statusClass === 'accepted' ? 'Validé' : 'Refusé');
+            const statusLabel = { 'pending': 'En attente', 'accepted': 'Retenue', 'rejected': 'Refusée', 'hired': 'Recruté !' }[statusClass] || statusClass;
 
             const price = app.proposed_price || app.total_price || 0;
-            const dateVal = app.created_at || app.createdAt;
+            const invitation = app.invitations?.[0]; // Get joined invitation from updated backend
+
+            let invitationStatusHtml = '';
+            if (invitation) {
+                if (invitation.status === 'confirmed') {
+                    invitationStatusHtml = `
+                        <div class="invitation-summary confirmed" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <h4 style="color: var(--primary-light); margin: 0 0 5px 0;"><i class="fas fa-check-double"></i> Entretien Confirmé !</h4>
+                            <p style="font-size: 0.9rem; margin-bottom: 10px;">Le candidat a accepté le créneau du <strong>${new Date(invitation.selected_slot.date).toLocaleDateString()} à ${invitation.selected_slot.time}</strong>.</p>
+                            ${invitation.candidate_response ? `<p style="font-style: italic; font-size: 0.85rem; opacity: 0.8;">"${invitation.candidate_response}"</p>` : ''}
+                            <button class="button-primary full-width" onclick="Marketplace.finalizeRecruitment('${app.id}', '${app.mission_id}')" style="margin-top: 10px;">
+                                <i class="fas fa-handshake"></i> Valider définitivement le recrutement
+                            </button>
+                        </div>
+                    `;
+                } else if (invitation.status === 'declined') {
+                    invitationStatusHtml = `
+                        <div class="invitation-summary declined" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <h4 style="color: var(--danger); margin: 0 0 5px 0;"><i class="fas fa-times-circle"></i> Invitation déclinée</h4>
+                            <p style="font-size: 0.9rem; margin-bottom: 10px;">Le candidat ne peut pas honorer ces créneaux.</p>
+                            ${invitation.candidate_response ? `<p style="font-style: italic; font-size: 0.85rem; opacity: 0.8;">"${invitation.candidate_response}"</p>` : ''}
+                            <button class="button-secondary full-width" onclick="Marketplace.openInterviewModal('${app.id}')" style="margin-top: 10px;">
+                                <i class="fas fa-calendar-alt"></i> Proposer d'autres créneaux
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    invitationStatusHtml = `
+                        <div class="invitation-summary pending" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem;">
+                            <i class="fas fa-clock"></i> Invitation envoyée. En attente de réponse du candidat...
+                        </div>
+                    `;
+                }
+            }
 
             return `
-                <div class="application-card glass ${statusClass}">
+                <div class="application-card glass ${statusClass}" style="margin-bottom: 25px;">
                     <div class="app-header-row">
                         <span class="app-mission-ref">Mission: <strong>${this.escape(app.mission_title)}</strong></span>
                         <span class="status-pill ${statusClass}">${statusLabel}</span>
                     </div>
                     
-                    <div class="candidate-profile-row">
+                    <div class="candidate-profile-row" style="margin-bottom: 15px;">
                         <div class="candidate-avatar"><i class="fas fa-user-circle"></i></div>
                         <div class="candidate-meta">
-                            <div class="candidate-name-row">
-                                <strong>Candidat sur le réseau</strong>
-                            </div>
-                            <div class="candidate-contact-info">
-                                <span class="hint-text">Détails de contact dans le pitch ci-dessous</span>
-                            </div>
+                            <strong>Candidat sur le réseau</strong>
+                            <div class="price-bubble" style="color: var(--primary); font-weight: bold;">${price}€</div>
                         </div>
                     </div>
-
-                    <div class="pitch-content">
+ 
+                    <div class="pitch-content" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; font-size: 0.9rem;">
                         <div class="pitch-text">${this.escape(app.message).replace(/\n/g, '<br>')}</div>
                     </div>
 
-                    <div class="app-footer-grid">
-                        <div class="financial-summary">
-                            <div class="fin-row total">
-                                <span class="label">Proposition Finale</span>
-                                <span class="value">${price}€</span>
-                            </div>
-                        </div>
-                        
-                        <div class="inbox-actions">
-                            ${statusClass === 'pending' ? `
-                                <button class="action-btn danger-text" onclick="Marketplace.rejectApplication('${app.id}')">
-                                    <i class="fas fa-times"></i> Écarter
-                                </button>
-                                <button class="action-btn success-text" onclick="Marketplace.validateApplication('${app.id}')">
-                                    <i class="fas fa-check-circle"></i> Retenir & Contacter
-                                </button>
-                            ` : `
-                                <span class="status-summary">Dossier ${statusLabel.toLowerCase()}</span>
-                            `}
-                        </div>
+                    ${invitationStatusHtml}
+
+                    <div class="inbox-actions" style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+                        ${statusClass === 'pending' ? `
+                            <button class="action-btn danger-text" onclick="Marketplace.rejectApplication('${app.id}')">
+                                <i class="fas fa-times"></i> Écarter
+                            </button>
+                            <button class="action-btn success-text" onclick="Marketplace.validateApplication('${app.id}')">
+                                <i class="fas fa-calendar-check"></i> Proposer un entretien
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             `;
         }).join('');
+    },
+
+    async finalizeRecruitment(appId, missionId) {
+        if (!confirm('Voulez-vous valider définitivement ce recrutement ?\n\nCela marquera le candidat comme "Recruté" et clôturera le processus pour cette mission.')) return;
+
+        try {
+            // 1. Mark application as hired
+            await Storage.update(Storage.KEYS.MARKETPLACE_APPLICATIONS, appId, { status: 'hired' });
+
+            // 2. Close the mission (optional but logical)
+            await Storage.update(Storage.KEYS.MARKETPLACE_MISSIONS, missionId, { status: 'closed' });
+
+            App.showNotification('🎊 Recrutement validé avec succès !', 'success');
+
+            // Sync & Refresh
+            await Storage.fetchAllData();
+            this.render(); // Refresh UI
+        } catch (err) {
+            console.error('[FINALIZE] Error:', err);
+            App.showNotification('Erreur lors de la validation finale', 'error');
+        }
     },
 
     // --- ACTIONS ---

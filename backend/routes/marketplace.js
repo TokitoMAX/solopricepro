@@ -71,10 +71,10 @@ router.get('/inbox', async (req, res) => {
 
         const missionIds = myMissions.map(m => m.id);
 
-        // 2. Get applications for these missions
+        // 2. Get applications for these missions + associated invitations
         const { data: applications, error: appError } = await supabase
             .from('sp_marketplace_applications')
-            .select('*')
+            .select('*, invitations:sp_marketplace_invitations!fk_invites_apps(*)')
             .in('mission_id', missionIds);
 
         if (appError) throw appError;
