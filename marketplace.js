@@ -384,6 +384,20 @@ const Marketplace = {
         }
     },
 
+    async deleteMission(id) {
+        if (!confirm('Voulez-vous vraiment supprimer cette offre ?')) return;
+
+        try {
+            await Storage.delete('sp_marketplace_missions', id);
+            App.showNotification('Offre supprimée avec succès', 'success');
+            // Refresh Feed
+            this.render();
+        } catch (err) {
+            console.error(err);
+            App.showNotification('Erreur lors de la suppression', 'error');
+        }
+    },
+
     // --- CANDIDATE ACTIONS ---
 
     openApplyForm(missionId, missionTitle) {
@@ -513,18 +527,21 @@ const Marketplace = {
                         <!-- Real-time Cost Preview for Client (Highlighted) -->
                         <div class="fee-calculator-box info-box" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 15px; border-radius: 8px; margin: 15px 0;">
                             <div class="line" style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span class="text-muted">Budget Expert :</span>
-                                <span id="post-budget-display" style="font-weight:bold;">0.00 €</span>
+                                <span class="text-muted">Paiement 1 (Expert) :</span>
+                                <strong id="post-budget-display">0.00 €</strong>
                             </div>
                              <div class="line" style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
-                                <span class="text-muted">+ Frais de Service (15%) :</span>
+                                <span class="text-muted">Paiement 2 (Commission Plateforme 15%) :</span>
                                 <span id="post-fee-display">0.00 €</span>
                             </div>
                             <div class="line total" style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
-                                <span style="font-size: 1.1em; color: var(--text);">💰 Total à Payer (Estimate) :</span>
+                                <span style="font-size: 1.1em; color: var(--text);">💰 Coût Total de l'Opération :</span>
                                 <strong id="post-total-display" style="font-size: 1.4em; color: var(--primary);">0.00 €</strong>
                             </div>
                         </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">
+                            <i class="fas fa-info-circle"></i> En publiant, vous acceptez de verser deux règlements distincts si vous recrutez via la plateforme.
+                        </p>
 
                         <label>Description du besoin
                             <textarea name="description" required rows="4" class="form-input" placeholder="Détaillez votre besoin..."></textarea>
