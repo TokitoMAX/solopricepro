@@ -2,8 +2,8 @@
 -- This enables in-app messaging without requiring external emails
 
 CREATE TABLE IF NOT EXISTS sp_marketplace_invitations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    application_id UUID NOT NULL REFERENCES sp_marketplace_applications(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    application_id TEXT NOT NULL REFERENCES sp_marketplace_applications(id) ON DELETE CASCADE,
     recruiter_id UUID NOT NULL,
     candidate_id UUID NOT NULL,
     message TEXT NOT NULL,
