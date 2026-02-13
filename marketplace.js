@@ -243,7 +243,7 @@ const Marketplace = {
     async renderMyCandidatures(container) {
         try {
             const allApps = Storage.get(Storage.KEYS.MARKETPLACE_APPLICATIONS) || [];
-            const myApps = allApps.filter(app => app.message && app.message.includes(Auth.user?.email));
+            const myApps = allApps.filter(app => app.applicant_id === Auth.user?.id);
 
             const res = await fetch(`${Auth.apiBase}/api/marketplace/invitations`, {
                 headers: { 'Authorization': `Bearer ${Auth.token}` }
@@ -649,7 +649,7 @@ const Marketplace = {
         const application = {
             id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : this.generateFailsafeId(),
             mission_id: formData.get('mission_id'),
-            applicant_id: Auth.user?.id, // CRITICAL: Store applicant user ID for invitations
+            applicant_id: Auth.user?.id, // CRITICAL: Linked to the new DB column
             // PACKING EVERYTHING into message because the table schema has No applicant_name column
             message: `CANDIDAT: ${formData.get('applicant_name') || 'Anonyme'}\n` +
                 `EMAIL: ${Auth.user?.email || 'N/A'}\n` +
