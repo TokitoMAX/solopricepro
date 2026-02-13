@@ -115,11 +115,11 @@ const Marketplace = {
         container.innerHTML = sorted.map(m => {
             const isOwner = currentUser && String(m.user_id) === String(currentUser.id);
 
-            // Robust Date Parsing
-            const d = new Date(m.created_at);
-            const dateStr = (m.created_at && !isNaN(d)) ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : 'Récemment';
+            const createdAt = m.createdAt || m.created_at; // Flexibility for schema inconsistency
+            const d = new Date(createdAt);
+            const dateStr = (createdAt && !isNaN(d)) ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : 'Récemment';
 
-            const companyName = m.poster_company || m.poster_metadata?.company_name || 'Entreprise';
+            const companyName = m.poster_company || m.poster_name || 'Entreprise';
 
             return `
                 <article class="feed-item glass" id="mission-${m.id}">
@@ -360,9 +360,10 @@ const Marketplace = {
             description: formData.get('description'),
             zone: formData.get('zone'),
             status: 'open',
-            // Correct metadata columns for the verified schema
+            // Correct columns found in line-check.js
+            poster_name: Auth.user?.user_metadata?.full_name || 'Anonyme',
             poster_company: Auth.user?.company?.name || Auth.user?.user_metadata?.company_name || 'Entreprise',
-            poster_metadata: Auth.user?.user_metadata || {}
+            contact: Auth.user?.email || ''
         };
 
         try {
@@ -481,15 +482,12 @@ const Marketplace = {
         const application = {
             mission_id: formData.get('mission_id'),
             applicant_name: formData.get('applicant_name'),
-            // Storing metadata in the verified jsonb column
-            applicant_metadata: {
-                email: Auth.user?.email || '',
-                phone: Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || '',
-                portfolio_url: formData.get('portfolio_url')
-            },
-            message: formData.get('message'),
-            expert_price: expertPrice,
-            total_price: total,
+            // Packing info into message as there is no metadata column in APP table
+            message: formData.get('message') +
+                `\n\n--- CONTACTS ---\nEmail: ${Auth.user?.email || 'N/A'}\n` +
+                `Tel: ${Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || 'N/A'}\n` +
+                `Portfolio: ${formData.get('portfolio_url') || 'Non renseigné'}`,
+            proposed_price: total,
             status: 'pending'
         };
 
