@@ -119,7 +119,7 @@ const Marketplace = {
             const d = new Date(m.created_at);
             const dateStr = (m.created_at && !isNaN(d)) ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : 'Récemment';
 
-            const companyName = m.company_name || m.user_metadata?.company_name || 'Entreprise';
+            const companyName = m.poster_company || m.poster_metadata?.company_name || 'Entreprise';
 
             return `
                 <article class="feed-item glass" id="mission-${m.id}">
@@ -144,7 +144,7 @@ const Marketplace = {
                         </div>
                         <div class="price-pill">
                             <span class="label">Coût Client (Total)</span>
-                            <span class="value">${(m.budget * (1 + this.COMMISSION_RATE)).toFixed(0)}€</span>
+                            <span class="value">${(parseFloat(m.budget) * (1 + this.COMMISSION_RATE)).toFixed(0)}€</span>
                         </div>
                     </div>
 
@@ -224,6 +224,8 @@ const Marketplace = {
             const statusClass = app.status || 'pending';
             const statusLabel = statusClass === 'pending' ? 'En attente' : (statusClass === 'accepted' ? 'Validé' : 'Refusé');
 
+            const meta = app.applicant_metadata || {};
+
             return `
                 <div class="application-card glass ${statusClass}">
                     <div class="app-header-row">
@@ -236,11 +238,11 @@ const Marketplace = {
                         <div class="candidate-meta">
                             <div class="candidate-name-row">
                                 <strong>${this.escape(app.applicant_name || 'Candidat')}</strong>
-                                ${app.portfolio_url ? `<a href="${this.escape(app.portfolio_url)}" target="_blank" class="portfolio-link"><i class="fas fa-external-link-alt"></i> Portfolio</a>` : ''}
+                                ${meta.portfolio_url ? `<a href="${this.escape(meta.portfolio_url)}" target="_blank" class="portfolio-link"><i class="fas fa-external-link-alt"></i> Portfolio</a>` : ''}
                             </div>
                             <div class="candidate-contact-info">
-                                <span><i class="fas fa-envelope"></i> ${this.escape(app.applicant_email || 'N/A')}</span>
-                                ${app.applicant_phone ? `<span><i class="fas fa-phone"></i> ${this.escape(app.applicant_phone)}</span>` : ''}
+                                <span><i class="fas fa-envelope"></i> ${this.escape(meta.email || 'N/A')}</span>
+                                ${meta.phone ? `<span><i class="fas fa-phone"></i> ${this.escape(meta.phone)}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -269,7 +271,7 @@ const Marketplace = {
                                 <button class="action-btn success-text" onclick="Marketplace.validateApplication('${app.id}')">
                                     <i class="fas fa-check-circle"></i> Retenir & Contacter
                                 </button>
-                                <a href="mailto:${app.applicant_email}?subject=Suite à votre candidature pour : ${this.escape(app.mission_title)}" class="action-btn primary-text">
+                                <a href="mailto:${meta.email}?subject=Suite à votre candidature pour : ${this.escape(app.mission_title)}" class="action-btn primary-text">
                                     <i class="fas fa-paper-plane"></i> Écrire
                                 </a>
                             ` : `
@@ -358,9 +360,9 @@ const Marketplace = {
             description: formData.get('description'),
             zone: formData.get('zone'),
             status: 'open',
-            // Metadata for feed visibility
-            company_name: Auth.user?.company?.name || Auth.user?.user_metadata?.company_name || 'Entreprise',
-            user_metadata: Auth.user?.user_metadata || {}
+            // Correct metadata columns for the verified schema
+            poster_company: Auth.user?.company?.name || Auth.user?.user_metadata?.company_name || 'Entreprise',
+            poster_metadata: Auth.user?.user_metadata || {}
         };
 
         try {
@@ -479,9 +481,12 @@ const Marketplace = {
         const application = {
             mission_id: formData.get('mission_id'),
             applicant_name: formData.get('applicant_name'),
-            applicant_email: Auth.user?.email || '',
-            applicant_phone: Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || '',
-            portfolio_url: formData.get('portfolio_url'),
+            // Storing metadata in the verified jsonb column
+            applicant_metadata: {
+                email: Auth.user?.email || '',
+                phone: Auth.user?.company?.phone || Auth.user?.user_metadata?.phone || '',
+                portfolio_url: formData.get('portfolio_url')
+            },
             message: formData.get('message'),
             expert_price: expertPrice,
             total_price: total,

@@ -82,8 +82,12 @@ const Storage = {
 
         await Promise.all(tables.map(async (table) => {
             try {
-                const url = `${Auth.apiBase}/api/data/${table}`;
-                const res = await fetch(url, {
+                let endpoint = `${Auth.apiBase}/api/data/${table}`;
+                if (table === this.KEYS.MARKETPLACE_APPLICATIONS) {
+                    endpoint = `${Auth.apiBase}/api/marketplace/inbox`;
+                }
+
+                const res = await fetch(endpoint, {
                     headers: { 'Authorization': `Bearer ${Auth.token}` }
                 });
 
