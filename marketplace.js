@@ -667,7 +667,7 @@ const Marketplace = {
         const netEarnings = totalPrice * 0.85; // 15% platform fee
 
         const display = document.getElementById('apply-net');
-        if (display) display.textContent = netEarnings.toFixed(2) + ' €';
+        if (display) display.textContent = Math.round(netEarnings) + ' €';
     },
 
     closeApplyForm() { document.getElementById('apply-modal').style.display = 'none'; },
@@ -695,7 +695,6 @@ const Marketplace = {
             proposed_price: totalPrice,
             status: 'pending'
         };
-        console.log('Final Application Payload:', application);
 
         try {
             await Storage.addApplication(application);
