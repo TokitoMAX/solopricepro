@@ -1,0 +1,140 @@
+    async renderMyCandidatures(container) {
+        try {
+            const allApps = Storage.get(Storage.KEYS.MARKETPLACE_APPLICATIONS) || [];
+            const myApps = allApps.filter(app => app.message && app.message.includes(Auth.user?.email));
+
+            const res = await fetch(`${Auth.apiBase}/api/marketplace/invitations`, {
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+
+            let invitations = [];
+            if (res.ok) {
+                const allInvites = await res.json();
+                invitations = allInvites.filter(inv => inv.candidate_id === Auth.user?.id);
+            }
+
+            const appDetails = myApps.map(app => {
+                const invitation = invitations.find(inv => inv.application_id === app.id);
+                return { ...app, invitation };
+            });
+
+            if (appDetails.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📄</div>
+                        <p>Vous n'avez encore postulé à aucune mission</p>
+                        <button onclick="Marketplace.switchTab('radar')" class="button-primary">Découvrir les opportunités</button>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = appDetails.map(app => {
+                const statusClass = app.status || 'pending';
+                const statusLabel = { 'pending': '⏳ En attente', 'accepted': '✅ Retenue', 'rejected': '❌ Refusée' }[statusClass] || statusClass;
+
+                let invitationSection = '';
+                if (app.invitation) {
+                    const inv = app.invitation;
+                    const slots = inv.proposed_slots || [];
+                    
+                    invitationSection = `
+                        <div class="invitation-section" style="background: rgba(0,200,100,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;">
+                            <h4 style="margin: 0 0 10px 0; color: var(--success);">📅 Invitation à un Entretien</h4>
+                            <p style="white-space: pre-wrap; font-size: 0.9rem; margin-bottom: 15px;">${this.escape(inv.message)}</p>
+                            
+                            ${inv.status === 'pending' ? `
+                                <div class="slot-picker">
+                                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Choisissez un créneau:</label>
+                                    ${slots.map((slot, idx) => `
+                                        <label style="display: block; margin: 5px 0; cursor: pointer;">
+                                            <input type="radio" name="selected-slot-${app.id}" value="${idx}" style="margin-right: 8px;">
+                                            📅 ${new Date(slot.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à ${slot.time}
+                                        </label>
+                                    `).join('')}
+                                    <textarea id="response-${app.id}" placeholder="Votre message (optionnel)" class="form-input" rows="2" style="margin-top: 10px;"></textarea>
+                                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${app.id}', true)" class="button-primary">✅ Accepter ce créneau</button>
+                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${app.id}', false)" class="button-secondary">❌ Décliner poliment</button>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="invitation-status" style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                                    <strong>Statut:</strong> ${inv.status === 'confirmed' ? '✅ Entretien confirmé' : inv.status === 'declined' ? '❌ Déclinée' : inv.status}
+                                    ${inv.selected_slot ? `<br><strong>Créneau choisi:</strong> ${new Date(inv.selected_slot.date).toLocaleDateString('fr-FR')} à ${inv.selected_slot.time}` : ''}
+                                    ${inv.candidate_response ? `<br><strong>Votre message:</strong> ${this.escape(inv.candidate_response)}` : ''}
+                                </div>
+                            `}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="application-card glass" style="margin-bottom: 20px;">
+                        <div class="app-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h3 style="margin: 0;">${this.escape(app.mission_title || 'Mission')}</h3>
+                                <span class="status-pill ${statusClass}" style="font-size: 0.85rem; margin-top: 5px; display: inline-block;">${statusLabel}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="font-size: 1.2rem; color: var(--primary);">${app.proposed_price}€</strong>
+                                <small style="display: block; opacity: 0.7;">Votre proposition</small>
+                            </div>
+                        </div>
+                        ${invitationSection}
+                    </div>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error('[MYCANDIDATURES] Error:', err);
+            container.innerHTML = `<div class="error-box">Erreur lors du chargement de vos candidatures</div>`;
+        }
+    },
+
+    async respondToInvitation(invitationId, appId, accept) {
+        try {
+            const selectedSlotInput = document.querySelector(`input[name="selected-slot-${appId}"]:checked`);
+            
+            if (accept && !selectedSlotInput) {
+                App.showNotification('Veuillez choisir un créneau', 'warning');
+                return;
+            }
+
+            const response = document.getElementById(`response-${appId}`)?.value || '';
+            
+            let updateData = { candidate_response: response };
+            
+            if (accept) {
+                const slotIdx = parseInt(selectedSlotInput.value);
+                const res = await fetch(`${Auth.apiBase}/api/marketplace/invitations`, {
+                    headers: { 'Authorization': `Bearer ${Auth.token}` }
+                });
+                const invitations = await res.json();
+                const invitation = invitations.find(inv => inv.id === invitationId);
+                
+                if (invitation && invitation.proposed_slots[slotIdx]) {
+                    updateData.selected_slot = invitation.proposed_slots[slotIdx];
+                    updateData.status = 'confirmed';
+                }
+            } else {
+                updateData.status = 'declined';
+            }
+
+            const updateRes = await fetch(`${Auth.apiBase}/api/marketplace/invitations/${invitationId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            if (!updateRes.ok) throw new Error('Erreur serveur');
+
+            App.showNotification(accept ? '✅ Entretien confirmé !' : 'Réponse envoyée', 'success');
+            this.render(); // Refresh view
+        } catch (err) {
+            console.error(err);
+            App.showNotification('Erreur lors de la réponse', 'error');
+        }
+    },
