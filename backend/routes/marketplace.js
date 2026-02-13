@@ -198,11 +198,11 @@ router.get('/invitations', async (req, res) => {
             .from('sp_marketplace_invitations')
             .select(`
                 *,
-                application:sp_marketplace_applications(
+                application:sp_marketplace_applications!fk_invites_apps(
                     id,
                     message,
                     proposed_price,
-                    mission:sp_marketplace_missions(
+                    mission:sp_marketplace_missions!fk_apps_missions(
                         title,
                         description
                     )
