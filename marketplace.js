@@ -224,7 +224,8 @@ const Marketplace = {
             const statusClass = app.status || 'pending';
             const statusLabel = statusClass === 'pending' ? 'En attente' : (statusClass === 'accepted' ? 'Validé' : 'Refusé');
 
-            const meta = app.applicant_metadata || {};
+            const price = app.proposed_price || app.total_price || 0;
+            const dateVal = app.created_at || app.createdAt;
 
             return `
                 <div class="application-card glass ${statusClass}">
@@ -238,28 +239,22 @@ const Marketplace = {
                         <div class="candidate-meta">
                             <div class="candidate-name-row">
                                 <strong>${this.escape(app.applicant_name || 'Candidat')}</strong>
-                                ${meta.portfolio_url ? `<a href="${this.escape(meta.portfolio_url)}" target="_blank" class="portfolio-link"><i class="fas fa-external-link-alt"></i> Portfolio</a>` : ''}
                             </div>
                             <div class="candidate-contact-info">
-                                <span><i class="fas fa-envelope"></i> ${this.escape(meta.email || 'N/A')}</span>
-                                ${meta.phone ? `<span><i class="fas fa-phone"></i> ${this.escape(meta.phone)}</span>` : ''}
+                                <span class="hint-text">Détails de contact dans le pitch ci-dessous</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="pitch-content">
-                        <p class="pitch-text">"${this.escape(app.message)}"</p>
+                        <div class="pitch-text">${this.escape(app.message).replace(/\n/g, '<br>')}</div>
                     </div>
 
                     <div class="app-footer-grid">
                         <div class="financial-summary">
-                            <div class="fin-row">
-                                <span class="label">Expert Net</span>
-                                <span class="value">${app.expert_price}€</span>
-                            </div>
                             <div class="fin-row total">
-                                <span class="label">Coût Total</span>
-                                <span class="value">${app.total_price}€</span>
+                                <span class="label">Proposition Finale</span>
+                                <span class="value">${price}€</span>
                             </div>
                         </div>
                         
@@ -271,9 +266,6 @@ const Marketplace = {
                                 <button class="action-btn success-text" onclick="Marketplace.validateApplication('${app.id}')">
                                     <i class="fas fa-check-circle"></i> Retenir & Contacter
                                 </button>
-                                <a href="mailto:${meta.email}?subject=Suite à votre candidature pour : ${this.escape(app.mission_title)}" class="action-btn primary-text">
-                                    <i class="fas fa-paper-plane"></i> Écrire
-                                </a>
                             ` : `
                                 <span class="status-summary">Dossier ${statusLabel.toLowerCase()}</span>
                             `}
