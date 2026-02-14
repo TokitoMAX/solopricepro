@@ -10,6 +10,7 @@ const Marketplace = {
     // Configuration
     COMMISSION_RATE: 0.15, // 15% Add-on
     currentTab: 'radar',
+    inboxCache: [], // [NEW] Cache for recruiter applications
 
     // Rendu Principal
     render(containerId = 'marketplace-root') {
@@ -458,6 +459,7 @@ const Marketplace = {
     async renderInbox(container) {
         // Fetch Inbox Data
         const inbox = await Storage.getInbox();
+        this.inboxCache = inbox || []; // Update local cache for direct lookups
 
         if (!inbox || inbox.length === 0) {
             container.innerHTML = `
@@ -518,6 +520,11 @@ const Marketplace = {
                             <i class="fas fa-hourglass-half"></i> Invitation envoyée. En attente de réponse du candidat...
                         </div>
                     `;
+                    workflowHtml = `
+                    <div class="workflow-step pending" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem;">
+                        <i class="fas fa-hourglass-half"></i> Invitation envoyée. En attente de réponse du candidat...
+                    </div>
+                `;
                 }
             } else if (statusClass === 'pending') {
                 // ACTIONS INITIALES : Proposer entretien OU Recruter directement
@@ -567,17 +574,25 @@ const Marketplace = {
                 </div>
             `;
         }).join('');
-    }
-    ,
+    },
 
     async finalizeRecruitment(appId, missionId) {
         if (!confirm('Voulez-vous valider définitivement ce recrutement ?\n\nCela marquera le candidat comme "Recruté" et clôturera le processus de sélection.')) return;
 
         try {
-            // 1. Mark application as hired
-            await Storage.update(Storage.KEYS.MARKETPLACE_APPLICATIONS, appId, { status: 'hired' });
+            // 1. Mark application as hired VIA SPECIFIC BACKEND ENDPOINT
+            const res = await fetch(`${Auth.apiBase}/api/marketplace/applications/${appId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
+                body: JSON.stringify({ status: 'hired' })
+            });
 
-            // 2. Close the mission (optional but logical)
+            if (!res.ok) throw new Error('Erreur lors de la mise à jour du statut');
+
+            // 2. Close the mission (using generic storage since mission is owned by user)
             await Storage.update(Storage.KEYS.MARKETPLACE_MISSIONS, missionId, { status: 'closed' });
 
             App.showNotification('🎊 Recrutement validé avec succès !', 'success');
@@ -709,17 +724,6 @@ const Marketplace = {
         } finally {
             output.disabled = false;
             output.textContent = 'Diffuser l\'Offre';
-        }
-    },
-
-    async deleteMission(id) {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer cette offre de recrutement ?')) return;
-        try {
-            await Storage.deleteMission(id);
-            if (typeof App !== 'undefined') App.showNotification('Offre supprimée', 'success');
-            this.loadTabContent();
-        } catch (e) {
-            alert('Erreur: ' + e.message);
         }
     },
 
@@ -917,8 +921,14 @@ const Marketplace = {
     },
 
     getApplicationById(appId) {
-        const inbox = Storage.get(Storage.KEYS.MARKETPLACE_APPLICATIONS) || [];
-        return inbox.find(app => app.id === appId);
+        // If in inbox tab, use inboxCache (Recruiter perspective)
+        if (this.currentTab === 'inbox' && this.inboxCache.length > 0) {
+            return this.inboxCache.find(app => app.id === appId);
+        }
+
+        // Fallback for Candidate perspective
+        const allApps = Storage.get(Storage.KEYS.MARKETPLACE_APPLICATIONS) || [];
+        return allApps.find(app => app.id === appId);
     },
 
     async sendInterviewInvitation(e) {
@@ -966,12 +976,21 @@ const Marketplace = {
 
             if (!res.ok) throw new Error('Erreur serveur');
 
-            // Mark application as accepted
-            await Storage.update(Storage.KEYS.MARKETPLACE_APPLICATIONS, appId, { status: 'accepted' });
+            // Mark application as accepted VIA SPECIFIC BACKEND ENDPOINT
+            await fetch(`${Auth.apiBase}/api/marketplace/applications/${appId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
+                body: JSON.stringify({ status: 'accepted' })
+            });
 
             App.showNotification('✅ Invitation envoyée avec succès !', 'success');
             this.closeInterviewModal();
-            this.render(); // Refresh
+
+            await Storage.fetchAllData();
+            this.render();
         } catch (err) {
             console.error(err);
             App.showNotification('Erreur lors de l\'envoi', 'error');
@@ -985,9 +1004,22 @@ const Marketplace = {
         if (!confirm('Souhaitez-vous écarter ce candidat ?')) return;
 
         try {
-            await Storage.update(Storage.KEYS.MARKETPLACE_APPLICATIONS, id, { status: 'rejected' });
+            const res = await fetch(`${Auth.apiBase}/api/marketplace/applications/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
+                body: JSON.stringify({ status: 'rejected' })
+            });
+
+            if (!res.ok) throw new Error('Erreur lors du rejet');
+
             if (typeof App !== 'undefined') App.showNotification('Candidature écartée.', 'info');
-            this.render(); // Refresh UI
+
+            // Background sync & refresh
+            await Storage.fetchAllData();
+            this.render();
         } catch (err) {
             console.error(err);
             if (typeof App !== 'undefined') App.showNotification('Erreur de mise à jour', 'error');

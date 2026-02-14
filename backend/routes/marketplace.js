@@ -288,4 +288,55 @@ router.patch('/invitations/:id', async (req, res) => {
     }
 });
 
+/**
+ * @route   PATCH /api/marketplace/applications/:id
+ * @desc    Update application status (Recruiter action: hired, rejected)
+ * @access  Private (Recruiter)
+ */
+router.patch('/applications/:id', async (req, res) => {
+    const supabase = req.app.get('supabase');
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) return res.status(400).json({ message: 'Status is required' });
+
+    try {
+        // 1. Verify that the current user owns the mission for this application
+        const { data: appData, error: appError } = await supabase
+            .from('sp_marketplace_applications')
+            .select('mission_id')
+            .eq('id', id)
+            .single();
+
+        if (appError || !appData) throw new Error('Candidature introuvable');
+
+        const { data: missionData, error: missionError } = await supabase
+            .from('sp_marketplace_missions')
+            .select('user_id')
+            .eq('id', appData.mission_id)
+            .single();
+
+        if (missionError || !missionData) throw new Error('Mission introuvable');
+
+        if (missionData.user_id !== req.user.id) {
+            return res.status(403).json({ message: 'Accès refusé : vous n\'êtes pas le recruteur pour cette mission' });
+        }
+
+        // 2. Perform update
+        const { data, error } = await supabase
+            .from('sp_marketplace_applications')
+            .update({ status })
+            .eq('id', id)
+            .select();
+
+        if (error) throw error;
+
+        console.log(`[MARKETPLACE-APP] Status updated to ${status} for app ${id}`);
+        res.json({ success: true, data: data[0] });
+    } catch (err) {
+        console.error('[MARKETPLACE-APP] Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
