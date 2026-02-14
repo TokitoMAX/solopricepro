@@ -272,12 +272,31 @@ const Auth = {
     },
 
     isLoggedIn() {
-        return !!localStorage.getItem('sp_token');
+        const token = localStorage.getItem('sp_token');
+        const user = localStorage.getItem('sp_user');
+        return !!(token && user);
     },
 
     getUser() {
         const user = localStorage.getItem('sp_user');
         return user ? JSON.parse(user) : null;
+    },
+
+    handleExpiredSession() {
+        console.warn('🔐 Session expired or invalid. Clearing tokens...');
+        localStorage.removeItem('sp_token');
+        localStorage.removeItem('sp_user');
+        this.token = null;
+        this.user = null;
+
+        if (typeof App !== 'undefined' && App.showNotification) {
+            App.showNotification('Votre session a expiré. Veuillez vous reconnecter.', 'warning');
+        }
+
+        // Return to landing after a short delay
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
     }
 };
 

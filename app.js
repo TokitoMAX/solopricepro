@@ -32,7 +32,7 @@ const App = {
 
         if (isLoggedIn || inApp) {
             this.enterApp(false);
-            if (isLoggedIn) Storage.fetchAllData(true);
+            if (isLoggedIn) Storage.init(); // Storage.init handles fetchAllData inside
 
             // Priorité au hash (#page=xxx) sur le localStorage
             const hashPage = this.getPageFromHash();

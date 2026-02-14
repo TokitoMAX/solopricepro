@@ -86,9 +86,6 @@ const Storage = {
         await Promise.all(tables.map(async (table) => {
             try {
                 let endpoint = `${Auth.apiBase}/api/data/${table}`;
-                // APPLICATIONS: Generic endpoint (Filtered by user_id in data.js) 
-                // gives the candidate their own applications.
-                // INVITIATIONS: Filtered for both recruiter and candidate in marketplace.js
                 if (table === this.KEYS.MARKETPLACE_INVITATIONS) {
                     endpoint = `${Auth.apiBase}/api/marketplace/invitations`;
                 }
@@ -101,6 +98,13 @@ const Storage = {
                     const data = await res.json();
                     this._cache[table] = data;
                     console.log(`📡 Table [${table}] synced: ${data.length} items`);
+                } else if (res.status === 401 || res.status === 403) {
+                    console.error(`🔒 Unauthorized access to [${table}]. Session might be expired.`);
+                    // We only want to trigger this once per batch
+                    if (!this._handlingAuthError) {
+                        this._handlingAuthError = true;
+                        Auth.handleExpiredSession();
+                    }
                 } else {
                     console.warn(`⚠️ Failed to sync [${table}]: ${res.status}`);
                     this._cache[table] = [];
@@ -110,6 +114,8 @@ const Storage = {
                 this._cache[table] = []; // Fallback to empty
             }
         }));
+
+        this._handlingAuthError = false;
 
         console.log('☁️ All data fetched from Supabase');
         EventBus.emit('storage:ready');
@@ -550,23 +556,4 @@ const Storage = {
 
 window.Storage = Storage;
 
-// Safe init
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('🛠️ Attempting safe Storage initialization...');
-        if (typeof Auth !== 'undefined' && Auth.user) {
-            Storage.init();
-        } else {
-            // Wait for auth
-            const checkAuth = setInterval(() => {
-                if (typeof Auth !== 'undefined' && Auth.user) {
-                    clearInterval(checkAuth);
-                    Storage.init();
-                }
-            }, 500);
-        }
-    });
-} else {
-    // Already ready
-    if (typeof Auth !== 'undefined' && Auth.user) Storage.init();
-}
+// Auto-init removed. App.init() is now responsible for initializing Storage after Auth verification.
