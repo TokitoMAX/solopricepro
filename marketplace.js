@@ -302,11 +302,16 @@ const Marketplace = {
                                                     `).join('')}
                                                 </div>
                                                 
-                                                <div class="action-footer" style="display: flex; gap: 10px; align-items: center;">
-                                                    <textarea id="reply-msg-${inv.id}" placeholder="Un petit mot pour le recruteur... (optionnel)" class="form-input" style="flex: 1; min-height: 44px; padding: 10px;"></textarea>
-                                                    <button onclick="Marketplace.respondToInvitation('${inv.id}', '${inv.application_id}', true)" class="button-primary" style="padding: 12px 25px;">
-                                                        <i class="fas fa-check"></i> C'est ok !
-                                                    </button>
+                                                <div class="action-footer" style="display: flex; gap: 10px; align-items: stretch; flex-direction: column;">
+                                                    <textarea id="reply-msg-${inv.id}" placeholder="Un petit mot pour le recruteur... (Ex: 'Disponible plus tôt', 'Plus possible mardi')" class="form-input" style="flex: 1; min-height: 80px; padding: 10px;"></textarea>
+                                                    <div style="display: flex; gap: 10px;">
+                                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${inv.application_id}', false)" class="button-secondary" style="flex: 1; padding: 12px;">
+                                                            <i class="fas fa-calendar-times"></i> Décliner / Autre créneau
+                                                        </button>
+                                                        <button onclick="Marketplace.respondToInvitation('${inv.id}', '${inv.application_id}', true)" class="button-primary" style="flex: 2; padding: 12px;">
+                                                            <i class="fas fa-check"></i> Confirmer cet entretien
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -331,10 +336,23 @@ const Marketplace = {
                 html += myApps.map(app => {
                     const invitation = myInvitations.find(inv => inv.application_id === app.id);
                     const statusClass = app.status || 'pending';
-                    const statusLabel = { 'pending': 'En attente', 'accepted': 'Retenue', 'rejected': 'Refusée' }[statusClass] || statusClass;
+                    const statusLabel = {
+                        'pending': 'En attente',
+                        'accepted': 'Retenue',
+                        'rejected': 'Refusée',
+                        'hired': '🎉 RECRUTÉ !'
+                    }[statusClass] || statusClass;
 
                     let invStatusDisplay = '';
-                    if (invitation) {
+                    if (statusClass === 'hired') {
+                        invStatusDisplay = `
+                            <div class="hired-announcement glass" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1)); border: 2px solid var(--primary); padding: 20px; border-radius: 12px; margin-top: 15px; text-align: center; animation: pulse-glow 2s infinite;">
+                                <h3 style="color: var(--primary-light); margin: 0 0 10px 0; font-size: 1.3rem;">🎊 Félicitations ! 🎊</h3>
+                                <p style="font-weight: bold; margin: 0;">Votre candidature a été retenue par le recruteur.</p>
+                                <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Le client va vous contacter prochainement pour les modalités opérationnelles.</p>
+                            </div>
+                        `;
+                    } else if (invitation) {
                         if (invitation.status === 'confirmed') {
                             invStatusDisplay = `
                                 <div class="confirmed-badge" style="background: var(--primary-glass); color: var(--primary-light); padding: 10px; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; gap: 10px;">
@@ -343,19 +361,22 @@ const Marketplace = {
                                 </div>
                             `;
                         } else if (invitation.status === 'declined') {
-                            invStatusDisplay = `<div style="margin-top: 10px; opacity: 0.6; font-size: 0.85rem;">(Invitation déclinée)</div>`;
+                            invStatusDisplay = `<div style="margin-top: 10px; opacity: 0.6; font-size: 0.85rem; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px;">
+                                <i class="fas fa-info-circle"></i> Vous avez décliné cette invitation / demandé un changement de créneau.
+                                ${invitation.candidate_response ? `<div style="font-style: italic; margin-top: 4px;">"${this.escape(invitation.candidate_response)}"</div>` : ''}
+                            </div>`;
                         }
                     }
 
                     return `
-                        <div class="application-card glass" style="margin-bottom: 20px; opacity: ${statusClass === 'rejected' ? '0.6' : '1'}">
+                        <div class="application-card glass ${statusClass}" style="margin-bottom: 25px; border-left: 4px solid ${statusClass === 'hired' ? 'var(--primary)' : statusClass === 'rejected' ? 'var(--danger)' : 'transparent'};">
                             <div class="app-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                 <div>
                                     <h3 style="margin: 0; font-size: 1.1rem;">${this.escape(app.mission_title || 'Mission')}</h3>
                                     <span class="status-pill ${statusClass}" style="font-size: 0.8rem; margin-top: 5px; display: inline-block;">${statusLabel}</span>
                                 </div>
                                 <div style="text-align: right;">
-                                    <strong style="color: var(--primary);">${app.proposed_price || '?'}€</strong>
+                                    <strong style="color: var(--primary); font-size: 1.2rem;">${app.proposed_price || '?'}€</strong>
                                     <small style="display: block; opacity: 0.6; font-size: 0.7rem;">Ma proposition</small>
                                 </div>
                             </div>
@@ -450,49 +471,76 @@ const Marketplace = {
 
         container.innerHTML = inbox.map(app => {
             const statusClass = app.status || 'pending';
-            const statusLabel = { 'pending': 'En attente', 'accepted': 'Retenue', 'rejected': 'Refusée', 'hired': 'Recruté !' }[statusClass] || statusClass;
+            const statusLabel = {
+                'pending': 'En attente',
+                'accepted': 'Retenue',
+                'rejected': 'Refusée',
+                'hired': '✅ Recruté !'
+            }[statusClass] || statusClass;
 
             const price = app.proposed_price || app.total_price || 0;
             const invitation = app.invitations?.[0]; // Get joined invitation from updated backend
 
-            let invitationStatusHtml = '';
+            let workflowHtml = '';
+
+            // 1. GESTION DES INVITATIONS / ÉTAPE ENTRETIEN
             if (invitation) {
                 if (invitation.status === 'confirmed') {
-                    invitationStatusHtml = `
-                        <div class="invitation-summary confirmed" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 15px;">
-                            <h4 style="color: var(--primary-light); margin: 0 0 5px 0;"><i class="fas fa-check-double"></i> Entretien Confirmé !</h4>
+                    workflowHtml = `
+                        <div class="workflow-step confirmed" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <h4 style="color: var(--primary-light); margin: 0 0 5px 0;"><i class="fas fa-calendar-check"></i> Entretien Confirmé !</h4>
                             <p style="font-size: 0.9rem; margin-bottom: 10px;">Le candidat a accepté le créneau du <strong>${new Date(invitation.selected_slot.date).toLocaleDateString()} à ${invitation.selected_slot.time}</strong>.</p>
-                            ${invitation.candidate_response ? `<p style="font-style: italic; font-size: 0.85rem; opacity: 0.8;">"${invitation.candidate_response}"</p>` : ''}
-                            <button class="button-primary full-width" onclick="Marketplace.finalizeRecruitment('${app.id}', '${app.mission_id}')" style="margin-top: 10px;">
+                            ${invitation.candidate_response ? `<p style="font-style: italic; font-size: 0.85rem; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">"${invitation.candidate_response}"</p>` : ''}
+                            <button class="button-primary full-width" onclick="Marketplace.finalizeRecruitment('${app.id}', '${app.mission_id}')" style="margin-top: 10px; font-weight: bold;">
                                 <i class="fas fa-handshake"></i> Valider définitivement le recrutement
                             </button>
                         </div>
                     `;
                 } else if (invitation.status === 'declined') {
-                    invitationStatusHtml = `
-                        <div class="invitation-summary declined" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 15px; border-radius: 8px; margin-top: 15px;">
-                            <h4 style="color: var(--danger); margin: 0 0 5px 0;"><i class="fas fa-times-circle"></i> Invitation déclinée</h4>
-                            <p style="font-size: 0.9rem; margin-bottom: 10px;">Le candidat ne peut pas honorer ces créneaux.</p>
-                            ${invitation.candidate_response ? `<p style="font-style: italic; font-size: 0.85rem; opacity: 0.8;">"${invitation.candidate_response}"</p>` : ''}
-                            <button class="button-secondary full-width" onclick="Marketplace.openInterviewModal('${app.id}')" style="margin-top: 10px;">
-                                <i class="fas fa-calendar-alt"></i> Proposer d'autres créneaux
-                            </button>
+                    workflowHtml = `
+                        <div class="workflow-step declined" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <h4 style="color: var(--danger); margin: 0 0 5px 0;"><i class="fas fa-calendar-times"></i> Invitation déclinée</h4>
+                            <p style="font-size: 0.9rem; margin-bottom: 10px;">Le candidat a décliné ces créneaux ou souhaite un changement.</p>
+                            ${invitation.candidate_response ? `<p style="font-style: italic; font-size: 0.85rem; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">"${invitation.candidate_response}"</p>` : ''}
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button class="button-secondary" style="flex: 1;" onclick="Marketplace.openInterviewModal('${app.id}')">
+                                    <i class="fas fa-calendar-plus"></i> Proposer d'autres créneaux
+                                </button>
+                                <button class="button-primary" style="flex: 1;" onclick="Marketplace.finalizeRecruitment('${app.id}', '${app.mission_id}')">
+                                    <i class="fas fa-handshake"></i> Recruter quand même
+                                </button>
+                            </div>
                         </div>
                     `;
                 } else {
-                    invitationStatusHtml = `
-                        <div class="invitation-summary pending" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem;">
-                            <i class="fas fa-clock"></i> Invitation envoyée. En attente de réponse du candidat...
+                    workflowHtml = `
+                        <div class="workflow-step pending" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem;">
+                            <i class="fas fa-hourglass-half"></i> Invitation envoyée. En attente de réponse du candidat...
                         </div>
                     `;
                 }
+            } else if (statusClass === 'pending') {
+                // ACTIONS INITIALES : Proposer entretien OU Recruter directement
+                workflowHtml = `
+                    <div class="workflow-actions-initial" style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="button-secondary" onclick="Marketplace.validateApplication('${app.id}')">
+                            <i class="fas fa-calendar-alt"></i> Proposer un entretien
+                        </button>
+                        <button class="button-primary" onclick="Marketplace.finalizeRecruitment('${app.id}', '${app.mission_id}')">
+                            <i class="fas fa-bolt"></i> Recruter directement
+                        </button>
+                    </div>
+                `;
             }
 
             return `
-                <div class="application-card glass ${statusClass}" style="margin-bottom: 25px;">
+                <div class="application-card glass ${statusClass}" style="margin-bottom: 25px; border: 1px solid ${statusClass === 'hired' ? 'var(--primary)' : 'rgba(255,255,255,0.1)'};">
                     <div class="app-header-row">
                         <span class="app-mission-ref">Mission: <strong>${this.escape(app.mission_title)}</strong></span>
-                        <span class="status-pill ${statusClass}">${statusLabel}</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${statusClass === 'hired' ? '<i class="fas fa-star" style="color: var(--primary);"></i>' : ''}
+                            <span class="status-pill ${statusClass}">${statusLabel}</span>
+                        </div>
                     </div>
                     
                     <div class="candidate-profile-row" style="margin-bottom: 15px;">
@@ -507,25 +555,23 @@ const Marketplace = {
                         <div class="pitch-text">${this.escape(app.message).replace(/\n/g, '<br>')}</div>
                     </div>
 
-                    ${invitationStatusHtml}
+                    ${workflowHtml}
 
-                    <div class="inbox-actions" style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
-                        ${statusClass === 'pending' ? `
-                            <button class="action-btn danger-text" onclick="Marketplace.rejectApplication('${app.id}')">
-                                <i class="fas fa-times"></i> Écarter
-                            </button>
-                            <button class="action-btn success-text" onclick="Marketplace.validateApplication('${app.id}')">
-                                <i class="fas fa-calendar-check"></i> Proposer un entretien
+                    <div class="inbox-actions" style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                        ${statusClass === 'pending' || statusClass === 'accepted' ? `
+                            <button class="action-btn danger-text" onclick="Marketplace.rejectApplication('${app.id}')" style="font-size: 0.8rem; opacity: 0.7;">
+                                <i class="fas fa-times"></i> Écarter définitivement
                             </button>
                         ` : ''}
                     </div>
                 </div>
             `;
         }).join('');
-    },
+    }
+    ,
 
     async finalizeRecruitment(appId, missionId) {
-        if (!confirm('Voulez-vous valider définitivement ce recrutement ?\n\nCela marquera le candidat comme "Recruté" et clôturera le processus pour cette mission.')) return;
+        if (!confirm('Voulez-vous valider définitivement ce recrutement ?\n\nCela marquera le candidat comme "Recruté" et clôturera le processus de sélection.')) return;
 
         try {
             // 1. Mark application as hired
@@ -536,9 +582,9 @@ const Marketplace = {
 
             App.showNotification('🎊 Recrutement validé avec succès !', 'success');
 
-            // Sync & Refresh
+            // 3. Trigger UI Refresh for recruiter
             await Storage.fetchAllData();
-            this.render(); // Refresh UI
+            this.render();
         } catch (err) {
             console.error('[FINALIZE] Error:', err);
             App.showNotification('Erreur lors de la validation finale', 'error');
