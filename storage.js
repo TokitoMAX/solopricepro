@@ -246,8 +246,10 @@ const Storage = {
     },
     async updateClient(id, updates) { return this.update(this.KEYS.CLIENTS, id, updates); },
     async deleteClient(id) { return this.delete(this.KEYS.CLIENTS, id); },
+    getClient(id) { return (this._cache[this.KEYS.CLIENTS] || []).find(c => c.id === id); },
 
     getQuotes() { return this.get(this.KEYS.QUOTES); },
+    getQuote(id) { return (this._cache[this.KEYS.QUOTES] || []).find(q => q.id === id || q.number === id); },
     async addQuote(quote) {
         const settings = this.get(this.KEYS.SETTINGS) || {};
         const count = (this.getQuotes() || []).length + 1;
@@ -406,6 +408,41 @@ const Storage = {
 
     isPro() {
         return this.getTier() === 'pro' || this.getTier() === 'growth' || this.getTier() === 'scale';
+    },
+
+    getSubscriptionStatus() {
+        const isPro = this.isPro();
+        return {
+            isPro,
+            isLifetime: true, // Par défaut pour cet environnement simplifié
+            expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+            daysLeft: 365
+        };
+    },
+
+    async updateUser(updates) {
+        const user = this.getUser();
+        const newUser = { ...user, ...updates };
+        this.setUser(newUser);
+
+        // Optionnel : persister les métadonnées sur Supabase si Auth est dispo
+        if (typeof Auth !== 'undefined' && Auth.user) {
+            try {
+                // Tentative de sync avec le backend pour les infos company
+                if (updates.company) {
+                    await fetch(`${Auth.apiBase}/api/data/${this.KEYS.USER_PROFILE}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${Auth.token}`
+                        },
+                        body: JSON.stringify(updates.company)
+                    });
+                }
+            } catch (e) {
+                console.warn('Backend sync failed, kept in local cache only.');
+            }
+        }
     },
 
     // --- Legacy / Compatibility Helpers ---
