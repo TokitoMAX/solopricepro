@@ -403,7 +403,7 @@ const Storage = {
     getTier() {
         // Forçage statut PRO pour l'admin
         if (typeof Auth !== 'undefined' && Auth.user && Auth.user.email === 'domtomconnect@gmail.com') {
-            return 'pro';
+            return 'expert';
         }
         const settings = this.getSettings();
         return settings.plan || 'free';
