@@ -49,31 +49,41 @@ const Leads = {
         };
 
         return `
-            <div class="lead-card glass" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border-color); background: var(--bg-card); position: relative;">
-                <div class="lead-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">${this.escapeHtml(lead.name)}</h3>
-                        <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--text-muted);">${this.escapeHtml(lead.activity || 'Activité non spécifiée')}</p>
+            <div class="lead-card glass" style="padding: 1.8rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="lead-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem;">
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--white); letter-spacing: -0.01em;">${this.escapeHtml(lead.name)}</h3>
+                        <p style="margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--primary-light); opacity: 0.8; font-weight: 500;">${this.escapeHtml(lead.activity || 'Activité non spécifiée')}</p>
                     </div>
-                    <span class="status-tag" style="background: ${statusColors[lead.status]}20; color: ${statusColors[lead.status]}; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
+                    <span class="status-tag" style="background: ${statusColors[lead.status]}15; color: ${statusColors[lead.status]}; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid ${statusColors[lead.status]}30;">
                         ${statusLabels[lead.status]}
                     </span>
                 </div>
                 
-                <div class="lead-info" style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.4;">
-                    <div>Email: ${this.escapeHtml(lead.email || '-')}</div>
-                    <div>Tel: ${this.escapeHtml(lead.phone || '-')}</div>
+                <div class="lead-info" style="margin-bottom: 1.8rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; display: grid; gap: 0.4rem;">
+                    <div style="display: flex; align-items: center; gap: 10px;"><i class="far fa-envelope" style="width: 14px; opacity: 0.5;"></i> ${this.escapeHtml(lead.email || '-')}</div>
+                    <div style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-phone-alt" style="width: 14px; opacity: 0.5;"></i> ${this.escapeHtml(lead.phone || '-')}</div>
                 </div>
 
-                <div class="lead-actions" style="display: flex; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-                    ${lead.status !== 'cold' ? `<button class="button-secondary small" onclick="Leads.updateStatus('${lead.id}', 'cold')">Contact</button>` : ''}
-                    ${lead.status !== 'warm' ? `<button class="button-secondary small" onclick="Leads.updateStatus('${lead.id}', 'warm')">Négociation</button>` : ''}
-                    ${lead.status !== 'won' ? `<button class="button-primary small" onclick="Leads.convertToClient('${lead.id}')">Convertir</button>` : ''}
-                    <button class="button-secondary small" onclick="Leads.convertToQuote('${lead.id}')" title="Créer un devis pour ce prospect">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                        Devis
+                <div class="lead-actions" style="display: flex; gap: 0.6rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.2rem;">
+                    <div style="display: flex; gap: 0.4rem; flex: 1;">
+                        ${lead.status === 'cold' ?
+                `<button class="button-secondary small" onclick="Leads.updateStatus('${lead.id}', 'warm')" style="padding: 6px 10px; font-size: 0.75rem;">Négociation</button>` :
+                `<button class="button-secondary small" onclick="Leads.updateStatus('${lead.id}', 'cold')" style="padding: 6px 10px; font-size: 0.75rem;">Contact</button>`
+            }
+                        
+                        <button class="button-primary small" onclick="Leads.convertToQuote('${lead.id}')" title="Générer un devis" style="padding: 6px 10px; font-size: 0.75rem; background: var(--primary-glass); color: var(--primary-light); border: 1px solid var(--primary-glass);">
+                            <i class="fas fa-file-invoice"></i> Devis
+                        </button>
+                        
+                        <button class="button-primary small" onclick="Leads.convertToClient('${lead.id}')" style="padding: 6px 10px; font-size: 0.75rem;">
+                            <i class="fas fa-user-check"></i> Convertir
+                        </button>
+                    </div>
+                    
+                    <button class="btn-icon" onclick="Leads.delete('${lead.id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s;" title="Supprimer">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
-                    <button class="btn-icon btn-danger" style="margin-left: auto;" onclick="Leads.delete('${lead.id}')">Supprimer</button>
                 </div>
             </div>
         `;
@@ -82,33 +92,33 @@ const Leads = {
     showAddForm() {
         const container = document.getElementById('lead-form-container');
         container.innerHTML = `
-            <div class="form-card" style="margin-bottom: 2rem; animation: slideDown 0.3s ease;">
-                <div class="form-header">
-                    <h3>Nouveau Prospect</h3>
-                    <button class="btn-close" onclick="Leads.hideForm()">✕</button>
+            <div class="form-card glass" style="margin-bottom: 2rem; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--primary-glass); box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+                <div class="form-header" style="border-bottom: 1px solid var(--primary-glass); padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--primary-light);"><i class="fas fa-user-plus" style="margin-right: 10px;"></i> Nouveau Prospect</h3>
+                    <button class="btn-close" onclick="Leads.hideForm()" style="background: none; border: none; color: white; cursor: pointer; opacity: 0.6; transition: opacity 0.2s;">✕</button>
                 </div>
-                <form onsubmit="Leads.save(event)">
-                    <div class="form-grid">
+                <form onsubmit="Leads.save(event)" style="padding: 2rem;">
+                    <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
                         <div class="form-group">
-                            <label class="form-label">Nom / Entreprise *</label>
-                            <input type="text" name="name" class="form-input" required placeholder="Ex: Jean Dupont">
+                            <label class="form-label">Nom / Entreprise <span style="color: var(--primary);">*</span></label>
+                            <input type="text" name="name" class="modern-input" required placeholder="Ex: Jean Dupont" style="width: 100%;">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Activité</label>
-                            <input type="text" name="activity" class="form-input" placeholder="Ex: Boulangerie, Startup...">
+                            <input type="text" name="activity" class="modern-input" placeholder="Ex: Boulangerie, Startup..." style="width: 100%;">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-input" placeholder="Ex: contact@email.com">
+                            <label class="form-label">Email de contact</label>
+                            <input type="email" name="email" class="modern-input" placeholder="Ex: contact@email.com" style="width: 100%;">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Téléphone</label>
-                            <input type="tel" name="phone" class="form-input" placeholder="Ex: 06 00 00 00 00">
+                            <input type="tel" name="phone" class="modern-input" placeholder="Ex: 06 00 00 00 00" style="width: 100%;">
                         </div>
                     </div>
-                    <div class="form-actions">
-                        <button type="button" class="button-secondary" onclick="Leads.hideForm()">Annuler</button>
-                        <button type="submit" class="button-primary">Suivre ce prospect</button>
+                    <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem;">
+                        <button type="button" class="button-outline" onclick="Leads.hideForm()" style="min-width: 120px;">Annuler</button>
+                        <button type="submit" class="button-primary" style="min-width: 200px; box-shadow: var(--primary-shadow);">🚀 Suivre ce prospect</button>
                     </div>
                 </form>
             </div>
@@ -179,40 +189,58 @@ const Leads = {
     },
 
     async convertToQuote(id) {
-        const leads = Storage.getLeads();
-        const lead = leads.find(l => l.id === id);
+        try {
+            const leads = Storage.getLeads();
+            const lead = leads.find(l => l.id === id);
 
-        if (!lead) return;
+            if (!lead) return;
 
-        if (!confirm(`Créer un devis pour ${lead.name} ?`)) return;
+            if (!confirm(`Créer un devis pour ${lead.name} ?`)) return;
 
-        // 1. Assurer que c'est un client
-        let client = Storage.getClients().find(c => c.name === lead.name || c.email === lead.email);
-        if (!client) {
-            client = await Storage.addClient({
-                name: lead.name,
-                email: lead.email,
-                phone: lead.phone,
-                activity: lead.activity
-            });
-        }
+            // 1. Assurer que c'est un client
+            let client = (Storage.getClients() || []).find(c => c.name === lead.name || (lead.email && c.email === lead.email));
 
-        // 2. Créer le devis
-        const newQuote = await Storage.addQuote({
-            clientId: client.id,
-            status: 'draft',
-            title: `Prestation pour ${lead.name}`,
-            items: [{ description: 'Prestation de service', quantity: 1, unitPrice: 0 }]
-        });
-
-        App.showNotification('Devis initialisé.', 'success');
-
-        // 3. Rediriger
-        App.navigateTo('quotes');
-        setTimeout(() => {
-            if (typeof Quotes !== 'undefined') {
-                Quotes.edit(newQuote.id);
+            if (!client) {
+                console.log('[LEADS] Client not found, creating new client from lead data...');
+                client = await Storage.addClient({
+                    name: lead.name,
+                    email: lead.email,
+                    phone: lead.phone,
+                    activity: lead.activity
+                });
             }
-        }, 500);
+
+            if (!client || !client.id) throw new Error('Impossible de créer ou récupérer le client.');
+
+            // 2. Créer le devis
+            const newQuote = await Storage.addQuote({
+                clientId: client.id,
+                status: 'draft',
+                title: `Prestation pour ${lead.name}`,
+                notes: 'Radar DomTomConnect - Opportunité convertie',
+                items: [{ description: 'Prestation de service (à définir)', quantity: 1, unitPrice: 0 }]
+            });
+
+            if (!newQuote || !newQuote.id) throw new Error('Échec de la création du devis.');
+
+            App.showNotification('Devis initialisé dans vos documents.', 'success');
+
+            // 3. Rediriger et ouvrir l'édition
+            App.navigateTo('quotes');
+
+            // On laisse un peu de temps pour le rendu de la page Quotes
+            setTimeout(() => {
+                if (typeof Quotes !== 'undefined') {
+                    console.log('[LEADS] Triggering Quote edit for ID:', newQuote.id);
+                    Quotes.edit(newQuote.id);
+                } else {
+                    console.warn('[LEADS] Quotes module not loaded yet.');
+                }
+            }, 800);
+
+        } catch (err) {
+            console.error('[LEADS] Conversion Error:', err);
+            App.showNotification('Erreur lors de la conversion : ' + err.message, 'error');
+        }
     }
 };

@@ -401,7 +401,10 @@ const Storage = {
 
     // Restoration of missing methods for app.js compatibility
     getTier() {
-        // Return 'free', 'pro', etc. based on settings or subscription
+        // Forçage statut PRO pour l'admin
+        if (typeof Auth !== 'undefined' && Auth.user && Auth.user.email === 'domtomconnect@gmail.com') {
+            return 'pro';
+        }
         const settings = this.getSettings();
         return settings.plan || 'free';
     },
