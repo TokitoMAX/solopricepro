@@ -146,6 +146,19 @@ const Leads = {
     async updateStatus(id, newStatus) {
         await Storage.updateLead(id, { status: newStatus });
         App.showNotification('Statut mis à jour', 'success');
+
+        // Qualification automatique : si 'won', on convertit en client
+        if (newStatus === 'won') {
+            const lead = (Storage.getLeads() || []).find(l => l.id === id);
+            if (lead) {
+                setTimeout(() => {
+                    if (confirm(`Le prospect ${lead.name} est maintenant un "Client confirmé". Voulez-vous le transférer définitivement dans votre base Clients ?`)) {
+                        this.convertToClient(id);
+                    }
+                }, 500);
+            }
+        }
+
         this.render(this.lastContainerId);
     },
 
@@ -195,13 +208,11 @@ const Leads = {
 
             if (!lead) return;
 
-            if (!confirm(`Créer un devis pour ${lead.name} ?`)) return;
-
-            // 1. Assurer que c'est un client
+            // 1. Assurer que c'est un client (requis pour lier un devis)
             let client = (Storage.getClients() || []).find(c => c.name === lead.name || (lead.email && c.email === lead.email));
 
             if (!client) {
-                console.log('[LEADS] Client not found, creating new client from lead data...');
+                console.log('[LEADS] Creating client for quote context...');
                 client = await Storage.addClient({
                     name: lead.name,
                     email: lead.email,
@@ -210,37 +221,32 @@ const Leads = {
                 });
             }
 
-            if (!client || !client.id) throw new Error('Impossible de créer ou récupérer le client.');
+            if (!client || !client.id) throw new Error('Impossible de préparer le contexte client.');
 
-            // 2. Créer le devis
-            const newQuote = await Storage.addQuote({
-                clientId: client.id,
-                status: 'draft',
-                title: `Prestation pour ${lead.name}`,
-                notes: 'Radar DomTomConnect - Opportunité convertie',
-                items: [{ description: 'Prestation de service (à définir)', quantity: 1, unitPrice: 0 }]
-            });
+            // 2. Passage en "Négociation" si ce n'est pas déjà le cas
+            if (lead.status === 'cold') {
+                await this.updateStatus(id, 'warm');
+            }
 
-            if (!newQuote || !newQuote.id) throw new Error('Échec de la création du devis.');
+            App.showNotification('Préparation du devis...', 'info');
 
-            App.showNotification('Devis initialisé dans vos documents.', 'success');
-
-            // 3. Rediriger et ouvrir l'édition
+            // 3. Rediriger vers le FORMULAIRE de nouveau devis (pas un devis vide)
             App.navigateTo('quotes');
 
-            // On laisse un peu de temps pour le rendu de la page Quotes
             setTimeout(() => {
                 if (typeof Quotes !== 'undefined') {
-                    console.log('[LEADS] Triggering Quote edit for ID:', newQuote.id);
-                    Quotes.edit(newQuote.id);
+                    // On déclenche le formulaire d'ajout avec le client pré-sélectionné
+                    // Cela évite de créer un "document vide" comme reproché par l'utilisateur
+                    Quotes.showAddForm(client.id);
+                    App.showNotification(`Nouveau devis pour ${client.name}`, 'success');
                 } else {
-                    console.warn('[LEADS] Quotes module not loaded yet.');
+                    console.warn('[LEADS] Quotes module not loaded.');
                 }
-            }, 800);
+            }, 600);
 
         } catch (err) {
-            console.error('[LEADS] Conversion Error:', err);
-            App.showNotification('Erreur lors de la conversion : ' + err.message, 'error');
+            console.error('[LEADS] Workflow Error:', err);
+            App.showNotification('Erreur : ' + err.message, 'error');
         }
     }
 };

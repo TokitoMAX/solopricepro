@@ -247,6 +247,10 @@ const Quotes = {
                 </div>
                 <form id="quote-form" onsubmit="Quotes.save(event)">
                     <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">Objet du devis *</label>
+                            <input type="text" name="title" class="form-input" placeholder="Ex: Refonte site web, Coaching annuel..." value="${quote?.title || ''}" required>
+                        </div>
                         <div class="form-group">
                             <label class="form-label">Client *</label>
                             <div style="display: flex; gap: 10px;">
@@ -506,6 +510,7 @@ const Quotes = {
 
         const quoteData = {
             clientId: formData.get('clientId'),
+            title: formData.get('title'),
             status: formData.get('status'),
             items: items,
             subtotal: subtotal,
