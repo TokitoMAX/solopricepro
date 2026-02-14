@@ -28,7 +28,12 @@ const Marketplace = {
                         <div class="user-avatar-circle">${Auth.user?.email?.[0].toUpperCase() || 'U'}</div>
                         <div class="user-info">
                             <h3>${Auth.user?.company?.name || Auth.user?.email || 'Visiteur'}</h3>
-                            <p>${Auth.user?.isPro ? 'Membre Pro' : 'Membre Standard'}</p>
+                            <p>${(() => {
+                const tier = Storage.getTier();
+                if (tier === 'expert') return 'Membre Expert';
+                if (Storage.isPro()) return 'Membre Pro';
+                return 'Membre Standard';
+            })()}</p>
                         </div>
                         <div class="user-stats">
                             <div class="stat">

@@ -410,7 +410,12 @@ const Storage = {
     },
 
     isPro() {
-        return this.getTier() === 'pro' || this.getTier() === 'growth' || this.getTier() === 'scale';
+        const tier = this.getTier();
+        return tier === 'pro' || tier === 'expert' || tier === 'growth' || tier === 'scale';
+    },
+
+    isExpert() {
+        return this.getTier() === 'expert';
     },
 
     getSubscriptionStatus() {

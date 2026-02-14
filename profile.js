@@ -81,7 +81,12 @@ const Profile = {
                          <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <h3 style="margin: 0; font-size: 1.1rem; color: ${isPro ? 'var(--primary-light)' : 'var(--white)'};">
-                                    ${isPro ? 'Abonnement SoloPrice PRO' : 'Compte Standard'}
+                                    ${(() => {
+                const tier = Storage.getTier();
+                if (tier === 'expert') return 'Pack SoloPrice EXPERT';
+                if (isPro) return 'Abonnement SoloPrice PRO';
+                return 'Compte Standard';
+            })()}
                                 </h3>
                                 <p style="font-size: 0.85rem; color: var(--text-muted); margin: 4px 0 0 0;">
                                     ${(() => {

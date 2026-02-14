@@ -505,13 +505,18 @@ const App = {
         // Add "Subscription" shortcut in User Profile
         const infoContainer = document.getElementById('user-info-sidebar');
         if (infoContainer) {
+            const tier = Storage.getTier();
+            const isPro = Storage.isPro();
+            const isExpert = tier === 'expert';
+
             infoContainer.innerHTML = `
                 <div class="user-profile" style="cursor: pointer;">
                     <div class="user-avatar" onclick="App.navigateTo('profile')">${user.company?.name?.charAt(0) || user.email?.charAt(0) || 'U'}</div>
                     <div class="user-details">
                         <div onclick="App.navigateTo('profile')">
                             <span class="user-name">${user.company?.name || user.email}</span>
-                            ${isPro ? '<span class="user-status"><span class="pro-badge-small">PRO</span></span>' : '<span class="user-status text-muted" style="font-size:0.7rem;">Standard</span>'}
+                            ${isExpert ? '<span class="user-status"><span class="expert-badge-small" style="background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; margin-left: 5px;">EXPERT</span></span>' :
+                    (isPro ? '<span class="user-status"><span class="pro-badge-small">PRO</span></span>' : '<span class="user-status text-muted" style="font-size:0.7rem;">Standard</span>')}
                         </div>
                         <div style="margin-top: 4px; font-size: 0.75rem;">
                              <a href="#" onclick="App.showUpgradeModal('limit'); return false;" style="color: var(--primary); text-decoration: none;">
