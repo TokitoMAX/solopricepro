@@ -452,8 +452,8 @@ const Invoices = {
         if (!invoice || !client) return;
 
         // Préparer le mailto
-        const subject = encodeURIComponent(`Facture ${invoice.number} - ${user.company.name || 'Prestation'}`);
-        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint la facture ${invoice.number} d'un montant de ${App.formatCurrency(invoice.total)}.\n\nCordialement,\n${user.company.name || 'Votre prestataire'}`);
+        const subject = encodeURIComponent(`Facture ${invoice.number} - ${user?.company?.name || 'Prestation'}`);
+        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint la facture ${invoice.number} d'un montant de ${App.formatCurrency(invoice.total)}.\n\nCordialement,\n${user?.company?.name || 'Votre prestataire'}`);
 
         const mailtoUrl = `mailto:${client.email || ''}?subject=${subject}&body=${body}`;
 
@@ -489,18 +489,18 @@ const Invoices = {
         const templates = {
             soft: {
                 label: '1. Rappel Amiable',
-                subject: `Rappel : Facture ${invoice.number} en attente - ${user.company?.name || ''}`,
-                body: `Bonjour ${client.name},\n\nSauf erreur de notre part, la facture ${invoice.number} du ${new Date(invoice.createdAt).toLocaleDateString()} d'un montant de ${App.formatCurrency(invoice.total)} reste impayée à ce jour.\n\nPouvez-vous me confirmer son statut ?\n\nBien cordialement,\n${user.company?.name || ''}`
+                subject: `Rappel : Facture ${invoice.number} en attente - ${user?.company?.name || ''}`,
+                body: `Bonjour ${client.name},\n\nSauf erreur de notre part, la facture ${invoice.number} du ${new Date(invoice.createdAt).toLocaleDateString()} d'un montant de ${App.formatCurrency(invoice.total)} reste impayée à ce jour.\n\nPouvez-vous me confirmer son statut ?\n\nBien cordialement,\n${user?.company?.name || ''}`
             },
             firm: {
                 label: '2. Retard Confirmé',
                 subject: `Urgent : Retard de paiement Facture ${invoice.number}`,
-                body: `Bonjour ${client.name},\n\nLa facture ${invoice.number} (Échéance : ${invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'Passée'}) est toujours en attente de règlement malgré notre précédente relance.\n\nJe vous remercie de procéder au virement des ${App.formatCurrency(invoice.total)} sans délai.\n\nCordialement,\n${user.company?.name || ''}`
+                body: `Bonjour ${client.name},\n\nLa facture ${invoice.number} (Échéance : ${invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'Passée'}) est toujours en attente de règlement malgré notre précédente relance.\n\nJe vous remercie de procéder au virement des ${App.formatCurrency(invoice.total)} sans délai.\n\nCordialement,\n${user?.company?.name || ''}`
             },
             hard: {
                 label: '3. Mise en Demeure',
                 subject: `Mise en demeure : Facture ${invoice.number}`,
-                body: `Madame, Monsieur,\n\nMalgré mes relances, la facture ${invoice.number} reste impayée.\nJe vous mets par la présente en demeure de régler la somme de ${App.formatCurrency(invoice.total)} sous 48h, faute de quoi je transmettrai le dossier au service recouvrement.\n\nDans l'attente de votre virement immédiat.\n\n${user.company?.name || ''}`
+                body: `Madame, Monsieur,\n\nMalgré mes relances, la facture ${invoice.number} reste impayée.\nJe vous mets par la présente en demeure de régler la somme de ${App.formatCurrency(invoice.total)} sous 48h, faute de quoi je transmettrai le dossier au service recouvrement.\n\nDans l'attente de votre virement immédiat.\n\n${user?.company?.name || ''}`
             }
         };
 
@@ -594,7 +594,7 @@ const Invoices = {
         }
 
         const user = Storage.getUser();
-        if (!user.company.name || !user.company.address) {
+        if (!user?.company?.name || !user?.company?.address) {
             if (confirm('Vos informations entreprise sont incomplètes.\n\nVoulez-vous les compléter maintenant pour l\'export PDF ?')) {
                 App.navigateTo('settings');
             }

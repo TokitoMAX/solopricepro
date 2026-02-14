@@ -401,8 +401,8 @@ const Storage = {
 
     // Restoration of missing methods for app.js compatibility
     getTier() {
-        // Forçage statut PRO pour l'admin
-        if (typeof Auth !== 'undefined' && Auth.user && Auth.user.email === 'domtomconnect@gmail.com') {
+        // Forçage statut PRO pour l'admin (insensible à la casse)
+        if (typeof Auth !== 'undefined' && Auth.user && Auth.user.email && Auth.user.email.toLowerCase() === 'domtomconnect@gmail.com') {
             return 'expert';
         }
         const settings = this.getSettings();

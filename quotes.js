@@ -633,7 +633,7 @@ const Quotes = {
         }
 
         const user = Storage.getUser();
-        if (!user.company.name || !user.company.address) {
+        if (!user?.company?.name || !user?.company?.address) {
             if (confirm('Vos informations entreprise sont incomplètes. Souhaitez-vous les compléter maintenant ?')) {
                 App.navigateTo('settings');
             }
@@ -657,8 +657,8 @@ const Quotes = {
 
         if (!quote || !client) return;
 
-        const subject = encodeURIComponent(`Devis ${quote.number} - ${user.company.name || 'Proposition'}`);
-        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint mon devis ${quote.number} d'un montant de ${App.formatCurrency(quote.total)}.\n\nJe reste à votre disposition pour en discuter.\n\nCordialement,\n${user.company.name || 'Votre prestataire'}`);
+        const subject = encodeURIComponent(`Devis ${quote.number} - ${user?.company?.name || 'Proposition'}`);
+        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint mon devis ${quote.number} d'un montant de ${App.formatCurrency(quote.total)}.\n\nJe reste à votre disposition pour en discuter.\n\nCordialement,\n${user?.company?.name || 'Votre prestataire'}`);
 
         const mailtoUrl = `mailto:${client.email || ''}?subject=${subject}&body=${body}`;
 

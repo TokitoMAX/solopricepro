@@ -22,10 +22,10 @@ async function authenticateAdmin(req, res, next) {
             return res.status(401).json({ message: 'Session invalide ou expirée' });
         }
 
-        // 2. Vérifier l'email (Hardcheck de sécurité)
+        // 2. Vérifier l'email (Hardcheck de sécurité insensible à la casse)
         const ADMIN_EMAIL = 'domtomconnect@gmail.com';
 
-        if (user.email !== ADMIN_EMAIL) {
+        if (!user.email || user.email.toLowerCase() !== ADMIN_EMAIL) {
             console.warn(`⚠️ Tentative d'accès Admin refusée pour : ${user.email}`);
             return res.status(403).json({ message: 'Accès non autorisé. Réservé à l\'administrateur.' });
         }

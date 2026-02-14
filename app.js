@@ -340,8 +340,8 @@ const App = {
     // Vérification des limites selon le Tier (Standard, Pro, Expert)
     checkFreemiumLimits() {
         const user = Auth.getUser();
+        const isPro = Storage.isPro();
         const tier = Storage.getTier();
-        const isPro = tier === 'pro' || tier === 'expert';
         const isExpert = tier === 'expert';
 
         const quotes = Storage.getQuotes();
