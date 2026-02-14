@@ -447,8 +447,8 @@ const Marketplace = {
 
             App.showNotification(accept ? 'Entretien confirmé !' : 'Réponse envoyée', 'success');
 
-            // Background sync
-            Storage.fetchAllData();
+            // Sync before refreshing UI to ensure data is up to date
+            await Storage.fetchAllData();
             this.render(); // Refresh view
         } catch (err) {
             console.error('[RESPOND] Error:', err);
