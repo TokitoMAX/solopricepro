@@ -327,6 +327,16 @@ const Storage = {
     async addExpense(expense) { return this.add(this.KEYS.EXPENSES, expense); },
     async deleteExpense(id) { return this.delete(this.KEYS.EXPENSES, id); },
 
+    // Services (Catalogue)
+    getServices() { return this.get(this.KEYS.SERVICES) || []; },
+    getService(id) { return (this._cache[this.KEYS.SERVICES] || []).find(s => s.id === id); },
+    async addService(service) {
+        const item = { id: this.generateId(), ...service, createdAt: new Date().toISOString() };
+        return this.add(this.KEYS.SERVICES, item);
+    },
+    async updateService(id, updates) { return this.update(this.KEYS.SERVICES, id, updates); },
+    async deleteService(id) { return this.delete(this.KEYS.SERVICES, id); },
+
     // Marketplace & Network
     getPublicMissions() { return this.get(this.KEYS.MARKETPLACE_MISSIONS); },
     async addMission(mission) {
