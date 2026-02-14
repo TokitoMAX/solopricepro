@@ -34,7 +34,8 @@ const Storage = {
         MARKETPLACE_INVITATIONS: 'sp_marketplace_invitations',
         PROVIDERS: 'sp_network_providers',
         REVENUES: 'sp_revenues',
-        MY_MISSIONS: 'sp_my_missions'
+        MY_MISSIONS: 'sp_my_missions',
+        CALCULATOR: 'sp_calculator_data' // Alias for compatibility with calculator.js
     },
 
     _cache: {},
@@ -115,7 +116,39 @@ const Storage = {
     },
 
     get(key) {
-        return this._cache[key] || [];
+        // 1. Check if it's a known table in cache
+        if (this._cache[key]) return this._cache[key];
+
+        // 2. Check localStorage for transient data (drafts, settings, etc.)
+        try {
+            const local = localStorage.getItem(key);
+            if (local) return JSON.parse(local);
+        } catch (e) {
+            console.warn(`Error reading ${key} from localStorage`, e);
+        }
+
+        // 3. Default fallback for tables
+        return [];
+    },
+
+    set(key, value) {
+        // 1. Update cache
+        this._cache[key] = value;
+
+        // 2. Persist to localStorage if it looks like transient data (not a huge table)
+        // or specifically requested keys like drafts
+        const transientKeys = ['sp_draft_quote_item', 'sp_draft_quote_items', 'sp_user_cache'];
+        if (transientKeys.includes(key) || key.startsWith('sp_draft_')) {
+            try {
+                if (value === null) {
+                    localStorage.removeItem(key);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn(`Error persisting ${key} to localStorage`, e);
+            }
+        }
     },
 
     async add(key, item) {
@@ -362,10 +395,13 @@ const Storage = {
     },
     getSettings() { return this._cache[this.KEYS.SETTINGS] || {}; },
 
-    getCalculatorData() { return this._cache[this.KEYS.CALCULATOR_DATA] || {}; },
+    getCalculatorData() { return this.get(this.KEYS.CALCULATOR_DATA) || {}; },
     async saveCalculatorData(data) {
         this._cache[this.KEYS.CALCULATOR_DATA] = data;
         return this.add(this.KEYS.CALCULATOR_DATA, data); // Upsert handles it
+    },
+    async updateCalculator(data) {
+        return this.saveCalculatorData(data);
     },
 
     calculateStats() {
