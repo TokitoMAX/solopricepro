@@ -159,7 +159,7 @@ const Leads = {
                 name: lead.name,
                 email: lead.email,
                 phone: lead.phone,
-                activity: lead.activity
+                notes: lead.activity ? `Activité : ${lead.activity}` : ''
             });
 
             // Delete from leads
@@ -206,7 +206,7 @@ const Leads = {
                     name: lead.name,
                     email: lead.email,
                     phone: lead.phone,
-                    activity: lead.activity
+                    notes: lead.activity ? `Activité : ${lead.activity}` : ''
                 });
             }
 
