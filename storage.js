@@ -270,7 +270,8 @@ const Storage = {
             });
 
             if (!res.ok) throw new Error('Upload failed');
-            return await res.json(); // { success: true, publicUrl: ... }
+            const data = await res.json();
+            return data.publicUrl; // Return only the string URL as expected by profile.js
         } catch (err) {
             console.error('Logo upload error:', err);
             throw err;

@@ -69,7 +69,7 @@ router.post('/:table', async (req, res) => {
     console.log(`[DATA-POST] 📤 Upserting to ${actualTable}:`, JSON.stringify(payload, null, 2));
 
     // Singular tables use 'user_id' as PK, others use 'id'
-    const isSingularTable = ['settings', 'calculator_data', 'sp_settings', 'sp_calculator_data'].includes(table);
+    const isSingularTable = ['settings', 'calculator_data', 'sp_settings', 'sp_calculator_data', 'user_profile', 'sp_user_profile'].includes(table);
     const onConflict = isSingularTable ? 'user_id' : 'id';
 
     try {
