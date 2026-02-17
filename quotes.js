@@ -633,9 +633,11 @@ const Quotes = {
         }
 
         const user = Storage.getUser();
-        if (!user?.company?.name || !user?.company?.address) {
+        const company = Storage.getUserCompany();
+
+        if (!company.name || !company.address) {
             if (confirm('Vos informations entreprise sont incomplètes. Souhaitez-vous les compléter maintenant ?')) {
-                App.navigateTo('settings');
+                App.navigateTo('profile');
             }
             return;
         }

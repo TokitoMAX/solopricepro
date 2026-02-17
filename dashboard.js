@@ -28,9 +28,14 @@ const Dashboard = {
             .slice(0, 5);
 
         container.innerHTML = `
-            <div class="dashboard-header">
-                <h1 class="page-title">Tableau de Bord</h1>
-                <p class="page-subtitle">Vue d'ensemble de votre activité</p>
+            <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; animation: slideInTop 0.6s ease-out;">
+                <div>
+                    <h1 class="page-title" style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Tableau de Bord</h1>
+                    <p class="page-subtitle" style="font-size: 1.1rem; opacity: 0.8;">Vue d'ensemble de votre performance business</p>
+                </div>
+                <div class="dashboard-timer" style="font-size: 0.9rem; color: var(--text-muted); background: var(--bg-card); padding: 0.5rem 1rem; border-radius: 99px; border: 1px solid var(--border);">
+                    <i class="far fa-clock"></i> <span id="current-time-display">${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                </div>
             </div>
 
             ${typeof Coach !== 'undefined' ? (App.isFeatureProGated('coach') ? PremiumWall.renderTeaser('Coaching Stratégique', 'Obtenez des analyses automatiques sur votre cash dormant et vos objectifs de salairenet.', '') : Coach.renderWidget()) : ''}
@@ -62,12 +67,12 @@ const Dashboard = {
                 </div>
 
                 <!-- Strategic Context Card -->
-                <div class="stat-card context-card">
-                    <span class="stat-label">Zone / Fiscalité</span>
-                    <div class="stat-value" style="font-size: 1.2rem; color: var(--secondary);">${typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().name : 'Standard'}</div>
-                    <div class="stat-description" style="font-size: 0.8rem;">${typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().description : 'TVA 20%'}</div>
-                    <button class="button-secondary small" style="margin-top: auto; padding: 0.4rem; font-size: 0.8rem;" onclick="App.navigateTo('settings', 'billing')">
-                        Changer de Zone
+                <div class="stat-card context-card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(0, 0, 0, 0)); border-radius: 20px; border: 1px solid var(--primary-glass); transition: transform 0.3s ease;">
+                    <span class="stat-label" style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; font-weight: 700;">Zone / Fiscalité</span>
+                    <div class="stat-value" style="font-size: 1.4rem; color: var(--secondary); margin: 0.5rem 0;">${typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().name : 'Standard'}</div>
+                    <div class="stat-description" style="font-size: 0.8rem; margin-bottom: 1rem;">${typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().description : 'TVA 20%'}</div>
+                    <button class="button-primary small" style="width: 100%; font-size: 0.8rem; border-radius: 10px; background: var(--primary-glass); border: 1px solid var(--primary); color: var(--primary-light);" onclick="App.navigateTo('settings', 'billing')">
+                        Modifier la stratégie
                     </button>
                 </div>
             </div>

@@ -47,7 +47,7 @@ const Settings = {
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label class="form-label">Taux TVA par défaut (%)</label>
-                                    <input type="number" name="taxRate" class="form-input" value="${settings.taxRate}" step="0.1">
+                                    <input type="number" name="taxRate" class="form-input" value="${settings.taxRate || 0}" step="0.1">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Validité Devis (Jours)</label>
@@ -55,11 +55,11 @@ const Settings = {
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Préfixe Devis</label>
-                                    <input type="text" name="quotePrefix" class="form-input" value="${settings.quotePrefix}">
+                                    <input type="text" name="quotePrefix" class="form-input" value="${settings.quotePrefix || ''}">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Préfixe Factures</label>
-                                    <input type="text" name="invoicePrefix" class="form-input" value="${settings.invoicePrefix}">
+                                    <input type="text" name="invoicePrefix" class="form-input" value="${settings.invoicePrefix || ''}">
                                 </div>
                             </div>
                             <div class="form-actions">

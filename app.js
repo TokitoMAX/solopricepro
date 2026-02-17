@@ -760,12 +760,21 @@ const App = {
     },
 
     // Fermer les modales
-    closeModal() {
-        document.querySelectorAll('.modal-overlay').forEach(modal => {
-            modal.classList.remove('active');
-            modal.style.display = 'none'; // Force hide
-            modal.setAttribute('aria-hidden', 'true');
-        });
+    closeModal(id = null) {
+        if (id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        } else {
+            document.querySelectorAll('.modal-overlay, .modal').forEach(modal => {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+            });
+        }
     },
 
     // Activer une licence
@@ -1135,13 +1144,6 @@ const App = {
         }
     },
 
-    closeModal(id) {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.classList.remove('active');
-            modal.style.display = 'none';
-        }
-    }
 };
 
 window.App = App;

@@ -133,7 +133,9 @@ const Storage = {
             console.warn(`Error reading ${key} from localStorage`, e);
         }
 
-        // 3. Default fallback for tables
+        // 3. Default fallback
+        if (key === this.KEYS.SETTINGS) return {};
+        // Default fallback for tables
         return [];
     },
 
@@ -510,6 +512,12 @@ const Storage = {
     getUser() {
         // Return local profile or Auth user if available
         return this._cache[this.KEYS.USER_PROFILE] || (typeof Auth !== 'undefined' ? Auth.user : null);
+    },
+
+    getUserCompany() {
+        const user = this.getUser();
+        if (!user) return {};
+        return user.company || user.user_metadata?.company || {};
     },
 
     setUser(user) {
