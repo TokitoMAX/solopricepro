@@ -35,11 +35,17 @@ router.get('/:table', async (req, res) => {
     const supabase = req.app.get('supabase');
 
     try {
-        let query = supabase.from(actualTable).select('*');
+        if (table === 'user_profile' || table === 'sp_user_profile' || table === 'sp_user_profiles') {
+            const { error: pluralErr } = await supabase.from('sp_user_profiles').select('count', { count: 'exact', head: true }).limit(1);
+            const tableToUse = pluralErr ? 'sp_user_profile' : 'sp_user_profiles';
+            query = supabase.from(tableToUse).select('*');
+        } else {
+            query = supabase.from(actualTable).select('*');
+        }
 
         // Marketplace missions: anyone authenticated can see all
         // Other tables: strictly filter by user_id
-        if (table !== 'marketplace_missions' && table !== 'sp_marketplace_missions') {
+        if (!['marketplace_missions', 'sp_marketplace_missions'].includes(table)) {
             query = query.eq('user_id', req.user.id);
         }
 

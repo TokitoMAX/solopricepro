@@ -75,6 +75,7 @@ const Storage = {
             this.KEYS.EXPENSES,
             this.KEYS.SETTINGS,
             this.KEYS.CALCULATOR_DATA,
+            this.KEYS.USER_PROFILE,
             this.KEYS.MARKETPLACE_MISSIONS, // Public data
             this.KEYS.MARKETPLACE_APPLICATIONS, // Generic fetch (Candidate view)
             this.KEYS.MARKETPLACE_INVITATIONS,   // Add Invitations Sync
@@ -95,9 +96,16 @@ const Storage = {
                 });
 
                 if (res.ok) {
-                    const data = await res.json();
+                    let data = await res.json();
+
+                    // Singular tables normalization: [{ ... }] -> { ... }
+                    const singularKeyList = [this.KEYS.SETTINGS, this.KEYS.CALCULATOR_DATA, this.KEYS.USER_PROFILE, 'sp_user_profile'];
+                    if (singularKeyList.includes(table) && Array.isArray(data)) {
+                        data = data.length > 0 ? data[0] : {};
+                    }
+
                     this._cache[table] = data;
-                    console.log(`📡 Table [${table}] synced: ${data.length} items`);
+                    console.log(`📡 Table [${table}] synced: ${Array.isArray(data) ? data.length : '1'} item(s)`);
                 } else if (res.status === 401 || res.status === 403) {
                     console.error(`🔒 Unauthorized access to [${table}]. Session might be expired.`);
                     // We only want to trigger this once per batch
@@ -511,15 +519,26 @@ const Storage = {
     // --- Legacy / Compatibility Helpers ---
 
     getUser() {
-        // Return local profile or Auth user if available
-        return this._cache[this.KEYS.USER_PROFILE] || (typeof Auth !== 'undefined' ? Auth.user : null);
+        // Return Auth user merged with DB profile if available
+        const authUser = (typeof Auth !== 'undefined' ? Auth.user : null);
+        const dbProfile = this._cache[this.KEYS.USER_PROFILE];
+
+        if (dbProfile && authUser) {
+            return {
+                ...authUser,
+                ...dbProfile,
+                company: dbProfile // Because sp_user_profiles stores company fields directly
+            };
+        }
+        return dbProfile || authUser;
     },
 
     getUserCompany() {
         const user = this.getUser();
         if (!user) return {};
-        // Prioritize company object, then fall back to user_metadata (from Supabase Auth)
-        return user.company || user.user_metadata?.company || {};
+        // If user is from DB, it already has the fields or is the company object
+        // If user is from Auth only, look in metadata
+        return user.company || user.user_metadata?.company || (user.name ? user : {});
     },
 
     getNormalizedUser() {
