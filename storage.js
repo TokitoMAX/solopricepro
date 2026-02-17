@@ -518,7 +518,19 @@ const Storage = {
     getUserCompany() {
         const user = this.getUser();
         if (!user) return {};
+        // Prioritize company object, then fall back to user_metadata (from Supabase Auth)
         return user.company || user.user_metadata?.company || {};
+    },
+
+    getNormalizedUser() {
+        const user = this.getUser();
+        if (!user) return null;
+        return {
+            ...user,
+            company: this.getUserCompany(),
+            isPro: this.isPro(),
+            tier: this.getTier()
+        };
     },
 
     setUser(user) {

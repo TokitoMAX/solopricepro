@@ -644,9 +644,10 @@ const Quotes = {
 
         const quote = Storage.getQuote(id);
         const client = Storage.getClient(quote.clientId);
+        const normalizedUser = Storage.getNormalizedUser();
 
         if (typeof PDFGenerator !== 'undefined' && PDFGenerator.generateQuote) {
-            PDFGenerator.generateQuote(quote, client, user);
+            PDFGenerator.generateQuote(quote, client, normalizedUser);
         } else {
             App.showNotification('Module PDF indisponible pour le moment.', 'info');
         }

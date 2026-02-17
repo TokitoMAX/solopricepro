@@ -603,10 +603,11 @@ const Invoices = {
 
         const invoice = Storage.getInvoice(id);
         const client = Storage.getClient(invoice.clientId);
+        const normalizedUser = Storage.getNormalizedUser();
 
         // Utiliser le module PDF si disponible
         if (typeof PDFGenerator !== 'undefined') {
-            PDFGenerator.generateInvoice(invoice, client, user);
+            PDFGenerator.generateInvoice(invoice, client, normalizedUser);
         } else {
             App.showNotification('Module PDF en cours de chargement...', 'error');
         }
