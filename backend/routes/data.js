@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const upload = multer({ limits: { fileSize: 500 * 1024 } }); // 500KB limit
+const upload = multer({ limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB limit
 
 // Middleware to extract user from Supabase token
 async function authenticateUser(req, res, next) {
@@ -151,11 +151,14 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
             console.log("[STORAGE-UPLOAD] 🏗️ Creating 'logos' bucket...");
             const { error: createError } = await supabase.storage.createBucket('logos', {
                 public: true,
-                allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg'],
-                fileSizeLimit: 524288 // 500KB
+                allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'],
+                fileSizeLimit: 2097152 // 2MB
             });
             if (createError) throw createError;
         }
+
+        // Optional: Update bucket if it exists but might have old limits? 
+        // Supabase updateBucket requires specific permissions, let's just try to upload and handle errors gracefully.
 
         // Upload to bucket
         const { data, error: uploadError } = await supabase.storage.from('logos').upload(bodyPath, file.buffer, {
@@ -163,7 +166,13 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
             upsert: true
         });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+            console.error("[STORAGE-UPLOAD] ❌ Supabase Upload Error:", uploadError);
+            return res.status(400).json({
+                message: "L'envoi vers Supabase a échoué. Vérifiez le type et la taille de l'image (max 2Mo).",
+                error: uploadError.message
+            });
+        }
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage.from('logos').getPublicUrl(bodyPath);
