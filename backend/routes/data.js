@@ -55,8 +55,18 @@ router.get('/:table', async (req, res) => {
 // Generic POST (Insert)
 router.post('/:table', async (req, res) => {
     let { table } = req.params;
-    const actualTable = table.startsWith('sp_') ? table : `sp_${table}`;
+    let actualTable = table.startsWith('sp_') ? table : `sp_${table}`;
     const supabase = req.app.get('supabase');
+
+    // Robust handling for profile table variation (sp_user_profile vs sp_user_profiles)
+    if (table === 'user_profile' || table === 'sp_user_profile' || table === 'sp_user_profiles') {
+        const { data: tables } = await supabase.rpc('get_tables'); // Try to find which one exists
+        // Fallback check if RPC fails
+        const { error: pluralErr } = await supabase.from('sp_user_profiles').select('count', { count: 'exact', head: true }).limit(1);
+        actualTable = pluralErr ? 'sp_user_profile' : 'sp_user_profiles';
+        console.log(`[DATA-POST] 💡 Resolved profile table to: ${actualTable}`);
+    }
+
     let payload = req.body;
 
     // Ensure user_id is set
@@ -69,7 +79,7 @@ router.post('/:table', async (req, res) => {
     console.log(`[DATA-POST] 📤 Upserting to ${actualTable}:`, JSON.stringify(payload, null, 2));
 
     // Singular tables use 'user_id' as PK, others use 'id'
-    const isSingularTable = ['settings', 'calculator_data', 'sp_settings', 'sp_calculator_data', 'sp_user_profiles'].includes(table);
+    const isSingularTable = ['settings', 'calculator_data', 'sp_settings', 'sp_calculator_data', 'user_profile', 'sp_user_profile', 'sp_user_profiles'].includes(table);
     const onConflict = isSingularTable ? 'user_id' : 'id';
 
     try {
@@ -168,9 +178,12 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
 
         if (uploadError) {
             console.error("[STORAGE-UPLOAD] ❌ Supabase Upload Error:", uploadError);
+            console.error("[STORAGE-UPLOAD] Full Error Object:", JSON.stringify(uploadError, null, 2));
             return res.status(400).json({
+                success: false,
                 message: "L'envoi vers Supabase a échoué. Vérifiez le type et la taille de l'image (max 2Mo).",
-                error: uploadError.message
+                error: uploadError.message,
+                details: uploadError
             });
         }
 
