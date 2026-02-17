@@ -28,7 +28,7 @@ const Storage = {
         EXPENSES: 'sp_expenses',
         SETTINGS: 'sp_settings',
         CALCULATOR_DATA: 'sp_calculator_data',
-        USER_PROFILE: 'sp_user_profiles', // Cloud table for user profile
+        USER_PROFILE: 'sp_user_profile', // Cloud table for user profile
         MARKETPLACE_MISSIONS: 'sp_marketplace_missions',
         MARKETPLACE_APPLICATIONS: 'sp_marketplace_applications',
         MARKETPLACE_INVITATIONS: 'sp_marketplace_invitations',

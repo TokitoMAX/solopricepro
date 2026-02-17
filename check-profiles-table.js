@@ -6,12 +6,22 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABAS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkProfiles() {
-    console.log("Checking 'profiles' table...");
-    const { data, error } = await supabase.from('profiles').select('*').limit(1);
-    if (error) {
-        console.log(`❌ profiles: ${error.message}`);
-    } else {
-        console.log(`✅ profiles exists. Columns: ${Object.keys(data[0] || {}).join(', ')}`);
+    const tables = ['profiles', 'user_profiles', 'sp_user_profiles', 'sp_user_profile', 'user_profile'];
+    console.log("Checking tables variations...");
+
+    for (const table of tables) {
+        const { data, error } = await supabase.from(table).select('*').limit(1);
+        if (error) {
+            console.log(`❌ ${table}: ${error.code} - ${error.message}`);
+        } else {
+            console.log(`✅ ${table} exists! Rows: ${data.length}`);
+            if (data.length > 0) {
+                console.log(`   Columns: ${Object.keys(data[0]).join(', ')}`);
+            } else {
+                // Try to get headers/columns even if empty
+                console.log(`   Table is empty but exists.`);
+            }
+        }
     }
 }
 

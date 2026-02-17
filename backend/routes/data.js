@@ -36,13 +36,11 @@ router.get('/:table', async (req, res) => {
 
     try {
         let query;
-        if (table === 'user_profile' || table === 'sp_user_profile' || table === 'sp_user_profiles') {
-            const { error: pluralErr } = await supabase.from('sp_user_profiles').select('count', { count: 'exact', head: true }).limit(1);
-            const tableToUse = pluralErr ? 'sp_user_profile' : 'sp_user_profiles';
-            query = supabase.from(tableToUse).select('*');
-        } else {
-            query = supabase.from(actualTable).select('*');
-        }
+        // User Profile variations should always point to the actual table found: sp_user_profile
+        const profileVariations = ['user_profile', 'sp_user_profile', 'user_profiles', 'sp_user_profiles'];
+        const tableToUse = profileVariations.includes(table) ? 'sp_user_profile' : actualTable;
+
+        query = supabase.from(tableToUse).select('*');
 
         // Marketplace missions: anyone authenticated can see all
         // Other tables: strictly filter by user_id
@@ -64,14 +62,10 @@ router.post('/:table', async (req, res) => {
     let { table } = req.params;
     let actualTable = table.startsWith('sp_') ? table : `sp_${table}`;
     const supabase = req.app.get('supabase');
-
-    // Robust handling for profile table variation (sp_user_profile vs sp_user_profiles)
-    if (table === 'user_profile' || table === 'sp_user_profile' || table === 'sp_user_profiles') {
-        const { data: tables } = await supabase.rpc('get_tables'); // Try to find which one exists
-        // Fallback check if RPC fails
-        const { error: pluralErr } = await supabase.from('sp_user_profiles').select('count', { count: 'exact', head: true }).limit(1);
-        actualTable = pluralErr ? 'sp_user_profile' : 'sp_user_profiles';
-        console.log(`[DATA-POST] 💡 Resolved profile table to: ${actualTable}`);
+    const profileVariations = ['user_profile', 'sp_user_profile', 'user_profiles', 'sp_user_profiles'];
+    if (profileVariations.includes(table)) {
+        actualTable = 'sp_user_profile';
+        console.log(`[DATA-POST] 💡 Forced profile table to: ${actualTable}`);
     }
 
     let payload = req.body;
@@ -86,7 +80,7 @@ router.post('/:table', async (req, res) => {
     console.log(`[DATA-POST] 📤 Upserting to ${actualTable}:`, JSON.stringify(payload, null, 2));
 
     // Singular tables use 'user_id' as PK, others use 'id'
-    const isSingularTable = ['settings', 'calculator_data', 'sp_settings', 'sp_calculator_data', 'user_profile', 'sp_user_profile', 'sp_user_profiles'].includes(table);
+    const isSingularTable = ['settings', 'calculator_data', 'sp_settings', 'sp_calculator_data', ...profileVariations].includes(table);
     const onConflict = isSingularTable ? 'user_id' : 'id';
 
     try {
