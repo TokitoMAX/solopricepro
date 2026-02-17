@@ -35,6 +35,7 @@ router.get('/:table', async (req, res) => {
     const supabase = req.app.get('supabase');
 
     try {
+        let query;
         if (table === 'user_profile' || table === 'sp_user_profile' || table === 'sp_user_profiles') {
             const { error: pluralErr } = await supabase.from('sp_user_profiles').select('count', { count: 'exact', head: true }).limit(1);
             const tableToUse = pluralErr ? 'sp_user_profile' : 'sp_user_profiles';
