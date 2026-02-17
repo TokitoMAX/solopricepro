@@ -11,12 +11,12 @@ BEGIN
     END IF;
 END $$;
 
--- Ensure sp_user_profile has unique user_id
+-- Ensure sp_user_profiles has unique user_id
 DO $$
 BEGIN
     IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'sp_user_profile_user_id_unique'
+        SELECT 1 FROM pg_constraint WHERE conname = 'sp_user_profiles_user_id_unique'
     ) THEN
-        ALTER TABLE public.sp_user_profile ADD CONSTRAINT sp_user_profile_user_id_unique UNIQUE (user_id);
+        ALTER TABLE public.sp_user_profiles ADD CONSTRAINT sp_user_profiles_user_id_unique UNIQUE (user_id);
     END IF;
 END $$;
