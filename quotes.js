@@ -299,15 +299,15 @@ const Quotes = {
 
                         <div class="invoice-totals" style="border-top: 2px solid var(--border); padding-top: 1.5rem;">
                             <div class="total-row">
-                                <span style="opacity: 0.8;">Prestations (Net) :</span>
+                                <span style="opacity: 0.8;">Prestations HT :</span>
                                 <span id="subtotal-display">0€</span>
                             </div>
                             <div class="total-row" style="color: var(--primary-light);">
-                                <span style="font-weight: 600;">Marge de Service (15%) :</span>
+                                <span style="font-weight: 600;">Frais de Service (15%) :</span>
                                 <span id="margin-display">0€</span>
                             </div>
                             <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem;">
-                                <span style="font-weight: 700;">Total HT :</span>
+                                <span style="font-weight: 700;">Total Hors Taxes :</span>
                                 <span id="final-subtotal-display" style="font-weight: 700;">0€</span>
                             </div>
                             <div class="total-row">
