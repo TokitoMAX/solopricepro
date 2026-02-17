@@ -54,19 +54,30 @@ const Profile = {
                                 </div>
                                 
                                 <div class="form-group full-width">
-                                    <label class="form-label">Logo de l'entreprise</label>
-                                    <div class="logo-upload-container" style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px dashed var(--border);">
-                                        <div id="logo-preview" style="width: 80px; height: 80px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border);">
-                                            ${company.logo ? `<img src="${company.logo}" style="width: 100%; height: 100%; object-fit: contain;">` : '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>'}
+                                    <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                        Logo de l'entreprise
+                                        ${!isPro ? `<span class="badge-premium" style="background: var(--primary-glass); color: var(--primary-light); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px;">PRO</span>` : ''}
+                                    </label>
+                                    <div class="logo-upload-container" style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px dashed ${!isPro ? 'rgba(255,255,255,0.05)' : 'var(--border)'}; opacity: ${!isPro ? '0.7' : '1'};">
+                                        <div id="logo-preview" style="width: 80px; height: 80px; background: ${!isPro ? 'rgba(0,0,0,0.2)' : 'white'}; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border);">
+                                            ${company.logo && isPro ? `<img src="${company.logo}" style="width: 100%; height: 100%; object-fit: contain;">` : '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>'}
                                         </div>
                                         <div style="flex: 1;">
                                             <input type="file" id="logo-input" accept="image/*" style="display: none;" onchange="Profile.handleLogoUpload(event)">
-                                            <div style="display: flex; gap: 0.5rem;">
-                                                <button type="button" class="button-primary small" onclick="document.getElementById('logo-input').click()">Charger Logo</button>
-                                                ${company.logo ? `<button type="button" class="button-danger small" onclick="Profile.removeLogo()">Supprimer</button>` : ''}
+                                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                                ${isPro ? `
+                                                    <button type="button" class="button-primary small" onclick="document.getElementById('logo-input').click()">Charger Logo</button>
+                                                    ${company.logo ? `<button type="button" class="button-danger small" onclick="Profile.removeLogo()">Supprimer</button>` : ''}
+                                                ` : `
+                                                    <button type="button" class="button-secondary small" onclick="App.showUpgradeModal()" style="background: rgba(16, 185, 129, 0.1); border-color: var(--primary-glass);">
+                                                        <i class="fas fa-lock" style="margin-right: 5px; font-size: 0.8rem;"></i> Débloquer le Logo
+                                                    </button>
+                                                `}
                                             </div>
-                                            <p class="text-xs text-muted" style="margin-top: 0.5rem;">PNG or JPG. Max 500KB.</p>
-                                            <input type="hidden" name="logo" id="logo-base64" value="${company.logo || ''}">
+                                            <p class="text-xs text-muted" style="margin-top: 0.5rem;">
+                                                ${isPro ? 'PNG or JPG. Max 500KB.' : 'L\'ajout de logo est réservé aux comptes PRO et EXPERT.'}
+                                            </p>
+                                            <input type="hidden" name="logo" id="logo-base64" value="${(isPro && company.logo) ? company.logo : ''}">
                                         </div>
                                     </div>
                                 </div>

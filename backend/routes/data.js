@@ -53,6 +53,17 @@ router.get('/:table', async (req, res) => {
         if (error) throw error;
         res.json(data);
     } catch (err) {
+        console.error(`[DATA-GET] ❌ Error for ${table}:`, err);
+
+        // Handle Postgrest error for missing table (PGRST204 / PGRST205)
+        if (err.code === 'PGRST116' || err.code === 'PGRST204' || err.code === 'PGRST205') {
+            return res.status(404).json({
+                message: `Table '${table}' not found in database. Please run the setup script.`,
+                code: err.code,
+                isSchemaError: true
+            });
+        }
+
         res.status(500).json({ message: `Error fetching ${table}`, error: err.message });
     }
 });

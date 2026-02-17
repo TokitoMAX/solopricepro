@@ -457,8 +457,8 @@ const Storage = {
         // Simple logic for now
         return {
             plan: 'standard',
-            canAddClient: clients < 3, // Limit for free tier
-            limitReached: clients >= 3
+            canAddClient: clients < 1, // Limit for free tier
+            limitReached: clients >= 1
         };
     },
 
