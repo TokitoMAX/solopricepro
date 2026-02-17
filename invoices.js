@@ -191,18 +191,26 @@ const Invoices = {
 
                         <div id="margin-guard-container" style="margin-top: 1.5rem;"></div>
 
-                        <div class="invoice-totals">
+                        <div class="invoice-totals" style="border-top: 2px solid var(--border); padding-top: 1.5rem;">
                             <div class="total-row">
-                                <span>Sous-total HT :</span>
+                                <span style="opacity: 0.8;">Prestations (Net) :</span>
                                 <span id="subtotal-display">0€</span>
                             </div>
+                            <div class="total-row" style="color: var(--primary-light);">
+                                <span style="font-weight: 600;">Marge de Service (15%) :</span>
+                                <span id="margin-display">0€</span>
+                            </div>
+                            <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem;">
+                                <span style="font-weight: 700;">Total HT :</span>
+                                <span id="final-subtotal-display" style="font-weight: 700;">0€</span>
+                            </div>
                             <div class="total-row">
-                                <span>TVA (${settings.taxRate}%) :</span>
+                                <span id="tax-label-display">TVA (${settings.taxRate}%) :</span>
                                 <span id="tax-display">0€</span>
                             </div>
-                            <div class="total-row total">
-                                <span>Total TTC :</span>
-                                <span id="total-display">0€</span>
+                            <div class="total-row total" style="background: var(--primary-glass); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                                <span style="font-size: 1.2rem; font-weight: 800;">TOTAL TTC :</span>
+                                <span id="total-display" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-light);">0€</span>
                             </div>
                         </div>
                     </div>
@@ -287,7 +295,7 @@ const Invoices = {
         if (!form) return;
 
         const settings = Storage.get(Storage.KEYS.SETTINGS);
-        let subtotal = 0;
+        let itemsSubtotal = 0;
 
         // Calculer à partir des inputs actuels
         form.querySelectorAll('.item-row').forEach(row => {
@@ -299,17 +307,31 @@ const Invoices = {
             const display = row.querySelector('.item-total-display');
             if (display) display.textContent = App.formatCurrency(itemTotal);
 
-            subtotal += itemTotal;
+            itemsSubtotal += itemTotal;
         });
 
-        const tax = subtotal * (settings.taxRate / 100);
-        const total = subtotal + tax;
+        // Calcul de la Marge de Service (Style Marketplace)
+        const SERVICE_MARGIN_RATE = 0.15;
+        const margin = itemsSubtotal * SERVICE_MARGIN_RATE;
+        const finalSubtotal = itemsSubtotal + margin;
 
-        document.getElementById('subtotal-display').textContent = App.formatCurrency(subtotal);
-        document.getElementById('tax-display').textContent = App.formatCurrency(tax);
-        document.getElementById('total-display').textContent = App.formatCurrency(total);
+        const tax = finalSubtotal * (settings.taxRate / 100);
+        const total = finalSubtotal + tax;
 
-        this.renderMarginGuard(subtotal);
+        // Update UI
+        const subtotalEl = document.getElementById('subtotal-display');
+        const marginEl = document.getElementById('margin-display');
+        const finalSubtotalEl = document.getElementById('final-subtotal-display');
+        const taxEl = document.getElementById('tax-display');
+        const totalEl = document.getElementById('total-display');
+
+        if (subtotalEl) subtotalEl.textContent = App.formatCurrency(itemsSubtotal);
+        if (marginEl) marginEl.textContent = App.formatCurrency(margin);
+        if (finalSubtotalEl) finalSubtotalEl.textContent = App.formatCurrency(finalSubtotal);
+        if (taxEl) taxEl.textContent = App.formatCurrency(tax);
+        if (totalEl) totalEl.textContent = App.formatCurrency(total);
+
+        this.renderMarginGuard(itemsSubtotal);
     },
 
     renderMarginGuard(subtotal) {
@@ -384,16 +406,24 @@ const Invoices = {
         }
 
         const settings = Storage.get(Storage.KEYS.SETTINGS);
-        const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-        const tax = subtotal * (settings.taxRate / 100);
-        const total = subtotal + tax;
+        const itemsSubtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+
+        // Marge de Service (15%)
+        const SERVICE_MARGIN_RATE = 0.15;
+        const margin = itemsSubtotal * SERVICE_MARGIN_RATE;
+        const finalSubtotal = itemsSubtotal + margin;
+
+        const tax = finalSubtotal * (settings.taxRate / 100);
+        const total = finalSubtotal + tax;
 
         const invoiceData = {
             clientId: formData.get('clientId'),
             dueDate: formData.get('dueDate'),
             status: formData.get('status'),
             items: items,
-            subtotal: subtotal,
+            itemsSubtotal: itemsSubtotal,
+            margin: margin,
+            subtotal: finalSubtotal,
             tax: tax,
             total: total
         };

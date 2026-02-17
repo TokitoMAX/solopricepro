@@ -297,18 +297,26 @@ const Quotes = {
 
                         <div id="margin-guard-container" style="margin-top: 1.5rem;"></div>
 
-                        <div class="invoice-totals">
+                        <div class="invoice-totals" style="border-top: 2px solid var(--border); padding-top: 1.5rem;">
                             <div class="total-row">
-                                <span>Sous-total HT :</span>
+                                <span style="opacity: 0.8;">Prestations (Net) :</span>
                                 <span id="subtotal-display">0€</span>
                             </div>
+                            <div class="total-row" style="color: var(--primary-light);">
+                                <span style="font-weight: 600;">Marge de Service (15%) :</span>
+                                <span id="margin-display">0€</span>
+                            </div>
+                            <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem;">
+                                <span style="font-weight: 700;">Total HT :</span>
+                                <span id="final-subtotal-display" style="font-weight: 700;">0€</span>
+                            </div>
                             <div class="total-row">
-                                <span>TVA (${settings.taxRate}%) :</span>
+                                <span id="tax-label-display">TVA (${settings.taxRate}%) :</span>
                                 <span id="tax-display">0€</span>
                             </div>
-                            <div class="total-row total">
-                                <span>Total TTC :</span>
-                                <span id="total-display">0€</span>
+                            <div class="total-row total" style="background: var(--primary-glass); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                                <span style="font-size: 1.2rem; font-weight: 800;">TOTAL TTC :</span>
+                                <span id="total-display" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-light);">0€</span>
                             </div>
                             <div class="total-row tax-context-info">
                                 <span id="tax-info-display" class="text-xs text-muted"></span>
@@ -413,7 +421,7 @@ const Quotes = {
         if (!form) return;
 
         const settings = Storage.get(Storage.KEYS.SETTINGS);
-        let subtotal = 0;
+        let itemsSubtotal = 0;
 
         form.querySelectorAll('.item-row').forEach(row => {
             const qty = parseFloat(row.querySelector('[name*="[quantity]"]')?.value) || 0;
@@ -423,27 +431,43 @@ const Quotes = {
             const display = row.querySelector('.item-total-display');
             if (display) display.textContent = App.formatCurrency(itemTotal);
 
-            subtotal += itemTotal;
+            itemsSubtotal += itemTotal;
         });
 
-        let tax = subtotal * (settings.taxRate / 100);
-        let total = subtotal + tax;
+        // Calcul de la Marge de Service (Style Marketplace)
+        const SERVICE_MARGIN_RATE = 0.15;
+        const margin = itemsSubtotal * SERVICE_MARGIN_RATE;
+        const finalSubtotal = itemsSubtotal + margin;
+
+        let tax = finalSubtotal * (settings.taxRate / 100);
+        let total = finalSubtotal + tax;
         let taxLabel = `TVA (${settings.taxRate}%) :`;
 
         if (typeof TaxEngine !== 'undefined') {
-            const taxResult = TaxEngine.calculate(subtotal);
+            const taxResult = TaxEngine.calculate(finalSubtotal);
             tax = taxResult.vat;
             total = taxResult.ttc;
             taxLabel = `TVA (${TaxEngine.getCurrent().vat}%) :`;
-            document.getElementById('tax-info-display').textContent = TaxEngine.getCurrent().description;
+            const taxInfo = document.getElementById('tax-info-display');
+            if (taxInfo) taxInfo.textContent = TaxEngine.getCurrent().description;
         }
 
-        document.getElementById('subtotal-display').textContent = App.formatCurrency(subtotal);
-        document.getElementById('tax-display').previousElementSibling.textContent = taxLabel;
-        document.getElementById('tax-display').textContent = App.formatCurrency(tax);
-        document.getElementById('total-display').textContent = App.formatCurrency(total);
+        // Update UI
+        const subtotalEl = document.getElementById('subtotal-display');
+        const marginEl = document.getElementById('margin-display');
+        const finalSubtotalEl = document.getElementById('final-subtotal-display');
+        const taxLabelEl = document.getElementById('tax-label-display');
+        const taxEl = document.getElementById('tax-display');
+        const totalEl = document.getElementById('total-display');
 
-        this.renderMarginGuard(subtotal);
+        if (subtotalEl) subtotalEl.textContent = App.formatCurrency(itemsSubtotal);
+        if (marginEl) marginEl.textContent = App.formatCurrency(margin);
+        if (finalSubtotalEl) finalSubtotalEl.textContent = App.formatCurrency(finalSubtotal);
+        if (taxLabelEl) taxLabelEl.textContent = taxLabel;
+        if (taxEl) taxEl.textContent = App.formatCurrency(tax);
+        if (totalEl) totalEl.textContent = App.formatCurrency(total);
+
+        this.renderMarginGuard(itemsSubtotal);
     },
 
     renderMarginGuard(subtotal) {
@@ -495,14 +519,20 @@ const Quotes = {
             return;
         }
 
-        const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+        const itemsSubtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+
+        // Marge de Service (15%)
+        const SERVICE_MARGIN_RATE = 0.15;
+        const margin = itemsSubtotal * SERVICE_MARGIN_RATE;
+        const finalSubtotal = itemsSubtotal + margin;
+
         const settings = Storage.get(Storage.KEYS.SETTINGS);
-        let tax = subtotal * (settings.taxRate / 100);
-        let total = subtotal + tax;
+        let tax = finalSubtotal * (settings.taxRate / 100);
+        let total = finalSubtotal + tax;
         let taxContext = null;
 
         if (typeof TaxEngine !== 'undefined') {
-            const taxResult = TaxEngine.calculate(subtotal);
+            const taxResult = TaxEngine.calculate(finalSubtotal);
             tax = taxResult.vat;
             total = taxResult.ttc;
             taxContext = TaxEngine.currentContext;
@@ -513,7 +543,9 @@ const Quotes = {
             title: formData.get('title'),
             status: formData.get('status'),
             items: items,
-            subtotal: subtotal,
+            itemsSubtotal: itemsSubtotal,
+            margin: margin,
+            subtotal: finalSubtotal,
             tax: tax,
             total: total,
             taxContext: taxContext
@@ -561,6 +593,8 @@ const Quotes = {
             clientId: quote.clientId,
             status: 'draft',
             items: quote.items,
+            itemsSubtotal: quote.itemsSubtotal || quote.subtotal,
+            margin: quote.margin || 0,
             subtotal: quote.subtotal,
             tax: quote.tax,
             total: quote.total,

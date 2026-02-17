@@ -127,11 +127,19 @@ const PDFGenerator = {
                 <div class="totals-container">
                     <div class="totals-table">
                         <div class="total-row">
+                            <span class="text-light">Prestations</span>
+                            <span style="font-weight: 600;">${App.formatCurrency(invoice.itemsSubtotal || invoice.subtotal)}</span>
+                        </div>
+                        <div class="total-row" style="color: var(--primary);">
+                            <span class="text-light">Marge de Service (15%)</span>
+                            <span style="font-weight: 600;">${App.formatCurrency(invoice.margin || 0)}</span>
+                        </div>
+                        <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px;">
                             <span class="text-light">Sous-total HT</span>
                             <span style="font-weight: 600;">${App.formatCurrency(invoice.subtotal)}</span>
                         </div>
                         <div class="total-row">
-                            <span class="text-light">TVA (${settings.taxRate}%)</span>
+                            <span class="text-light">TVA (${(invoice.taxContext?.vat !== undefined) ? invoice.taxContext.vat : settings.taxRate}%)</span>
                             <span style="font-weight: 600;">${App.formatCurrency(invoice.tax)}</span>
                         </div>
                         <div class="total-row grand">
@@ -297,11 +305,19 @@ const PDFGenerator = {
                 <div class="totals-container">
                     <div class="totals-table">
                         <div class="total-row">
+                            <span class="text-light">Prestations</span>
+                            <span style="font-weight: 600;">${App.formatCurrency(quote.itemsSubtotal || quote.subtotal)}</span>
+                        </div>
+                        <div class="total-row" style="color: var(--primary);">
+                            <span class="text-light">Marge de Service (15%)</span>
+                            <span style="font-weight: 600;">${App.formatCurrency(quote.margin || 0)}</span>
+                        </div>
+                        <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px;">
                             <span class="text-light">Sous-total HT</span>
                             <span style="font-weight: 600;">${App.formatCurrency(quote.subtotal)}</span>
                         </div>
                         <div class="total-row">
-                            <span class="text-light">TVA (${settings.taxRate}%)</span>
+                            <span class="text-light">TVA (${(quote.taxContext?.vat !== undefined) ? quote.taxContext.vat : settings.taxRate}%)</span>
                             <span style="font-weight: 600;">${App.formatCurrency(quote.tax)}</span>
                         </div>
                         <div class="total-row grand">
