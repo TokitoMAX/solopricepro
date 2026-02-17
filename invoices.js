@@ -124,6 +124,11 @@ const Invoices = {
                 this.addDefaultServicesForClient(e.target.value);
             });
         }
+
+        // Render Tax Selector
+        if (typeof TaxEngine !== 'undefined') {
+            TaxEngine.renderSelector('invoice-tax-selector-container', () => this.updateTotals());
+        }
     },
 
     renderForm(clients, invoice = null) {
@@ -175,6 +180,10 @@ const Invoices = {
                                 <option value="overdue" ${invoice?.status === 'overdue' ? 'selected' : ''}>En retard</option>
                             </select>
                         </div>
+
+                        <div class="form-group full-width" id="invoice-tax-selector-container">
+                            <!-- TaxEngine will render here -->
+                        </div>
                     </div>
 
                     <div class="form-section">
@@ -211,6 +220,9 @@ const Invoices = {
                             <div class="total-row total" style="background: var(--primary-glass); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
                                 <span style="font-size: 1.2rem; font-weight: 800;">TOTAL TTC :</span>
                                 <span id="total-display" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-light);">0€</span>
+                            </div>
+                            <div class="total-row tax-context-info">
+                                <span id="tax-info-display" class="text-xs text-muted"></span>
                             </div>
                         </div>
                     </div>
@@ -328,8 +340,20 @@ const Invoices = {
         if (subtotalEl) subtotalEl.textContent = App.formatCurrency(itemsSubtotal);
         if (marginEl) marginEl.textContent = App.formatCurrency(margin);
         if (finalSubtotalEl) finalSubtotalEl.textContent = App.formatCurrency(finalSubtotal);
+
+        if (taxLabelEl) {
+            const taxRate = (typeof TaxEngine !== 'undefined') ? TaxEngine.getCurrent().vat : settings.taxRate;
+            taxLabelEl.textContent = `TVA (${taxRate}%) :`;
+        }
+
         if (taxEl) taxEl.textContent = App.formatCurrency(tax);
         if (totalEl) totalEl.textContent = App.formatCurrency(total);
+
+        // Update Tax Info
+        const taxInfoEl = document.getElementById('tax-info-display');
+        if (taxInfoEl && typeof TaxEngine !== 'undefined') {
+            taxInfoEl.textContent = TaxEngine.getCurrent().description;
+        }
 
         this.renderMarginGuard(itemsSubtotal);
     },
@@ -413,8 +437,16 @@ const Invoices = {
         const margin = itemsSubtotal * SERVICE_MARGIN_RATE;
         const finalSubtotal = itemsSubtotal + margin;
 
-        const tax = finalSubtotal * (settings.taxRate / 100);
-        const total = finalSubtotal + tax;
+        let tax = finalSubtotal * (settings.taxRate / 100);
+        let total = finalSubtotal + tax;
+        let taxContext = null;
+
+        if (typeof TaxEngine !== 'undefined') {
+            const taxResult = TaxEngine.calculate(finalSubtotal);
+            tax = taxResult.vat;
+            total = taxResult.ttc;
+            taxContext = TaxEngine.currentContext;
+        }
 
         const invoiceData = {
             clientId: formData.get('clientId'),
@@ -425,7 +457,8 @@ const Invoices = {
             margin: margin,
             subtotal: finalSubtotal,
             tax: tax,
-            total: total
+            total: total,
+            taxContext: taxContext
         };
 
         const btn = form.querySelector('button[type="submit"]');

@@ -11,12 +11,26 @@ const TaxEngine = {
             description: 'TVA standard 20% | Charges Sociales ~21.1%',
             code: 'FR'
         },
+        'FR-MICRO': {
+            name: 'France (Auto-Entrepreneur)',
+            vat: 0,
+            socialRate: 21.1,
+            description: 'TVA non applicable, art. 293 B du CGI | Charges ~21.1%',
+            code: 'FR-AE'
+        },
         'FR-REUNION': {
             name: 'La Réunion',
             vat: 8.5,
             socialRate: 21.1,
             description: 'TVA 8.5% | Charges Sociales ~21.1%',
             code: 'REU'
+        },
+        'AE-REUNION': {
+            name: 'La Réunion (Auto-Entrepreneur)',
+            vat: 0,
+            socialRate: 21.1,
+            description: 'TVA non applicable, art. 293 B du CGI | Charges ~21.1%',
+            code: 'REU-AE'
         },
         'FR-GUADELOUPE': {
             name: 'Guadeloupe',
@@ -25,12 +39,26 @@ const TaxEngine = {
             description: 'TVA 8.5% | Charges Sociales ~21.1%',
             code: 'GUA'
         },
+        'AE-GUADELOUPE': {
+            name: 'Guadeloupe (Auto-Entrepreneur)',
+            vat: 0,
+            socialRate: 21.1,
+            description: 'TVA non applicable, art. 293 B du CGI | Charges ~21.1%',
+            code: 'GUA-AE'
+        },
         'FR-MARTINIQUE': {
             name: 'Martinique',
             vat: 8.5,
             socialRate: 21.1,
             description: 'TVA 8.5% | Charges Sociales ~21.1%',
             code: 'MAR'
+        },
+        'AE-MARTINIQUE': {
+            name: 'Martinique (Auto-Entrepreneur)',
+            vat: 0,
+            socialRate: 21.1,
+            description: 'TVA non applicable, art. 293 B du CGI | Charges ~21.1%',
+            code: 'MAR-AE'
         },
         'FR-GUYANE': {
             name: 'Guyane',

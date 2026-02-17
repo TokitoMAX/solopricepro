@@ -154,6 +154,7 @@ const PDFGenerator = {
                     <p>
                         Règlement souhaité par virement bancaire.<br>
                         <strong>Échéance :</strong> ${dueDate}<br>
+                        ${invoice.tax === 0 ? '<strong>TVA non applicable, art. 293 B du CGI</strong><br>' : ''}
                         <em>Pénalités de retard : 3 fois le taux d'intérêt légal + 40€ d'indemnité forfaitaire (Art. L441-6).</em>
                     </p>
                     ${user.company.footer_mentions ? `<div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">${user.company.footer_mentions}</div>` : ''}
@@ -329,8 +330,8 @@ const PDFGenerator = {
 
                 <div class="signature-area">
                     <div style="font-size: 13px; color: var(--text-light);">
-                        <p><strong>Conditions de vente :</strong></p>
                         <p>Ce devis est valable pour une durée de ${validityDays} jours à compter de sa date d'émission. Le début des travaux est conditionné par le retour de ce devis signé accompagné du versement de l'acompte convenu.</p>
+                        ${quote.tax === 0 ? '<p style="font-weight: 600; margin-top: 10px;">TVA non applicable, art. 293 B du CGI</p>' : ''}
                         ${user.company.footer_mentions ? `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
                     </div>
                     <div class="signature-box" style="position: relative;">
