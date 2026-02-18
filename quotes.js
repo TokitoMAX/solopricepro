@@ -58,6 +58,7 @@ const Quotes = {
     renderQuotes(container) {
         const quotes = Storage.getQuotes();
         const limits = App.checkFreemiumLimits();
+        const isPro = Storage.isPro();
 
         container.innerHTML = `
             <div class="section-header-inline">
