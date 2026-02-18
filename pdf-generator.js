@@ -150,9 +150,28 @@ const PDFGenerator = {
                 </div>
 
                 <div class="legal-section">
-                    <h4>Informations de paiement</h4>
-                    <p>
-                        Règlement souhaité par virement bancaire.<br>
+                    <h4>Instructions de Règlement (Paiement Direct)</h4>
+                    <p style="margin-bottom: 15px; color: var(--text-light);">Ce document contient deux instructions de règlement distinctes pour garantir l'indépendance des prestataires.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">PART PRESTATAIRE : ${App.formatCurrency((invoice.itemsSubtotal || 0) * (1 + (invoice.tax / (invoice.subtotal || 1))))}</strong>
+                            <p style="font-size: 11px; margin: 0;">
+                                À régler à : <strong>${user.company.name}</strong><br>
+                                ${user.company.payment_type === 'link' ? `Lien direct : <a href="${user.company.payment_link}" target="_blank">${user.company.payment_link}</a>` : `IBAN : ${user.company.iban || 'Non renseigné'}<br>BIC : ${user.company.bic || ''}`}
+                            </p>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">FRAIS PLATEFORME : ${App.formatCurrency((invoice.margin || 0) * (1 + (invoice.tax / (invoice.subtotal || 1))))}</strong>
+                            <p style="font-size: 11px; margin: 0;">
+                                À régler à : <strong>SoloPrice Pro</strong><br>
+                                IBAN : FR76 1234 5678 9012 3456 7890 123<br>
+                                BIC : SOLOPRFRXXX
+                            </p>
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 20px;">
                         <strong>Échéance :</strong> ${dueDate}<br>
                         ${invoice.tax === 0 ? '<strong>TVA non applicable, art. 293 B du CGI</strong><br>' : ''}
                         <em>Pénalités de retard : 3 fois le taux d'intérêt légal + 40€ d'indemnité forfaitaire (Art. L441-6).</em>
@@ -280,7 +299,7 @@ const PDFGenerator = {
                             <span class="preview-badge">Aperçu</span>
                             <span>Export complet réservé aux membres PRO</span>
                         </div>
-                        <button class="preview-btn" onclick="window.opener.App.showUpgradeModal('pdf_download'); window.close();">
+                        <button class="preview-btn" onclick="if(window.opener && window.opener.App) { window.opener.App.showUpgradeModal('pdf_download'); window.close(); } else { alert('Veuillez retourner sur l\\'onglet SoloPrice Pro pour passer PRO.'); }">
                             Passez PRO pour télécharger
                         </button>
                     </div>
@@ -373,11 +392,40 @@ const PDFGenerator = {
                 </div>
 
                 <div class="signature-area">
-                    <div style="font-size: 13px; color: var(--text-light);">
-                        <p style="margin-bottom: 15px;">Ce devis est valable pour une durée de ${validityDays} jours à compter de sa date d'émission. Le début des travaux est conditionné par le retour de ce devis signé accompagné du versement de l'acompte convenu.</p>
-                        ${quote.tax === 0 ? '<p style="font-weight: 700; color: var(--text); margin-top: 10px;">TVA non applicable, art. 293 B du CGI</p>' : ''}
-                        ${user.company?.footer_mentions ? `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
+                <div class="legal-section" style="margin-top: 40px; padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light);">
+                    <h4 style="font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px;">Instructions de Règlement (Indépendance Garantie)</h4>
+                    <p style="margin-bottom: 15px;">Pour valider ce devis, le client s'engage à effectuer les deux règlements indépendants ci-dessous :</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">1. PART PRESTATAIRE (85% HT + Taxe)</strong>
+                            <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 10px;">
+                                ${App.formatCurrency((quote.itemsSubtotal || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
+                            </span>
+                            <p style="font-size: 11px; margin: 0;">
+                                Destinataire : <strong>${providerName}</strong><br>
+                                ${user?.company?.payment_type === 'link' ? `Paiement en ligne : <a href="${user.company.payment_link}" style="color: var(--primary);">${user.company.payment_link}</a>` : `Virement (IBAN) : ${user?.company?.iban || 'IBAN non renseigné'}<br>BIC : ${user?.company?.bic || ''}`}
+                            </p>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">2. FRAIS SERVICE (15% HT + Taxe)</strong>
+                            <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 10px;">
+                                ${App.formatCurrency((quote.margin || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
+                            </span>
+                            <p style="font-size: 11px; margin: 0;">
+                                Destinataire : <strong>SoloPrice Pro</strong><br>
+                                IBAN : FR76 1234 5678 9012 3456 7890 123<br>
+                                BIC : SOLOPRFRXXX
+                            </p>
+                        </div>
                     </div>
+
+                    <div style="margin-top: 20px; font-size: 11px;">
+                        <p style="margin-bottom: 5px;">Ce devis est valable jusqu'au ${validUntil}.</p>
+                        ${quote.tax === 0 ? '<p style="font-weight: 700; color: var(--text);">TVA non applicable, art. 293 B du CGI</p>' : ''}
+                        ${user.company?.footer_mentions ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
+                    </div>
+                </div>
                     <div class="signature-box" style="position: relative;">
                         <span class="signature-label">Bon pour accord</span>
                         ${quote.signature ? `
@@ -402,15 +450,26 @@ const PDFGenerator = {
 
         const blob = new Blob([htmlContent], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        if (!isPreview) {
+        if (isPreview) {
+            // Use window.open for previews to try and keep the opener reference
+            const win = window.open(url, '_blank');
+            if (!win) {
+                // Fallback if popup blocked
+                const a = document.createElement('a');
+                a.href = url;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        } else {
+            const a = document.createElement('a');
+            a.href = url;
             a.download = `Devis_${quote.number}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
         App.showNotification(isPreview ? 'Aperçu généré.' : 'Devis prêt pour impression.', 'success');

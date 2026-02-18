@@ -845,7 +845,7 @@ const Quotes = {
                 await Storage.updateQuote(id, quote);
                 App.showNotification('Devis signé et validé !', 'success');
                 this.closeSignatureModal();
-                this.render();
+                this.showPaymentInstructions(id);
             } catch (e) {
                 App.showNotification('Erreur de signature.', 'error');
             }
@@ -909,5 +909,60 @@ const Quotes = {
             refused: 'Refusé'
         };
         return labels[status] || status;
+    },
+
+    showPaymentInstructions(id) {
+        const quote = Storage.getQuote(id);
+        const user = Storage.getNormalizedUser();
+        if (!quote || !user) return;
+
+        const expertAmount = (quote.itemsSubtotal || 0) * (1 + (quote.tax / (quote.subtotal || 1)));
+        const platformAmount = (quote.margin || 0) * (1 + (quote.tax / (quote.subtotal || 1)));
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay active';
+        modal.id = 'payment-instructions-modal';
+        modal.innerHTML = `
+            <div class="modal-content glass" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3>Félicitations ! Devis Signé.</h3>
+                    <button class="modal-close" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">✕</button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem 0;">
+                    <p style="margin-bottom: 1.5rem; text-align: center;">Veuillez procéder aux deux règlements indépendants pour valider la mission :</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="payment-card" style="background: var(--bg-sidebar); border: 1px solid var(--primary-glass); padding: 1.5rem; border-radius: 12px;">
+                            <h4 style="color: var(--primary-light); margin-bottom: 0.5rem;">Prestations</h4>
+                            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem;">${App.formatCurrency(expertAmount)}</div>
+                            <div style="font-size: 0.85rem; line-height: 1.4;">
+                                <strong>À régler à :</strong><br>${user.company.name}<br><br>
+                                ${user.company.payment_type === 'link' ? `
+                                    <a href="${user.company.payment_link}" target="_blank" class="button-primary small" style="display: block; text-align: center; margin-top: 10px;">Payer en ligne</a>
+                                ` : `
+                                    <strong>IBAN :</strong><br><code style="background: rgba(0,0,0,0.2); padding: 2px 4px;">${user.company.iban || 'Non renseigné'}</code><br>
+                                    <strong>BIC :</strong><br><code>${user.company.bic || ''}</code>
+                                `}
+                            </div>
+                        </div>
+
+                        <div class="payment-card" style="background: var(--bg-sidebar); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; opacity: 0.9;">
+                            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Frais Service</h4>
+                            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem;">${App.formatCurrency(platformAmount)}</div>
+                            <div style="font-size: 0.85rem; line-height: 1.4;">
+                                <strong>À régler à :</strong><br>SoloPrice Pro<br><br>
+                                <strong>IBAN :</strong><br><code style="background: rgba(0,0,0,0.2); padding: 2px 4px;">FR76 1234 5678 9012 3456 7890 123</code><br>
+                                <strong>BIC :</strong><br><code>SOLOPRFRXXX</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="justify-content: center;">
+                    <button class="button-outline" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.downloadPDF('${id}'); Quotes.render();">Télécharger le Devis (PDF)</button>
+                    <button class="button-primary" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">Fermer</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
     }
 };

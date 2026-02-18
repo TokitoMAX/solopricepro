@@ -82,6 +82,39 @@ const Profile = {
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="form-section-separator" style="margin: 2rem 0; border-top: 1px solid var(--border);"></div>
+
+                            <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Coordonnées de Paiement</h2>
+                            <p class="text-xs text-muted" style="margin-bottom: 1.5rem;">
+                                Ces informations seront affichées sur vos devis pour que vos clients puissent vous régler directement.
+                            </p>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Mode de règlement préféré</label>
+                                    <select name="payment_type" class="form-input" onchange="Profile.togglePaymentFields(this.value)">
+                                        <option value="iban" ${company.payment_type === 'iban' || !company.payment_type ? 'selected' : ''}>Virement Bancaire (IBAN)</option>
+                                        <option value="link" ${company.payment_type === 'link' ? 'selected' : ''}>Lien de Paiement (Stripe/PayPal)</option>
+                                    </select>
+                                </div>
+                                <div id="iban-fields" class="form-group full-width" style="display: ${company.payment_type === 'link' ? 'none' : 'block'};">
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label class="form-label">IBAN</label>
+                                            <input type="text" name="iban" class="form-input" value="${company.iban || ''}" placeholder="FR76 ...">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">BIC / SWIFT</label>
+                                            <input type="text" name="bic" class="form-input" value="${company.bic || ''}" placeholder="XXXXFRYY">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="link-fields" class="form-group full-width" style="display: ${company.payment_type === 'link' ? 'block' : 'none'};">
+                                    <label class="form-label">Lien de paiement direct</label>
+                                    <input type="url" name="payment_link" class="form-input" value="${company.payment_link || ''}" placeholder="https://buy.stripe.com/...">
+                                </div>
+                            </div>
+
                             <div class="form-actions" style="margin-top: 2rem;">
                                 <button type="submit" class="button-primary full-width">Mettre à jour mon profil</button>
                             </div>
@@ -134,7 +167,11 @@ const Profile = {
             address: formData.get('address') || '',
             footer_mentions: formData.get('footer_mentions') || '',
             logo: formData.get('logo') || '',
-            portfolio: formData.get('portfolio') || ''
+            portfolio: formData.get('portfolio') || '',
+            payment_type: formData.get('payment_type') || 'iban',
+            iban: formData.get('iban') || '',
+            bic: formData.get('bic') || '',
+            payment_link: formData.get('payment_link') || ''
         };
 
         try {
@@ -198,6 +235,18 @@ const Profile = {
         if (logoInput) logoInput.value = '';
         document.getElementById('logo-preview').innerHTML = '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>';
         App.showNotification('Logo supprimé dans la prévisualisation. Enregistrez pour confirmer.', 'info');
+    },
+
+    togglePaymentFields(value) {
+        const ibanFields = document.getElementById('iban-fields');
+        const linkFields = document.getElementById('link-fields');
+        if (value === 'iban') {
+            ibanFields.style.display = 'block';
+            linkFields.style.display = 'none';
+        } else {
+            ibanFields.style.display = 'none';
+            linkFields.style.display = 'block';
+        }
     }
 };
 
