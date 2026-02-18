@@ -188,6 +188,13 @@ const PDFGenerator = {
         const settings = Storage.get(Storage.KEYS.SETTINGS);
         const date = new Date(quote.createdAt).toLocaleDateString('fr-FR');
 
+        // Normalization of provider info
+        const providerName = user?.company?.name || user?.user_metadata?.company_name || 'Votre Entreprise';
+        const providerAddress = user?.company?.address || user?.user_metadata?.address || '';
+        const providerEmail = user?.company?.email || user?.email || '';
+        const providerPhone = user?.company?.phone || '';
+        const providerSiret = user?.company?.siret || '';
+
         // Dynamic validity
         const validityDays = settings.quoteValidityDays || 30;
         const validUntil = new Date(new Date(quote.createdAt).getTime() + validityDays * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR');
@@ -200,82 +207,92 @@ const PDFGenerator = {
                 <title>${isPreview ? 'APERÇU - ' : ''}Devis ${quote.number}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
                 <style>
-                    :root { --primary: #10b981; --primary-dark: #059669; --text: #000000; --text-light: #4b5563; --border: #e5e7eb; --bg-light: #f9fafb; }
+                    :root { --primary: #10b981; --primary-dark: #059669; --text: #111827; --text-light: #6b7280; --border: #e5e7eb; --bg-light: #f9fafb; }
                     * { box-sizing: border-box; }
                     body { font-family: 'Inter', system-ui, sans-serif; color: var(--text); line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #fff; position: relative; }
-                    .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 60px; border-bottom: 1px solid var(--border); padding-bottom: 30px; }
+                    
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; border-bottom: 2px solid var(--primary); padding-bottom: 30px; }
                     .header-logo { max-height: 80px; max-width: 250px; object-fit: contain; }
-                    .company-logo-type { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
-                    .company-details { font-size: 13px; color: var(--text-light); margin-top: 10px; }
+                    .company-logo-type { font-size: 28px; font-weight: 800; color: var(--primary); letter-spacing: -0.03em; margin-bottom: 5px; }
+                    .company-details { font-size: 13px; color: var(--text-light); }
+                    
                     .invoice-meta { text-align: right; }
-                    .invoice-title { font-size: 24px; font-weight: 800; color: var(--primary); margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 2px; }
-                    .meta-grid { display: grid; grid-template-columns: auto auto; gap: 5px 20px; font-size: 13px; color: var(--text-light); }
+                    .invoice-title { font-size: 32px; font-weight: 800; color: var(--primary); margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px; }
+                    .meta-grid { display: grid; grid-template-columns: auto auto; gap: 8px 30px; font-size: 14px; color: var(--text-light); }
                     .meta-label { font-weight: 600; color: var(--text); }
                     
-                    .info-section { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 50px; }
-                    .address-box h3 { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-                    .address-box p { font-size: 14px; margin: 0; }
-                    .address-box strong { font-size: 15px; color: var(--text); display: block; margin-bottom: 4px; }
+                    .info-section { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-bottom: 60px; }
+                    .address-box h3 { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+                    .address-box p { font-size: 14px; margin: 0; white-space: pre-line; }
+                    .address-box strong { font-size: 16px; color: var(--text); display: block; margin-bottom: 6px; font-weight: 700; }
                     
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-                    th { background: var(--bg-light); padding: 12px 15px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
-                    td { padding: 15px 15px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: top; }
-                    .item-desc { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 50px; }
+                    th { background: var(--bg-light); padding: 15px 20px; text-align: left; font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); }
+                    td { padding: 20px 20px; border-bottom: 1px solid var(--border); font-size: 15px; vertical-align: top; }
+                    .item-desc { font-weight: 600; color: var(--text); margin-bottom: 5px; font-size: 16px; }
                     
-                    .totals-container { display: flex; justify-content: flex-end; }
-                    .totals-table { width: 280px; }
-                    .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
-                    .total-row.grand { border-top: 2px solid var(--primary); margin-top: 10px; padding-top: 12px; font-size: 18px; font-weight: 800; color: var(--primary); }
+                    .totals-container { display: flex; justify-content: flex-end; margin-bottom: 60px; }
+                    .totals-table { width: 320px; background: var(--bg-light); padding: 25px; border-radius: 12px; }
+                    .total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
+                    .total-row.grand { border-top: 2px solid var(--primary); margin-top: 15px; padding-top: 15px; font-size: 20px; font-weight: 800; color: var(--primary); }
                     
-                    .signature-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; margin-top: 50px; page-break-inside: avoid; }
-                    .signature-box { border: 1px solid var(--border); border-radius: 12px; padding: 25px; position: relative; min-height: 180px; background: var(--bg-light); }
-                    .signature-label { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 80px; display: block; }
-                    .signature-mention { font-size: 10px; color: var(--text-light); text-align: center; font-style: italic; }
+                    .signature-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 50px; page-break-inside: avoid; }
+                    .signature-box { border: 2px dashed var(--border); border-radius: 16px; padding: 30px; position: relative; min-height: 200px; background: var(--bg-light); transition: all 0.3s; }
+                    .signature-label { font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 90px; display: block; }
+                    .signature-mention { font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; }
                     
-                    .footer { font-size: 10px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 20px; text-align: center; margin-top: 40px; }
+                    .footer { font-size: 11px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 30px; text-align: center; margin-top: 60px; line-height: 1.6; }
 
-                    /* Preview Specific Styles */
+                    /* Preview Specific Premium Styles */
                     .preview-watermark {
-                        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
-                        font-size: 150px; font-weight: 900; color: rgba(0,0,0,0.03); pointer-events: none; z-index: -1;
-                        white-space: nowrap; user-select: none;
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='30' font-weight='900' fill='rgba(0,0,0,0.02)' font-family='Arial' text-anchor='middle' transform='rotate(-35 200 200)'%3EAPERÇU GRATUIT%3C/text%3E%3C/svg%3E");
+                        pointer-events: none; z-index: -1;
                     }
                     .preview-bar {
-                        position: fixed; top: 0; left: 0; right: 0; background: #1f2937; color: white;
-                        padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
-                        z-index: 1000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); font-size: 14px;
+                        position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px;
+                        background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+                        color: white; padding: 12px 25px; border-radius: 99px;
+                        display: flex; justify-content: space-between; align-items: center;
+                        z-index: 1000; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
                     }
+                    .preview-info { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; }
+                    .preview-badge { background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
                     .preview-btn {
-                        background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px;
-                        font-weight: 600; cursor: pointer; transition: all 0.2s;
+                        background: white; color: var(--text); border: none; padding: 10px 22px; border-radius: 99px;
+                        font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                        font-size: 13px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
                     }
-                    .preview-btn:hover { background: #059669; }
+                    .preview-btn:hover { background: var(--primary); color: white; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4); }
 
                     @media print {
                         body { padding: 0; }
-                        .no-print, .preview-bar { display: none; }
+                        .no-print, .preview-bar, .preview-watermark { display: none; }
                     }
                 </style>
             </head>
-            <body style="${isPreview ? 'padding-top: 80px;' : ''}">
+            <body style="${isPreview ? 'padding-top: 100px;' : ''}">
                 ${isPreview ? `
                     <div class="preview-bar no-print">
-                        <div><strong>MODÈLE D'APERÇU</strong> &bull; Ce document ne peut pas être téléchargé en version gratuite.</div>
+                        <div class="preview-info">
+                            <span class="preview-badge">Aperçu</span>
+                            <span>Export complet réservé aux membres PRO</span>
+                        </div>
                         <button class="preview-btn" onclick="window.opener.App.showUpgradeModal('pdf_download'); window.close();">
                             Passez PRO pour télécharger
                         </button>
                     </div>
-                    <div class="preview-watermark">APERÇU GRATUIT</div>
+                    <div class="preview-watermark"></div>
                 ` : ''}
 
                 <div class="header">
                     <div class="company-brand">
-                        ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo">` : `<div class="company-logo-type">${user.company.name || 'SoloPrice Pro User'}</div>`}
+                        ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo">` : `<div class="company-logo-type">${providerName}</div>`}
                         <div class="company-details">
-                            ${user.company.address || ''}<br>
-                            ${user.company.email || ''} | ${user.company.phone || ''}
+                            ${providerAddress ? `${providerAddress}<br>` : ''}
+                            ${providerEmail} ${providerPhone ? `| ${providerPhone}` : ''}
                         </div>
                     </div>
                     <div class="invoice-meta">
@@ -292,15 +309,15 @@ const PDFGenerator = {
                     <div class="address-box">
                         <h3>Prestataire</h3>
                         <p>
-                            <strong>${user.company.name}</strong>
-                            ${user.company.siret ? `SIRET : ${user.company.siret}` : ''}
+                            <strong>${providerName}</strong>
+                            ${providerSiret ? `SIRET : ${providerSiret}` : ''}
                         </p>
                     </div>
                     <div class="address-box">
                         <h3>Client</h3>
                         <p>
                             <strong>${client.name}</strong>
-                            ${client.address || ''}<br>
+                            ${client.address ? `${client.address}<br>` : ''}
                             ${client.zipCode || ''} ${client.city || ''}<br>
                             ${client.email || ''}
                         </p>
@@ -324,7 +341,7 @@ const PDFGenerator = {
                             </td>
                             <td style="text-align: right;">${item.quantity}</td>
                             <td style="text-align: right;">${App.formatCurrency(item.unitPrice)}</td>
-                            <td style="text-align: right; font-weight: 600;">${App.formatCurrency(item.quantity * item.unitPrice)}</td>
+                            <td style="text-align: right; font-weight: 700;">${App.formatCurrency(item.quantity * item.unitPrice)}</td>
                         </tr>
                         `).join('')}
                     </tbody>
@@ -333,19 +350,19 @@ const PDFGenerator = {
                 <div class="totals-container">
                     <div class="totals-table">
                         <div class="total-row">
-                            <span class="text-light">Prestations HT</span>
+                            <span style="color: var(--text-light);">Prestations HT</span>
                             <span style="font-weight: 600;">${App.formatCurrency(quote.itemsSubtotal || quote.subtotal)}</span>
                         </div>
-                        <div class="total-row" style="color: var(--primary);">
-                            <span class="text-light">Frais de Service (15%)</span>
+                        <div class="total-row" style="color: var(--primary-dark);">
+                            <span style="color: var(--text-light);">Service & Gestion</span>
                             <span style="font-weight: 600;">${App.formatCurrency(quote.margin || 0)}</span>
                         </div>
-                        <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px;">
-                            <span class="text-light">Total Hors Taxes</span>
+                        <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 5px; padding-top: 5px;">
+                            <span style="font-weight: 600;">Base Hors Taxes</span>
                             <span style="font-weight: 600;">${App.formatCurrency(quote.subtotal)}</span>
                         </div>
                         <div class="total-row">
-                            <span class="text-light">TVA (${(quote.taxContext?.vat !== undefined) ? quote.taxContext.vat : settings.taxRate}%)</span>
+                            <span style="color: var(--text-light);">TVA (${(quote.taxContext?.vat !== undefined) ? quote.taxContext.vat : settings.taxRate}%)</span>
                             <span style="font-weight: 600;">${App.formatCurrency(quote.tax)}</span>
                         </div>
                         <div class="total-row grand">
@@ -357,9 +374,9 @@ const PDFGenerator = {
 
                 <div class="signature-area">
                     <div style="font-size: 13px; color: var(--text-light);">
-                        <p>Ce devis est valable pour une durée de ${validityDays} jours à compter de sa date d'émission. Le début des travaux est conditionné par le retour de ce devis signé accompagné du versement de l'acompte convenu.</p>
-                        ${quote.tax === 0 ? '<p style="font-weight: 600; margin-top: 10px;">TVA non applicable, art. 293 B du CGI</p>' : ''}
-                        ${user.company.footer_mentions ? `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
+                        <p style="margin-bottom: 15px;">Ce devis est valable pour une durée de ${validityDays} jours à compter de sa date d'émission. Le début des travaux est conditionné par le retour de ce devis signé accompagné du versement de l'acompte convenu.</p>
+                        ${quote.tax === 0 ? '<p style="font-weight: 700; color: var(--text); margin-top: 10px;">TVA non applicable, art. 293 B du CGI</p>' : ''}
+                        ${user.company?.footer_mentions ? `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
                     </div>
                     <div class="signature-box" style="position: relative;">
                         <span class="signature-label">Bon pour accord</span>
@@ -373,7 +390,7 @@ const PDFGenerator = {
                 </div>
 
                 <div class="footer">
-                    ${(Storage.getTier() === 'expert') ? '' : 'Devis généré par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr'}
+                    ${(Storage.getTier() === 'expert') ? '' : 'Devis généré professionnellement par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr'}
                 </div>
 
                 <script>
