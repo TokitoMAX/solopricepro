@@ -55,7 +55,17 @@ const Invoices = {
                                         <td>${invoice.dueDate ? App.formatDate(invoice.dueDate) : '-'}</td>
                                         <td>${App.formatCurrency(subtotal)}</td>
                                         <td>${App.formatCurrency(invoice.total)}</td>
-                                        <td><span class="status-badge status-${invoice.status}">${this.getStatusLabel(invoice.status)}</span></td>
+                                        <td>
+                                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                                <span class="status-badge status-${invoice.status}">${this.getStatusLabel(invoice.status)}</span>
+                                                ${(invoice.status === 'sent' || invoice.status === 'paid' || invoice.status === 'overdue') ? `
+                                                    <div style="display: flex; gap: 4px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">
+                                                        <span title="Part Prestataire" style="padding: 2px 4px; border-radius: 4px; background: ${invoice.expert_paid_at ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; color: ${invoice.expert_paid_at ? 'var(--primary-light)' : 'var(--text-muted)'}; border: 1px solid ${invoice.expert_paid_at ? 'var(--primary-light)' : 'var(--border)'};">P</span>
+                                                        <span title="Commission Plateforme" style="padding: 2px 4px; border-radius: 4px; background: ${invoice.platform_paid_at ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; color: ${invoice.platform_paid_at ? 'var(--primary-light)' : 'var(--text-muted)'}; border: 1px solid ${invoice.platform_paid_at ? 'var(--primary-light)' : 'var(--border)'};">C</span>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        </td>
                                         <td>
                                             <div class="action-buttons">
                                                 <button class="btn-icon" onclick="Invoices.edit('${invoice.id}')" title="Modifier la facture">
@@ -78,6 +88,12 @@ const Invoices = {
                                                 </button>
                                                 <button class="btn-icon" onclick="Invoices.openRelanceModal('${invoice.id}')" title="Assistant Relance (Expert)" style="color: #f59e0b;">
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                                </button>
+                                                <button class="btn-icon" onclick="Invoices.togglePaymentStatus('${invoice.id}', 'expert')" title="Toggle Paiement Prestataire" style="color: ${invoice.expert_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>
+                                                </button>
+                                                <button class="btn-icon" onclick="Invoices.togglePaymentStatus('${invoice.id}', 'platform')" title="Toggle Commission SoloPrice" style="color: ${invoice.platform_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9.5h20"/></svg>
                                                 </button>
                                             </div>
                                         </td>
@@ -505,6 +521,23 @@ const Invoices = {
         await Storage.updateInvoice(id, { status: nextStatus });
         App.showNotification(`Statut mis à jour : ${statuses[nextIndex].label}`, 'success');
         this.render(this.lastContainerId);
+    },
+
+    async togglePaymentStatus(id, type) {
+        const invoice = Storage.getInvoice(id);
+        if (!invoice) return;
+
+        const field = type === 'expert' ? 'expert_paid_at' : 'platform_paid_at';
+        const newValue = invoice[field] ? null : new Date().toISOString();
+
+        try {
+            await Storage.updateInvoice(id, { [field]: newValue });
+            App.showNotification(`Paiement ${type === 'expert' ? 'Prestataire' : 'Commission'} mis à jour.`, 'success');
+
+            this.render(this.lastContainerId);
+        } catch (e) {
+            App.showNotification('Erreur lors de la mise à jour du paiement.', 'error');
+        }
     },
 
     async fastSend(id) {

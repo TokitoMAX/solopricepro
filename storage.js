@@ -437,8 +437,8 @@ const Storage = {
         const currentYear = new Date().getFullYear();
 
         const revenues = this.getInvoices()
-            .filter(i => i.status === 'paid' && new Date(i.createdAt).getMonth() === currentMonth)
-            .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
+            .filter(i => (i.expert_paid_at || i.status === 'paid') && new Date(i.createdAt).getMonth() === currentMonth)
+            .reduce((sum, i) => sum + (parseFloat(i.itemsSubtotal || i.subtotal) || 0), 0);
 
         const expenses = this.getExpenses()
             .filter(e => new Date(e.date).getMonth() === currentMonth)
@@ -597,12 +597,12 @@ const Storage = {
         const currentYear = new Date().getFullYear();
 
         const monthlyRevenue = invoices
-            .filter(i => i.status === 'paid' && new Date(i.createdAt).getMonth() === currentMonth && new Date(i.createdAt).getFullYear() === currentYear)
-            .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
+            .filter(i => (i.expert_paid_at || i.status === 'paid') && new Date(i.createdAt).getMonth() === currentMonth && new Date(i.createdAt).getFullYear() === currentYear)
+            .reduce((sum, i) => sum + (parseFloat(i.itemsSubtotal || i.subtotal) || 0), 0);
 
         const totalRevenue = invoices
-            .filter(i => i.status === 'paid')
-            .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
+            .filter(i => (i.expert_paid_at || i.status === 'paid'))
+            .reduce((sum, i) => sum + (parseFloat(i.itemsSubtotal || i.subtotal) || 0), 0);
 
         return {
             monthlyRevenue,

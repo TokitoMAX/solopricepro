@@ -101,7 +101,17 @@ const Quotes = {
                                         <td>${client?.name || 'Client supprimé'}</td>
                                         <td>${App.formatDate(quote.createdAt)}</td>
                                         <td>${App.formatCurrency(quote.total)}</td>
-                                        <td><span class="status-badge status-${quote.status}">${this.getStatusLabel(quote.status)}</span></td>
+                                        <td>
+                                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                                <span class="status-badge status-${quote.status}">${this.getStatusLabel(quote.status)}</span>
+                                                ${(quote.status === 'accepted' || quote.status === 'paid') ? `
+                                                    <div style="display: flex; gap: 4px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">
+                                                        <span title="Part Prestataire" style="padding: 2px 4px; border-radius: 4px; background: ${quote.expert_paid_at ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; color: ${quote.expert_paid_at ? 'var(--primary-light)' : 'var(--text-muted)'}; border: 1px solid ${quote.expert_paid_at ? 'var(--primary-light)' : 'var(--border)'};">P</span>
+                                                        <span title="Commission Plateforme" style="padding: 2px 4px; border-radius: 4px; background: ${quote.platform_paid_at ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; color: ${quote.platform_paid_at ? 'var(--primary-light)' : 'var(--text-muted)'}; border: 1px solid ${quote.platform_paid_at ? 'var(--primary-light)' : 'var(--border)'};">C</span>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        </td>
                                         <td>
                                             <div class="action-buttons">
                                                 <button class="btn-icon" onclick="Quotes.edit('${quote.id}')" title="Modifier le devis">
@@ -132,6 +142,12 @@ const Quotes = {
                                                 </button>
                                                 <button class="btn-icon" onclick="Quotes.openSignatureModal('${quote.id}')" title="Faire Signer (Expert)" style="color: #a855f7;">
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M18 11l2 2 4-4"></path></svg>
+                                                </button>
+                                                <button class="btn-icon" onclick="Quotes.togglePaymentStatus('${quote.id}', 'expert')" title="Toggle Paiement Prestataire" style="color: ${quote.expert_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>
+                                                </button>
+                                                <button class="btn-icon" onclick="Quotes.togglePaymentStatus('${quote.id}', 'platform')" title="Toggle Commission SoloPrice" style="color: ${quote.platform_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9.5h20"/></svg>
                                                 </button>
                                             </div>
                                         </td>
@@ -667,6 +683,28 @@ const Quotes = {
         await Storage.updateQuote(id, { status: nextStatus });
         App.showNotification(`Statut mis à jour : ${statuses[nextIndex].label}`, 'success');
         this.render(this.lastContainerId);
+    },
+
+    async togglePaymentStatus(id, type) {
+        const quote = Storage.getQuote(id);
+        if (!quote) return;
+
+        const field = type === 'expert' ? 'expert_paid_at' : 'platform_paid_at';
+        const newValue = quote[field] ? null : new Date().toISOString();
+
+        try {
+            await Storage.updateQuote(id, { [field]: newValue });
+            App.showNotification(`Paiement ${type === 'expert' ? 'Prestataire' : 'Commission'} mis à jour.`, 'success');
+
+            // Si les deux sont payés, on peut suggérer de passer en status 'paid' global
+            if (field === 'expert_paid_at' && newValue && !quote.platform_paid_at) {
+                App.showNotification('Note : N\'oubliez pas de marquer la commission plateforme une fois reçue.', 'info');
+            }
+
+            this.render(this.lastContainerId);
+        } catch (e) {
+            App.showNotification('Erreur lors de la mise à jour du paiement.', 'error');
+        }
     },
 
     downloadPDF(id) {
