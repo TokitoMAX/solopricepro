@@ -582,7 +582,8 @@ const App = {
             feature: 'Fonctionnalité réservée aux membres PRO.',
             scoper_limit: 'Analyse illimitée réservée aux membres PRO.',
             marketplace_limit: 'Limite de réponse atteinte (1/mois). Passez PRO pour débloquer le Radar.',
-            marketplace_automation: 'Automatisation réservée aux membres PRO.'
+            marketplace_automation: 'Automatisation réservée aux membres PRO.',
+            pdf_download: 'Téléchargements illimités et logo personnalisé réservés aux membres PRO.'
         };
 
         const titleEl = modal.querySelector('.upgrade-title');

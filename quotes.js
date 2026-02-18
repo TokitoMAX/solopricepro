@@ -114,7 +114,7 @@ const Quotes = {
                                                 <button class="btn-icon" onclick="Quotes.duplicate('${quote.id}')" title="Dupliquer">
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                                                 </button>
-                                                <button class="btn-icon" onclick="Quotes.downloadPDF('${quote.id}')" title="Télécharger PDF">
+                                                <button class="btn-icon" onclick="Quotes.downloadPDF('${quote.id}')" title="${isPro ? 'Télécharger PDF' : 'Aperçu (Gratuit)'}">
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                 </button>
                                                 <button class="btn-icon btn-danger" onclick="Quotes.delete('${quote.id}')" title="Supprimer">
@@ -662,7 +662,7 @@ const Quotes = {
     downloadPDF(id) {
         const isPro = Storage.isPro();
         if (!isPro) {
-            App.showUpgradeModal('pdf');
+            this.previewQuote(id);
             return;
         }
 
@@ -684,6 +684,19 @@ const Quotes = {
             PDFGenerator.generateQuote(quote, client, normalizedUser);
         } else {
             App.showNotification('Module PDF indisponible pour le moment.', 'info');
+        }
+    },
+
+    previewQuote(id) {
+        const quote = Storage.getQuote(id);
+        const client = Storage.getClient(quote.clientId);
+        const normalizedUser = Storage.getNormalizedUser();
+
+        if (typeof PDFGenerator !== 'undefined' && PDFGenerator.generateQuote) {
+            PDFGenerator.generateQuote(quote, client, normalizedUser, true);
+            App.showNotification('Ouverture de l\'aperçu...', 'info');
+        } else {
+            App.showNotification('Module PDF indisponible.', 'info');
         }
     },
 

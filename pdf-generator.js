@@ -184,7 +184,7 @@ const PDFGenerator = {
         App.showNotification('Facture prête pour impression.', 'success');
     },
 
-    generateQuote(quote, client, user) {
+    generateQuote(quote, client, user, isPreview = false) {
         const settings = Storage.get(Storage.KEYS.SETTINGS);
         const date = new Date(quote.createdAt).toLocaleDateString('fr-FR');
 
@@ -197,14 +197,14 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
-                <title>Devis ${quote.number}</title>
+                <title>${isPreview ? 'APERÇU - ' : ''}Devis ${quote.number}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
                 <style>
                     :root { --primary: #10b981; --primary-dark: #059669; --text: #000000; --text-light: #4b5563; --border: #e5e7eb; --bg-light: #f9fafb; }
                     * { box-sizing: border-box; }
-                    body { font-family: 'Inter', system-ui, sans-serif; color: var(--text); line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #fff; }
+                    body { font-family: 'Inter', system-ui, sans-serif; color: var(--text); line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #fff; position: relative; }
                     .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 60px; border-bottom: 1px solid var(--border); padding-bottom: 30px; }
                     .header-logo { max-height: 80px; max-width: 250px; object-fit: contain; }
                     .company-logo-type { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
@@ -236,13 +236,40 @@ const PDFGenerator = {
                     
                     .footer { font-size: 10px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 20px; text-align: center; margin-top: 40px; }
 
+                    /* Preview Specific Styles */
+                    .preview-watermark {
+                        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+                        font-size: 150px; font-weight: 900; color: rgba(0,0,0,0.03); pointer-events: none; z-index: -1;
+                        white-space: nowrap; user-select: none;
+                    }
+                    .preview-bar {
+                        position: fixed; top: 0; left: 0; right: 0; background: #1f2937; color: white;
+                        padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;
+                        z-index: 1000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); font-size: 14px;
+                    }
+                    .preview-btn {
+                        background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px;
+                        font-weight: 600; cursor: pointer; transition: all 0.2s;
+                    }
+                    .preview-btn:hover { background: #059669; }
+
                     @media print {
                         body { padding: 0; }
-                        .no-print { display: none; }
+                        .no-print, .preview-bar { display: none; }
                     }
                 </style>
             </head>
-            <body>
+            <body style="${isPreview ? 'padding-top: 80px;' : ''}">
+                ${isPreview ? `
+                    <div class="preview-bar no-print">
+                        <div><strong>MODÈLE D'APERÇU</strong> &bull; Ce document ne peut pas être téléchargé en version gratuite.</div>
+                        <button class="preview-btn" onclick="window.opener.App.showUpgradeModal('pdf_download'); window.close();">
+                            Passez PRO pour télécharger
+                        </button>
+                    </div>
+                    <div class="preview-watermark">APERÇU GRATUIT</div>
+                ` : ''}
+
                 <div class="header">
                     <div class="company-brand">
                         ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo">` : `<div class="company-logo-type">${user.company.name || 'SoloPrice Pro User'}</div>`}
@@ -350,7 +377,7 @@ const PDFGenerator = {
                 </div>
 
                 <script>
-                    window.onload = function() { setTimeout(() => window.print(), 500); }
+                    ${isPreview ? '' : 'window.onload = function() { setTimeout(() => window.print(), 500); }'}
                 </script>
             </body>
             </html>
@@ -361,12 +388,14 @@ const PDFGenerator = {
         const a = document.createElement('a');
         a.href = url;
         a.target = '_blank';
-        a.download = `Devis_${quote.number}.html`;
+        if (!isPreview) {
+            a.download = `Devis_${quote.number}.html`;
+        }
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        App.showNotification('Devis prêt pour impression.', 'success');
+        App.showNotification(isPreview ? 'Aperçu généré.' : 'Devis prêt pour impression.', 'success');
     }
 };
