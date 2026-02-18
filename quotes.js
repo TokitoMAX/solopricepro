@@ -10,7 +10,7 @@ const Quotes = {
     },
 
 
-    render(containerId = 'quotes-content') {
+    render(containerId = 'quotes-content', tabId = 'quotes') {
         this.lastContainerId = containerId;
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -25,8 +25,8 @@ const Quotes = {
             </div>
 
             <div class="settings-tabs">
-                <button class="settings-tab active" onclick="Quotes.switchTab('quotes')">Devis</button>
-                <button class="settings-tab" onclick="Quotes.switchTab('invoices')">Factures</button>
+                <button class="settings-tab" data-tab-id="quotes" onclick="Quotes.switchTab('quotes')">Devis</button>
+                <button class="settings-tab" data-tab-id="invoices" onclick="Quotes.switchTab('invoices')">Factures</button>
             </div>
 
             <div id="documents-dynamic-content" style="margin-top: 2rem;">
@@ -34,13 +34,22 @@ const Quotes = {
             </div>
         `;
 
-        this.switchTab('quotes');
+        this.switchTab(tabId || 'quotes');
     },
 
     switchTab(tabId) {
         document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-        const activeTab = document.querySelector(`.settings-tab[onclick*="${tabId}"]`);
+        const activeTab = document.querySelector(`.settings-tab[data-tab-id="${tabId}"]`);
         if (activeTab) activeTab.classList.add('active');
+
+        // Logic only if we are on the quotes page
+        if (App.currentPage === 'quotes') {
+            // Avoid redundant hash updates if already there
+            const route = App.getPageFromHash();
+            if (!route || route.tab !== tabId) {
+                App.navigateTo('quotes', tabId);
+            }
+        }
 
         const container = document.getElementById('documents-dynamic-content');
         if (!container) return;

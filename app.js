@@ -5,45 +5,52 @@ const App = {
     currentPage: 'dashboard',
 
     // Initialisation de l'application
-    init() {
+    async init() {
         try {
-            console.log('🚀 QuickPrice Pro Initializing...');
+            console.log('🚀 SoloPrice Pro Initializing...');
             this.setupNavigation();
             this.migrateData();
             this.setupMobileOverlay();
             this.checkFreemiumLimits();
-            this.renderProBadge();
             this.renderUserInfo();
             if (window.Network) Network.init();
             this.handlePaymentReturn();
             this.handleUrlHash();
+
+            // Router / Landing Logic
+            const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
+            const isLoggedIn = Auth.isLoggedIn();
+            const inApp = sessionStorage.getItem('sp_in_app') === 'true';
+
+            if (isLoggedIn || inApp) {
+                // Ensure data is synced BEFORE showing app content
+                if (isLoggedIn) {
+                    console.log('📡 Waiting for data sync...');
+                    await Storage.init();
+                }
+
+                this.enterApp(false, false); // Pass avoidNavigate=true
+
+                // Priorité au hash (#page=xxx) sur le localStorage
+                const route = this.getPageFromHash();
+                if (route) {
+                    this.navigateTo(route.page, route.tab);
+                } else {
+                    const lastTab = localStorage.getItem(`sp_last_tab_${savedPage}`);
+                    this.navigateTo(savedPage, lastTab);
+                }
+            } else {
+                // Landing page by default if never entered
+                const landing = document.getElementById('landing-page');
+                const appWrapper = document.getElementById('app-wrapper');
+                if (landing) landing.style.display = 'block';
+                if (appWrapper) appWrapper.style.display = 'none';
+                this.updateLandingStats();
+            }
         } catch (e) {
             console.error('❌ Critical Init Error:', e);
-            // On peut afficher une notification d'erreur à l'utilisateur si besoin
         } finally {
-            // Masquer le loader une fois l'initialisation terminée (ou échouée)
             this.hideLoader();
-        }
-
-        // Router / Landing Logic
-        const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
-        const isLoggedIn = Auth.isLoggedIn();
-        const inApp = sessionStorage.getItem('sp_in_app') === 'true';
-
-        if (isLoggedIn || inApp) {
-            this.enterApp(false);
-            if (isLoggedIn) Storage.init(); // Storage.init handles fetchAllData inside
-
-            // Priorité au hash (#page=xxx) sur le localStorage
-            const hashPage = this.getPageFromHash();
-            this.navigateTo(hashPage || savedPage);
-        } else {
-            // Landing page by default if never entered
-            const landing = document.getElementById('landing-page');
-            const appWrapper = document.getElementById('app-wrapper');
-            if (landing) landing.style.display = 'block';
-            if (appWrapper) appWrapper.style.display = 'none';
-            this.updateLandingStats();
         }
 
         // Event listener pour fermeture de modales
@@ -64,7 +71,7 @@ const App = {
         }
     },
 
-    enterApp(animate = true) {
+    enterApp(animate = true, autoNavigate = true) {
         const landing = document.getElementById('landing-page');
         const appWrapper = document.getElementById('app-wrapper');
 
@@ -78,7 +85,9 @@ const App = {
 
         sessionStorage.setItem('sp_in_app', 'true');
         this.renderUserInfo();
-        this.navigateTo('dashboard');
+        if (autoNavigate) {
+            this.navigateTo('dashboard');
+        }
     },
 
     updateLandingStats() {
@@ -160,7 +169,12 @@ const App = {
 
             // Update URL Hash without triggering hashchange
             this.updatingHashManually = true;
-            window.location.hash = `page=${page}`;
+            let hash = `page=${page}`;
+            if (args.length > 0 && typeof args[0] === 'string') {
+                hash += `&tab=${args[0]}`;
+                localStorage.setItem(`sp_last_tab_${page}`, args[0]);
+            }
+            window.location.hash = hash;
             setTimeout(() => this.updatingHashManually = false, 100);
 
             // Render specific page content with args
@@ -181,8 +195,12 @@ const App = {
 
     getPageFromHash() {
         const hash = window.location.hash.substring(1);
-        if (hash.startsWith('page=')) {
-            return hash.split('=')[1];
+        const params = new URLSearchParams(hash);
+        const page = params.get('page');
+        const tab = params.get('tab');
+
+        if (page) {
+            return { page, tab };
         }
         return null;
     },
@@ -217,7 +235,7 @@ const App = {
     // Nouveau helper pour le rendu des pages
     renderPageContent(page, ...args) {
         if (page === 'dashboard' && typeof Dashboard !== 'undefined') Dashboard.render();
-        if (page === 'quotes' && typeof Quotes !== 'undefined') Quotes.render();
+        if (page === 'quotes' && typeof Quotes !== 'undefined') Quotes.render('quotes-content', ...args);
         if (page === 'invoices' && typeof Invoices !== 'undefined') {
             this.navigateTo('quotes'); // Redirect to Documents
             setTimeout(() => Quotes.switchTab('invoices'), 100);
@@ -937,9 +955,9 @@ const App = {
         if (!this.hashListenerSetup) {
             window.addEventListener('hashchange', () => {
                 if (this.updatingHashManually) return;
-                const page = this.getPageFromHash();
-                if (page && page !== this.currentPage) {
-                    this.navigateTo(page);
+                const route = this.getPageFromHash();
+                if (route && (route.page !== this.currentPage || route.tab)) {
+                    this.navigateTo(route.page, route.tab);
                 }
             });
             this.hashListenerSetup = true;

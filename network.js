@@ -20,7 +20,7 @@ const Network = {
         this.render();
     },
 
-    render(startTab = 'clients') {
+    render(tabId = 'clients') {
         const container = document.getElementById('network-content');
         if (!container) return;
 
@@ -31,23 +31,30 @@ const Network = {
             </div>
 
             <div class="settings-tabs">
-                <button class="settings-tab" onclick="Network.switchTab('clients')">Mes Clients</button>
-                <button class="settings-tab" onclick="Network.switchTab('leads')">Mes Prospects</button>
-                <button class="settings-tab" onclick="Network.switchTab('partners')">Mes Partenaires</button>
+                <button class="settings-tab" data-tab-id="clients" onclick="Network.switchTab('clients')">Mes Clients</button>
+                <button class="settings-tab" data-tab-id="leads" onclick="Network.switchTab('leads')">Mes Prospects</button>
+                <button class="settings-tab" data-tab-id="partners" onclick="Network.switchTab('partners')">Mes Partenaires</button>
             </div>
             <div id="cercle-dynamic-content" style="margin-top: 2rem;">
                 <!-- Rempli par switchTab -->
             </div>
         `;
 
-        // Utiliser l'onglet demandé
-        this.switchTab(startTab);
+        this.switchTab(tabId || 'clients');
     },
 
     switchTab(tabId) {
         document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-        const activeTab = document.querySelector(`.settings-tab[onclick*="${tabId}"]`);
+        const activeTab = document.querySelector(`.settings-tab[data-tab-id="${tabId}"]`);
         if (activeTab) activeTab.classList.add('active');
+
+        // Logic only if we are on the network page
+        if (App.currentPage === 'network') {
+            const route = App.getPageFromHash();
+            if (!route || route.tab !== tabId) {
+                App.navigateTo('network', tabId);
+            }
+        }
 
         const container = document.getElementById('cercle-dynamic-content');
         if (!container) return;
