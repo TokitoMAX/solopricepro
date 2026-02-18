@@ -492,26 +492,40 @@ const Storage = {
     },
 
     async updateUser(updates) {
-        const user = this.getUser();
-        const newUser = { ...user, ...updates };
-        this.setUser(newUser);
+        // Prepare new profile state
+        let profile = { ...(this._cache[this.KEYS.USER_PROFILE] || {}) };
 
-        // Optionnel : persister les métadonnées sur Supabase si Auth est dispo
+        if (updates.company) {
+            profile = { ...profile, ...updates.company };
+        } else {
+            profile = { ...profile, ...updates };
+        }
+
+        // Apply locally first
+        this.setUser(profile);
+
+        // Persist to Supabase
         if (typeof Auth !== 'undefined' && Auth.user) {
+            const payload = updates.company || updates;
             try {
-                // Tentative de sync avec le backend pour les infos company
-                if (updates.company) {
-                    await fetch(`${Auth.apiBase}/api/data/${this.KEYS.USER_PROFILE}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${Auth.token}`
-                        },
-                        body: JSON.stringify(updates.company)
-                    });
+                const res = await fetch(`${Auth.apiBase}/api/data/${this.KEYS.USER_PROFILE}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${Auth.token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || 'Erreur lors de la synchronisation avec le serveur.');
                 }
+
+                console.log('✅ Profile synced with server.');
             } catch (e) {
-                console.warn('Backend sync failed, kept in local cache only.');
+                console.error('❌ Backend sync failed:', e);
+                throw e; // Propagate to caller (profile.js) so it shows the error
             }
         }
     },
@@ -519,7 +533,6 @@ const Storage = {
     // --- Legacy / Compatibility Helpers ---
 
     getUser() {
-        // Return Auth user merged with DB profile if available
         const authUser = (typeof Auth !== 'undefined' ? Auth.user : null);
         const dbProfile = this._cache[this.KEYS.USER_PROFILE];
 
@@ -527,9 +540,19 @@ const Storage = {
             return {
                 ...authUser,
                 ...dbProfile,
-                company: dbProfile // Because sp_user_profiles stores company fields directly
+                company: dbProfile // This is correct because dbProfile is the flattened company info
             };
         }
+
+        // Fallback to local storage cache if available
+        if (!dbProfile) {
+            const cached = localStorage.getItem('sp_user_cache');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                return { ...authUser, ...parsed, company: parsed };
+            }
+        }
+
         return dbProfile || authUser;
     },
 
