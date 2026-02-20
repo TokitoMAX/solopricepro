@@ -126,4 +126,69 @@ router.post('/webhook', async (req, res) => {
     res.json({ received: true });
 });
 
+// Route pour capturer un paiement PayPal (v2) et promouvoir l'utilisateur
+router.post('/paypal-capture', async (req, res) => {
+    try {
+        const { orderID, tier, userId } = req.body;
+        const supabase = req.app.get('supabase');
+
+        if (!orderID || !tier || !userId) {
+            return res.status(400).json({ message: "Données de transaction incomplètes." });
+        }
+
+        console.log(`📡 [PAYPAL] Tentative de capture pour Commande: ${orderID}, Tier: ${tier}, User: ${userId}`);
+
+        // 1. Obtenir un Access Token PayPal
+        const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64');
+        const tokenRes = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${auth}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'grant_type=client_credentials'
+        });
+
+        const { access_token } = await tokenRes.json();
+
+        // 2. Capturer la commande
+        const captureRes = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderID}/capture`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${access_token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const captureData = await captureRes.json();
+
+        if (captureData.status === 'COMPLETED') {
+            console.log(`✅ [PAYPAL] Capture réussie pour ${orderID}. Promotion de l'utilisateur...`);
+
+            // 3. Promouvoir l'utilisateur dans Supabase
+            const supabaseUrl = process.env.SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+            const adminClient = createClient(supabaseUrl, serviceKey, {
+                auth: { autoRefreshToken: false, persistSession: false }
+            });
+
+            const { error } = await adminClient.auth.admin.updateUserById(userId, {
+                user_metadata: { is_pro: true, tier: tier }
+            });
+
+            if (error) throw error;
+
+            console.log(`🚀 [PAYPAL] Utilisateur ${userId} promu au rang ${tier.toUpperCase()}.`);
+            return res.json({ status: 'success', message: 'Paiement capturé et compte activé.' });
+        } else {
+            console.error(`❌ [PAYPAL] Échec de la capture:`, captureData);
+            return res.status(400).json({ status: 'failed', message: 'Échec de la capture du paiement.', details: captureData });
+        }
+
+    } catch (err) {
+        console.error('💥 PayPal Capture Error:', err);
+        res.status(500).json({ message: 'Erreur lors de la capture PayPal', error: err.message });
+    }
+});
+
 module.exports = router;

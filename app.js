@@ -839,6 +839,43 @@ const App = {
                             container.innerHTML = '';
                             paypal.HostedButtons({
                                 hostedButtonId: buttonId,
+                                onApprove: async (data, actions) => {
+                                    const user = Auth.getUser();
+                                    if (!user || !user.id) {
+                                        App.showNotification('Veuillez vous reconnecter.', 'error');
+                                        return;
+                                    }
+
+                                    App.showNotification('Activation de votre accès...', 'info');
+
+                                    try {
+                                        const res = await fetch(`${Auth.apiBase}/api/payments/paypal-capture`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                orderID: data.orderID,
+                                                tier: tier,
+                                                userId: user.id
+                                            })
+                                        });
+
+                                        const result = await res.json();
+
+                                        if (result.status === 'success') {
+                                            App.showNotification('👑 Félicitations ! Votre accès ' + tier.toUpperCase() + ' est activé.', 'success');
+                                            if (typeof Storage !== 'undefined') await Storage.fetchAllData(true);
+                                            App.closeModal();
+                                            App.navigateTo('dashboard');
+                                            // Petit délai pour laisser le temps au badge de se mettre à jour
+                                            setTimeout(() => window.location.reload(), 1500);
+                                        } else {
+                                            App.showNotification('Erreur : ' + result.message, 'error');
+                                        }
+                                    } catch (err) {
+                                        console.error('PayPal Logic Error:', err);
+                                        App.showNotification('Erreur lors de la validation du paiement.', 'error');
+                                    }
+                                }
                             }).render(containerId);
                         }
                     }
