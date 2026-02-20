@@ -894,8 +894,10 @@ const App = {
 
             // Liens de paiement Stripe fournis par l'utilisateur
             const stripeLinks = {
-                pro: "https://buy.stripe.com/5kQ4gybhHcb29usaYt7Re01",
-                expert: "https://buy.stripe.com/bJe6oG85v6QIfSQ3w17Re02"
+                //pro: "https://buy.stripe.com/5kQ4gybhHcb29usaYt7Re01",
+                pro: "https://buy.stripe.com/test_14A5kCa7v9Cb41g8h5gbm01",
+                //expert: "https://buy.stripe.com/bJe6oG85v6QIfSQ3w17Re02",
+                expert: "https://buy.stripe.com/test_7sY14m1AZ3dN55k68Xgbm02"
             };
 
             const link = stripeLinks[tier];
