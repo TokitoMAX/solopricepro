@@ -113,42 +113,33 @@ const Quotes = {
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <button class="btn-icon" onclick="Quotes.edit('${quote.id}')" title="Modifier le devis">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                            <div class="table-actions-dropdown">
+                                                <button class="button-secondary small action-trigger" onclick="Quotes.toggleActions('${quote.id}')">
+                                                    Actions <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>
                                                 </button>
-                                                <button class="btn-icon" onclick="Quotes.fastSend('${quote.id}')" title="Envoyer par email">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Quotes.openQuickClientAdd()" title="Ajouter un client">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="17" y1="11" x2="23" y2="11"></line></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Quotes.changeStatus('${quote.id}')" title="Changer le statut">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9 9 9 0 0 1 9 9z"></path><path d="M12 8v4l3 3"></path></svg>
-                                                </button>
-                                                <button class="btn-icon ${quote.status === 'accepted' ? 'btn-success' : ''}" 
-                                                        onclick="Quotes.convertToInvoice('${quote.id}')" 
-                                                        title="${quote.status === 'accepted' ? 'Convertir en facture' : 'Valider et Facturer'}">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Quotes.duplicate('${quote.id}')" title="Dupliquer">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Quotes.downloadPDF('${quote.id}')" title="${isPro ? 'Télécharger PDF' : 'Aperçu (Gratuit)'}">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                                </button>
-                                                <button class="btn-icon btn-danger" onclick="Quotes.delete('${quote.id}')" title="Supprimer">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Quotes.openSignatureModal('${quote.id}')" title="Faire Signer (Expert)" style="color: #a855f7;">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M18 11l2 2 4-4"></path></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Quotes.togglePaymentStatus('${quote.id}', 'expert')" title="Toggle Paiement Prestataire" style="color: ${quote.expert_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Quotes.togglePaymentStatus('${quote.id}', 'platform')" title="Toggle Commission SoloPrice" style="color: ${quote.platform_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9.5h20"/></svg>
-                                                </button>
+                                                <div id="actions-${quote.id}" class="actions-menu glass">
+                                                    <div class="menu-section">
+                                                        <label>Essentiel</label>
+                                                        <button onclick="Quotes.edit('${quote.id}')"><i class="fas fa-edit"></i> Modifier</button>
+                                                        <button onclick="Quotes.downloadPDF('${quote.id}')"><i class="fas fa-file-pdf"></i> PDF / Aperçu</button>
+                                                        <button onclick="Quotes.fastSend('${quote.id}')"><i class="fas fa-paper-plane"></i> Envoyer rapide</button>
+                                                    </div>
+                                                    
+                                                    <div class="menu-section">
+                                                        <label>Flux & Validation</label>
+                                                        <button onclick="Quotes.openSignatureModal('${quote.id}')" style="color: #a855f7;"><i class="fas fa-pen-nib"></i> Faire Signer</button>
+                                                        <button class="${quote.status === 'accepted' ? 'text-success' : ''}" onclick="Quotes.convertToInvoice('${quote.id}')">
+                                                            <i class="fas fa-file-invoice-dollar"></i> Facturer (Virement)
+                                                        </button>
+                                                        <button onclick="Quotes.changeStatus('${quote.id}')"><i class="fas fa-sync-alt"></i> Changer Statut</button>
+                                                    </div>
+
+                                                    <div class="menu-section">
+                                                        <label>Divers</label>
+                                                        <button onclick="Quotes.duplicate('${quote.id}')"><i class="fas fa-copy"></i> Dupliquer</button>
+                                                        <button onclick="Quotes.delete('${quote.id}')" class="text-danger"><i class="fas fa-trash-alt"></i> Supprimer</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -272,9 +263,12 @@ const Quotes = {
                     <button class="btn-close" onclick="Quotes.hideForm()">✕</button>
                 </div>
 
-                <div class="compliance-checklist info-box" style="background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem;">
-                    <strong style="display: block; margin-bottom: 8px; color: var(--primary-light);"><i class="fas fa-certificate"></i> Standards Professionnels SoloPrice Pro</strong>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="compliance-checklist info-box" style="background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.8rem; cursor: pointer;" onclick="this.querySelector('.checklist-details').style.display = this.querySelector('.checklist-details').style.display === 'none' ? 'grid' : 'none'">
+                    <strong style="display: flex; justify-content: space-between; align-items: center; color: var(--primary-light);">
+                        <span><i class="fas fa-certificate"></i> Standards Professionnels SoloPrice Pro</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </strong>
+                    <div class="checklist-details" style="display: none; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
                         <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> SIRET obligatoire</div>
                         <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Mention TVA (art. 293B)</div>
                         <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Coordonnées complètes</div>
@@ -305,18 +299,25 @@ const Quotes = {
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Statut</label>
-                            <select name="status" class="form-input">
-                                <option value="draft" ${quote?.status === 'draft' ? 'selected' : ''}>Brouillon</option>
-                                <option value="sent" ${quote?.status === 'sent' ? 'selected' : ''}>Envoyé</option>
-                                <option value="accepted" ${quote?.status === 'accepted' ? 'selected' : ''}>Accepté</option>
-                                <option value="refused" ${quote?.status === 'refused' ? 'selected' : ''}>Refusé</option>
-                            </select>
+                        <div class="form-group full-width">
+                            <button type="button" class="button-outline small" onclick="document.getElementById('advanced-quote-options').style.display = document.getElementById('advanced-quote-options').style.display === 'none' ? 'grid' : 'none'" style="width: 100%; justify-content: center; gap: 8px;">
+                                <i class="fas fa-cog"></i> Options Avancées (Statut, TVA...)
+                            </button>
                         </div>
-                        
-                        <div class="form-group full-width" id="quote-tax-selector-container">
-                            <!-- TaxEngine will render here -->
+
+                        <div id="advanced-quote-options" style="display: none; grid-column: span 2; grid-template-columns: 1fr 1fr; gap: 20px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 8px; margin-top: -10px;">
+                            <div class="form-group">
+                                <label class="form-label">Statut</label>
+                                <select name="status" class="form-input">
+                                    <option value="draft" ${quote?.status === 'draft' ? 'selected' : ''}>Brouillon</option>
+                                    <option value="sent" ${quote?.status === 'sent' ? 'selected' : ''}>Envoyé</option>
+                                    <option value="accepted" ${quote?.status === 'accepted' ? 'selected' : ''}>Accepté</option>
+                                    <option value="refused" ${quote?.status === 'refused' ? 'selected' : ''}>Refusé</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="quote-tax-selector-container">
+                                <!-- TaxEngine will render here -->
+                            </div>
                         </div>
                     </div>
 
@@ -622,7 +623,7 @@ const Quotes = {
             return;
         }
 
-        if (!confirm('Générer la facture pour ce devis accepté ?')) {
+        if (!confirm('Félicitations pour la signature ! Voulez-vous générer la facture officielle maintenant ?\n\n(L\'IBAN prestataire sera alors visible sur le PDF pour le paiement)')) {
             return;
         }
 
@@ -1013,5 +1014,29 @@ const Quotes = {
             </div>
         `;
         document.body.appendChild(modal);
+    },
+
+    toggleActions(id) {
+        // Close all other menus first
+        document.querySelectorAll('.actions-menu').forEach(m => {
+            if (m.id !== `actions-${id}`) m.classList.remove('active');
+        });
+
+        const menu = document.getElementById(`actions-${id}`);
+        if (!menu) return;
+
+        menu.classList.toggle('active');
+
+        // Logic to close when clicking outside
+        if (menu.classList.contains('active')) {
+            const closeHandler = (e) => {
+                if (!menu.contains(e.target) && !e.target.closest('.action-trigger')) {
+                    menu.classList.remove('active');
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            // Add a small delay to avoid closing immediately from the trigger click
+            setTimeout(() => document.addEventListener('click', closeHandler), 50);
+        }
     }
 };
