@@ -14,13 +14,17 @@ const App = {
             this.checkFreemiumLimits();
             this.renderUserInfo();
             if (window.Network) Network.init();
-            this.handlePaymentReturn();
-            this.handleUrlHash();
-
-            // Router / Landing Logic
-            const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
-            const isLoggedIn = Auth.isLoggedIn();
-            const inApp = sessionStorage.getItem('sp_in_app') === 'true';
+            const hash = window.location.hash.substring(1);
+            if (hash && hash.startsWith('view-quote=')) {
+                const quoteId = hash.split('=')[1];
+                this.enterApp(false, false);
+                this.enterPublicMode();
+                if (typeof Quotes !== 'undefined') {
+                    Quotes.renderPublicView(quoteId);
+                }
+                this.hideLoader();
+                return;
+            }
 
             if (isLoggedIn || inApp) {
                 // Ensure data is synced BEFORE showing app content
@@ -88,6 +92,25 @@ const App = {
         if (autoNavigate) {
             this.navigateTo('dashboard');
         }
+    },
+
+    enterPublicMode() {
+        console.log("🛡️ Entering Public Mode (No Sidebar)");
+        const sidebar = document.querySelector('.sidebar');
+        const header = document.querySelector('.mobile-header');
+        const banner = document.getElementById('freemium-banner');
+        const main = document.querySelector('.main-content');
+
+        if (sidebar) sidebar.style.display = 'none';
+        if (header) header.style.display = 'none';
+        if (banner) banner.style.display = 'none';
+        if (main) {
+            main.style.marginLeft = '0';
+            main.style.width = '100%';
+            main.style.padding = '0';
+            main.style.maxWidth = '100vw';
+        }
+        document.body.classList.add('public-view');
     },
 
     updateLandingStats() {
@@ -964,6 +987,16 @@ const App = {
         }
 
         if (hash.startsWith('page=')) return; // Géré par l'init ou listener
+
+        if (hash.startsWith('view-quote=')) {
+            const quoteId = hash.split('=')[1];
+            this.enterApp(false, false);
+            this.enterPublicMode();
+            if (typeof Quotes !== 'undefined') {
+                Quotes.renderPublicView(quoteId);
+            }
+            return;
+        }
 
         const params = new URLSearchParams(hash);
         const type = params.get('type');

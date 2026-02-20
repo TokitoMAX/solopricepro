@@ -761,9 +761,13 @@ const Quotes = {
 
         if (!quote || !client) return;
 
+        // Générer le lien de signature public
+        const baseUrl = window.location.origin + window.location.pathname;
+        const publicLink = `${baseUrl}#view-quote=${quote.id}`;
+
         // Préparer le mailto
         const subject = encodeURIComponent(`Devis ${quote.number} - ${user?.company?.name || 'Prestation'}`);
-        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint le devis ${quote.number} d'un montant de ${App.formatCurrency(quote.total)}.\n\nCordialement,\n${user?.company?.name || 'Votre prestataire'}`);
+        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint le devis ${quote.number} d'un montant de ${App.formatCurrency(quote.total)}.\n\nVous pouvez le consulter et le signer directement en ligne via ce lien sécurisé :\n${publicLink}\n\nCordialement,\n${user?.company?.name || 'Votre prestataire'}`);
 
         const mailtoUrl = `mailto:${client.email || ''}?subject=${subject}&body=${body}`;
 
@@ -780,35 +784,39 @@ const Quotes = {
 
     // --- Signature Module (Expert Feature) ---
 
-    openSignatureModal(id) {
-        const quote = Storage.getQuote(id);
+    openSignatureModal(id, isPublic = false) {
+        this.isPublicSign = isPublic;
+        const quote = isPublic ? this.publicQuoteData?.quote : Storage.getQuote(id);
         if (!quote) return;
 
         // Création dynamique de la modale
-        const modal = document.createElement('div');
+        let modal = document.getElementById('signature-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'signature-modal';
+            modal.className = 'modal-overlay';
+            document.body.appendChild(modal);
+        }
+
         modal.className = 'modal-overlay active';
-        modal.id = 'signature-modal';
         modal.innerHTML = `
             <div class="modal-content glass" style="max-width: 500px; text-align: center;">
                 <div class="modal-header">
-                    <h3>Signature Client</h3>
+                    <h3>${isPublic ? 'Signer votre devis' : 'Signature Client'}</h3>
                     <button class="modal-close" onclick="Quotes.closeSignatureModal()">✕</button>
                 </div>
                 <div class="modal-body" style="padding: 1rem 0;">
-                    <p style="margin-bottom: 1rem;">Faites signer le client ci-dessous :</p>
+                    <p style="margin-bottom: 1rem;">${isPublic ? 'Veuillez apposer votre signature ci-dessous :' : 'Faites signer le client ci-dessous :'}</p>
                     <div style="border: 2px dashed var(--primary); background: #fff; border-radius: 8px; cursor: crosshair;">
                         <canvas id="signature-pad" width="400" height="200" style="width: 100%; touch-action: none;"></canvas>
                     </div>
-                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
-                        <button class="button-outline small" onclick="Quotes.clearSignature()">Effacer</button>
-                    </div>
                 </div>
-                <div class="modal-footer" style="justify-content: center;">
-                    <button class="button-primary full-width" onclick="Quotes.saveSignature('${id}')">Valider et Signer</button>
+                <div class="modal-footer" style="justify-content: center; gap: 1rem;">
+                    <button class="button-outline small" onclick="Quotes.clearSignature()">Effacer</button>
+                    <button class="button-primary" onclick="Quotes.saveSignature('${id}')">Valider et Signer</button>
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
 
         this.initCanvas();
     },
@@ -877,30 +885,138 @@ const Quotes = {
 
     async saveSignature(id) {
         const canvas = document.getElementById('signature-pad');
-        // Check if empty (simple check: getting dataURL and comparing length of empty canvas is tricky across browsers, 
-        // so we trust the user for now or could implement isCanvasBlank)
+        if (!canvas) return;
 
         const dataUrl = canvas.toDataURL('image/png');
 
-        const quote = Storage.getQuote(id);
-        if (quote) {
-            quote.signature = {
-                image: dataUrl,
-                date: new Date().toISOString()
-            };
-            // Signature valide le devis
-            quote.status = 'accepted';
+        try {
+            if (this.isPublicSign) {
+                // Appel API public
+                const res = await fetch(`${Auth.apiBase}/api/public/quote/${id}/sign`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ signature: dataUrl })
+                });
 
-            try {
-                await Storage.updateQuote(id, quote);
-                App.showNotification('Devis signé et validé !', 'success');
+                if (!res.ok) throw new Error('Erreur lors de la signature');
+
+                App.showNotification('Devis signé avec succès !', 'success');
                 this.closeSignatureModal();
-                this.showPaymentInstructions(id);
-            } catch (e) {
-                App.showNotification('Erreur de signature.', 'error');
+                this.renderPublicView(id);
+            } else {
+                // Mode expert interne
+                const quote = Storage.getQuote(id);
+                if (quote) {
+                    quote.client_signature = dataUrl;
+                    quote.accepted_at = new Date().toISOString();
+                    quote.status = 'accepted';
+
+                    await Storage.updateQuote(id, quote);
+                    App.showNotification('Devis signé et validé !', 'success');
+                    this.closeSignatureModal();
+                    this.render(this.lastContainerId);
+                    this.showPaymentInstructions(id);
+                }
             }
-            // Optionnel : Générer directement le PDF signé
-            // this.downloadPDF(id); 
+        } catch (err) {
+            App.showNotification(err.message, 'error');
+        }
+    },
+
+    async renderPublicView(id) {
+        const container = document.getElementById(this.lastContainerId || 'quotes-content');
+        if (!container) return;
+
+        container.innerHTML = '<div class="loader-spinner" style="margin: 5rem auto;"></div>';
+
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/public/quote/${id}`);
+            if (!res.ok) throw new Error('Devis introuvable ou lien expiré.');
+
+            const data = await res.json();
+            this.publicQuoteData = data;
+            const { quote, provider, client } = data;
+
+            container.innerHTML = `
+                <div class="public-quote-wrapper">
+                    <header class="public-header">
+                        <div class="logo gradient-text">SoloPrice Pro</div>
+                        <div class="status-badge-large status-${quote.status}">${this.getStatusLabel(quote.status)}</div>
+                    </header>
+                    
+                    <div class="quote-document glass">
+                        <div class="document-header">
+                            <div class="provider-info">
+                                ${provider.logo_url ? `<img src="${provider.logo_url}" class="provider-logo" alt="Logo">` : `<h2 class="gradient-text">${provider.company_name || 'Prestataire'}</h2>`}
+                                <p>${provider.email || ''}</p>
+                                <p>${provider.phone || ''}</p>
+                            </div>
+                            <div class="document-meta">
+                                <h1>DEVIS</h1>
+                                <p><strong>N° ${quote.number}</strong></p>
+                                <p>Le ${App.formatDate(quote.createdAt)}</p>
+                            </div>
+                        </div>
+
+                        <div class="client-info-box">
+                            <label>Destinataire :</label>
+                            <h3>${client.name}</h3>
+                            <p>${client.email || ''}</p>
+                        </div>
+
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th style="text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(quote.items || []).map(item => `
+                                    <tr>
+                                        <td>${item.description}</td>
+                                        <td style="text-align: right;">${App.formatCurrency(item.total)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+
+                        <div class="quote-totals">
+                            <div class="total-row"><span>Sous-total</span> <span>${App.formatCurrency(quote.subtotal)}</span></div>
+                            <div class="total-row large"><span>Total TTC</span> <span>${App.formatCurrency(quote.total)}</span></div>
+                        </div>
+
+                        ${quote.status === 'sent' || quote.status === 'draft' ? `
+                            <div class="public-actions">
+                                <button class="button-primary big" onclick="Quotes.openSignatureModal('${quote.id}', true)">
+                                    <i class="fas fa-pen-nib"></i> Signer le devis
+                                </button>
+                                <p class="text-muted" style="margin-top: 1rem;">En cliquant sur signer, vous acceptez les conditions de ce devis.</p>
+                            </div>
+                        ` : (quote.status === 'accepted' || quote.status === 'paid' ? `
+                            <div class="signature-success">
+                                <i class="fas fa-check-circle"></i>
+                                <h3>Devis validé et signé</h3>
+                                <p>Le ${App.formatDate(quote.accepted_at || quote.createdAt)}</p>
+                                ${quote.client_signature ? `<div style="background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 1rem;"><img src="${quote.client_signature}" class="client-signature-display" alt="Signature"></div>` : ''}
+                            </div>
+                        ` : '')}
+                    </div>
+                    
+                    <footer class="public-footer">
+                        Propulsé par SoloPrice Pro - L'outil de chiffrage des experts.
+                    </footer>
+                </div>
+            `;
+        } catch (err) {
+            container.innerHTML = `
+                <div class="error-view glass" style="margin: 5rem 2rem; padding: 3rem; text-align: center; border-radius: 30px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--warning); margin-bottom: 1.5rem;"></i>
+                    <h2 class="gradient-text">Oups !</h2>
+                    <p style="font-size: 1.1rem; opacity: 0.8; margin-bottom: 2rem;">${err.message}</p>
+                    <button class="button-primary" onclick="window.location.href='/'">Retour à l'accueil</button>
+                </div>
+            `;
         }
     },
 
