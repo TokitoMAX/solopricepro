@@ -114,7 +114,7 @@ const Quotes = {
                                         </td>
                                         <td>
                                             <div class="table-actions-dropdown">
-                                                <button class="button-secondary small action-trigger" onclick="Quotes.toggleActions('${quote.id}')">
+                                                <button class="button-secondary small action-trigger" onclick="event.stopPropagation(); Quotes.toggleActions('${quote.id}')">
                                                     Actions <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>
                                                 </button>
                                                 <div id="actions-${quote.id}" class="actions-menu glass">
@@ -1023,7 +1023,10 @@ const Quotes = {
         });
 
         const menu = document.getElementById(`actions-${id}`);
-        if (!menu) return;
+        if (!menu) {
+            console.error(`[QUOTES] Actions menu not found for ID: ${id}`);
+            return;
+        }
 
         menu.classList.toggle('active');
 
@@ -1035,8 +1038,8 @@ const Quotes = {
                     document.removeEventListener('click', closeHandler);
                 }
             };
-            // Add a small delay to avoid closing immediately from the trigger click
-            setTimeout(() => document.addEventListener('click', closeHandler), 50);
+            // Use a capture listener or a small timeout to ensure we don't catch the current click
+            setTimeout(() => document.addEventListener('click', closeHandler), 10);
         }
     }
 };

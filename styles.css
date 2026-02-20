@@ -2591,8 +2591,10 @@ section {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 15px;
-    overflow: hidden;
+    /* overflow: hidden; */
+    /* Removing overflow:hidden to allow dropdowns to pop out */
     margin-top: 1.5rem;
+    position: relative;
 }
 
 .data-table {
@@ -4156,6 +4158,10 @@ select.form-input:focus {
     display: inline-block;
 }
 
+.table-actions-dropdown:has(.actions-menu.active) {
+    z-index: 1001;
+}
+
 .actions-menu {
     position: absolute;
     right: 0;
@@ -4176,6 +4182,7 @@ select.form-input:focus {
 .actions-menu.active {
     display: flex;
     animation: dropdownPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 2000;
 }
 
 .menu-section {
