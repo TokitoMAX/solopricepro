@@ -16,11 +16,15 @@ const App = {
             if (window.Network) Network.init();
             const hash = window.location.hash.substring(1);
             if (hash && hash.startsWith('view-quote=')) {
-                const quoteId = hash.split('=')[1];
+                const fullPath = hash.split('=')[1];
+                const [quoteId, queryString] = fullPath.split('?');
+                const params = new URLSearchParams(queryString || '');
+                const paymentStatus = params.get('payment');
+
                 this.enterApp(false, false);
                 this.enterPublicMode();
                 if (typeof Quotes !== 'undefined') {
-                    Quotes.renderPublicView(quoteId);
+                    Quotes.renderPublicView(quoteId, paymentStatus);
                 }
                 this.hideLoader();
                 return;
@@ -989,11 +993,15 @@ const App = {
         if (hash.startsWith('page=')) return; // Géré par l'init ou listener
 
         if (hash.startsWith('view-quote=')) {
-            const quoteId = hash.split('=')[1];
+            const fullPath = hash.split('=')[1];
+            const [quoteId, queryString] = fullPath.split('?');
+            const params = new URLSearchParams(queryString || '');
+            const paymentStatus = params.get('payment');
+
             this.enterApp(false, false);
             this.enterPublicMode();
             if (typeof Quotes !== 'undefined') {
-                Quotes.renderPublicView(quoteId);
+                Quotes.renderPublicView(quoteId, paymentStatus);
             }
             return;
         }

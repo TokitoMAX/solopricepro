@@ -810,6 +810,15 @@ const Quotes = {
                     <div style="border: 2px dashed var(--primary); background: #fff; border-radius: 8px; cursor: crosshair;">
                         <canvas id="signature-pad" width="400" height="200" style="width: 100%; touch-action: none;"></canvas>
                     </div>
+                    
+                    ${!isPublic ? `
+                        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
+                            <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Le client a déjà signé (papier/email) ?</p>
+                            <button class="button-outline full-width" onclick="Quotes.markAsSignedManually('${id}')">
+                                <i class="fas fa-check-double"></i> Valider manuellement
+                            </button>
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="modal-footer" style="justify-content: center; gap: 1rem;">
                     <button class="button-outline small" onclick="Quotes.clearSignature()">Effacer</button>
@@ -923,7 +932,50 @@ const Quotes = {
         }
     },
 
-    async renderPublicView(id) {
+    async markAsSignedManually(id) {
+        if (!confirm('Confirmer que le client a déjà validé ce devis par ailleurs ?')) return;
+
+        try {
+            const quote = Storage.getQuote(id);
+            if (quote) {
+                quote.status = 'accepted';
+                quote.accepted_at = new Date().toISOString();
+                quote.manual_validation = true;
+
+                await Storage.updateQuote(id, quote);
+                App.showNotification('Devis validé manuellement.', 'success');
+                this.closeSignatureModal();
+                this.render(this.lastContainerId);
+            }
+        } catch (err) {
+            App.showNotification('Erreur lors de la validation manuelle.', 'error');
+        }
+    },
+
+    async initQuotePayment(id) {
+        App.showLoader();
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/payments/create-quote-session`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quoteId: id })
+            });
+
+            if (!res.ok) throw new Error('Impossible de créer la session de paiement.');
+            const data = await res.json();
+
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                throw new Error('URL de paiement manquante.');
+            }
+        } catch (err) {
+            App.hideLoader();
+            App.showNotification(err.message, 'error');
+        }
+    },
+
+    async renderPublicView(id, paymentStatus = null) {
         const container = document.getElementById(this.lastContainerId || 'quotes-content');
         if (!container) return;
 
@@ -937,8 +989,25 @@ const Quotes = {
             this.publicQuoteData = data;
             const { quote, provider, client } = data;
 
+            // Notification de paiement
+            let paymentNotification = '';
+            if (paymentStatus === 'success') {
+                paymentNotification = `
+                    <div class="glass-notification" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981;">
+                        <i class="fas fa-check-circle"></i> Paiement réussi ! Merci de votre confiance.
+                    </div>
+                `;
+            } else if (paymentStatus === 'cancel') {
+                paymentNotification = `
+                    <div class="glass-notification" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444;">
+                        <i class="fas fa-exclamation-circle"></i> Le paiement a été annulé. Vous pouvez réessayer ci-dessous.
+                    </div>
+                `;
+            }
+
             container.innerHTML = `
                 <div class="public-quote-wrapper">
+                    ${paymentNotification}
                     <header class="public-header">
                         <div class="logo gradient-text">SoloPrice Pro</div>
                         <div class="status-badge-large status-${quote.status}">${this.getStatusLabel(quote.status)}</div>
@@ -988,10 +1057,22 @@ const Quotes = {
 
                         ${quote.status === 'sent' || quote.status === 'draft' ? `
                             <div class="public-actions">
-                                <button class="button-primary big" onclick="Quotes.openSignatureModal('${quote.id}', true)">
-                                    <i class="fas fa-pen-nib"></i> Signer le devis
-                                </button>
-                                <p class="text-muted" style="margin-top: 1rem;">En cliquant sur signer, vous acceptez les conditions de ce devis.</p>
+                                <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
+                                    <button class="button-primary big" onclick="Quotes.initQuotePayment('${quote.id}')">
+                                        <i class="fas fa-credit-card"></i> Payer & Signer (Sécurisé)
+                                    </button>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+                                        <div style="height: 1px; background: rgba(255,255,255,0.1); flex: 1;"></div>
+                                        <span class="text-muted" style="font-size: 0.8rem;">OU</span>
+                                        <div style="height: 1px; background: rgba(255,255,255,0.1); flex: 1;"></div>
+                                    </div>
+                                    <button class="button-outline" onclick="Quotes.openSignatureModal('${quote.id}', true)">
+                                        <i class="fas fa-pen-nib"></i> Signer uniquement
+                                    </button>
+                                </div>
+                                <p class="text-muted" style="margin-top: 2rem; font-size: 0.85rem;">
+                                    Le paiement via SoloPrice Pro sécurise la prestation pour les deux parties.
+                                </p>
                             </div>
                         ` : (quote.status === 'accepted' || quote.status === 'paid' ? `
                             <div class="signature-success">

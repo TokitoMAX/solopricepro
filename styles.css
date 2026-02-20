@@ -4313,6 +4313,7 @@ body.public-view {
     line-height: 0.8;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -4435,6 +4436,33 @@ body.public-view {
     font-size: 0.85rem;
     color: var(--text-muted);
     letter-spacing: 0.5px;
+}
+
+.button-outline.full-width {
+    width: 100%;
+    justify-content: center;
+}
+
+.glass-notification {
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-weight: 600;
+    animation: slideDownFade 0.5s ease-out;
+}
+
+@keyframes slideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (max-width: 768px) {
