@@ -179,8 +179,7 @@ const PDFGenerator = {
                             <strong style="color: var(--primary); display: block; margin-bottom: 5px;">FRAIS PLATEFORME : ${App.formatCurrency((invoice.margin || 0) * (1 + (invoice.tax / (invoice.subtotal || 1))))}</strong>
                             <p style="font-size: 11px; margin: 0;">
                                 À régler à : <strong>SoloPrice Pro</strong><br>
-                                IBAN : FR76 1234 5678 9012 3456 7890 123<br>
-                                BIC : SOLOPRFRXXX
+                                Règlement via votre espace client sécurisé / Mode de paiement enregistré.
                             </p>
                         </div>
                     </div>
@@ -421,7 +420,7 @@ const PDFGenerator = {
                             </span>
                             <p style="font-size: 11px; margin: 0;">
                                 Destinataire : <strong>${providerName}</strong><br>
-                                ${user?.company?.payment_type === 'link' ? `Paiement en ligne : <a href="${user.company.payment_link}" style="color: var(--primary);">${user.company.payment_link}</a>` : `Virement (IBAN) : ${user?.company?.iban || 'IBAN non renseigné'}<br>BIC : ${user?.company?.bic || ''}`}
+                                ${user?.company?.payment_type === 'link' ? `Paiement en ligne : <a href="${user.company.payment_link}" style="color: var(--primary);">${user.company.payment_link}</a>` : `Reglement par virement après facturation.<br>Coordonnées fournies sur facture finale.`}
                             </p>
                         </div>
                         <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
@@ -431,8 +430,7 @@ const PDFGenerator = {
                             </span>
                             <p style="font-size: 11px; margin: 0;">
                                 Destinataire : <strong>SoloPrice Pro</strong><br>
-                                IBAN : FR76 1234 5678 9012 3456 7890 123<br>
-                                BIC : SOLOPRFRXXX
+                                Règlement via votre espace client sécurisé / Mode de paiement enregistré.
                             </p>
                         </div>
                     </div>
