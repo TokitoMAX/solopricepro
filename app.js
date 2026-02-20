@@ -450,6 +450,83 @@ const App = {
         return proFeatures.includes(feature);
     },
 
+    getDailyFocus() {
+        const items = [];
+        const now = new Date();
+
+        // 1. Relances Prioritaires
+        const quotes = Storage.getQuotes();
+        const dormantQuotes = quotes.filter(q => {
+            if (q.status !== 'sent') return false;
+            const lastAction = q.lastFollowUpAt || q.sentAt || q.createdAt;
+            const daysSinceAction = (now - new Date(lastAction)) / (1000 * 60 * 60 * 24);
+            return daysSinceAction > 3;
+        });
+
+        if (dormantQuotes.length > 0) {
+            const totalDormant = dormantQuotes.reduce((sum, q) => sum + q.total, 0);
+            items.push({
+                id: 'relance',
+                icon: '💰',
+                title: 'Relance Prioritaire',
+                description: `${dormantQuotes.length} devis (${this.formatCurrency(totalDormant)}) attendent une relance.`,
+                action: 'Relancer',
+                nav: 'quotes',
+                type: 'urgent'
+            });
+        }
+
+        // 2. Missions Marketplace Fraîches
+        const missions = Storage.getPublicMissions();
+        const freshMissions = missions.filter(m => {
+            const createdAt = m.createdAt || m.created_at;
+            const days = (now - new Date(createdAt)) / (1000 * 60 * 60 * 24);
+            return days < 2;
+        });
+
+        if (freshMissions.length > 0) {
+            items.push({
+                id: 'market',
+                icon: '⚡',
+                title: 'Opportunités Fraîches',
+                description: `${freshMissions.length} nouvelles missions publiées sur le réseau.`,
+                action: 'Voir le Radar',
+                nav: 'marketplace',
+                type: 'info'
+            });
+        }
+
+        // 3. Alerte Facture en retard
+        const invoices = Storage.getInvoices();
+        const overdue = invoices.filter(i => i.status === 'overdue' || (i.status === 'sent' && new Date(i.dueDate) < now));
+        if (overdue.length > 0) {
+            items.push({
+                id: 'overdue',
+                icon: '🚨',
+                title: 'Impayé Détecté',
+                description: `${overdue.length} facture(s) sont en retard. Récupérez votre cash.`,
+                action: 'Voir Factures',
+                nav: 'invoices',
+                type: 'danger'
+            });
+        }
+
+        // Si vide, une action positive
+        if (items.length === 0) {
+            items.push({
+                id: 'prospect',
+                icon: '🎯',
+                title: 'Expansion Business',
+                description: 'Tout est à jour. Et si vous ajoutiez 2 nouveaux prospects aujourd\'hui ?',
+                action: 'Ajouter Prospect',
+                nav: 'leads',
+                type: 'success'
+            });
+        }
+
+        return items.slice(0, 3);
+    },
+
     isFeatureExpertGated(feature) {
         const tier = Storage.getTier();
         if (tier === 'expert') return false;

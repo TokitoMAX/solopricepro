@@ -171,89 +171,150 @@
 
         <header class="landing-hero container">
             <div class="hero-content">
-                <h1 class="hero-title">SoloPrice <span class="gradient-text">Pro</span></h1>
-                <p class="hero-subtitle">L'outil de chiffrage haute-performance pour experts. <br>Éliminez
-                    l'incertitude. Dominez votre rentabilité.</p>
+                <h1 class="hero-title">Dominez votre <br><span class="gradient-text">Rentabilité d'Expert</span></h1>
+                <p class="hero-subtitle">L'outil de chiffrage haute-performance qui pense comme un chef d'entreprise.
+                    <br>Ne laissez plus aucun euro dormir. Prenez le contrôle total.
+                </p>
                 <div class="hero-buttons">
-                    <button class="button-primary big" onclick="showAuthModal('register')">
-                        Commencer l'Expérience
+                    <button class="button-primary big shadow-glow" onclick="showAuthModal('register')"
+                        style="font-size: 1.3rem; padding: 1.2rem 3rem;">
+                        Accéder à l'Expérience PRO
                     </button>
-                    <p class="hero-note" style="color: var(--text-muted); opacity: 0.8; font-style: italic;">Précis.
-                        Puissant. Professionnel.</p>
+                    <p class="hero-note"
+                        style="color: var(--text-muted); opacity: 0.8; font-style: italic; margin-top: 1rem;">Précision
+                        Millimétrée. Impact Immédiat.</p>
                 </div>
             </div>
             <div class="hero-image">
-                <div class="floating-card goal-card-landing">
-                    <div class="goal-label">Mentalité PRO</div>
-                    <div id="landing-pipeline-value" class="goal-value" style="font-size: 1.1rem; line-height: 1.2;"> Ne
-                        bradez plus <br>votre talent
+                <div class="floating-card goal-card-landing pulse-glow">
+                    <div class="goal-label">Alerte Coach</div>
+                    <div id="landing-pipeline-value" class="goal-value"
+                        style="font-size: 1.1rem; line-height: 1.2; color: var(--warning);"> 💰 2 450€ de cash
+                        <br>dormant identifié
                     </div>
-                    <div class="goal-progress-container">
-                        <div id="landing-pipeline-progress" class="goal-progress-fill" style="width: 100%;"></div>
+                    <div class="goal-progress-container" style="margin-top: 1rem;">
+                        <button class="button-primary small full-width"
+                            style="background: var(--warning); border: none;">Relancer maintenant</button>
                     </div>
                 </div>
             </div>
         </header>
 
-        <section id="pricing" class="landing-pricing container">
-            <div class="section-header">
-                <h2 class="section-title">Choisissez votre <span class="gradient-text">Puissance</span></h2>
-                <p class="section-subtitle">Un investissement rentable dès votre premier devis.</p>
-            </div>
+        <section class="landing-simulator container" style="margin-top: 4rem; margin-bottom: 4rem;">
+            <div class="glass-premium"
+                style="padding: 3rem; border-radius: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+                <div>
+                    <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;">Simulez votre <span
+                            class="gradient-text">Liberté</span></h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Combien devriez-vous facturer pour obtenir
+                        le salaire net de vos rêves ? Notre simulateur intégré vous donne la réponse en 3 secondes.</p>
 
-            <div class="pricing-grid">
-                <!-- Standard -->
-                <div class="pricing-card glass">
-                    <div class="pricing-header">
-                        <h3 class="tier-name">Standard</h3>
-                        <div class="tier-price">0€<span class="period">/mois</span></div>
+                    <div class="simulator-form" style="display: grid; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-size: 0.8rem; opacity: 0.7;">Objectif Salaire Net
+                                Mensuel</label>
+                            <input type="number" id="sim-net" class="form-input" value="3000"
+                                style="background: rgba(0,0,0,0.3); border-color: var(--primary-glass);">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-size: 0.8rem; opacity: 0.7;">Jours travaillés par
+                                mois</label>
+                            <input type="number" id="sim-days" class="form-input" value="15"
+                                style="background: rgba(0,0,0,0.3); border-color: var(--primary-glass);">
+                        </div>
+                        <button class="button-primary full-width" onclick="runMiniSim()"
+                            style="margin-top: 0.5rem;">Calculer mon TJM cible</button>
                     </div>
-                    <ul class="tier-features">
-                        <li><i class="fas fa-check"></i> Marketplace Gratuite</li>
-                        <li><i class="fas fa-check"></i> 1 Client actif</li>
-                        <li><i class="fas fa-check"></i> 2 Devis / mois</li>
-                        <li class="disabled"><i class="fas fa-times"></i> Logo sur PDF</li>
-                        <li class="disabled"><i class="fas fa-times"></i> Kanban & Profit</li>
-                    </ul>
-                    <button class="pricing-button" onclick="handlePricingClick('register')">Commencer
-                        Gratuitement</button>
                 </div>
 
-                <!-- Pro -->
-                <div class="pricing-card glass popular">
-                    <div class="popular-badge">Production Illimitée</div>
-                    <div class="pricing-header">
-                        <h3 class="tier-name">Pack PRO</h3>
-                        <div class="market-value">Zéro limite opérationnelle</div>
-                        <div class="tier-price">15€<span class="period">/mois</span></div>
-                    </div>
-                    <ul class="tier-features">
-                        <li><i class="fas fa-check"></i> <strong>Documents Illimités</strong></li>
-                        <li><i class="fas fa-check"></i> PDF avec <strong>votre Logo</strong></li>
-                        <li><i class="fas fa-check"></i> Pipeline Kanban Complet</li>
-                        <li><i class="fas fa-check"></i> Pilotage CA & Profit</li>
-                        <li><i class="fas fa-check"></i> Support Prioritaire</li>
-                    </ul>
-                    <button class="pricing-button" onclick="handlePricingClick('pro')">Débloquer l'Illimité</button>
-                </div>
-
-                <!-- Expert -->
-                <div class="pricing-card glass expert">
-                    <div class="pricing-header">
-                        <h3 class="tier-name">Pack EXPERT</h3>
-                        <div class="market-value">Accélérateur de Croissance</div>
-                        <div class="tier-price">29€<span class="period">/mois</span></div>
-                    </div>
-                    <ul class="tier-features">
-                        <li><i class="fas fa-check"></i> Tout du Pack PRO</li>
-                        <li><i class="fas fa-check"></i> <strong>Signature Électronique</strong> (Closing)</li>
-                        <li><i class="fas fa-check"></i> <strong>Assistant Relance</strong> (Cash)</li>
-                        <li><i class="fas fa-check"></i> <strong>Coaching Rentabilité</strong> (IA)</li>
-                        <li><i class="fas fa-check"></i> Export Comptable</li>
-                    </ul>
-                    <button class="pricing-button" onclick="handlePricingClick('expert')">Activer la Croissance</button>
+                <div id="sim-result" class="glass-premium"
+                    style="padding: 2.5rem; border-radius: 20px; text-align: center; border: 2px dashed var(--primary-glass);">
+                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Votre TJM recommandé
+                        pour réussir :</div>
+                    <div id="sim-tjm-value"
+                        style="font-size: 3.5rem; font-weight: 900; color: var(--primary-light); margin-bottom: 0.5rem;">
+                        ---€</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">(Inclut charges
+                        sociales & frais de fonctionnement)</div>
                 </div>
             </div>
+        </section>
+
+        <script>
+            function runMiniSim() {
+                const net = parseFloat(document.getElementById('sim-net').value) || 0;
+                const days = parseFloat(document.getElementById('sim-days').value) || 1;
+                // Formule simplifiée : (Net / (1 - charges)) + frais
+                // Ici on prend environ 22% de charges
+                const turnoverNeeded = (net / 0.78) * 1.1; // 10% de frais en plus
+                const tjm = Math.round(turnoverNeeded / days);
+
+                const valEl = document.getElementById('sim-tjm-value');
+                const resultBox = document.getElementById('sim-result');
+
+                valEl.textContent = tjm + '€';
+                resultBox.style.borderColor = 'var(--primary)';
+                resultBox.classList.add('pulse-glow');
+            }
+        </script>
+        <div class="section-header">
+            <h2 class="section-title">Choisissez votre <span class="gradient-text">Puissance</span></h2>
+            <p class="section-subtitle">Un investissement rentable dès votre premier devis.</p>
+        </div>
+
+        <div class="pricing-grid">
+            <!-- Standard -->
+            <div class="pricing-card glass">
+                <div class="pricing-header">
+                    <h3 class="tier-name">Standard</h3>
+                    <div class="tier-price">0€<span class="period">/mois</span></div>
+                </div>
+                <ul class="tier-features">
+                    <li><i class="fas fa-check"></i> Marketplace Gratuite</li>
+                    <li><i class="fas fa-check"></i> 1 Client actif</li>
+                    <li><i class="fas fa-check"></i> 2 Devis / mois</li>
+                    <li class="disabled"><i class="fas fa-times"></i> Logo sur PDF</li>
+                    <li class="disabled"><i class="fas fa-times"></i> Kanban & Profit</li>
+                </ul>
+                <button class="pricing-button" onclick="handlePricingClick('register')">Commencer
+                    Gratuitement</button>
+            </div>
+
+            <!-- Pro -->
+            <div class="pricing-card glass popular">
+                <div class="popular-badge">Production Illimitée</div>
+                <div class="pricing-header">
+                    <h3 class="tier-name">Pack PRO</h3>
+                    <div class="market-value">Zéro limite opérationnelle</div>
+                    <div class="tier-price">15€<span class="period">/mois</span></div>
+                </div>
+                <ul class="tier-features">
+                    <li><i class="fas fa-check"></i> <strong>Documents Illimités</strong></li>
+                    <li><i class="fas fa-check"></i> PDF avec <strong>votre Logo</strong></li>
+                    <li><i class="fas fa-check"></i> Pipeline Kanban Complet</li>
+                    <li><i class="fas fa-check"></i> Pilotage CA & Profit</li>
+                    <li><i class="fas fa-check"></i> Support Prioritaire</li>
+                </ul>
+                <button class="pricing-button" onclick="handlePricingClick('pro')">Débloquer l'Illimité</button>
+            </div>
+
+            <!-- Expert -->
+            <div class="pricing-card glass expert">
+                <div class="pricing-header">
+                    <h3 class="tier-name">Pack EXPERT</h3>
+                    <div class="market-value">Accélérateur de Croissance</div>
+                    <div class="tier-price">29€<span class="period">/mois</span></div>
+                </div>
+                <ul class="tier-features">
+                    <li><i class="fas fa-check"></i> Tout du Pack PRO</li>
+                    <li><i class="fas fa-check"></i> <strong>Signature Électronique</strong> (Closing)</li>
+                    <li><i class="fas fa-check"></i> <strong>Assistant Relance</strong> (Cash)</li>
+                    <li><i class="fas fa-check"></i> <strong>Coaching Rentabilité</strong> (IA)</li>
+                    <li><i class="fas fa-check"></i> Export Comptable</li>
+                </ul>
+                <button class="pricing-button" onclick="handlePricingClick('expert')">Activer la Croissance</button>
+            </div>
+        </div>
         </section>
 
         <footer class="landing-footer">

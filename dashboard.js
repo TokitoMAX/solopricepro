@@ -38,6 +38,26 @@ const Dashboard = {
                 </div>
             </div>
 
+            <!-- Focus du Jour -->
+            <div class="focus-widget glass">
+                <div class="section-header-inline" style="margin-bottom: 1.5rem;">
+                    <h2 class="section-title-small" style="font-size: 0.9rem; color: var(--primary-light); letter-spacing: 1px;">MON FOCUS DU JOUR</h2>
+                    <span class="badge" style="background: var(--primary-glass); color: var(--primary-light);">Top 3 Actions</span>
+                </div>
+                <div class="focus-list">
+                    ${App.getDailyFocus().map(item => `
+                        <div class="focus-item" onclick="App.navigateTo('${item.nav}')">
+                            <div class="focus-icon">${item.icon}</div>
+                            <div class="focus-details">
+                                <div style="font-weight: 700; font-size: 0.95rem; color: white; margin-bottom: 4px;">${item.title}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.3;">${item.description}</div>
+                                <button class="button-link small" style="margin-top: 8px; padding: 0; color: var(--primary-light); font-size: 0.75rem;">${item.action} →</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
             ${typeof Coach !== 'undefined' ? (App.isFeatureProGated('coach') ? PremiumWall.renderTeaser('Coaching Stratégique', 'Obtenez des analyses automatiques sur votre cash dormant et vos objectifs de salairenet.', '') : Coach.renderWidget()) : ''}
 
             <div class="stats-grid dashboard-stats">

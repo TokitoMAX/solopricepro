@@ -50,8 +50,10 @@
     --radius-lg: 16px;
     --radius-full: 9999px;
 
-    --gradient-1: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --gradient-1: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+    --gradient-premium: linear-gradient(135deg, #10b981 0%, #6366f1 50%, #8b5cf6 100%);
     --gradient-dark: linear-gradient(135deg, #181b21 0%, #0f1115 100%);
+    --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 * {
