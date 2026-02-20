@@ -132,16 +132,12 @@ const App = {
         const progressEl = document.getElementById('landing-pipeline-progress');
 
         if (valueEl) {
-            if (pipelineValue > 0) {
-                valueEl.innerHTML = `💰 ${this.formatCurrency(pipelineValue)} <br>de cash dormant détecté`;
-                valueEl.style.color = 'var(--warning)';
-            } else {
-                valueEl.innerHTML = "Aucun cash dormant <br>Tout est sous contrôle";
-                valueEl.style.color = 'var(--primary-light)';
-            }
+            valueEl.innerHTML = this.formatCurrency(monthlyGoal);
         }
+
         if (progressEl) {
-            progressEl.style.width = '100%';
+            const percentage = Math.min((pipelineValue / monthlyGoal) * 100, 100);
+            progressEl.style.width = percentage > 0 ? `${percentage}%` : '5%';
         }
     },
 
