@@ -64,6 +64,12 @@ const PDFGenerator = {
                     }
 
                     .footer { margin-top: 40px; text-align: center; font-size: 10px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 20px; }
+                    
+                    .watermark {
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background-image: url("data:image/svg+xml,%3Csvg width='500' height='500' viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='35' font-weight='900' fill='rgba(0,0,0,0.03)' font-family='Arial' text-anchor='middle' transform='rotate(-35 250 250)'%3ESPÉCIMEN - SOLOPRICE PRO%3C/text%3E%3C/svg%3E");
+                        pointer-events: none; z-index: -1;
+                    }
 
                     @media print {
                         body { padding: 0; }
@@ -76,6 +82,7 @@ const PDFGenerator = {
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                     Document Sécurisé via SoloPrice Pro
                 </div>
+                ${!Storage.isPro() ? '<div class="watermark"></div>' : ''}
                 ${invoice.status === 'paid' ? '<div class="status-stamp">PAYÉE</div>' : ''}
                 
                 <div class="header">
@@ -278,9 +285,15 @@ const PDFGenerator = {
                     .footer { font-size: 11px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 30px; text-align: center; margin-top: 60px; line-height: 1.6; }
 
                     /* Preview Specific Premium Styles */
+                    /* Watermark & Teaser Styles */
+                    .watermark {
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background-image: url("data:image/svg+xml,%3Csvg width='500' height='500' viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='35' font-weight='900' fill='rgba(0,0,0,0.03)' font-family='Arial' text-anchor='middle' transform='rotate(-35 250 250)'%3ESPÉCIMEN - SOLOPRICE PRO%3C/text%3E%3C/svg%3E");
+                        pointer-events: none; z-index: -1;
+                    }
                     .preview-watermark {
                         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                        background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='30' font-weight='900' fill='rgba(0,0,0,0.02)' font-family='Arial' text-anchor='middle' transform='rotate(-35 200 200)'%3EAPERÇU GRATUIT%3C/text%3E%3C/svg%3E");
+                        background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='30' font-weight='900' fill='rgba(0,0,0,0.03)' font-family='Arial' text-anchor='middle' transform='rotate(-35 200 200)'%3EAPERÇU GRATUIT%3C/text%3E%3C/svg%3E");
                         pointer-events: none; z-index: -1;
                     }
                     .preview-bar {
@@ -310,6 +323,7 @@ const PDFGenerator = {
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                     Document Sécurisé via SoloPrice Pro
                 </div>
+                ${!Storage.isPro() ? '<div class="watermark"></div>' : ''}
                 ${isPreview ? `
                     <div class="preview-bar no-print">
                         <div class="preview-info">

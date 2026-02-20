@@ -719,12 +719,6 @@ const Quotes = {
     },
 
     downloadPDF(id) {
-        const isPro = Storage.isPro();
-        if (!isPro) {
-            this.previewQuote(id);
-            return;
-        }
-
         const user = Storage.getUser();
         const company = Storage.getUserCompany();
 
@@ -786,11 +780,6 @@ const Quotes = {
     // --- Signature Module (Expert Feature) ---
 
     openSignatureModal(id) {
-        if (Storage.getTier() !== 'expert') {
-            App.showUpgradeModal('feature');
-            return;
-        }
-
         const quote = Storage.getQuote(id);
         if (!quote) return;
 
