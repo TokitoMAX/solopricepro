@@ -604,7 +604,8 @@ const Marketplace = {
 
             // 3. Trigger UI Refresh for recruiter
             await Storage.fetchAllData();
-            this.render();
+            if (this.currentTab === 'inbox') await this.loadTabContent();
+            else this.render();
         } catch (err) {
             console.error('[FINALIZE] Error:', err);
             App.showNotification('Erreur lors de la validation finale', 'error');
@@ -733,16 +734,18 @@ const Marketplace = {
     },
 
     async deleteMission(id) {
-        if (!confirm('Voulez-vous vraiment supprimer cette offre ?')) return;
+        if (!confirm('Voulez-vous vraiment annuler et archiver cette offre ?\n\nL\'offre ne sera plus visible, mais l\'historique des candidatures sera conservé.')) return;
 
         try {
-            await Storage.delete('sp_marketplace_missions', id);
-            App.showNotification('Offre supprimée avec succès', 'success');
-            // Refresh Feed
+            // Soft delete: update status to 'deleted' instead of physical delete
+            await Storage.update('sp_marketplace_missions', id, { status: 'deleted' });
+            App.showNotification('Offre archivée avec succès', 'success');
+            // Refresh
+            await Storage.fetchAllData();
             this.render();
         } catch (err) {
             console.error(err);
-            App.showNotification('Erreur lors de la suppression', 'error');
+            App.showNotification('Erreur lors de l\'archivage', 'error');
         }
     },
 
@@ -1208,8 +1211,17 @@ const Marketplace = {
         if (this._initialized) return;
         this._initialized = true;
         console.log('Marketplace Background Polling Started...');
-        // Poll for invitations every 45 seconds
-        setInterval(() => this.updateInvitationBadge(), 45000);
+
+        // Poll for invitations every 30 seconds
+        setInterval(() => this.updateInvitationBadge(), 30000);
+
+        // Refresh feed every 60 seconds if on 'radar'
+        setInterval(() => {
+            if (this.currentTab === 'radar') {
+                console.log('[MARKETPLACE] Background feed refresh...');
+                this.loadTabContent();
+            }
+        }, 60000);
     }
 };
 

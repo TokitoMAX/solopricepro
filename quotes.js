@@ -755,19 +755,21 @@ const Quotes = {
 
         if (!quote || !client) return;
 
-        const subject = encodeURIComponent(`Devis ${quote.number} - ${user?.company?.name || 'Proposition'}`);
-        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint mon devis ${quote.number} d'un montant de ${App.formatCurrency(quote.total)}.\n\nJe reste à votre disposition pour en discuter.\n\nCordialement,\n${user?.company?.name || 'Votre prestataire'}`);
+        // Préparer le mailto
+        const subject = encodeURIComponent(`Devis ${quote.number} - ${user?.company?.name || 'Prestation'}`);
+        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint le devis ${quote.number} d'un montant de ${App.formatCurrency(quote.total)}.\n\nCordialement,\n${user?.company?.name || 'Votre prestataire'}`);
 
         const mailtoUrl = `mailto:${client.email || ''}?subject=${subject}&body=${body}`;
 
-        App.showNotification('Ouverture de votre messagerie...', 'info');
+        App.showNotification('Ouverture de votre messagerie... N\'oubliez pas de joindre le PDF téléchargé !', 'info');
 
+        // Simuler le passage en mode "envoyé" immédiatement
         await Storage.updateQuote(id, { status: 'sent' });
         this.render(this.lastContainerId);
 
         setTimeout(() => {
             window.location.href = mailtoUrl;
-        }, 800);
+        }, 1200);
     },
 
     // --- Signature Module (Expert Feature) ---

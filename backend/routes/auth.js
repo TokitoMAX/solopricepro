@@ -31,8 +31,8 @@ router.post('/register', async (req, res) => {
             password,
             options: {
                 data: {
-                    company_name: company?.name || '',
-                    is_pro: false
+                    company_name: finalCompanyName,
+                    full_name: '', // Optional
                 }
             }
         });

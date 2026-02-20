@@ -553,7 +553,7 @@ const Invoices = {
 
         const mailtoUrl = `mailto:${client.email || ''}?subject=${subject}&body=${body}`;
 
-        App.showNotification('Ouverture de votre messagerie...', 'info');
+        App.showNotification('Ouverture de votre messagerie... N\'oubliez pas de joindre le PDF téléchargé !', 'info');
 
         // Simuler le passage en mode "envoyé" immédiatement pour l'action-réaction
         await Storage.updateInvoice(id, { status: 'sent' });
@@ -561,7 +561,7 @@ const Invoices = {
 
         setTimeout(() => {
             window.location.href = mailtoUrl;
-        }, 800);
+        }, 1200);
     },
 
     // --- Assistant Relances (Expert Feature) ---

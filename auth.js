@@ -120,8 +120,7 @@ const Auth = {
 
         try {
             console.log('📤 Sending register request to:', `${this.apiBase}/api/auth/register`);
-            console.log('📦 Request data:', { email: data.email, company: data.company });
-
+            console.log('📦 Données envoyées:', { email: data.email, company_name: data.company_name });
             const response = await fetch(`${this.apiBase}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -299,6 +298,30 @@ const Auth = {
         }, 2000);
     }
 };
+
+// Global Fetch Interceptor for Auth Errors
+(function () {
+    const originalFetch = window.fetch;
+    window.fetch = async function () {
+        try {
+            const response = await originalFetch.apply(this, arguments);
+
+            // If we get a 401 or 403, and it's NOT a login/register attempt
+            const url = arguments[0];
+            const isAuthEndpoint = typeof url === 'string' && (url.includes('/api/auth/login') || url.includes('/api/auth/register'));
+
+            if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
+                if (typeof Auth !== 'undefined' && Auth.handleExpiredSession) {
+                    Auth.handleExpiredSession();
+                }
+            }
+
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    };
+})();
 
 // Exposer Auth globalement
 window.Auth = Auth;

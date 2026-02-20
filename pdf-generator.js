@@ -393,9 +393,8 @@ const PDFGenerator = {
 
                 <div class="signature-area">
                 <div class="legal-section" style="margin-top: 40px; padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light);">
-                    <h4 style="font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px;">Instructions de Règlement (Indépendance Garantie)</h4>
-                    <p style="margin-bottom: 15px;">Pour valider ce devis, le client s'engage à effectuer les deux règlements indépendants ci-dessous :</p>
-                    
+                    <h4 style="font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px;">Instructions de Règlement (Paiement Direct)</h4>
+                    <p style="margin-bottom: 15px; color: var(--text-light); font-size: 11px;">Ce document comporte deux instructions de règlement distinctes : l'une pour le prestataire et l'autre pour les frais de service de la plateforme.</p>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
                             <strong style="color: var(--primary); display: block; margin-bottom: 5px;">1. PART PRESTATAIRE (85% HT + Taxe)</strong>

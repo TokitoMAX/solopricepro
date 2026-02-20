@@ -99,12 +99,6 @@ const Settings = {
 
                         <h2 class="section-title-small" style="margin-top: 2.5rem;">Sauvegarde & Sécurité</h2>
                         <p class="section-subtitle">Vos données sont stockées localement. Exportez-les régulièrement pour ne pas les perdre.</p>
-                        <div class="data-actions" style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                            <button class="button-secondary" onclick="Settings.exportData()">Exporter un Backup (.json)</button>
-                            <button class="button-secondary" onclick="Settings.importData()">Importer un Backup</button>
-                            <input type="file" id="import-file-input" style="display: none" onchange="Settings.handleImportFile(event)">
-                            <button class="button-danger" onclick="Settings.resetData()">Réinitialiser tout</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -263,7 +257,7 @@ const Settings = {
 
                     <div style="display: flex; gap: 1rem;">
                         ${!isCanceled ?
-                    '<button class="button-outline small" onclick="Settings.confirmCancelSubscription()" style="border-color: #ef4444; color: #ef4444;">Résilier l\'abonnement</button>' :
+                    '<button class="button-outline small" onclick="Settings.confirmCancelSubscription()" style="border-color: #ef4444; color: #ef4444;" title="Arrêter le renouvellement automatique tout en gardant vos accès jusqu\'à la fin du mois">Résilier l\'abonnement</button>' :
                     '<button class="button-primary small" onclick="App.showUpgradeModal()">Réactiver / Changer d\'offre</button>'
                 }
                     </div>
