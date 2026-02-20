@@ -132,10 +132,15 @@ const App = {
         const progressEl = document.getElementById('landing-pipeline-progress');
 
         if (valueEl) {
-            // valueEl.textContent = this.formatCurrency(monthlyGoal); // Disabled to keep motivational phrase
+            if (pipelineValue > 0) {
+                valueEl.innerHTML = `💰 ${this.formatCurrency(pipelineValue)} <br>de cash dormant détecté`;
+                valueEl.style.color = 'var(--warning)';
+            } else {
+                valueEl.innerHTML = "Aucun cash dormant <br>Tout est sous contrôle";
+                valueEl.style.color = 'var(--primary-light)';
+            }
         }
         if (progressEl) {
-            // Sur la landing, on montre un état "objectif" inspirant à 100% pour la thématique "PRO"
             progressEl.style.width = '100%';
         }
     },
