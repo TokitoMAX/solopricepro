@@ -167,6 +167,17 @@ const Invoices = {
                     <h3>${invoice ? 'Modifier la Facture' : 'Nouvelle Facture'}</h3>
                     <button class="btn-close" onclick="Invoices.hideForm()">✕</button>
                 </div>
+
+                <div class="compliance-checklist info-box" style="background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem;">
+                    <strong style="display: block; margin-bottom: 8px; color: var(--primary-light);"><i class="fas fa-certificate"></i> Standards Professionnels SoloPrice Pro</strong>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> SIRET & Mentions légales</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Calcul automatique TVA</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Date d'échéance claire</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Conformité art. 293B CGI</div>
+                    </div>
+                </div>
+
                 <form id="invoice-form" onsubmit="Invoices.save(event)">
                     <div class="form-grid">
                         <div class="form-group">

@@ -271,6 +271,17 @@ const Quotes = {
                     <h3>${quote ? 'Modifier le Devis' : 'Nouveau Devis'}</h3>
                     <button class="btn-close" onclick="Quotes.hideForm()">✕</button>
                 </div>
+
+                <div class="compliance-checklist info-box" style="background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem;">
+                    <strong style="display: block; margin-bottom: 8px; color: var(--primary-light);"><i class="fas fa-certificate"></i> Standards Professionnels SoloPrice Pro</strong>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> SIRET obligatoire</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Mention TVA (art. 293B)</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Coordonnées complètes</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Validité & Mentions CGV</div>
+                    </div>
+                </div>
+
                 <form id="quote-form" onsubmit="Quotes.save(event)">
                     <div class="form-grid">
                         <div class="form-group full-width">

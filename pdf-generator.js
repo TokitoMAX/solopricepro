@@ -53,6 +53,16 @@ const PDFGenerator = {
                     .legal-section { margin-top: 60px; padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light); }
                     .legal-section h4 { font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px; }
                     
+                    .trust-badge {
+                        position: absolute; top: 20px; right: 20px;
+                        background: var(--primary); color: white;
+                        padding: 6px 12px; border-radius: 6px;
+                        font-size: 9px; font-weight: 800;
+                        text-transform: uppercase; letter-spacing: 0.5px;
+                        display: flex; align-items: center; gap: 6px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+
                     .footer { margin-top: 40px; text-align: center; font-size: 10px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 20px; }
 
                     @media print {
@@ -62,6 +72,10 @@ const PDFGenerator = {
                 </style>
             </head>
             <body>
+                <div class="trust-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    Document Sécurisé via SoloPrice Pro
+                </div>
                 ${invoice.status === 'paid' ? '<div class="status-stamp">PAYÉE</div>' : ''}
                 
                 <div class="header">
@@ -293,6 +307,10 @@ const PDFGenerator = {
                 </style>
             </head>
             <body style="${isPreview ? 'padding-top: 100px;' : ''}">
+                <div class="trust-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    Document Sécurisé via SoloPrice Pro
+                </div>
                 ${isPreview ? `
                     <div class="preview-bar no-print">
                         <div class="preview-info">

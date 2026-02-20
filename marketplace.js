@@ -1065,10 +1065,14 @@ const Marketplace = {
                             </label>
                             <label>Zone Géographique
                                 <select name="zone" class="form-input">
-                                    <option>Outre-Mer</option>
-                                    <option>Métropole</option>
-                                    <option>Diaspora</option>
-                                    <option>International</option>
+                                    <option>Guadeloupe</option>
+                                    <option>Martinique</option>
+                                    <option>Guyane</option>
+                                    <option>Réunion</option>
+                                    <option>Mayotte</option>
+                                    <option>St-Martin / St-Barth</option>
+                                    <option>France Métropolitaine</option>
+                                    <option>Diaspora / International</option>
                                 </select>
                             </label>
                         </div>
