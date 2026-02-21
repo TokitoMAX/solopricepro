@@ -850,16 +850,18 @@ const App = {
                     container.innerHTML = '';
 
                     if (usesSandboxClient) {
-                        // MODE ABONNEMENT SANDBOX (Celui fourni par le client)
+                        // MODE ABONNEMENT SANDBOX
+                        const sandboxPlanId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
+
                         paypal.Buttons({
                             style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
                             createSubscription: function (data, actions) {
                                 return actions.subscription.create({
-                                    plan_id: 'P-8KN785183W634412BNGM6LMQ'
+                                    plan_id: sandboxPlanId
                                 });
                             },
                             onApprove: async (data, actions) => {
-                                App.showNotification('👑 Activation de votre accès PRO (Sandbox)...', 'success');
+                                App.showNotification(`👑 Activation de votre accès ${tier.toUpperCase()} (Sandbox)...`, 'success');
                                 const user = Auth.getUser();
 
                                 if (user) {
