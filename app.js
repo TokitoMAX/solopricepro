@@ -14,18 +14,8 @@ const App = {
             this.checkFreemiumLimits();
             this.renderUserInfo();
             if (window.Network) Network.init();
-            const hash = window.location.hash.substring(1);
-            if (hash && hash.startsWith('view-quote=')) {
-                const fullPath = hash.split('=')[1];
-                const [quoteId, queryString] = fullPath.split('?');
-                const params = new URLSearchParams(queryString || '');
-                const paymentStatus = params.get('payment');
-
-                this.enterApp(false, false);
-                this.enterPublicMode();
-                if (typeof Quotes !== 'undefined') {
-                    Quotes.renderPublicView(quoteId, paymentStatus);
-                }
+            // Nouvelle gestion centralisée du Hash (incluant Reset Password et Quotes publiques)
+            if (this.handleUrlHash()) {
                 this.hideLoader();
                 return;
             }
@@ -822,6 +812,9 @@ const App = {
                     </div>
                 ` : `
                     <div class="paypal-checkout-box">
+                        <div id="paypal-live-badge" class="env-badge" style="display: none; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; width: fit-content; margin-inline: auto;">
+                            <i class="fas fa-check-circle"></i> MODE PRODUCTION (RÉEL)
+                        </div>
                         <div id="paypal-button-container" class="paypal-button-mount">
                             <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
                         </div>
@@ -844,6 +837,12 @@ const App = {
                 const isLive = clientId.startsWith('AcBmag') || !clientId.startsWith('AUpG');
 
                 console.log(`📡 [PAYPAL] SDK Detected. ClientID: ${clientId.substring(0, 10)}..., Mode: ${isLive ? 'LIVE' : 'SANDBOX'}`);
+
+                // Afficher le badge Live si on est en prod
+                setTimeout(() => {
+                    const badge = document.getElementById('paypal-live-badge');
+                    if (badge && isLive) badge.style.display = 'block';
+                }, 100);
 
                 const isSubscriptionMode = true; // On utilise toujours le mode abonnement maintenant
                 const containerId = '#paypal-button-container';
@@ -1156,9 +1155,11 @@ const App = {
     // Gestion du reset password via hash URL ou navigation
     handleUrlHash() {
         const hash = window.location.hash.substring(1);
-        if (!hash) return;
+        if (!hash) return false;
 
-        // Écouter les changements de hash pour la navigation SPA
+        console.log("🔗 Hash detected:", hash.substring(0, 20) + "...");
+
+        // 1. Écouter les changements de hash pour la navigation SPA (si pas déjà fait)
         if (!this.hashListenerSetup) {
             window.addEventListener('hashchange', () => {
                 if (this.updatingHashManually) return;
@@ -1170,8 +1171,7 @@ const App = {
             this.hashListenerSetup = true;
         }
 
-        if (hash.startsWith('page=')) return; // Géré par l'init ou listener
-
+        // 2. Cas spécifique : Vue publique d'un devis
         if (hash.startsWith('view-quote=')) {
             const fullPath = hash.split('=')[1];
             const [quoteId, queryString] = fullPath.split('?');
@@ -1183,10 +1183,14 @@ const App = {
             if (typeof Quotes !== 'undefined') {
                 Quotes.renderPublicView(quoteId, paymentStatus);
             }
-            return;
+            return true;
         }
 
-        const params = new URLSearchParams(hash);
+        if (hash.startsWith('page=')) return false;
+
+        // 3. Cas spécifique : Récupération de mot de passe (Supabase)
+        // Le hash peut contenir access_token directement ou via des params
+        const params = new URLSearchParams(hash.replace(/#/g, '&'));
         const type = params.get('type');
         const accessToken = params.get('access_token');
         const error = params.get('error_description');
@@ -1194,15 +1198,22 @@ const App = {
         if (error) {
             this.showNotification(decodeURIComponent(error), 'error');
             window.history.replaceState({}, document.title, window.location.pathname);
-            return;
+            return true;
         }
 
-        if (type === 'recovery' && accessToken) {
-            console.log('🔐 Mode Recovery détecté');
+        if ((type === 'recovery' || hash.includes('type=recovery')) && accessToken) {
+            console.log('🔐 Mode Recovery détecté - Ouverture de la modale');
             sessionStorage.setItem('sp_recovery_token', accessToken);
+
+            // Nettoyage de l'URL pour éviter les boucles
             window.history.replaceState({}, document.title, window.location.pathname);
-            this.showResetPasswordModal();
+
+            // On attend un court instant que le DOM soit prêt si on vient de charger la page
+            setTimeout(() => this.showResetPasswordModal(), 500);
+            return true;
         }
+
+        return false;
     },
 
     showResetPasswordModal() {
