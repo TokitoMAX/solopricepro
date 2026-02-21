@@ -519,9 +519,9 @@ const Storage = {
         const isPro = this.isPro();
         return {
             isPro,
-            isLifetime: true, // Par défaut pour cet environnement simplifié
-            expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-            daysLeft: 365
+            isLifetime: false,
+            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            daysLeft: 30
         };
     },
 
