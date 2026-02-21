@@ -841,27 +841,35 @@ const App = {
                 // Pour simplifier le test, on force le mode sandbox si l'ID client dans index.html commence par AUp...
                 const sdkUrl = document.querySelector('script[src*="paypal.com/sdk"]')?.src || '';
                 const usesSandboxClient = sdkUrl.includes('AUpGYEYVUGM5Q1MAKvk');
+                const isLive = sdkUrl.includes('AcBmagCWJpj_JUQpRivj');
 
-                const containerId = usesSandboxClient ? '#paypal-container-sandbox' : `#paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}`;
+                const isSubscriptionMode = usesSandboxClient || isLive;
+                const containerId = isSubscriptionMode ? '#paypal-container-sandbox' : `#paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}`;
 
                 setTimeout(() => {
                     const container = document.querySelector(containerId);
                     if (!container) return;
                     container.innerHTML = '';
 
-                    if (usesSandboxClient) {
-                        // MODE ABONNEMENT SANDBOX
-                        const sandboxPlanId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
+                    if (isSubscriptionMode) {
+                        // MODE ABONNEMENT (Sandbox ou Live)
+                        let planId = '';
+                        if (usesSandboxClient) {
+                            planId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
+                        } else {
+                            // IDs de Plans LIVE (P-13... = PRO, P-19... = EXPERT)
+                            planId = tier === 'expert' ? 'P-19X023126K248324VNGNDKOQ' : 'P-13N38598NB647223XNGNDJMY';
+                        }
 
                         paypal.Buttons({
                             style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
                             createSubscription: function (data, actions) {
                                 return actions.subscription.create({
-                                    plan_id: sandboxPlanId
+                                    plan_id: planId
                                 });
                             },
                             onApprove: async (data, actions) => {
-                                App.showNotification(`👑 Activation de votre accès ${tier.toUpperCase()} (Sandbox)...`, 'success');
+                                App.showNotification(`👑 Activation de votre accès ${tier.toUpperCase()} ${isLive ? '' : '(Sandbox)'}...`, 'success');
                                 const user = Auth.getUser();
 
                                 if (user) {
