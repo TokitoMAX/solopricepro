@@ -815,10 +815,10 @@ const App = {
                     </div>
                 ` : `
                     <div class="paypal-checkout-box">
-                        <div id="paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}" class="paypal-button-mount">
+                        <div id="paypal-container-sandbox" class="paypal-button-mount">
                             <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
                         </div>
-                        <p class="paypal-info-text text-muted">Transaction sécurisée par PayPal</p>
+                        <p class="paypal-info-text text-muted">Abonnement sécurisé par PayPal (Test)</p>
                     </div>
                 `}
                 
@@ -830,13 +830,40 @@ const App = {
 
             // Re-exécution du script PayPal en fonction du tier
             if (method === 'paypal') {
-                const buttonId = tier === 'pro' ? "K23GS3HM4TFF2" : "UH2HXUQ2DHQLJ";
-                const containerId = `#paypal-container-${buttonId}`;
+                const isSandbox = typeof Auth !== 'undefined' && Auth.user && Auth.user.email === 'sb-nu0kp49571508@personal.example.com';
+                // Pour simplifier le test, on force le mode sandbox si l'ID client dans index.html commence par AUp...
+                const sdkUrl = document.querySelector('script[src*="paypal.com/sdk"]')?.src || '';
+                const usesSandboxClient = sdkUrl.includes('AUpGYEYVUGM5Q1MAKvk');
+
+                const containerId = usesSandboxClient ? '#paypal-container-sandbox' : `#paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}`;
+
                 setTimeout(() => {
-                    if (window.paypal && window.paypal.HostedButtons) {
-                        const container = document.querySelector(containerId);
-                        if (container) {
-                            container.innerHTML = '';
+                    const container = document.querySelector(containerId);
+                    if (!container) return;
+                    container.innerHTML = '';
+
+                    if (usesSandboxClient) {
+                        // MODE ABONNEMENT SANDBOX (Celui fourni par le client)
+                        paypal.Buttons({
+                            style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
+                            createSubscription: function (data, actions) {
+                                return actions.subscription.create({
+                                    plan_id: 'P-8KN785183W634412BNGM6LMQ'
+                                });
+                            },
+                            onApprove: async (data, actions) => {
+                                App.showNotification('👑 Activation de votre accès PRO (Sandbox)...', 'success');
+                                const user = Auth.getUser();
+                                if (user && typeof Storage !== 'undefined') {
+                                    await Storage.activatePro('SANDBOX-SUB-' + data.subscriptionID, tier);
+                                }
+                                setTimeout(() => window.location.reload(), 1500);
+                            }
+                        }).render(containerId);
+                    } else {
+                        // MODE HOSTED BUTTONS (Live)
+                        if (window.paypal && window.paypal.HostedButtons) {
+                            const buttonId = tier === 'pro' ? "K23GS3HM4TFF2" : "UH2HXUQ2DHQLJ";
                             paypal.HostedButtons({
                                 hostedButtonId: buttonId,
                                 onApprove: async (data, actions) => {
@@ -845,9 +872,7 @@ const App = {
                                         App.showNotification('Veuillez vous reconnecter.', 'error');
                                         return;
                                     }
-
                                     App.showNotification('Activation de votre accès...', 'info');
-
                                     try {
                                         const res = await fetch(`${Auth.apiBase}/api/payments/paypal-capture`, {
                                             method: 'POST',
@@ -858,28 +883,25 @@ const App = {
                                                 userId: user.id
                                             })
                                         });
-
                                         const result = await res.json();
-
                                         if (result.status === 'success') {
                                             App.showNotification('👑 Félicitations ! Votre accès ' + tier.toUpperCase() + ' est activé.', 'success');
                                             if (typeof Storage !== 'undefined') await Storage.fetchAllData(true);
                                             App.closeModal();
                                             App.navigateTo('dashboard');
-                                            // Petit délai pour laisser le temps au badge de se mettre à jour
                                             setTimeout(() => window.location.reload(), 1500);
                                         } else {
                                             App.showNotification('Erreur : ' + result.message, 'error');
                                         }
                                     } catch (err) {
                                         console.error('PayPal Logic Error:', err);
-                                        App.showNotification('Erreur lors de la validation du paiement.', 'error');
+                                        App.showNotification('Erreur lors de la validation.', 'error');
                                     }
                                 }
                             }).render(containerId);
                         }
                     }
-                }, 100);
+                }, 500);
             }
         }
     },
