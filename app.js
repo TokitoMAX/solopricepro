@@ -822,10 +822,10 @@ const App = {
                     </div>
                 ` : `
                     <div class="paypal-checkout-box">
-                        <div id="paypal-container-sandbox" class="paypal-button-mount">
+                        <div id="paypal-button-container" class="paypal-button-mount">
                             <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
                         </div>
-                        <p class="paypal-info-text text-muted">Abonnement sécurisé par PayPal (Test)</p>
+                        <p class="paypal-info-text text-muted">Abonnement sécurisé par PayPal</p>
                     </div>
                 `}
                 
@@ -838,13 +838,15 @@ const App = {
             // Re-exécution du script PayPal en fonction du tier
             if (method === 'paypal') {
                 const isSandbox = typeof Auth !== 'undefined' && Auth.user && Auth.user.email === 'sb-nu0kp49571508@personal.example.com';
-                // Pour simplifier le test, on force le mode sandbox si l'ID client dans index.html commence par AUp...
-                const sdkUrl = document.querySelector('script[src*="paypal.com/sdk"]')?.src || '';
-                const usesSandboxClient = sdkUrl.includes('AUpGYEYVUGM5Q1MAKvk');
-                const isLive = sdkUrl.includes('AcBmagCWJpj_JUQpRivj');
 
-                const isSubscriptionMode = usesSandboxClient || isLive;
-                const containerId = isSubscriptionMode ? '#paypal-container-sandbox' : `#paypal-container-${tier === 'pro' ? 'K23GS3HM4TFF2' : 'UH2HXUQ2DHQLJ'}`;
+                const sdkUrl = document.querySelector('script[src*="paypal.com/sdk"]')?.src || '';
+                const clientId = new URLSearchParams(sdkUrl.split('?')[1]).get('client-id') || '';
+                const isLive = clientId.startsWith('AcBmag') || !clientId.startsWith('AUpG');
+
+                console.log(`📡 [PAYPAL] SDK Detected. ClientID: ${clientId.substring(0, 10)}..., Mode: ${isLive ? 'LIVE' : 'SANDBOX'}`);
+
+                const isSubscriptionMode = true; // On utilise toujours le mode abonnement maintenant
+                const containerId = '#paypal-button-container';
 
                 setTimeout(() => {
                     const container = document.querySelector(containerId);
@@ -854,7 +856,7 @@ const App = {
                     if (isSubscriptionMode) {
                         // MODE ABONNEMENT (Sandbox ou Live)
                         let planId = '';
-                        if (usesSandboxClient) {
+                        if (!isLive) {
                             planId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
                         } else {
                             // IDs de Plans LIVE (P-13... = PRO, P-19... = EXPERT)
@@ -890,7 +892,8 @@ const App = {
 
                                     // 2. Mise à jour locale pour un retour immédiat
                                     if (typeof Storage !== 'undefined') {
-                                        await Storage.activatePro('SANDBOX-SUB-' + data.subscriptionID, tier);
+                                        const prefix = isLive ? 'SUB-' : 'SANDBOX-SUB-';
+                                        await Storage.activatePro(prefix + data.subscriptionID, tier);
                                     }
                                 }
 
