@@ -515,6 +515,36 @@ const Storage = {
         return this.getTier() === 'expert';
     },
 
+    async cancelSubscription() {
+        if (typeof Auth === 'undefined' || !Auth.user) return false;
+
+        try {
+            console.log('📡 Requesting subscription cancellation...');
+
+            // 1. Sync with Backend
+            const res = await fetch(`${Auth.apiBase}/api/payments/paypal-cancel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: Auth.user.id })
+            });
+
+            if (!res.ok) throw new Error('Cancellation failed');
+
+            // 2. Update local state
+            Auth.user.subscriptionCanceled = true;
+            Auth.user.user_metadata = {
+                ...Auth.user.user_metadata,
+                subscription_canceled: true
+            };
+            localStorage.setItem('sp_user', JSON.stringify(Auth.user));
+
+            return true;
+        } catch (err) {
+            console.error('Cancellation Error:', err);
+            return false;
+        }
+    },
+
     getSubscriptionStatus() {
         const isPro = this.isPro();
         return {

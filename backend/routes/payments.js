@@ -254,4 +254,40 @@ router.post('/paypal-subscription', async (req, res) => {
     }
 });
 
+router.post('/paypal-cancel', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        console.log(`📡 [PAYPAL-CANCEL] Demande de résiliation pour User: ${userId}`);
+
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !serviceKey) {
+            throw new Error('Supabase configuration missing');
+        }
+
+        const adminClient = createClient(supabaseUrl, serviceKey, {
+            auth: { autoRefreshToken: false, persistSession: false }
+        });
+
+        // On marque l'abonnement comme résilié (mais l'accès reste PRO jusqu'à la fin du mois)
+        const { error } = await adminClient.auth.admin.updateUserById(userId, {
+            user_metadata: {
+                subscription_canceled: true,
+                canceled_at: new Date().toISOString()
+            }
+        });
+
+        if (error) throw error;
+
+        console.log(`🚀 [PAYPAL-CANCEL] Abonnement de l'utilisateur ${userId} marqué comme résilié.`);
+        res.json({ status: 'success', message: 'Abonnement résilié avec succès.' });
+
+    } catch (err) {
+        console.error('💥 PayPal Cancel Error:', err);
+        res.status(500).json({ status: 'failed', message: 'Erreur lors de la résiliation', error: err.message });
+    }
+});
+
 module.exports = router;

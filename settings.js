@@ -266,9 +266,10 @@ const Settings = {
         }
     },
 
-    confirmCancelSubscription() {
+    async confirmCancelSubscription() {
         if (confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Vous conserverez vos accès PRO jusqu'à la fin de la période en cours.")) {
-            if (Storage.cancelSubscription()) {
+            const success = await Storage.cancelSubscription();
+            if (success) {
                 App.showNotification('Abonnement résilié avec succès.', 'success');
                 this.updateSubscriptionUI();
             }
