@@ -854,9 +854,29 @@ const App = {
                             onApprove: async (data, actions) => {
                                 App.showNotification('👑 Activation de votre accès PRO (Sandbox)...', 'success');
                                 const user = Auth.getUser();
-                                if (user && typeof Storage !== 'undefined') {
-                                    await Storage.activatePro('SANDBOX-SUB-' + data.subscriptionID, tier);
+
+                                if (user) {
+                                    // 1. Appel Backend pour rendre l'activation permanente dans Supabase Auth
+                                    try {
+                                        await fetch(`${Auth.apiBase}/api/payments/paypal-subscription`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                subscriptionID: data.subscriptionID,
+                                                tier: tier,
+                                                userId: user.id
+                                            })
+                                        });
+                                    } catch (e) {
+                                        console.error('Backend Sync Error:', e);
+                                    }
+
+                                    // 2. Mise à jour locale pour un retour immédiat
+                                    if (typeof Storage !== 'undefined') {
+                                        await Storage.activatePro('SANDBOX-SUB-' + data.subscriptionID, tier);
+                                    }
                                 }
+
                                 setTimeout(() => window.location.reload(), 1500);
                             }
                         }).render(containerId);

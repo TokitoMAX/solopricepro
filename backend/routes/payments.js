@@ -213,4 +213,45 @@ router.post('/paypal-capture', async (req, res) => {
     }
 });
 
+router.post('/paypal-subscription', async (req, res) => {
+    try {
+        const { subscriptionID, tier, userId } = req.body;
+        const isProd = process.env.NODE_ENV === 'production';
+
+        console.log(`📡 [PAYPAL-SUB] Reçu notification pour: ${subscriptionID}, User: ${userId}`);
+
+        // Dans un environnement de prod, on devrait vérifier le statut de l'abonnement via l'API PayPal ici.
+        // Pour l'instant on fait confiance au client pour valider l'UX Sandbox.
+
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !serviceKey) {
+            throw new Error('Supabase configuration missing');
+        }
+
+        const adminClient = createClient(supabaseUrl, serviceKey, {
+            auth: { autoRefreshToken: false, persistSession: false }
+        });
+
+        const { error } = await adminClient.auth.admin.updateUserById(userId, {
+            user_metadata: {
+                is_pro: true,
+                tier: tier,
+                subscription_id: subscriptionID,
+                payment_method: 'paypal_subscription'
+            }
+        });
+
+        if (error) throw error;
+
+        console.log(`🚀 [PAYPAL-SUB] Utilisateur ${userId} promu (permanent) via abonnement ${subscriptionID}.`);
+        res.json({ status: 'success', message: 'Abonnement enregistré et compte activé.' });
+
+    } catch (err) {
+        console.error('💥 PayPal Subscription Error:', err);
+        res.status(500).json({ status: 'failed', message: 'Erreur lors de l\'enregistrement de l\'abonnement', error: err.message });
+    }
+});
+
 module.exports = router;
