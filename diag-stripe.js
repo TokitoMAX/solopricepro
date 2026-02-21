@@ -11,7 +11,7 @@ dotenv.config();
 
 const API_BASE = 'http://localhost:5050';
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
-const TEST_USER_ID = 'e7a5c8e0-3c2b-4b1a-9c1a-1a2b3c4d5e6f'; // Replace with a real user ID for testing
+const TEST_USER_ID = '73a494c2-941c-459b-b848-85b7448bfcb4';
 
 async function simulateWebhook() {
     console.log('📡 Simulating Stripe Webhook...');
