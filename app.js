@@ -30,11 +30,18 @@ const App = {
                 return;
             }
 
+            const isLoggedIn = Auth.isLoggedIn();
+            const inApp = sessionStorage.getItem('sp_in_app') === 'true';
+            const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
+
+            console.log('🔍 Session Check:', { isLoggedIn, inApp, savedPage });
+
             if (isLoggedIn || inApp) {
                 // Ensure data is synced BEFORE showing app content
                 if (isLoggedIn) {
                     console.log('📡 Waiting for data sync...');
                     await Storage.init();
+                    console.log('✅ Data sync complete. Tier:', Storage.getTier());
                 }
 
                 this.enterApp(false, false); // Pass avoidNavigate=true
