@@ -1057,14 +1057,15 @@ const App = {
 
             // Afficher un loader pendant la vérification
             this.showUpgradeModal('success'); // On réutilise le template succès
-            document.querySelector('.upgrade-success h3').textContent = 'Vérification du paiement...';
+            const successTitle = document.querySelector('.upgrade-success h3');
+            if (successTitle) successTitle.textContent = 'Vérification du paiement...';
 
             // Appel backend pour vérifier la session
             // (Note: En théorie on attend le webhook, mais on peut aussi fetcher le status si besoin)
             // Pour l'instant on assume le succès visuel et le webhook fera le job en back
-            setTimeout(() => {
-                Storage.activatePro('STRIPE-' + session_id.substring(0, 8), 'pro');
-                document.querySelector('.upgrade-success h3').textContent = 'Paiement confirmé !';
+            setTimeout(async () => {
+                await Storage.activatePro('STRIPE-' + session_id.substring(0, 8), 'pro');
+                if (successTitle) successTitle.textContent = 'Paiement confirmé !';
                 this.renderUserInfo();
             }, 1000);
         }

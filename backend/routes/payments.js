@@ -138,9 +138,25 @@ router.post('/paypal-capture', async (req, res) => {
 
         console.log(`📡 [PAYPAL] Tentative de capture pour Commande: ${orderID}, Tier: ${tier}, User: ${userId}`);
 
-        // 1. Obtenir un Access Token PayPal
-        const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64');
-        const tokenRes = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
+        // 1. Détecter l'environnement et valider les clés
+        const isProd = process.env.NODE_ENV === 'production';
+        const clientId = process.env.PAYPAL_CLIENT_ID;
+        const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+        const baseUrl = isProd ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+
+        if (!clientId || !clientSecret) {
+            console.error('❌ [PAYPAL] Erreur: PAYPAL_CLIENT_ID ou PAYPAL_CLIENT_SECRET manquant dans .env');
+            return res.status(500).json({
+                status: 'failed',
+                message: 'Configuration PayPal manquante sur le serveur (API Keys).'
+            });
+        }
+
+        console.log(`📡 [PAYPAL] Tentative de capture (${isProd ? 'LIVE' : 'SANDBOX'}) pour Commande: ${orderID}, Tier: ${tier}, User: ${userId}`);
+
+        // 2. Obtenir un Access Token PayPal
+        const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+        const tokenRes = await fetch(`${baseUrl}/v1/oauth2/token`, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${auth}`,
@@ -149,10 +165,16 @@ router.post('/paypal-capture', async (req, res) => {
             body: 'grant_type=client_credentials'
         });
 
+        if (!tokenRes.ok) {
+            const tokenErr = await tokenRes.json();
+            console.error('❌ [PAYPAL] Échec authentification API:', tokenErr);
+            return res.status(500).json({ status: 'failed', message: 'Erreur authentification PayPal.', details: tokenErr });
+        }
+
         const { access_token } = await tokenRes.json();
 
-        // 2. Capturer la commande
-        const captureRes = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderID}/capture`, {
+        // 3. Capturer la commande
+        const captureRes = await fetch(`${baseUrl}/v2/checkout/orders/${orderID}/capture`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${access_token}`,

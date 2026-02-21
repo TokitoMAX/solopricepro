@@ -464,10 +464,18 @@ const Storage = {
 
     // Restoration of missing methods for app.js compatibility
     getTier() {
-        // Forçage statut PRO pour l'admin (insensible à la casse)
+        // 1. Priorité à l'admin (insensible à la casse)
         if (typeof Auth !== 'undefined' && Auth.user && Auth.user.email && Auth.user.email.toLowerCase() === 'domtomconnect@gmail.com') {
             return 'expert';
         }
+
+        // 2. Vérifier les métadonnées auth (source de vérité du backend)
+        if (typeof Auth !== 'undefined' && Auth.user && Auth.user.user_metadata) {
+            if (Auth.user.user_metadata.tier) return Auth.user.user_metadata.tier;
+            if (Auth.user.user_metadata.is_pro) return 'pro';
+        }
+
+        // 3. Fallback sur les settings
         const settings = this.getSettings();
         return settings.plan || 'free';
     },
@@ -475,6 +483,32 @@ const Storage = {
     isPro() {
         const tier = this.getTier();
         return tier === 'pro' || tier === 'expert' || tier === 'growth' || tier === 'scale';
+    },
+
+    async activatePro(licenseKey, tier = 'pro') {
+        console.log(`🚀 Activating [${tier.toUpperCase()}] via ${licenseKey}...`);
+
+        // 1. Update settings local cache
+        const settings = this.getSettings();
+        settings.plan = tier;
+        settings.licenseKey = licenseKey;
+        await this.updateSettings({ plan: tier, licenseKey: licenseKey });
+
+        // 2. Update user metadata if possible
+        if (typeof Auth !== 'undefined' && Auth.user) {
+            Auth.user.is_pro = true;
+            Auth.user.user_metadata = {
+                ...Auth.user.user_metadata,
+                is_pro: true,
+                tier: tier
+            };
+            localStorage.setItem('sp_user', JSON.stringify(Auth.user));
+        }
+
+        // 3. Emit event for UI update
+        EventBus.emit('data:updated', { key: this.KEYS.SETTINGS, action: 'update' });
+
+        console.log('✅ Activation complete.');
     },
 
     isExpert() {
