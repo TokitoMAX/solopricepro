@@ -22,7 +22,6 @@ router.post('/create-quote-session', async (req, res) => {
         }
 
         // 2. Créer la session Stripe
-        // Le montant est déjà stocké en centimes ou à multiplier par 100
         const amount = Math.round(quote.total * 100);
 
         const session = await stripe.checkout.sessions.create({
@@ -49,6 +48,24 @@ router.post('/create-quote-session', async (req, res) => {
                 type: 'quote_payment'
             }
         });
+
+        // 3. Enregistrer la tentative de paiement pour fiabilité
+        try {
+            await supabase.from('sp_payments').insert({
+                user_id: quote.user_id,
+                quote_id: quoteId,
+                amount: quote.total,
+                currency: 'eur',
+                method: 'stripe',
+                status: 'pending',
+                provider_id: session.id,
+                metadata: { type: 'quote_payment' }
+            });
+            console.log(`📡 [STRIPE] Session enregistrée dans sp_payments pour le devis ${quoteId}`);
+        } catch (payErr) {
+            console.error('❌ [STRIPE] Erreur enregistrement sp_payments:', payErr.message);
+            // On continue quand même pour ne pas bloquer le paiement
+        }
 
         res.json({ id: session.id, url: session.url });
     } catch (err) {
@@ -86,24 +103,48 @@ router.post('/webhook', async (req, res) => {
             console.log(`💰 Paiement Devis reçu pour: ${quoteId}`);
 
             try {
-                const { error } = await adminClient
+                // 1. Mettre à jour le devis
+                const { error: quoteError } = await adminClient
                     .from('sp_quotes')
                     .update({
                         platform_paid_at: new Date().toISOString(),
-                        status: 'paid'
+                        status: 'paid',
+                        last_payment_method: 'stripe',
+                        last_transaction_id: session.id
                     })
                     .eq('id', quoteId);
 
-                if (error) throw error;
-                console.log(`✅ Devis ${quoteId} marqué comme PAYÉ (Plateforme).`);
+                if (quoteError) throw quoteError;
+                console.log(`✅ Devis ${quoteId} marqué comme PAYÉ.`);
+
+                // 2. Mettre à jour l'enregistrement de paiement
+                const { error: payError } = await adminClient
+                    .from('sp_payments')
+                    .update({ status: 'completed', completed_at: new Date().toISOString() })
+                    .eq('provider_id', session.id);
+
+                if (payError) console.error(`⚠️ Erreur mise à jour sp_payments pour ${session.id}:`, payError.message);
+
+                // 3. Enregistrer le revenu pour le dashboard (Part Expert)
+                try {
+                    await adminClient.from('sp_revenues').insert({
+                        user_id: session.metadata.userId,
+                        amount: session.amount_total / 100,
+                        date: new Date().toISOString().split('T')[0],
+                        description: `Paiement Devis #${quoteId}`,
+                        category: 'Vente de services',
+                        metadata: { quoteId: quoteId, stripeSessionId: session.id }
+                    });
+                    console.log(`📈 Revenu enregistré pour le devis ${quoteId}`);
+                } catch (revErr) {
+                    console.error(`⚠️ Erreur enregistrement revenu pour ${quoteId}:`, revErr.message);
+                }
+
             } catch (err) {
-                console.error(`❌ Erreur mise à jour devis ${quoteId}:`, err.message);
+                console.error(`❌ Erreur post-paiement devis ${quoteId}:`, err.message);
             }
         } else {
             // Logique SaaS originale
-            const userId = session.metadata?.userId || session.client_reference_id;
-            const amountTotal = session.amount_total;
-
             if (userId) {
                 console.log(`💰 Paiement SaaS réussi pour: ${userId}`);
                 try {
@@ -111,6 +152,20 @@ router.post('/webhook', async (req, res) => {
                     if (amountTotal >= 2500) planId = 'expert';
                     if (session.metadata?.planId) planId = session.metadata.planId;
 
+                    // 1. Enregistrer la transaction pour fiabilité
+                    const { error: payError } = await adminClient.from('sp_payments').insert({
+                        user_id: userId,
+                        amount: amountTotal / 100,
+                        currency: 'eur',
+                        method: 'stripe',
+                        status: 'completed',
+                        provider_id: session.id,
+                        metadata: { type: 'saas_upgrade', planId: planId },
+                        completed_at: new Date().toISOString()
+                    });
+                    if (payError) console.error(`⚠️ Erreur enregistrement sp_payments pour ${session.id}:`, payError.message);
+
+                    // 2. Promouvoir l'utilisateur
                     const { error } = await adminClient.auth.admin.updateUserById(userId, {
                         user_metadata: { is_pro: true, tier: planId }
                     });
@@ -185,15 +240,31 @@ router.post('/paypal-capture', async (req, res) => {
         const captureData = await captureRes.json();
 
         if (captureData.status === 'COMPLETED') {
-            console.log(`✅ [PAYPAL] Capture réussie pour ${orderID}. Promotion de l'utilisateur...`);
+            console.log(`✅ [PAYPAL] Capture réussie pour ${orderID}. Mise à jour des données...`);
 
-            // 3. Promouvoir l'utilisateur dans Supabase
             const supabaseUrl = process.env.SUPABASE_URL;
             const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
             const adminClient = createClient(supabaseUrl, serviceKey, {
                 auth: { autoRefreshToken: false, persistSession: false }
             });
 
+            // 1. Enregistrer la transaction pour fiabilité
+            try {
+                await adminClient.from('sp_payments').insert({
+                    user_id: userId,
+                    amount: tier === 'pro' ? 15 : 29, // Simplifié pour SaaS
+                    currency: 'eur',
+                    method: 'paypal',
+                    status: 'completed',
+                    provider_id: orderID,
+                    metadata: { type: 'saas_upgrade', tier: tier },
+                    completed_at: new Date().toISOString()
+                });
+            } catch (payErr) {
+                console.error('❌ [PAYPAL] Erreur enregistrement sp_payments:', payErr.message);
+            }
+
+            // 2. Promouvoir l'utilisateur
             const { error } = await adminClient.auth.admin.updateUserById(userId, {
                 user_metadata: { is_pro: true, tier: tier }
             });

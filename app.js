@@ -1117,18 +1117,35 @@ const App = {
             window.history.replaceState({}, document.title, window.location.pathname);
 
             // Afficher un loader pendant la vérification
-            this.showUpgradeModal('success'); // On réutilise le template succès
+            this.showUpgradeModal('success');
             const successTitle = document.querySelector('.upgrade-success h3');
+            const successText = document.querySelector('.upgrade-success p');
             if (successTitle) successTitle.textContent = 'Vérification du paiement...';
 
-            // Appel backend pour vérifier la session
-            // (Note: En théorie on attend le webhook, mais on peut aussi fetcher le status si besoin)
-            // Pour l'instant on assume le succès visuel et le webhook fera le job en back
-            setTimeout(async () => {
-                await Storage.activatePro('STRIPE-' + session_id.substring(0, 8), 'pro');
-                if (successTitle) successTitle.textContent = 'Paiement confirmé !';
-                this.renderUserInfo();
-            }, 1000);
+            // Polling pour vérifier si le webhook a fini de traiter
+            let attempts = 0;
+            const checkPayment = setInterval(async () => {
+                attempts++;
+                try {
+                    // On vérifie le profil utilisateur (plus simple que la table paiements car déjà sync)
+                    await Storage.fetchAllData(true); // Force refetch
+                    const tier = Storage.getTier();
+
+                    if (tier === 'pro' || tier === 'expert' || attempts > 10) {
+                        clearInterval(checkPayment);
+                        if (tier !== 'free') {
+                            if (successTitle) successTitle.textContent = 'Paiement confirmé !';
+                            if (successText) successText.textContent = 'Votre compte a été promu avec succès. Profitez de vos nouvelles fonctionnalités.';
+                            this.renderUserInfo();
+                        } else {
+                            if (successTitle) successTitle.textContent = 'Temps d\'attente dépassé';
+                            if (successText) successText.textContent = 'Le paiement est en cours de traitement. Votre compte sera mis à jour dans quelques instants.';
+                        }
+                    }
+                } catch (e) {
+                    console.error('Check payment error:', e);
+                }
+            }, 2000);
         }
         // Retour de paiement facture client
         else if (paymentStatus === 'success' && invoiceId) {

@@ -79,7 +79,8 @@ const Storage = {
             this.KEYS.MARKETPLACE_MISSIONS, // Public data
             this.KEYS.MARKETPLACE_APPLICATIONS, // Generic fetch (Candidate view)
             this.KEYS.MARKETPLACE_INVITATIONS,   // Add Invitations Sync
-            this.KEYS.PROVIDERS
+            this.KEYS.PROVIDERS,
+            this.KEYS.REVENUES
         ];
 
         console.log('🔄 Syncing all tables from Supabase...');

@@ -982,6 +982,19 @@ const Quotes = {
         container.innerHTML = '<div class="loader-spinner" style="margin: 5rem auto;"></div>';
 
         try {
+            // Si on revient d'un paiement Stripe, on attend un peu que le Webhook traite
+            if (paymentStatus === 'success') {
+                container.innerHTML = `
+                    <div style="text-align: center; margin: 5rem 0;">
+                        <div class="loader-spinner" style="margin-bottom: 2rem;"></div>
+                        <h2 class="gradient-text">Vérification de votre paiement...</h2>
+                        <p class="text-muted">Nous confirmons la transaction auprès de notre partenaire Stripe.</p>
+                    </div>
+                `;
+                // Attente de 2 secondes avant de vérifier le statut réel
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
             const res = await fetch(`${Auth.apiBase}/api/public/quote/${id}`);
             if (!res.ok) throw new Error('Devis introuvable ou lien expiré.');
 
@@ -989,18 +1002,25 @@ const Quotes = {
             this.publicQuoteData = data;
             const { quote, provider, client } = data;
 
+            // Si le devis est déjà payé en base, on force paymentStatus à success même si pas dans l'URL
+            const actualStatus = quote.status === 'paid' ? 'success' : paymentStatus;
+
             // Notification de paiement
             let paymentNotification = '';
-            if (paymentStatus === 'success') {
+            if (actualStatus === 'success') {
                 paymentNotification = `
-                    <div class="glass-notification" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981;">
-                        <i class="fas fa-check-circle"></i> Paiement réussi ! Merci de votre confiance.
+                    <div class="glass-notification" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; margin-bottom: 2rem; padding: 1.5rem; border-radius: 20px; text-align: center;">
+                        <i class="fas fa-check-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                        <span style="font-weight: 700;">Paiement confirmé !</span><br>
+                        Le devis est désormais validé et le reçu est en cours de génération.
                     </div>
                 `;
-            } else if (paymentStatus === 'cancel') {
+            } else if (actualStatus === 'cancel') {
                 paymentNotification = `
-                    <div class="glass-notification" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444;">
-                        <i class="fas fa-exclamation-circle"></i> Le paiement a été annulé. Vous pouvez réessayer ci-dessous.
+                    <div class="glass-notification" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; margin-bottom: 2rem; padding: 1.5rem; border-radius: 20px; text-align: center;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                        <span style="font-weight: 700;">Le paiement a été annulé.</span><br>
+                        Aucun frais n'a été prélevé. Vous pouvez réessayer ci-dessous.
                     </div>
                 `;
             }
@@ -1183,11 +1203,12 @@ const Quotes = {
                             <h4 style="color: var(--primary-light); margin-bottom: 0.5rem;">Prestations</h4>
                             <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem;">${App.formatCurrency(expertAmount)}</div>
                             <div style="font-size: 0.85rem; line-height: 1.4;">
-                                <strong>À régler à :</strong><br>${user.company.name}<br><br>
+                                <strong>Destinataire :</strong><br>${user.company.name}<br><br>
                                 ${user.company.payment_type === 'link' ? `
-                                    <a href="${user.company.payment_link}" target="_blank" class="button-primary small" style="display: block; text-align: center; margin-top: 10px;">Payer en ligne</a>
+                                    <a href="${user.company.payment_link}" target="_blank" class="button-primary small" style="display: block; text-align: center; margin-top: 10px;">Payer via Stripe/PayPal</a>
+                                    <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">Cliquez pour ouvrir le lien de paiement de l'expert.</p>
                                 ` : `
-                                    <strong>IBAN :</strong><br><code style="background: rgba(0,0,0,0.2); padding: 2px 4px;">${user.company.iban || 'Non renseigné'}</code><br>
+                                    <strong>IBAN :</strong><br><code style="background: rgba(0,0,0,0.2); padding: 2px 4px; display: block; margin: 5px 0; word-break: break-all;">${user.company.iban || 'Non renseigné'}</code>
                                     <strong>BIC :</strong><br><code>${user.company.bic || ''}</code>
                                 `}
                             </div>
@@ -1197,16 +1218,19 @@ const Quotes = {
                             <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Frais Service</h4>
                             <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem;">${App.formatCurrency(platformAmount)}</div>
                             <div style="font-size: 0.85rem; line-height: 1.4;">
-                                <strong>À régler à :</strong><br>SoloPrice Pro<br><br>
-                                <strong>IBAN :</strong><br><code style="background: rgba(0,0,0,0.2); padding: 2px 4px;">FR76 1234 5678 9012 3456 7890 123</code><br>
+                                <strong>Destinataire :</strong><br>SoloPrice Pro (Gestion)<br><br>
+                                <strong>IBAN Service :</strong><br><code style="background: rgba(0,0,0,0.2); padding: 2px 4px; display: block; margin: 5px 0; word-break: break-all;">FR76 1234 5678 9012 3456 7890 123</code>
                                 <strong>BIC :</strong><br><code>SOLOPRFRXXX</code>
                             </div>
                         </div>
                     </div>
+                    <div class="info-box" style="margin-top: 1.5rem; font-size: 0.75rem; background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 10px; border-radius: 8px;">
+                        <i class="fas fa-shield-alt"></i> <strong>Fiabilité :</strong> Une fois les virements effectués, veuillez envoyer une preuve de virement à support@soloprice.pro pour une validation accélérée.
+                    </div>
                 </div>
-                <div class="modal-footer" style="justify-content: center;">
-                    <button class="button-outline" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.downloadPDF('${id}'); Quotes.render();">Télécharger le Devis (PDF)</button>
-                    <button class="button-primary" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">Fermer</button>
+                <div class="modal-footer" style="justify-content: center; gap: 1rem;">
+                    <button class="button-outline" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.downloadPDF('${id}'); Quotes.render();">Télécharger Devis PDF</button>
+                    <button class="button-primary" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">J'ai effectué les virements</button>
                 </div>
             </div>
         `;
