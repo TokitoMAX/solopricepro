@@ -31,6 +31,7 @@ const App = {
                 // Ensure data is synced BEFORE showing app content
                 if (isLoggedIn) {
                     console.log('📡 Waiting for data sync...');
+                    if (Auth.refreshUser) await Auth.refreshUser(); // Get latest tier/metadata
                     await Storage.init();
                     console.log('✅ Data sync complete. Tier:', Storage.getTier());
                 }
