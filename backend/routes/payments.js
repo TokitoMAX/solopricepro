@@ -148,7 +148,8 @@ router.post('/webhook', async (req, res) => {
         } else {
             // Logique SaaS originale
             if (userId) {
-                console.log(`💰 Paiement SaaS réussi pour: ${userId}`);
+                console.log(`💰 [DEBUG] Paiement SaaS réussi pour: ${userId}`);
+                console.log(`💰 [DEBUG] Session ID: ${session.id}, Amount: ${amountTotal}`);
                 try {
                     let planId = 'pro';
                     if (amountTotal >= 2500) planId = 'expert';
@@ -165,13 +166,21 @@ router.post('/webhook', async (req, res) => {
                         metadata: { type: 'saas_upgrade', planId: planId },
                         completed_at: new Date().toISOString()
                     });
-                    if (payError) console.error(`⚠️ Erreur enregistrement sp_payments pour ${session.id}:`, payError.message);
+                    if (payError) {
+                        console.error(`❌ [DEBUG] Erreur enregistrement sp_payments pour ${session.id}:`, payError);
+                    } else {
+                        console.log(`✅ [DEBUG] Enregistrement sp_payments OK pour ${session.id}`);
+                    }
 
                     // 2. Promouvoir l'utilisateur
+                    console.log(`🔄 [DEBUG] Tentative de promotion pour le user ${userId} vers ${planId}...`);
                     const { error } = await adminClient.auth.admin.updateUserById(userId, {
                         user_metadata: { is_pro: true, tier: planId }
                     });
-                    if (error) throw error;
+                    if (error) {
+                        console.error(`❌ [DEBUG] Erreur promotion Admin API:`, error);
+                        throw error;
+                    }
                     console.log(`✅ Utilisateur ${userId} promu au rang ${planId.toUpperCase()}.`);
                 } catch (err) {
                     console.error(`❌ Erreur activation tier pour ${userId}:`, err.message);

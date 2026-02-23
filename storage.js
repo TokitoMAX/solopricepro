@@ -465,6 +465,12 @@ const Storage = {
 
     // Restoration of missing methods for app.js compatibility
     getTier() {
+        const tier = this._calculateTier();
+        console.log(`🏷️ [STORAGE] Current Tier calculated: ${tier}`);
+        return tier;
+    },
+
+    _calculateTier() {
         // 1. Priorité à l'admin (insensible à la casse)
         if (typeof Auth !== 'undefined' && Auth.user && Auth.user.email && Auth.user.email.toLowerCase() === 'domtomconnect@gmail.com') {
             return 'expert';
@@ -472,8 +478,9 @@ const Storage = {
 
         // 2. Vérifier les métadonnées auth (source de vérité du backend)
         if (typeof Auth !== 'undefined' && Auth.user && Auth.user.user_metadata) {
-            if (Auth.user.user_metadata.tier) return Auth.user.user_metadata.tier;
-            if (Auth.user.user_metadata.is_pro) return 'pro';
+            const meta = Auth.user.user_metadata;
+            if (meta.tier) return meta.tier;
+            if (meta.is_pro === true || meta.is_pro === 'true') return 'pro';
         }
 
         // 3. Fallback sur les settings

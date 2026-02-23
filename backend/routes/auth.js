@@ -156,15 +156,23 @@ router.get('/me', async (req, res) => {
     }
 
     try {
-        const { data: { user }, error } = await supabase.auth.getUser(token);
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        if (userError || !user) throw userError;
 
-        if (error) throw error;
+        // Use Admin SDK to get the very latest metadata (Supabase Auth metadata can be stale)
+        const serviceReplica = require('@supabase/supabase-js').createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+        const { data: adminData, error: adminError } = await serviceReplica.auth.admin.getUserById(user.id);
+
+        const finalUser = adminData?.user || user;
 
         res.json({
             user: {
-                id: user.id,
-                email: user.email,
-                user_metadata: user.user_metadata
+                id: finalUser.id,
+                email: finalUser.email,
+                user_metadata: finalUser.user_metadata
             }
         });
     } catch (error) {
