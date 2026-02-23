@@ -1127,6 +1127,8 @@ const App = {
 
     // Gestion du retour de paiement Stripe
     handlePaymentReturn() {
+        if (this._isCheckingPayment) return;
+
         const urlParams = new URLSearchParams(window.location.search);
         const session_id = urlParams.get('session_id');
         const paymentStatus = urlParams.get('payment');
@@ -1134,6 +1136,7 @@ const App = {
 
         // Retour d'achat SaaS (PRO)
         if (session_id) {
+            this._isCheckingPayment = true;
             // Nettoyer l'URL
             window.history.replaceState({}, document.title, window.location.pathname);
 
@@ -1155,6 +1158,7 @@ const App = {
 
                     if (tier === 'pro' || tier === 'expert' || attempts > 10) {
                         clearInterval(checkPayment);
+                        this._isCheckingPayment = false;
                         if (tier !== 'free') {
                             if (successTitle) successTitle.textContent = 'Paiement confirmé !';
                             if (successText) successText.textContent = 'Votre compte a été promu avec succès. Profitez de vos nouvelles fonctionnalités.';
