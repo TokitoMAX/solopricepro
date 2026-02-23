@@ -91,6 +91,8 @@ router.post('/webhook', async (req, res) => {
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
         const type = session.metadata?.type;
+        const userId = session.metadata?.userId || session.client_reference_id;
+        const amountTotal = session.amount_total;
 
         const supabaseUrl = process.env.SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
