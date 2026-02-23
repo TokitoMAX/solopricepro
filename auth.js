@@ -234,6 +234,7 @@ const Auth = {
                     // Update user metadata but keep the existing session token
                     const updatedUser = {
                         ...this.user,
+                        email: data.user.email,
                         user_metadata: data.user.user_metadata,
                         isPro: !!(data.user.user_metadata?.is_pro || data.user.is_pro)
                     };
@@ -245,7 +246,7 @@ const Auth = {
                         Storage.setUser(updatedUser);
                     }
 
-                    console.log("✅ User session refreshed. Tier:", updatedUser.user_metadata?.tier || 'standard');
+                    console.log("✅ User session refreshed. Email:", updatedUser.email, "Tier:", updatedUser.user_metadata?.tier || 'standard');
                     return updatedUser;
                 }
             }
