@@ -13,6 +13,7 @@ const App = {
             this.setupMobileOverlay();
             this.checkFreemiumLimits();
             this.renderUserInfo();
+            this.handlePaymentReturn(); // Check for Stripe/PayPal returns
             if (window.Network) Network.init();
             // Nouvelle gestion centralisée du Hash (incluant Reset Password et Quotes publiques)
             if (this.handleUrlHash()) {
@@ -716,7 +717,11 @@ const App = {
         modal.style.display = 'flex';
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
-        this.renderUpgradeStep('comparison');
+        if (reason === 'success') {
+            this.renderUpgradeStep('success');
+        } else {
+            this.renderUpgradeStep('comparison');
+        }
     },
 
     renderUpgradeStep(step, data = {}) {
@@ -942,6 +947,21 @@ const App = {
                     }
                 }, 500);
             }
+        } else if (step === 'success') {
+            titleEl.textContent = 'Félicitations !';
+            container.innerHTML = `
+                <div class="upgrade-success" style="text-align: center; padding: 2rem; width: 100%;">
+                    <div class="success-icon" style="font-size: 4rem; margin-bottom: 1.5rem;">🎉</div>
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-light);">Paiement Confirmé !</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem; line-height: 1.5;">
+                        Nous activons vos privilèges SoloPrice PRO.<br>
+                        Veuillez patienter quelques instants...
+                    </p>
+                    <div style="display: flex; justify-content: center;">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            `;
         }
     },
 
