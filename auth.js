@@ -220,6 +220,42 @@ const Auth = {
         }
     },
 
+    async refreshUser() {
+        if (!this.token) return null;
+        try {
+            console.log("📡 Refreshing user session...");
+            const response = await fetch(`${this.apiBase}/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.user) {
+                    // Update user metadata but keep the existing session token
+                    const updatedUser = {
+                        ...this.user,
+                        user_metadata: data.user.user_metadata,
+                        isPro: !!(data.user.user_metadata?.is_pro || data.user.is_pro)
+                    };
+
+                    this.user = updatedUser;
+                    localStorage.setItem('sp_user', JSON.stringify(updatedUser));
+
+                    if (typeof Storage !== 'undefined') {
+                        Storage.setUser(updatedUser);
+                    }
+
+                    console.log("✅ User session refreshed. Tier:", updatedUser.user_metadata?.tier || 'standard');
+                    return updatedUser;
+                }
+            }
+            return null;
+        } catch (error) {
+            console.error("Failed to refresh user:", error);
+            return null;
+        }
+    },
+
     handleAuthSuccess(authData) {
         const user = authData.user;
         const session = authData.session;

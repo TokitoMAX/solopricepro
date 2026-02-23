@@ -164,11 +164,7 @@ router.get('/me', async (req, res) => {
             user: {
                 id: user.id,
                 email: user.email,
-                user_metadata: {
-                    company_name: user.user_metadata.company_name,
-                    is_pro: user.user_metadata.is_pro,
-                    company: user.user_metadata.company // Include full company object
-                }
+                user_metadata: user.user_metadata
             }
         });
     } catch (error) {

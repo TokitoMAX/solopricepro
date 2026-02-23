@@ -1147,7 +1147,8 @@ const App = {
             const checkPayment = setInterval(async () => {
                 attempts++;
                 try {
-                    // On vérifie le profil utilisateur (plus simple que la table paiements car déjà sync)
+                    // Rafraîchir la session Auth pour récupérer le tier à jour
+                    if (Auth.refreshUser) await Auth.refreshUser();
                     await Storage.fetchAllData(true); // Force refetch
                     const tier = Storage.getTier();
 
