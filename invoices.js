@@ -19,9 +19,14 @@ const Invoices = {
                     <h1 class="page-title">Factures</h1>
                     <p class="page-subtitle">${invoices.length} facture(s) ${!limits.canAddInvoice ? `(limite: ${limits.maxInvoices})` : ''}</p>
                 </div>
-                <button class="button-primary" onclick="alert('Pour créer une facture, convertissez un devis dans le menu Devis.')" title="Créez d'abord un devis pour sécuriser le process">
-                    Nouvelle Facture
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="button-secondary" onclick="App.exportReceiptsLedger()">
+                        <i class="fas fa-file-pdf"></i> Livre des Recettes
+                    </button>
+                    <button class="button-primary" onclick="alert('Pour créer une facture, convertissez un devis dans le menu Devis.')" title="Créez d'abord un devis pour sécuriser le process">
+                        Nouvelle Facture
+                    </button>
+                </div>
             </div>
 
             <div id="invoice-form-container"></div>
