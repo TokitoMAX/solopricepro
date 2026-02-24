@@ -45,7 +45,7 @@ const Storage = {
         if (this._initPromise) return this._initPromise;
 
         this._initPromise = (async () => {
-            console.log('☁️ Storage initialized in Cloud-First mode.');
+            console.log('[STORAGE] Initialization in Cloud-First mode.');
 
             // Initial fetch of all critical data
             await this.fetchAllData();
@@ -62,7 +62,7 @@ const Storage = {
 
     async fetchAllData() {
         if (!Auth.user) {
-            console.log('🔒 Cannot fetch data: User not logged in.');
+            console.log('[AUTH] Cannot fetch data: User not logged in.');
             return;
         }
 
@@ -83,7 +83,7 @@ const Storage = {
             this.KEYS.REVENUES
         ];
 
-        console.log('🔄 Syncing all tables from Supabase...');
+        console.log('[STORAGE] Syncing all tables from Supabase...');
 
         await Promise.all(tables.map(async (table) => {
             try {

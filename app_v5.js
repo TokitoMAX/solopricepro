@@ -1,5 +1,15 @@
-// SoloPrice Pro - Application Manager (v20260224_2230)
-console.log('💎 [APP] Version v20260224_2230 LOADED');
+// SoloPrice Pro - Application Manager (v20260224_2245)
+console.log('[APP] Version v20260224_2245 LOADED');
+
+// --- ANALYTICS HELPER ---
+const Analytics = {
+    trackEvent(name, properties = {}) {
+        console.log(`📊 [TRACK] ${name}`, properties);
+        if (window.clarity) {
+            window.clarity("set", name, JSON.stringify(properties));
+        }
+    }
+};
 
 // --- CONFIGURATION GÉNÉRALE PAYPAL (INTERRUPTEUR) ---
 const PAYPAL_CONFIG = {
@@ -27,7 +37,7 @@ const App = {
     // Initialisation de l'application
     async init() {
         try {
-            console.log('🚀 SoloPrice Pro Initializing...');
+            console.log('[APP] SoloPrice Pro Initializing...');
             this.setupNavigation();
             this.migrateData();
             this.setupMobileOverlay();

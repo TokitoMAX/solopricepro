@@ -1,5 +1,5 @@
 // SoloPrice Pro - Authentication Module
-console.log("🔐 [v1.2] auth.js loading...");
+console.log("[AUTH] Module loading...");
 
 const Auth = {
     // Définir l'URL de base pour l'API
@@ -24,7 +24,7 @@ const Auth = {
     checkRecoveryMode() {
         const hash = window.location.hash;
         if (hash && hash.includes('type=recovery') && hash.includes('access_token=')) {
-            console.log("🔄 Recovery mode detected!");
+            console.log("[RECOVERY] Recovery mode detected!");
 
             // Wait for DOM to be ready just in case
             if (document.readyState === 'loading') {
@@ -45,7 +45,7 @@ const Auth = {
     },
 
     hideSupabaseForms() {
-        console.log('🔍 Tentative de nettoyage des formulaires Supabase...');
+        console.log('[CLEANUP] Attempting to hide Supabase internal forms...');
 
         const cleanup = () => {
             const authModal = document.getElementById('auth-modal');
@@ -55,7 +55,7 @@ const Auth = {
             document.querySelectorAll('form').forEach(form => {
                 if (!authModal.contains(form)) {
                     form.style.display = 'none';
-                    console.log('🚫 Formulaire Supabase masqué');
+                    console.log('[SUPABASE] Native form hidden');
                 }
             });
 
@@ -66,7 +66,7 @@ const Auth = {
 
                 if ((hasResetText || hasResetAction) && !authModal.contains(btn)) {
                     btn.style.display = 'none';
-                    console.log('🚫 Bouton Supabase masqué');
+                    console.log('[SUPABASE] Native button hidden');
                 }
             });
         };
@@ -119,19 +119,18 @@ const Auth = {
         }
 
         try {
-            console.log('📤 Sending register request to:', `${this.apiBase}/api/auth/register`);
-            console.log('📦 Données envoyées:', { email: data.email, company_name: data.company_name });
+            console.log('[AUTH] Sending register request to:', `${this.apiBase}/api/auth/register`);
+            console.log('[AUTH] Data payload:', { email: data.email, company_name: data.company_name });
             const response = await fetch(`${this.apiBase}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             }).catch(fetchError => {
-                console.error('🔥 Fetch itself failed:', fetchError);
+                console.error('[AUTH] Fetch failed:', fetchError);
                 throw new Error(`Erreur réseau: ${fetchError.message}. Vérifiez votre connexion.`);
             });
 
-            console.log('📥 Response status:', response.status);
-            console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
+            console.log('[AUTH] Response status:', response.status);
 
             const contentType = response.headers.get("content-type");
             let result;
@@ -159,7 +158,7 @@ const Auth = {
             this.handleAuthSuccess(result);
             return result;
         } catch (error) {
-            console.error('💥 Register error:', error);
+            console.error('[AUTH] Register error:', error);
             this.showError(error.message);
             throw error;
         }

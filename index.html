@@ -9,6 +9,14 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <!-- Microsoft Clarity (Analytics & User Recording) -->
+    <script type="text/javascript">
+        (function (c, l, a, r, i, t, y) {
+            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+            t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+            y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+        })(window, document, "clarity", "script", "q0h1k2x3j4");
+    </script>
 
     <script>
         // Global Error Handler to catch SyntaxErrors
@@ -39,7 +47,7 @@
 
         // Indicateur visuel discret pour confirmer que le JS tourne
         window.addEventListener('load', () => {
-            console.log("🚀 SoloPrice Pro UI Ready");
+            console.log("SoloPrice Pro UI Ready");
         });
     </script>
 </head>
@@ -287,7 +295,8 @@
                     <li class="disabled"><i class="fas fa-times"></i> Logo sur PDF</li>
                     <li class="disabled"><i class="fas fa-times"></i> Kanban & Profit</li>
                 </ul>
-                <button class="pricing-button" onclick="handlePricingClick('register')">Commencer
+                <button class="pricing-button"
+                    onclick="Analytics.trackEvent('click_pricing_free'); handlePricingClick('register')">Commencer
                     Gratuitement</button>
             </div>
 
@@ -306,7 +315,9 @@
                     <li><i class="fas fa-check"></i> Pilotage CA & Profit</li>
                     <li><i class="fas fa-check"></i> Support Prioritaire</li>
                 </ul>
-                <button class="pricing-button" onclick="handlePricingClick('pro')">Débloquer l'Illimité</button>
+                <button class="pricing-button"
+                    onclick="Analytics.trackEvent('click_pricing_pro'); handlePricingClick('pro')">Débloquer
+                    l'Illimité</button>
             </div>
 
             <!-- Expert -->
@@ -323,7 +334,9 @@
                     <li><i class="fas fa-check"></i> <strong>Coaching Rentabilité</strong> (IA)</li>
                     <li><i class="fas fa-check"></i> Export Comptable</li>
                 </ul>
-                <button class="pricing-button" onclick="handlePricingClick('expert')">Activer la Croissance</button>
+                <button class="pricing-button"
+                    onclick="Analytics.trackEvent('click_pricing_expert'); handlePricingClick('expert')">Activer la
+                    Croissance</button>
             </div>
         </div>
         </section>
@@ -370,77 +383,70 @@
                 </div>
 
                 <nav class="sidebar-nav">
+                    <div class="sidebar-section-title">PILOTAGE</div>
                     <a href="#" class="nav-item active" data-nav="dashboard">
-                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="7" height="7"></rect>
-                                <rect x="14" y="3" width="7" height="7"></rect>
-                                <rect x="14" y="14" width="7" height="7"></rect>
-                                <rect x="3" y="14" width="7" height="7"></rect>
-                            </svg></span> <span class="nav-label">Accueil</span>
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="nav-label">Vue Stratégique</span>
                     </a>
                     <a href="#" class="nav-item" data-nav="kanban">
-                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="12" y1="3" x2="12" y2="21"></line>
-                            </svg></span> <span class="nav-label">Pipeline</span>
-                    </a>
-                    <a href="#" class="nav-item" data-nav="scoper">
-                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-                                </path>
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                            </svg></span> <span class="nav-label">Estimateur</span>
-                    </a>
-                    <a href="#" class="nav-item" data-nav="quotes">
-                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10 9 9 9 8 9"></polyline>
-                            </svg></span> <span class="nav-label">Documents</span>
-                    </a>
-                    <a href="#" class="nav-item" data-nav="marketplace">
-                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg></span> <span class="nav-label">Marketplace</span>
-                    </a>
-                    <a href="#" class="nav-item" data-nav="network">
-                        <span class="nav-icon"><i class="fas fa-users-crown"></i></span>
-                        <span class="nav-label">Le Cercle</span>
-                    </a>
-                    <a href="#" class="nav-item" data-nav="profile">
-                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg></span> <span class="nav-label">Mon Profil</span>
-                    </a>
-                    <a href="#" class="nav-item" data-nav="settings">
-                        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path
-                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                                </path>
-                            </svg></span> <span class="nav-label">Réglages</span>
+                        <span class="nav-icon"><i class="fas fa-tasks"></i></span>
+                        <span class="nav-label">Suivi du Cash-flow</span>
                     </a>
 
-                    <!-- ADMIN NAV (Hidden by default) -->
+                    <div class="sidebar-section-title">COMMERCE</div>
+                    <a href="#" class="nav-item" data-nav="quotes">
+                        <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <span class="nav-label">Devis & Factures</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="clients">
+                        <span class="nav-icon"><i class="fas fa-user-tie"></i></span>
+                        <span class="nav-label">Clients</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="leads">
+                        <span class="nav-icon"><i class="fas fa-bullseye"></i></span>
+                        <span class="nav-label">Prospects</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="scoper">
+                        <span class="nav-icon"><i class="fas fa-calculator"></i></span>
+                        <span class="nav-label">Estimateur TJM</span>
+                    </a>
+
+                    <div class="sidebar-section-title">FINANCES</div>
+                    <a href="#" class="nav-item" data-nav="expenses">
+                        <span class="nav-icon"><i class="fas fa-receipt"></i></span>
+                        <span class="nav-label">Gestion des Frais</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="taxes">
+                        <span class="nav-icon"><i class="fas fa-university"></i></span>
+                        <span class="nav-label">Assistant Taxes</span>
+                    </a>
+
+                    <div class="sidebar-section-title">RÉSEAU</div>
+                    <a href="#" class="nav-item" data-nav="marketplace">
+                        <span class="nav-icon"><i class="fas fa-briefcase"></i></span>
+                        <span class="nav-label">Missions Disponibles</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="network">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span class="nav-label">Le Cercle</span>
+                    </a>
+
+                    <div class="sidebar-divider"></div>
+
+                    <a href="#" class="nav-item" data-nav="profile">
+                        <span class="nav-icon"><i class="fas fa-user-circle"></i></span>
+                        <span class="nav-label">Mon Compte</span>
+                    </a>
+                    <a href="#" class="nav-item" data-nav="settings">
+                        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                        <span class="nav-label">Réglages</span>
+                    </a>
+
+                    <!-- ADMIN NAV -->
                     <a href="#" class="nav-item" data-nav="admin" id="nav-item-admin"
-                        style="display: none; border: 1px solid var(--warning); color: var(--warning);">
-                        <div class="nav-icon">🛡️</div>
-                        <span class="nav-label">Admin</span>
+                        style="display: none; border: 1px solid var(--warning); color: var(--warning); margin-top: 1rem;">
+                        <div class="nav-icon"><i class="fas fa-shield-alt"></i></div>
+                        <span class="nav-label">Administration</span>
                     </a>
                 </nav>
 
@@ -517,7 +523,7 @@
                         </div>
                         <div class="action-buttons">
                             <button class="button-secondary" onclick="App.refreshAdminData()">
-                                <span class="icon">🔄</span> Actualiser
+                                <span class="icon"><i class="fas fa-sync-alt"></i></span> Actualiser
                             </button>
                             <button class="button-primary" style="background: var(--warning); border: none;"
                                 onclick="App.showSystemStatus()">
