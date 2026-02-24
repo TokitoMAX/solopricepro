@@ -1,5 +1,5 @@
-// SoloPrice Pro - Application Manager (v20260224_1850)
-console.log('💎 [APP] Version v20260224_1850 LOADED');
+// SoloPrice Pro - Application Manager (v20260224_2205)
+console.log('💎 [APP] Version v20260224_2205 LOADED');
 const App = {
     currentPage: 'dashboard',
 
