@@ -636,7 +636,7 @@ const App = {
                     <div class="user-details">
                         <div onclick="App.navigateTo('profile')">
                             <span class="user-name">${user.company?.name || user.email}</span>
-                            ${isExpert ? '<span class="user-status"><span class="expert-badge-small" style="background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; margin-left: 5px;">EXPERT</span></span>' :
+                            ${isExpert ? '<span class="user-status"><span class="expert-badge-small" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; margin-left: 5px;">EXPERT</span></span>' :
                     (isPro ? '<span class="user-status"><span class="pro-badge-small">PRO</span></span>' : '<span class="user-status text-muted" style="font-size:0.7rem;">Standard</span>')}
                         </div>
                         <div style="margin-top: 4px; font-size: 0.75rem;">
@@ -761,8 +761,8 @@ const App = {
 
             <!-- Expert -->
             <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
-                <div class="card-badge" style="background: #a855f7;">ACCÉLÉRATEUR BUSINESS</div>
-                <div class="card-tier" style="color: #c084fc;">PACK EXPERT</div>
+                <div class="card-badge" style="background: #10b981;">ACCÉLÉRATEUR BUSINESS</div>
+                <div class="card-tier" style="color: #34d399;">PACK EXPERT</div>
                 <div class="card-price">29€<span>/mois</span></div>
                 <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
                 <ul class="card-features-mini">
@@ -771,7 +771,7 @@ const App = {
                     <li><i class="fas fa-check-circle"></i> <strong>Assistant Relance</strong> (Recouvrement)</li>
                     <li><i class="fas fa-check-circle"></i> <strong>Coaching Rentabilité</strong> Avancé</li>
                 </ul>
-                <button class="card-select-btn expert" style="background: #a855f7; color: white;">Devenir Expert</button>
+                <button class="card-select-btn expert" style="background: #10b981; color: white;">Devenir Expert</button>
             </div>
         `;
         } else if (step === 'checkout') {
@@ -814,8 +814,7 @@ const App = {
             if (method === 'paypal') {
                 const isSandbox = typeof Auth !== 'undefined' && Auth.user && Auth.user.email === 'sb-nu0kp49571508@personal.example.com';
 
-                const sdkUrl = document.querySelector('script[src*="paypal.com/sdk"]')?.src || '';
-                const clientId = new URLSearchParams(sdkUrl.split('?')[1]).get('client-id') || '';
+                const clientId = "AUpGYEYVUGM5Q1MAKvkEIf1PYhZOSIxx4SRzCL-rSRTUAbWjvPcOOeC_sjWuc0j-GmLSxXubvJbeTtLZQ";
                 // MODE TEST FORCÉ pour vérification
                 const isLive = false;
 
@@ -848,7 +847,7 @@ const App = {
 
                     let planId = '';
                     if (!isLive) {
-                        planId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
+                        planId = tier === 'expert' ? 'P-19X023126K248324VNGNDKOQ' : 'P-13N38598NB647223XNGNDJMY';
                     } else {
                         planId = tier === 'expert' ? 'P-19X023126K248324VNGNDKOQ' : 'P-13N38598NB647223XNGNDJMY';
                     }
