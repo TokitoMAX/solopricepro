@@ -48,7 +48,7 @@ try {
 app.set('supabase', supabase);
 
 // 1. Capture RAW BODY pour Stripe (AVANT TOUT LE RESTE)
-app.use('/api/payments/webhook', express.raw({ type: 'application/json' }), (req, res, next) => {
+app.use('/api/payments/webhook', express.raw({ type: '*/*' }), (req, res, next) => {
     req.rawBody = req.body;
     console.log(`📡 [WEBHOOK-TOP] Raw body captured (${req.rawBody?.length || 0} bytes)`);
     next();
@@ -69,7 +69,10 @@ app.use(cors({
 
 // 3. JSON Parser pour le reste
 app.use((req, res, next) => {
-    if (req.path === '/api/payments/webhook') return next();
+    // Exclusion totale pour le webhook
+    if (req.originalUrl && req.originalUrl.includes('/webhook')) {
+        return next();
+    }
     express.json()(req, res, next);
 });
 

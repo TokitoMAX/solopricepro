@@ -77,9 +77,11 @@ router.post('/create-quote-session', async (req, res) => {
 // Route Webhook Stripe pour confirmer le paiement
 router.post('/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET ? process.env.STRIPE_WEBHOOK_SECRET.trim() : null;
 
-    console.log(`📡 [WEBHOOK] Request received. Path: ${req.originalUrl}, Signature: ${!!sig}, Secret: ${endpointSecret ? endpointSecret.substring(0, 10) + '...' : 'MISSING'}`);
+    console.log(`📡 [WEBHOOK] --- DEBUG START ---`);
+    console.log(`📡 [WEBHOOK] Path: ${req.originalUrl}, Signature: ${sig ? sig.substring(0, 15) + '...' : 'MISSING'}`);
+    console.log(`📡 [WEBHOOK] Secret L: ${endpointSecret?.length || 0} (${endpointSecret ? endpointSecret.substring(0, 7) + '...' + endpointSecret.substring(endpointSecret.length - 4) : 'MISSING'})`);
 
     let event;
 
@@ -87,15 +89,18 @@ router.post('/webhook', async (req, res) => {
         const bodyToVerify = req.rawBody || req.body;
         const bodyType = bodyToVerify instanceof Buffer ? 'Buffer' : typeof bodyToVerify;
 
-        console.log(`📦 [WEBHOOK] Verifying with type: ${bodyType}, Path: ${req.originalUrl}`);
+        console.log(`📦 [WEBHOOK] Verifying with type: ${bodyType} (${bodyToVerify?.length || 0} bytes)`);
 
         event = stripe.webhooks.constructEvent(bodyToVerify, sig, endpointSecret);
+        console.log(`✅ [WEBHOOK] Verified: ${event.type}`);
     } catch (err) {
         const debugPath = req.originalUrl || req.path || 'unknown';
         const bodyToVerify = req.rawBody || req.body;
         const bodyType = bodyToVerify instanceof Buffer ? 'Buffer' : typeof bodyToVerify;
+        const secretHash = endpointSecret ? `L${endpointSecret.length}_${endpointSecret.substring(0, 5)}...` : 'NoSecret';
+
         console.error(`⚠️ Webhook signature verification failed:`, err.message);
-        return res.status(400).send(`Webhook Error: ${err.message} (Path: ${debugPath}, Body: ${bodyType})`);
+        return res.status(400).send(`Webhook Error: ${err.message} (Path: ${debugPath}, Body: ${bodyType}, Secret: ${secretHash})`);
     }
 
     if (event.type === 'checkout.session.completed') {
