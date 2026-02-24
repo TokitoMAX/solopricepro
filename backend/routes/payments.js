@@ -79,9 +79,17 @@ router.post('/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+    console.log(`📡 [WEBHOOK] Request received. Signature present: ${!!sig}`);
+
     let event;
 
     try {
+        // Log raw body length for debug
+        if (req.body instanceof Buffer) {
+            console.log(`📦 [WEBHOOK] Raw body size: ${req.body.length} bytes`);
+        } else {
+            console.log(`⚠️ [WEBHOOK] req.body is NOT a Buffer (Type: ${typeof req.body})`);
+        }
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     } catch (err) {
         console.error(`⚠️ Webhook signature verification failed:`, err.message);

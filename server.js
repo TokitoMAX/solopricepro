@@ -66,7 +66,11 @@ app.use(cors({
 // Route Webhook Stripe (doit être AVANT express.json() pour avoir le raw body)
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
-app.use(express.json());
+// Ne pas parser en JSON si c'est déjà fait par express.raw pour le webhook
+app.use((req, res, next) => {
+    if (req.path === '/api/payments/webhook') return next();
+    express.json()(req, res, next);
+});
 
 // Routes
 // Health Check & Debug
