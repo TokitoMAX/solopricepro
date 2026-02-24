@@ -84,13 +84,18 @@ router.post('/webhook', async (req, res) => {
     let event;
 
     try {
-        // Log raw body length for debug
-        if (req.body instanceof Buffer) {
-            console.log(`📦 [WEBHOOK] Raw body size: ${req.body.length} bytes`);
+        const bodyToVerify = req.rawBody || req.body;
+
+        // Log details for debug
+        if (bodyToVerify instanceof Buffer) {
+            console.log(`📦 [WEBHOOK] Using Buffer for verification (${bodyToVerify.length} bytes)`);
+        } else if (typeof bodyToVerify === 'object') {
+            console.log(`⚠️ [WEBHOOK] Content is already parsed into an object. Verification will likely FAIL.`);
         } else {
-            console.log(`⚠️ [WEBHOOK] req.body is NOT a Buffer (Type: ${typeof req.body})`);
+            console.log(`⚠️ [WEBHOOK] No valid body found (Type: ${typeof bodyToVerify})`);
         }
-        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+
+        event = stripe.webhooks.constructEvent(bodyToVerify, sig, endpointSecret);
     } catch (err) {
         console.error(`⚠️ Webhook signature verification failed:`, err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);

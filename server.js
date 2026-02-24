@@ -63,14 +63,17 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Route Webhook Stripe (doit être AVANT express.json() pour avoir le raw body)
-app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+// Route Webhook Stripe (doit avoir le raw body)
+// Utilisation de la méthode recommendée avec Express pour capturer le raw body
+app.use(express.json({
+    verify: (req, res, buf) => {
+        if (req.originalUrl.startsWith('/api/payments/webhook')) {
+            req.rawBody = buf;
+        }
+    }
+}));
 
-// Ne pas parser en JSON si c'est déjà fait par express.raw pour le webhook
-app.use((req, res, next) => {
-    if (req.path === '/api/payments/webhook') return next();
-    express.json()(req, res, next);
-});
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 // Health Check & Debug
