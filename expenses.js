@@ -36,7 +36,7 @@ const Expenses = {
                         <tr>
                             <th>Date</th>
                             <th>Description</th>
-                            <th>Catégorie</th>
+                            <th>Catégorie / Attribution</th>
                             <th>Montant</th>
                             <th align="right">Actions</th>
                         </tr>
@@ -46,7 +46,10 @@ const Expenses = {
                             <tr>
                                 <td>${App.formatDate(e.date)}</td>
                                 <td><strong>${e.description}</strong></td>
-                                <td><span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary-light);">${e.category}</span></td>
+                                <td>
+                                    <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary-light);">${e.category}</span>
+                                    ${e.projectId ? `<br><small style="color: var(--text-muted); font-size: 0.7rem;"><i class="fas fa-link"></i> ${Storage.getQuote(e.projectId)?.number || 'Projet'}</small>` : ''}
+                                </td>
                                 <td style="color: #ef4444;">-${App.formatCurrency(e.amount)}</td>
                                 <td align="right">
                                     <button class="btn-icon btn-danger" onclick="Expenses.delete('${e.id}')">
@@ -69,6 +72,8 @@ const Expenses = {
 
     showAddForm() {
         const container = document.getElementById('expense-form-container');
+        const quotes = Storage.getQuotes() || [];
+
         container.innerHTML = `
             <div class="glass-card mb-2" style="padding: 1.5rem; animation: slideDown 0.3s ease;">
                 <form onsubmit="Expenses.save(event)">
@@ -88,7 +93,18 @@ const Expenses = {
                                 <option value="Materiel">Matériel / Bureau</option>
                                 <option value="Marketing">Marketing / Pub</option>
                                 <option value="Formation">Formation</option>
+                                <option value="Frais de Projet">Frais de Projet (Direct)</option>
                                 <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Attribuer à un Projet (Optionnel)</label>
+                            <select name="projectId" class="form-input">
+                                <option value="">Dépense Générale / Structure</option>
+                                ${quotes.map(q => {
+            const client = Storage.getClient(q.clientId);
+            return `<option value="${q.id}">${q.number} - ${client?.name || 'Client'}</option>`;
+        }).join('')}
                             </select>
                         </div>
                         <div class="form-group">
@@ -97,7 +113,7 @@ const Expenses = {
                         </div>
                     </div>
                     <div class="form-actions" style="margin-top: 1rem;">
-                        <button type="submit" class="button-primary">Enregistrer</button>
+                        <button type="submit" class="button-primary">Enregistrer la dépense</button>
                         <button type="button" class="button-secondary" onclick="document.getElementById('expense-form-container').innerHTML=''">Annuler</button>
                     </div>
                 </form>
@@ -113,6 +129,7 @@ const Expenses = {
             description: formData.get('description'),
             amount: parseFloat(formData.get('amount')),
             category: formData.get('category'),
+            projectId: formData.get('projectId'),
             date: formData.get('date')
         };
 

@@ -343,18 +343,47 @@ const App = {
         const container = document.getElementById('taxes-content');
         if (!container) return;
 
+        const paidInvoices = Storage.getInvoices().filter(i => i.status === 'paid');
+        const currentMonthRevenue = paidInvoices.reduce((sum, i) => sum + i.total, 0);
+
         container.innerHTML = `
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Assistant Taxes</h1>
-                    <p class="page-subtitle">Configurez votre régime fiscal et visualisez vos prélèvements.</p>
+                    <h1 class="page-title">Assistant Taxes & URSSAF</h1>
+                    <p class="page-subtitle">Suivez vos obligations fiscales basées sur vos encaissements réels.</p>
                 </div>
             </div>
-            <div class="glass-card" id="taxes-selector-container" style="padding: 2rem; max-width: 600px;">
-                <!-- Rempli par TaxEngine -->
+
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card" style="border-left: 4px solid var(--primary);">
+                    <span class="stat-label">CA Encaissé (Ce mois)</span>
+                    <div class="stat-value">${this.formatCurrency(currentMonthRevenue)}</div>
+                    <p class="stat-description">Basé sur ${paidInvoices.length} facture(s) payée(s)</p>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--warning);">
+                    <span class="stat-label">Provision URSSAF Recommandée</span>
+                    <div id="taxes-provision-value" class="stat-value" style="color: var(--warning);">-</div>
+                    <p class="stat-description">À isoler sur votre compte pro</p>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Prochaine Échéance</span>
+                    <div class="stat-value" style="font-size: 1.2rem;">${this.getNextTaxDeadline()}</div>
+                    <p class="stat-description">Déclaration trimestrielle/mensuelle</p>
+                </div>
             </div>
-            <div class="dashboard-stats" style="margin-top: 2rem;" id="taxes-simulation-stats">
-                <!-- Simulation data -->
+
+            <div class="glass-card" style="padding: 2rem; margin-top: 2rem;">
+                <h3 class="section-title-small" style="margin-bottom: 1.5rem;">Configuration du Régime</h3>
+                <div id="taxes-selector-container" style="max-width: 600px;">
+                    <!-- Rempli par TaxEngine -->
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding: 2rem; margin-top: 2rem;">
+                <h3 class="section-title-small" style="margin-bottom: 1.5rem;">Conseil de Pilotage</h3>
+                <div id="taxes-coach-tip" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
+                    <!-- Dynamisé par updateTaxesSimulation -->
+                </div>
             </div>
         `;
 
@@ -366,27 +395,31 @@ const App = {
         }
     },
 
+    getNextTaxDeadline() {
+        const now = new Date();
+        const month = now.getMonth();
+        // Simple logic: Quarter ends
+        if (month < 3) return '30 Avril';
+        if (month < 6) return '31 Juillet';
+        if (month < 9) return '31 Octobre';
+        return '31 Janvier';
+    },
+
     updateTaxesSimulation() {
-        const statsEl = document.getElementById('taxes-simulation-stats');
-        if (!statsEl || typeof TaxEngine === 'undefined') return;
+        const provisionEl = document.getElementById('taxes-provision-value');
+        const coachEl = document.getElementById('taxes-coach-tip');
+        if (!provisionEl || typeof TaxEngine === 'undefined') return;
 
-        // Simulate with a fixed base of 5000€ for visualization
-        const base = 5000;
-        const res = TaxEngine.calculate(base);
+        const paidInvoices = Storage.getInvoices().filter(i => i.status === 'paid');
+        const currentMonthRevenue = paidInvoices.reduce((sum, i) => sum + i.total, 0);
 
-        statsEl.innerHTML = `
-            <div class="stat-card">
-                <span class="stat-label">Base Simulation</span>
-                <div class="stat-value">${this.formatCurrency(base)}</div>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Charges Soc. (${res.socialRate}%)</span>
-                <div class="stat-value" style="color: #ef4444;">-${this.formatCurrency(res.socialCharges)}</div>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Net après Charges</span>
-                <div class="stat-value" style="color: var(--primary);">${this.formatCurrency(res.net)}</div>
-            </div>
+        const res = TaxEngine.calculate(currentMonthRevenue);
+        provisionEl.textContent = this.formatCurrency(res.socialCharges);
+
+        const ctx = TaxEngine.getCurrent();
+        coachEl.innerHTML = `
+            <p>Sous le régime <strong>${ctx.name}</strong>, vous devez prévoir environ <strong>${ctx.vat}%</strong> de TVA (si redevable) et <strong>${res.socialRate}%</strong> de charges sociales.</p>
+            <p style="margin-top: 1rem;"><i class="fas fa-lightbulb" style="color: var(--primary);"></i> <strong>Astuce :</strong> Anticipez ces prélèvements en ouvrant un sous-compte dédié. Sur vos ${this.formatCurrency(currentMonthRevenue)} encaissés, posez <strong>${this.formatCurrency(res.socialCharges)}</strong> de côté dès aujourd'hui.</p>
         `;
     },
 
@@ -554,7 +587,7 @@ const App = {
             const totalDormant = dormantQuotes.reduce((sum, q) => sum + q.total, 0);
             items.push({
                 id: 'relance',
-                icon: '💰',
+                icon: '<i class="fas fa-hand-holding-usd"></i>',
                 title: 'Relance Prioritaire',
                 description: `${dormantQuotes.length} devis (${this.formatCurrency(totalDormant)}) attendent une relance.`,
                 action: 'Relancer',
@@ -574,7 +607,7 @@ const App = {
         if (freshMissions.length > 0) {
             items.push({
                 id: 'market',
-                icon: '⚡',
+                icon: '<i class="fas fa-bolt"></i>',
                 title: 'Opportunités Fraîches',
                 description: `${freshMissions.length} nouvelles missions publiées sur le réseau.`,
                 action: 'Voir le Radar',
@@ -589,7 +622,7 @@ const App = {
         if (overdue.length > 0) {
             items.push({
                 id: 'overdue',
-                icon: '🚨',
+                icon: '<i class="fas fa-exclamation-triangle"></i>',
                 title: 'Impayé Détecté',
                 description: `${overdue.length} facture(s) sont en retard. Récupérez votre cash.`,
                 action: 'Voir Factures',
@@ -602,11 +635,11 @@ const App = {
         if (items.length === 0) {
             items.push({
                 id: 'prospect',
-                icon: '🎯',
+                icon: '<i class="fas fa-bullseye"></i>',
                 title: 'Expansion Business',
                 description: 'Tout est à jour. Et si vous ajoutiez 2 nouveaux prospects aujourd\'hui ?',
-                action: 'Ajouter Prospect',
-                nav: 'leads',
+                action: 'Ajouter au Cercle',
+                nav: 'network',
                 type: 'success'
             });
         }

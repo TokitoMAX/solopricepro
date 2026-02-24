@@ -38,6 +38,8 @@ const Dashboard = {
                 </div>
             </div>
 
+            ${typeof Onboarding !== 'undefined' ? Onboarding.renderWidget() : ''}
+
             <!-- Focus du Jour -->
             <div class="focus-widget glass">
                 <div class="section-header-inline" style="margin-bottom: 1.5rem;">
