@@ -220,7 +220,7 @@ router.post('/paypal-capture', async (req, res) => {
         console.log(`📡 [PAYPAL] Tentative de capture pour Commande: ${orderID}, Tier: ${tier}, User: ${userId}`);
 
         // 1. Détecter l'environnement et valider les clés
-        const isProd = process.env.NODE_ENV === 'production';
+        const isProd = process.env.NODE_ENV === 'production' && process.env.PAYPAL_MODE !== 'sandbox';
         const clientId = process.env.PAYPAL_CLIENT_ID;
         const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
         const baseUrl = isProd ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';

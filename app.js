@@ -817,9 +817,10 @@ const App = {
 
                 const sdkUrl = document.querySelector('script[src*="paypal.com/sdk"]')?.src || '';
                 const clientId = new URLSearchParams(sdkUrl.split('?')[1]).get('client-id') || '';
-                const isLive = clientId.startsWith('AcBmag') || !clientId.startsWith('AUpG');
+                // MODE TEST FORCÉ pour vérification
+                const isLive = false;
 
-                console.log(`📡 [PAYPAL] SDK Detected. ClientID: ${clientId.substring(0, 10)}..., Mode: ${isLive ? 'LIVE' : 'SANDBOX'}`);
+                console.log(`📡 [PAYPAL] SDK Detected. ClientID: ${clientId.substring(0, 10)}..., Mode: TEST (Forcé)`);
 
                 // Afficher le badge Live si on est en prod
                 setTimeout(() => {
