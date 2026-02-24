@@ -847,9 +847,7 @@ const App = {
 
                     let planId = '';
                     if (!isLive) {
-                        planId = tier === 'expert' ? 'P-19X023126K248324VNGNDKOQ' : 'P-13N38598NB647223XNGNDJMY';
-                    } else {
-                        planId = tier === 'expert' ? 'P-19X023126K248324VNGNDKOQ' : 'P-13N38598NB647223XNGNDJMY';
+                        planId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
                     }
 
                     console.log(`📡 [PAYPAL] Rendering buttons for Plan: ${planId} (${isLive ? 'LIVE' : 'SANDBOX'})`);
