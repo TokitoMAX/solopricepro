@@ -13,12 +13,16 @@ const Expenses = {
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Gestion des Dépenses</h1>
-                    <p class="page-subtitle">Suivez vos coûts réels pour calculer votre bénéfice net.</p>
+                    <p class="page-subtitle">Suivez vos frais réels pour optimiser votre bénéfice net.</p>
                 </div>
-                <button class="button-primary" onclick="Expenses.showAddForm()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    Ajouter une dépense
-                </button>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="button-secondary" onclick="App.exportPurchasesLedger()">
+                        <i class="fas fa-file-pdf"></i> Exporter Registre Achats
+                    </button>
+                    <button class="button-primary" onclick="Expenses.showAddForm()">
+                        <i class="fas fa-plus"></i> Nouvelle dépense
+                    </button>
+                </div>
             </div>
 
             <div class="stats-grid" style="margin-bottom: 2rem;">

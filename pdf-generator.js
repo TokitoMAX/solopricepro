@@ -502,5 +502,161 @@ const PDFGenerator = {
         URL.revokeObjectURL(url);
 
         App.showNotification(isPreview ? 'Aperçu généré.' : 'Devis prêt pour impression.', 'success');
+    },
+
+    generateReceiptsLedger(invoices, user) {
+        const year = new Date().getFullYear();
+        const paidInvoices = invoices.filter(i => i.status === 'paid').sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        const total = paidInvoices.reduce((sum, i) => sum + i.total, 0);
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Livre des Recettes - ${year}</title>
+                <style>
+                    body { font-family: sans-serif; padding: 40px; color: #333; }
+                    .header { border-bottom: 2px solid #10b981; margin-bottom: 30px; padding-bottom: 10px; }
+                    h1 { color: #10b981; margin: 0; }
+                    .meta { display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 14px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th { background: #f3f4f6; padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-size: 12px; }
+                    td { padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+                    .total-row { font-weight: bold; background: #f9fafb; }
+                    .footer { margin-top: 50px; font-size: 10px; color: #6b7280; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>Livre des Recettes</h1>
+                    <p>Conforme aux obligations de l'auto-entrepreneur (Art. L123-28 du Code de commerce)</p>
+                </div>
+                <div class="meta">
+                    <div>
+                        <strong>Entreprise :</strong> ${user.company.name}<br>
+                        <strong>SIRET :</strong> ${user.company.siret || '-'}
+                    </div>
+                    <div>
+                        <strong>Période :</strong> Année ${year}<br>
+                        <strong>Généré le :</strong> ${new Date().toLocaleDateString()}
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date encaissement</th>
+                            <th>Référence Facture</th>
+                            <th>Client</th>
+                            <th>Nature</th>
+                            <th style="text-align: right;">Montant Encaissé</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${paidInvoices.map(i => `
+                            <tr>
+                                <td>${new Date(i.createdAt).toLocaleDateString()}</td>
+                                <td>${i.number}</td>
+                                <td>${Storage.getClient(i.clientId)?.name || 'Client'}</td>
+                                <td>Prestation de services</td>
+                                <td style="text-align: right;">${App.formatCurrency(i.total)}</td>
+                            </tr>
+                        `).join('')}
+                        <tr class="total-row">
+                            <td colspan="4">TOTAL ENCAISSÉ</td>
+                            <td style="text-align: right;">${App.formatCurrency(total)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="footer">Document généré par SoloPrice Pro &bull; Certifié conforme aux obligations légales de tenue de registre.</div>
+                <script>window.onload = function() { setTimeout(() => window.print(), 500); }</script>
+            </body>
+            </html>
+        `;
+
+        this.openBlob(htmlContent);
+    },
+
+    generatePurchasesLedger(expenses, user) {
+        const year = new Date().getFullYear();
+        const sortedExpenses = [...expenses].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const total = sortedExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Registre des Achats - ${year}</title>
+                <style>
+                    body { font-family: sans-serif; padding: 40px; color: #333; }
+                    .header { border-bottom: 2px solid #ef4444; margin-bottom: 30px; padding-bottom: 10px; }
+                    h1 { color: #ef4444; margin: 0; }
+                    .meta { display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 14px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th { background: #f3f4f6; padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb; font-size: 12px; }
+                    td { padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+                    .total-row { font-weight: bold; background: #f9fafb; }
+                    .footer { margin-top: 50px; font-size: 10px; color: #6b7280; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>Registre des Achats</h1>
+                    <p>Conforme aux obligations de l'auto-entrepreneur (Art. L123-28 du Code de commerce)</p>
+                </div>
+                <div class="meta">
+                    <div>
+                        <strong>Entreprise :</strong> ${user.company.name}<br>
+                        <strong>SIRET :</strong> ${user.company.siret || '-'}
+                    </div>
+                    <div>
+                        <strong>Période :</strong> Année ${year}<br>
+                        <strong>Généré le :</strong> ${new Date().toLocaleDateString()}
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date achat</th>
+                            <th>Fournisseur / Description</th>
+                            <th>Catégorie</th>
+                            <th style="text-align: right;">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedExpenses.map(e => `
+                            <tr>
+                                <td>${new Date(e.date).toLocaleDateString()}</td>
+                                <td>${e.description}</td>
+                                <td>${e.category}</td>
+                                <td style="text-align: right;">${App.formatCurrency(e.amount)}</td>
+                            </tr>
+                        `).join('')}
+                        <tr class="total-row">
+                            <td colspan="3">TOTAL ACHATS</td>
+                            <td style="text-align: right;">${App.formatCurrency(total)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="footer">Document généré par SoloPrice Pro &bull; Certifié conforme aux obligations légales de tenue de registre.</div>
+                <script>window.onload = function() { setTimeout(() => window.print(), 500); }</script>
+            </body>
+            </html>
+        `;
+
+        this.openBlob(htmlContent);
+    },
+
+    openBlob(htmlContent) {
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 };
