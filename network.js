@@ -52,6 +52,7 @@ const Network = {
         if (App.currentPage === 'network') {
             const route = App.getPageFromHash();
             if (!route || route.tab !== tabId) {
+                Analytics.trackEvent('switch_cercle_tab', { tab: tabId });
                 App.navigateTo('network', tabId);
             }
         }

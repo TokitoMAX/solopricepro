@@ -3,7 +3,7 @@
 
 const Expenses = {
     render() {
-        const container = document.getElementById('expenses-page');
+        const container = document.getElementById('expenses-content');
         if (!container) return;
 
         const expenses = Storage.getExpenses() || [];

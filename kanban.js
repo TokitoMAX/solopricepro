@@ -18,8 +18,8 @@ const Kanban = {
         container.innerHTML = `
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Pipeline Business</h1>
-                    <p class="page-subtitle">Visualisez et pilotez votre flux de travail en temps réel.</p>
+                    <h1 class="page-title">Pilotage du Cash-flow</h1>
+                    <p class="page-subtitle">Suivi visuel des opportunités et des encaissements réels.</p>
                 </div>
             </div>
 

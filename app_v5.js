@@ -299,11 +299,11 @@ const App = {
             setTimeout(() => Quotes.switchTab('invoices'), 100);
         }
         if (page === 'network' && typeof Network !== 'undefined') Network.render(...args);
-        if (page === 'clients' && typeof Clients !== 'undefined') {
-            this.navigateTo('network', 'clients'); // Redirect to Cercle > Clients
+        if (page === 'clients') {
+            this.navigateTo('network', 'clients');
         }
-        if (page === 'leads' && typeof Leads !== 'undefined') {
-            this.navigateTo('network', 'leads'); // Redirect to Cercle > Prospects
+        if (page === 'leads') {
+            this.navigateTo('network', 'leads');
         }
         if (page === 'marketplace' && typeof Marketplace !== 'undefined') {
             this.checkFreemiumLimits(); // Refresh limits before rendering
@@ -316,6 +316,11 @@ const App = {
             }
         }
         if (page === 'expenses' && typeof Expenses !== 'undefined') Expenses.render();
+        if (page === 'taxes' && typeof TaxEngine !== 'undefined') {
+            // TaxEngine has no standalone render function, we might need to add one or use a template
+            // For now, let's assume it renders its selector or we add a basic render
+            this.renderTaxesView();
+        }
         if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();
         if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render();
         if (page === 'profile' && typeof Profile !== 'undefined') Profile.render();
@@ -332,6 +337,57 @@ const App = {
                 this.navigateTo('dashboard');
             }
         }
+    },
+
+    renderTaxesView() {
+        const container = document.getElementById('taxes-content');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Assistant Taxes</h1>
+                    <p class="page-subtitle">Configurez votre régime fiscal et visualisez vos prélèvements.</p>
+                </div>
+            </div>
+            <div class="glass-card" id="taxes-selector-container" style="padding: 2rem; max-width: 600px;">
+                <!-- Rempli par TaxEngine -->
+            </div>
+            <div class="dashboard-stats" style="margin-top: 2rem;" id="taxes-simulation-stats">
+                <!-- Simulation data -->
+            </div>
+        `;
+
+        if (typeof TaxEngine !== 'undefined') {
+            TaxEngine.renderSelector('taxes-selector-container', () => {
+                this.updateTaxesSimulation();
+            });
+            this.updateTaxesSimulation();
+        }
+    },
+
+    updateTaxesSimulation() {
+        const statsEl = document.getElementById('taxes-simulation-stats');
+        if (!statsEl || typeof TaxEngine === 'undefined') return;
+
+        // Simulate with a fixed base of 5000€ for visualization
+        const base = 5000;
+        const res = TaxEngine.calculate(base);
+
+        statsEl.innerHTML = `
+            <div class="stat-card">
+                <span class="stat-label">Base Simulation</span>
+                <div class="stat-value">${this.formatCurrency(base)}</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Charges Soc. (${res.socialRate}%)</span>
+                <div class="stat-value" style="color: #ef4444;">-${this.formatCurrency(res.socialCharges)}</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Net après Charges</span>
+                <div class="stat-value" style="color: var(--primary);">${this.formatCurrency(res.net)}</div>
+            </div>
+        `;
     },
 
     // Chargement du contenu de chaque page

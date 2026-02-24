@@ -30,8 +30,8 @@ const Dashboard = {
         container.innerHTML = `
             <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; animation: slideInTop 0.6s ease-out;">
                 <div>
-                    <h1 class="page-title" style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Tableau de Bord</h1>
-                    <p class="page-subtitle" style="font-size: 1.1rem; opacity: 0.8;">Vue d'ensemble de votre performance business</p>
+                    <h1 class="page-title" style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Vue Stratégique</h1>
+                    <p class="page-subtitle" style="font-size: 1.1rem; opacity: 0.8;">Analyse de votre performance business en temps réel</p>
                 </div>
                 <div class="dashboard-timer" style="font-size: 0.9rem; color: var(--text-muted); background: var(--bg-card); padding: 0.5rem 1rem; border-radius: 99px; border: 1px solid var(--border);">
                     <i class="far fa-clock"></i> <span id="current-time-display">${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
@@ -139,7 +139,6 @@ const Dashboard = {
                     </div>
                     
                     <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); display: flex; align-items: center; gap: 1rem;">
-                        <div style="font-size: 1.5rem;">📊</div>
                         <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
                             <strong>Santé Financière :</strong> Votre bénéfice net représente ${Math.round(((Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) - (Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) * (TaxEngine.getSocialRate() / 100)) - Storage.getExpenses().reduce((sum, e) => sum + e.amount, 0)) / (Storage.getInvoices().filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0) || 1)) * 100)}% de votre CA encaissé.
                         </p>
