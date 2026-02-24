@@ -828,22 +828,38 @@ const App = {
                     if (badge && isLive) badge.style.display = 'block';
                 }, 100);
 
-                const isSubscriptionMode = true; // On utilise toujours le mode abonnement maintenant
+                const isSubscriptionMode = true;
                 const containerId = '#paypal-button-container';
 
                 setTimeout(() => {
                     const container = document.querySelector(containerId);
-                    if (!container) return;
+                    if (!container) {
+                        console.error('❌ [PAYPAL] Container not found:', containerId);
+                        return;
+                    }
                     container.innerHTML = '';
 
+                    if (!window.paypal) {
+                        console.error('❌ [PAYPAL] SDK NOT LOADED! Check script in index.html');
+                        container.innerHTML = '<p style="color:red; text-align:center;">Erreur: SDK PayPal non chargé.</p>';
+                        return;
+                    }
+
+                    let planId = '';
+                    if (!isLive) {
+                        planId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
+                    } else {
+                        planId = tier === 'expert' ? 'P-19X023126K248324VNGNDKOQ' : 'P-13N38598NB647223XNGNDJMY';
+                    }
+
+                    console.log(`📡 [PAYPAL] Rendering buttons for Plan: ${planId} (${isLive ? 'LIVE' : 'SANDBOX'})`);
+
                     if (isSubscriptionMode) {
-                        // MODE ABONNEMENT (Sandbox ou Live)
-                        let planId = '';
-                        if (!isLive) {
-                            planId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
-                        } else {
-                            // IDs de Plans LIVE (P-13... = PRO, P-19... = EXPERT)
-                            planId = tier === 'expert' ? 'P-19X023126K248324VNGNDKOQ' : 'P-13N38598NB647223XNGNDJMY';
+                        // MODE ABONNEMENT
+                        if (!planId) {
+                            console.error('❌ [PAYPAL] Plan ID missing for tier:', tier);
+                            container.innerHTML = '<p style="color:red; text-align:center;">Erreur: Plan ID manquant.</p>';
+                            return;
                         }
 
                         paypal.Buttons({
