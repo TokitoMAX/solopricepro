@@ -777,56 +777,33 @@ const App = {
         `;
         } else if (step === 'checkout') {
             const tier = typeof data === 'string' ? data : data.tier;
-            const method = data.method || 'card';
+            const method = 'paypal'; // Force PayPal uniquement
             const price = tier === 'pro' ? '15€' : '29€';
 
             if (tier === 'standard') { App.closeModal(); return; }
 
-            titleEl.textContent = 'Paiement Sécurisé';
+            titleEl.textContent = 'Activation Immédiate';
             container.innerHTML = `
             <div class="checkout-view" style="width: 100%; text-align: left; padding: 0.5rem;">
-                <div class="payment-methods" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                    <div class="pay-method ${method === 'card' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${tier}', method: 'card'})">
-                        <i class="fab fa-cc-stripe"></i> Carte
-                    </div>
-                    <div class="pay-method ${method === 'paypal' ? 'active' : ''}" onclick="App.renderUpgradeStep('checkout', {tier: '${tier}', method: 'paypal'})">
-                        <i class="fab fa-paypal"></i> PayPal
-                    </div>
-                </div>
-
                 <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid var(--border);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${tier.toUpperCase()}</h4>
-                            <span style="font-size: 0.8rem; color: var(--text-muted);">Paiement via ${method === 'card' ? 'Visa/Mastercard' : 'PayPal'}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Abonnement via PayPal</span>
                         </div>
                         <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">${price}</span>
                     </div>
                 </div>
 
-                ${method === 'card' ? `
-                    <div class="stripe-checkout-box">
-                        <div class="stripe-official-logo">
-                            <i class="fab fa-cc-stripe" style="font-size: 2.5rem; color: #635bff;"></i>
-                        </div>
-                        <p style="margin: 1rem 0; font-size: 0.95rem; font-weight: 500;">Paiement 100% Sécurisé via Stripe</p>
-                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1.5rem;">Vous allez être redirigé vers la plateforme sécurisée de Stripe pour finaliser votre transaction.</p>
-                        
-                        <button class="button-primary full-width" onclick="App.processCheckout('${tier}', 'card')" style="padding: 1.2rem; font-size: 1rem; border-radius: 50px; background: #635bff; border: none; box-shadow: 0 4px 15px rgba(99, 91, 255, 0.3);">
-                           <i class="fas fa-lock"></i> Payer par Carte (Stripe)
-                        </button>
+                <div class="paypal-checkout-box">
+                    <div id="paypal-live-badge" class="env-badge" style="display: none; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; width: fit-content; margin-inline: auto;">
+                        <i class="fas fa-check-circle"></i> MODE PRODUCTION (RÉEL)
                     </div>
-                ` : `
-                    <div class="paypal-checkout-box">
-                        <div id="paypal-live-badge" class="env-badge" style="display: none; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; width: fit-content; margin-inline: auto;">
-                            <i class="fas fa-check-circle"></i> MODE PRODUCTION (RÉEL)
-                        </div>
-                        <div id="paypal-button-container" class="paypal-button-mount">
-                            <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
-                        </div>
-                        <p class="paypal-info-text text-muted">Abonnement sécurisé par PayPal</p>
+                    <div id="paypal-button-container" class="paypal-button-mount">
+                        <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
                     </div>
-                `}
+                    <p class="paypal-info-text text-muted" style="text-align: center; margin-top: 1rem;">Validation instantanée après paiement</p>
+                </div>
                 
                 <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1.5rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
                     <i class="fas fa-arrow-left"></i> Retour aux offres
