@@ -67,7 +67,7 @@ app.use(cors({
 // Utilisation de la méthode recommendée avec Express pour capturer le raw body
 app.use(express.json({
     verify: (req, res, buf) => {
-        if (req.originalUrl.startsWith('/api/payments/webhook')) {
+        if (req.originalUrl && (req.originalUrl.includes('/webhook'))) {
             req.rawBody = buf;
         }
     }
