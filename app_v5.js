@@ -1,5 +1,26 @@
-// SoloPrice Pro - Application Manager (v20260224_2205)
-console.log('💎 [APP] Version v20260224_2205 LOADED');
+// SoloPrice Pro - Application Manager (v20260224_2230)
+console.log('💎 [APP] Version v20260224_2230 LOADED');
+
+// --- CONFIGURATION GÉNÉRALE PAYPAL (INTERRUPTEUR) ---
+const PAYPAL_CONFIG = {
+    isLiveMode: true, // BASQUER À TRUE POUR ENCAISSER DU VRAI ARGENT
+
+    sandbox: {
+        clientId: "AUpGYEYVUGM5Q1MAKvkEd61kYWzQS5w42BkCjLx9_R7UAfSYpFcOOsCg_f8oClj-9aLTxXxJxBe74U7O",
+        plans: {
+            pro: "P-8KN785183W634412BNGM6LMQ",
+            expert: "P-4M2114299U772554XNGM623I"
+        }
+    },
+
+    live: {
+        clientId: "AcBmagCWJpj_JUQpRivjdlrowAA48XOvpD_B022bRdhQqQzYIHR6LgAKLdFadgLKHUa4BPqpYwstW825",
+        plans: {
+            pro: "P-13N38598NB647223XNGNDJMY",
+            expert: "P-19X023126K248324VNGNDKOQ"
+        }
+    }
+};
 const App = {
     currentPage: 'dashboard',
 
@@ -12,6 +33,7 @@ const App = {
             this.setupMobileOverlay();
             this.checkFreemiumLimits();
             this.renderUserInfo();
+            this.loadPayPalSDK(); // Chargement dynamique du script PayPal
             this.handlePaymentReturn(); // Check for Stripe/PayPal returns
             if (window.Network) Network.init();
             // Nouvelle gestion centralisée du Hash (incluant Reset Password et Quotes publiques)
@@ -812,13 +834,10 @@ const App = {
 
             // Re-exécution du script PayPal en fonction du tier
             if (method === 'paypal') {
-                const isSandbox = typeof Auth !== 'undefined' && Auth.user && Auth.user.email === 'sb-nu0kp49571508@personal.example.com';
+                const isLive = PAYPAL_CONFIG.isLiveMode;
+                const config = isLive ? PAYPAL_CONFIG.live : PAYPAL_CONFIG.sandbox;
 
-                const clientId = "AUpGYEYVUGM5Q1MAKvkEd61kYWzQS5w42BkCjLx9_R7UAfSYpFcOOsCg_f8oClj-9aLTxXxJxBe74U7O";
-                // MODE TEST FORCÉ pour vérification
-                const isLive = false;
-
-                console.log(`📡 [PAYPAL] SDK Detected. ClientID: ${clientId.substring(0, 10)}..., Mode: TEST (Forcé)`);
+                console.log(`📡 [PAYPAL] Mode: ${isLive ? 'LIVE' : 'SANDBOX'}`);
 
                 // Afficher le badge Live si on est en prod
                 setTimeout(() => {
@@ -841,14 +860,11 @@ const App = {
                             return;
                         }
                         console.error('❌ [PAYPAL] SDK NOT LOADED after 5s!');
-                        container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">Erreur: Le service PayPal ne répond pas.<br><small>Vérifiez votre connexion ou désactivez votre bloqueur de pub.</small></p>';
+                        container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">Erreur: Le service PayPal ne répond pas.<br><small>Désactivez votre bloqueur de pub.</small></p>';
                         return;
                     }
 
-                    let planId = '';
-                    if (!isLive) {
-                        planId = tier === 'expert' ? 'P-4M2114299U772554XNGM623I' : 'P-8KN785183W634412BNGM6LMQ';
-                    }
+                    const planId = tier === 'expert' ? config.plans.expert : config.plans.pro;
 
                     console.log(`📡 [PAYPAL] Rendering buttons for Plan: ${planId} (${isLive ? 'LIVE' : 'SANDBOX'})`);
                     container.innerHTML = '';
@@ -1384,6 +1400,29 @@ const App = {
         }
     },
 
+    // Charge dynamiquement le SDK PayPal selon le mode (Sandbox ou Live)
+    loadPayPalSDK() {
+        const config = PAYPAL_CONFIG.isLiveMode ? PAYPAL_CONFIG.live : PAYPAL_CONFIG.sandbox;
+
+        // Éviter les doublons
+        if (document.querySelector(`script[src*="paypal.com/sdk/js"]`)) {
+            console.log('📡 [PAYPAL] SDK already present.');
+            return;
+        }
+
+        console.log(`📡 [PAYPAL] Loading SDK (${PAYPAL_CONFIG.isLiveMode ? 'LIVE' : 'SANDBOX'})...`);
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${config.clientId}&components=buttons&vault=true&intent=subscription&currency=EUR`;
+        script.async = true;
+
+        script.onload = () => console.log('✅ [PAYPAL] SDK Loaded dynamically.');
+        script.onerror = () => {
+            console.error('❌ [PAYPAL] SDK Load failed!');
+            alert('Erreur critique: Le service PayPal ne peut pas charger. Vérifiez votre connexion ou désactivez votre bloqueur de pub.');
+        };
+
+        document.body.appendChild(script);
+    }
 };
 
 window.App = App;
