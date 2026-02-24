@@ -318,203 +318,32 @@ const App = {
         if (page === 'expenses' && typeof Expenses !== 'undefined') Expenses.render();
         if (page === 'taxes' && typeof TaxEngine !== 'undefined') {
             // TaxEngine has no standalone render function, we might need to add one or use a template
-            // For now, let's assume it renders its selector or we add a basic render
-            this.renderTaxesView();
-        }
-        if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();
-        if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render();
-        if (page === 'profile' && typeof Profile !== 'undefined') Profile.render();
-        if (page === 'settings' && typeof Settings !== 'undefined') Settings.render();
-        if (page === 'services' && typeof Services !== 'undefined') {
-            this.navigateTo('settings', 'billing'); // Redirect to Settings with billing tab
-        }
-        if (page === 'admin') {
-            const user = Storage.getUser();
-            if (user && user.role === 'admin') {
-                this.refreshAdminData();
-            } else {
-                this.showNotification('Accès refusé', 'error');
-                this.navigateTo('dashboard');
+            if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();
+            if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render();
+            if (page === 'profile' && typeof Profile !== 'undefined') Profile.render();
+            if (page === 'settings' && typeof Settings !== 'undefined') Settings.render();
+            if (page === 'services' && typeof Services !== 'undefined') {
+                this.navigateTo('settings', 'billing'); // Redirect to Settings with billing tab
             }
-        }
-    },
+            if (page === 'admin') {
+                const user = Storage.getUser();
+                if (user && user.role === 'admin') {
+                    this.refreshAdminData();
+                } else {
+                    this.showNotification('Accès refusé', 'error');
+                    this.navigateTo('dashboard');
+                }
+            }
+        },
 
-    renderTaxesView() {
-        const container = document.getElementById('taxes-content');
-        if (!container) return;
-
-        const paidInvoices = Storage.getInvoices().filter(i => i.status === 'paid');
-        const currentMonthRevenue = paidInvoices.reduce((sum, i) => sum + i.total, 0);
-
-        container.innerHTML = `
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Assistant Taxes & URSSAF</h1>
-                    <p class="page-subtitle">Suivez vos obligations fiscales basées sur vos encaissements réels.</p>
-                </div>
-                <button class="button-secondary" onclick="App.exportReceiptsLedger()">
-                    <i class="fas fa-file-pdf"></i> Exporter le Livre des Recettes
-                </button>
-            </div>
-
-            <!-- Suivi des Seuils TVA -->
-            <div id="tva-threshold-container" style="margin-bottom: 2rem;">
-                 <!-- Rempli dynamiquement -->
-            </div>
-
-            <div class="stats-grid" style="margin-bottom: 2rem;">
-                <div class="stat-card" style="border-left: 4px solid var(--primary);">
-                    <span class="stat-label">CA Encaissé (Ce mois)</span>
-                    <div class="stat-value">${this.formatCurrency(currentMonthRevenue)}</div>
-                    <p class="stat-description">Basé sur ${paidInvoices.length} facture(s) payée(s)</p>
-                </div>
-                <div class="stat-card" style="border-left: 4px solid var(--warning);">
-                    <span class="stat-label">Provision URSSAF Recommandée</span>
-                    <div id="taxes-provision-value" class="stat-value" style="color: var(--warning);">-</div>
-                    <p class="stat-description">À isoler sur votre compte pro</p>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Prochaine Échéance</span>
-                    <div class="stat-value" style="font-size: 1.2rem;">${this.getNextTaxDeadline()}</div>
-                    <p class="stat-description">Déclaration trimestrielle/mensuelle</p>
-                </div>
-            </div>
-
-            <div class="glass-card" style="padding: 2rem; margin-top: 2rem;">
-                <h3 class="section-title-small" style="margin-bottom: 1.5rem;">Simulateur de Projection (Net Réel)</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
-                    <div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Testez combien il vous restera réellement en poche après taxes et frais pro selon votre CA mensuel.</p>
-                        <div class="form-group">
-                            <label class="form-label">CA Mensuel Simulé (HT)</label>
-                            <input type="number" id="tax-sim-input" class="form-input" value="${Math.max(2500, currentMonthRevenue)}" oninput="App.updateTaxesSimulation()">
-                        </div>
-                    </div>
-                    <div id="tax-sim-result" style="background: var(--bg-light); padding: 1.5rem; border-radius: 12px; border: 1px dashed var(--primary);">
-                        <!-- Résultat dynamique -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass-card" style="padding: 2rem; margin-top: 2rem;">
-                <h3 class="section-title-small" style="margin-bottom: 0.5rem;">Configuration du Régime</h3>
-                <div id="taxes-selector-container" style="max-width: 600px;">
-                    <!-- Rempli par TaxEngine -->
-                </div>
-            </div>
-
-            <div class="glass-card" style="padding: 2rem; margin-top: 2rem;">
-                <h3 class="section-title-small" style="margin-bottom: 1.5rem;">Conseil de Pilotage</h3>
-                <div id="taxes-coach-tip" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
-                    <!-- Dynamisé par updateTaxesSimulation -->
-                </div>
-            </div>
-        `;
-
-        if (typeof TaxEngine !== 'undefined') {
-            TaxEngine.renderSelector('taxes-selector-container', () => {
-                this.updateTaxesSimulation();
-            });
-            this.updateTaxesSimulation();
-            this.renderTVAThreshold();
-        }
-    },
-
-    renderTVAThreshold() {
-        const container = document.getElementById('tva-threshold-container');
-        if (!container) return;
-
-        const paidInvoices = Storage.getInvoices().filter(i => i.status === 'paid');
-        const annualRevenue = paidInvoices.reduce((sum, i) => sum + i.total, 0);
-        const threshold = 39100; // Seuil de franchise en base de TVA pour services
-        const percentage = Math.min(Math.round((annualRevenue / threshold) * 100), 100);
-        const isNear = percentage > 80;
-
-        container.innerHTML = `
-            <div class="glass-card" style="padding: 1.5rem; border-bottom: 3px solid ${isNear ? '#ef4444' : '#10b981'};">
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.8rem;">
-                    <div>
-                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text);">Surveillance Seuil TVA</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Franchise en base (Prestations) : 39 100 €</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <span style="font-weight: 800; color: ${isNear ? '#ef4444' : 'var(--primary)'};">${App.formatCurrency(annualRevenue)}</span>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);"> / ${percentage}%</span>
-                    </div>
-                </div>
-                <div class="progress-bar-container" style="height: 10px; background: rgba(0,0,0,0.05);">
-                    <div class="progress-bar-fill" style="width: ${percentage}%; background: ${isNear ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : 'var(--primary-gradient)'};"></div>
-                </div>
-                ${isNear ? `
-                    <p style="margin-top: 0.8rem; font-size: 0.8rem; color: #ef4444; font-weight: 500;">
-                        <i class="fas fa-exclamation-triangle"></i> Attention, vous approchez du seuil de TVA. Anticipez votre changement de tarifs !
-                    </p>
-                ` : ''}
-            </div>
-        `;
-    },
-
-    getNextTaxDeadline() {
-        const now = new Date();
-        const month = now.getMonth();
-        // Simple logic: Quarter ends
-        if (month < 3) return '30 Avril';
-        if (month < 6) return '31 Juillet';
-        if (month < 9) return '31 Octobre';
-        return '31 Janvier';
-    },
-
-    exportReceiptsLedger() {
-        if (typeof PDFGenerator === 'undefined') return;
-        const invoices = Storage.getInvoices();
-        const user = Storage.getUser();
-        PDFGenerator.generateReceiptsLedger(invoices, user);
-    },
-
-    exportPurchasesLedger() {
-        if (typeof PDFGenerator === 'undefined') return;
-        const expenses = Storage.getExpenses();
-        const user = Storage.getUser();
-        PDFGenerator.generatePurchasesLedger(expenses, user);
-    },
-
-    updateTaxesSimulation() {
-        const provisionEl = document.getElementById('taxes-provision-value');
-        const coachEl = document.getElementById('taxes-coach-tip');
-        if (!provisionEl || typeof TaxEngine === 'undefined') return;
-
-        const paidInvoices = Storage.getInvoices().filter(i => i.status === 'paid');
-        const grossRevenue = paidInvoices.reduce((sum, i) => sum + i.total, 0);
-
-        // Exclure les débours du CA imposable (calcul social)
-        const disbursements = Storage.getExpenses().filter(e => e.isDisbursement).reduce((sum, e) => sum + e.amount, 0);
-        const taxableRevenue = Math.max(0, grossRevenue - disbursements);
-
-        const inputEl = document.getElementById('tax-sim-input');
-        const simResultEl = document.getElementById('tax-sim-result');
-        const simulatedCA = inputEl ? parseFloat(inputEl.value) || 0 : currentMonthRevenue;
-        const simRes = TaxEngine.calculate(simulatedCA);
-
-        if (simResultEl) {
-            simResultEl.innerHTML = `
-                <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Votre Reste à vivre (Projection)</div>
-                <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">${this.formatCurrency(simRes.net - (Storage.getExpenses().reduce((sum, e) => sum + e.amount, 0) / 12))}*</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px;">*Après taxes (${this.formatCurrency(simRes.socialCharges)}) et moyenne de vos frais pro.</div>
-            `;
-        }
-
-        const res = TaxEngine.calculate(taxableRevenue);
-        provisionEl.textContent = this.formatCurrency(res.socialCharges);
-
-        const ctx = TaxEngine.getCurrent();
-        coachEl.innerHTML = `
-            <p>Sous le régime <strong>${ctx.name}</strong>, vous devez prévoir environ <strong>${ctx.vat}%</strong> de TVA (si redevable) et <strong>${res.socialRate}%</strong> de charges sociales.</p>
-            <p style="margin-top: 1rem;"><i class="fas fa-lightbulb" style="color: var(--primary);"></i> <strong>Calcul Intelligent :</strong> Vos <strong>${this.formatCurrency(disbursements)}</strong> de débours ont été déduits de votre CA imposable (${this.formatCurrency(grossRevenue)} brut &rarr; ${this.formatCurrency(taxableRevenue)} net social).</p>
-            <p>Anticipez ces prélèvements en ouvrant un sous-compte dédié. Posez <strong>${this.formatCurrency(res.socialCharges)}</strong> de côté dès aujourd'hui.</p>
-            <div style="margin-top: 1.5rem; padding: 0.8rem; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.75rem; color: var(--text-muted); font-style: italic; border-top: 1px solid var(--border);">
-                * Ces montants sont donnés à titre indicatif pour vous aider à piloter votre trésorerie. Seules les déclarations effectuées sur le portail officiel de l'URSSAF font foi.
-            </div>
-        `;
+        // LEGAL COMPLIANCE
+        exportReceiptsLedger() {
+            if (typeof PDFGenerator === 'undefined') return;
+            const invoices = Storage.getInvoices();
+            const user = Storage.getUser();
+            PDFGenerator.generateReceiptsLedger(invoices, user);
+            Analytics.trackEvent('export_receipts_ledger');
+        },
     },
 
     // Chargement du contenu de chaque page
