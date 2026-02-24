@@ -613,12 +613,33 @@
     <script src="expenses.js?v=20260224_1840"></script>
     <script src="coach.js?v=20260224_1840"></script>
 
-    <!-- PAYPAL SDK (Moved to bottom for reliability) -->
-    <script
-        src="https://www.paypal.com/sdk/js?client-id=AUpGYEYVUGM5Q1MAKvkEIf1PYhZOSIxx4SRzCL-rSRTUAbWjvPcOOeC-sjWuc0j-GmLSxXubvJbeTtLZQ&components=buttons&vault=true&intent=subscription"
-        onload="console.log('✅ PayPal SDK Loaded')"
-        onerror="alert('Erreur critique: Le script PayPal n\'a pas pu se charger. Vérifiez votre connexion ou votre bloqueur de publicité.')">
-        </script>
+    <div id="paypal-diag"></div>
+    <script>
+        (function () {
+            const clientId = "AUpGYEYVUGM5Q1MAKvkEIf1PYhZOSIxx4SRzCL-rSRTUAbWjvPcOOeC-sjWuc0j-GmLSxXubvJbeTtLZQ";
+            const script = document.createElement('script');
+            script.src = "https://www.paypal.com/sdk/js?client-id=" + clientId + "&components=buttons&vault=true&intent=subscription";
+            script.async = true;
+
+            script.onload = function () {
+                console.log('✅ [DIAG] PayPal SDK loaded successfully.');
+            };
+
+            script.onerror = function () {
+                console.error('❌ [DIAG] PayPal SDK failed to load.');
+                // Diagnostic Fetch to see the error code
+                fetch(script.src, { mode: 'no-cors' }).then(() => {
+                    console.warn('⚠️ [DIAG] Script blocked by browser or extension (AdBlock?).');
+                }).catch(err => {
+                    console.error('⚠️ [DIAG] Network error or invalid Client ID:', err);
+                });
+
+                alert('ERREUR CRITIQUE PAYPAL :\nLe script ne charge pas. \n\n1. Désactivez votre bloqueur de pub.\n2. Vérifiez votre connexion.\n3. Si persistante, essayez en navigation privée.');
+            };
+
+            document.body.appendChild(script);
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
