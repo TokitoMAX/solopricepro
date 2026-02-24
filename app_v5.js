@@ -814,7 +814,7 @@ const App = {
             if (method === 'paypal') {
                 const isSandbox = typeof Auth !== 'undefined' && Auth.user && Auth.user.email === 'sb-nu0kp49571508@personal.example.com';
 
-                const clientId = "AUpGYEYVUGM5Q1MAKvkEIf1PYhZOSIxx4SRzCL-rSRTUAbWjvPcOOeC-sjWuc0j-GmLSxXubvJbeTtLZQ";
+                const clientId = "AUpGYEYVUGM5Q1MAKvkEIf1PYhZOSIxx4SRzCL-rSTUAbWjvPcOOeC-sjWuc0j-GmLSxXubvJbeTtLZQ";
                 // MODE TEST FORCÉ pour vérification
                 const isLive = false;
 
