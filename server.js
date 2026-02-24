@@ -47,15 +47,19 @@ try {
 // Injecter supabase (peut être null si échec init)
 app.set('supabase', supabase);
 
-// Middleware de Logging
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
+// 1. Capture RAW BODY pour Stripe (AVANT TOUT LE RESTE)
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }), (req, res, next) => {
+    req.rawBody = req.body;
+    console.log(`📡 [WEBHOOK-TOP] Raw body captured (${req.rawBody?.length || 0} bytes)`);
     next();
 });
 
-// CORS - Allow all origins in production
+// 2. Logging & CORS
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    next();
+});
+
 app.use(cors({
     origin: true,
     credentials: true,
@@ -63,15 +67,11 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Route Webhook Stripe (doit avoir le raw body)
-// Utilisation de la méthode recommendée avec Express pour capturer le raw body
-app.use(express.json({
-    verify: (req, res, buf) => {
-        if (req.originalUrl && (req.originalUrl.includes('/webhook'))) {
-            req.rawBody = buf;
-        }
-    }
-}));
+// 3. JSON Parser pour le reste
+app.use((req, res, next) => {
+    if (req.path === '/api/payments/webhook') return next();
+    express.json()(req, res, next);
+});
 
 app.use(express.urlencoded({ extended: true }));
 

@@ -79,7 +79,7 @@ router.post('/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    console.log(`📡 [WEBHOOK] Request received. Signature present: ${!!sig}`);
+    console.log(`📡 [WEBHOOK] Request received. Path: ${req.originalUrl}, Signature: ${!!sig}, Secret: ${endpointSecret ? endpointSecret.substring(0, 10) + '...' : 'MISSING'}`);
 
     let event;
 
