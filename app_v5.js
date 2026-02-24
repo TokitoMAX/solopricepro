@@ -1,6 +1,5 @@
-// SoloPrice Pro - Application Manager
-// Gestion du routing et de la navigation SPA
-
+// SoloPrice Pro - Application Manager (v20260224_1850)
+console.log('💎 [APP] Version v20260224_1850 LOADED');
 const App = {
     currentPage: 'dashboard',
 

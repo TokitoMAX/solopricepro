@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SoloPrice Pro - Chiffrage & Facturation Premium</title>
-    <script
-        src="https://www.paypal.com/sdk/js?client-id=AUpGYEYVUGM5Q1MAKvk&components=buttons&vault=true&intent=subscription"
-        onload="console.log('✅ PayPal SDK Script Loaded Successfully')"
-        onerror="console.error('❌ PayPal SDK Script Failed to Load. Status:', this.status)">
-        </script>
+    <!-- PayPal SDK removed from here for better diagnostic -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -600,7 +596,7 @@
     <script src="auth.js?v=20260224_1840"></script>
     <script src="storage.js?v=20260224_1840"></script>
     <script src="taxes.js?v=20260224_1840"></script>
-    <script src="app.js?v=20260224_1840"></script>
+    <script src="app_v5.js?v=20260224_1850"></script>
     <script src="premium-wall.js?v=20260224_1840"></script>
     <script src="dashboard.js?v=20260224_1840"></script>
     <script src="kanban.js?v=20260224_1840"></script>
@@ -616,6 +612,12 @@
     <script src="network.js?v=20260224_1840"></script>
     <script src="expenses.js?v=20260224_1840"></script>
     <script src="coach.js?v=20260224_1840"></script>
+
+    <!-- PAYPAL SDK (Moved to bottom for reliability) -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AUpGYEYVUGM5Q1MAKvk&vault=true&intent=subscription"
+        onload="console.log('✅ PayPal SDK Loaded')"
+        onerror="alert('Erreur critique: Le script PayPal n\'a pas pu se charger. Vérifiez votre connexion ou votre bloqueur de publicité.')">
+        </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
