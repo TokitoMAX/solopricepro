@@ -437,19 +437,20 @@ const PDFGenerator = {
                             </p>
                         </div>
                         <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
-                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">2. FRAIS SERVICE (15% HT + Taxe)</strong>
+                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">2. PROTECTION SOLOPRICE (Obligatoire)</strong>
                             <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 10px;">
                                 ${App.formatCurrency((quote.margin || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
                             </span>
                             <p style="font-size: 11px; margin: 0;">
                                 Destinataire : <strong>SoloPrice Pro</strong><br>
-                                Règlement via votre espace client sécurisé / Mode de paiement enregistré.
+                                Active la garantie de protection des fonds et le support juridique de la mission.
                             </p>
                         </div>
                     </div>
 
                     <div style="margin-top: 20px; font-size: 11px;">
                         <p style="margin-bottom: 5px;">Ce devis est valable jusqu'au ${validUntil}.</p>
+                        <p style="color: var(--primary); font-weight: 600; margin-top: 10px;"><i class="fas fa-shield-alt"></i> La Protection SoloPrice est une clause contractuelle obligatoire pour la validation juridique de cette mission.</p>
                         ${quote.tax === 0 ? '<p style="font-weight: 700; color: var(--text);">TVA non applicable, art. 293 B du CGI</p>' : ''}
                         ${user.company?.footer_mentions ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
                     </div>

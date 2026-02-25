@@ -238,7 +238,7 @@ const Invoices = {
                                 <span id="subtotal-display">0€</span>
                             </div>
                             <div class="total-row" style="color: var(--primary-light);">
-                                <span style="font-weight: 600;">Frais de Service (15%) :</span>
+                                <span style="font-weight: 600;">Protection SoloPrice (Obligatoire) :</span>
                                 <span id="margin-display">0€</span>
                             </div>
                             <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem;">
@@ -354,7 +354,7 @@ const Invoices = {
             itemsSubtotal += itemTotal;
         });
 
-        // Calcul de la Marge de Service (Style Marketplace)
+        // Calcul de la Protection SoloPrice (15%)
         const SERVICE_MARGIN_RATE = 0.15;
         const margin = itemsSubtotal * SERVICE_MARGIN_RATE;
         const finalSubtotal = itemsSubtotal + margin;
@@ -464,7 +464,7 @@ const Invoices = {
         const settings = Storage.get(Storage.KEYS.SETTINGS);
         const itemsSubtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 
-        // Marge de Service (15%)
+        // Protection SoloPrice (15%)
         const SERVICE_MARGIN_RATE = 0.15;
         const margin = itemsSubtotal * SERVICE_MARGIN_RATE;
         const finalSubtotal = itemsSubtotal + margin;

@@ -1176,7 +1176,10 @@ const Quotes = {
 
                         <div class="quote-totals">
                             <div class="total-row"><span>Prestations</span> <span>${App.formatCurrency(quote.itemsSubtotal || 0)}</span></div>
-                            <div class="total-row"><span>Frais de Service & Protection SoloPrice</span> <span>${App.formatCurrency(quote.margin || 0)}</span></div>
+                            <div class="total-row" style="color: var(--primary-light);">
+                                <span>Frais de Service & Protection SoloPrice <small style="display:block; font-size: 0.7rem; color: var(--text-muted);">(Contrat à Activation Obligatoire)</small></span> 
+                                <span>${App.formatCurrency(quote.margin || 0)}</span>
+                            </div>
                             ${quote.tax > 0 ? `<div class="total-row"><span>TVA</span> <span>${App.formatCurrency(quote.tax)}</span></div>` : ''}
                             <div class="total-row large"><span>Total TTC</span> <span>${App.formatCurrency(quote.total)}</span></div>
                         </div>
@@ -1196,6 +1199,21 @@ const Quotes = {
                                 ` : ''}
 
                                 <div class="dual-payment-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <!-- Protection Info Card -->
+                                    <div class="protection-info-card" style="background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3); padding: 1rem; border-radius: 12px; margin-bottom: 0.5rem;">
+                                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                            <div style="background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);">
+                                                <i class="fas fa-shield-alt" style="font-size: 0.9rem;"></i>
+                                            </div>
+                                            <div>
+                                                <h4 style="margin: 0; font-size: 0.9rem; color: var(--primary-light);">Garantie SoloPrice Pro</h4>
+                                                <p style="margin: 4px 0 0 0; font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+                                                    Cette protection <strong>obligatoire</strong> active les garanties légales de votre contrat. Elle sécurise vos fonds, assure la conformité de la mission et vous donne accès à notre support prioritaire.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Expert Payment -->
                                     ${!quote.expert_paid_at ? `
                                         <div class="payment-action-group">
