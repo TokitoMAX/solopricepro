@@ -896,18 +896,38 @@ const Quotes = {
         const canvas = document.getElementById('signature-pad');
         if (!canvas) return;
 
+        // Vérifier si la signature est vide (tous les pixels sont transparents)
+        const ctx = canvas.getContext('2d');
+        const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let isBlank = true;
+        for (let i = 0; i < pixels.length; i += 4) {
+            if (pixels[i + 3] !== 0) { // On vérifie l'alpha (transparence)
+                isBlank = false;
+                break;
+            }
+        }
+
+        if (isBlank) {
+            App.showNotification('Veuillez apposer votre signature avant de valider.', 'warning');
+            return;
+        }
+
         const dataUrl = canvas.toDataURL('image/png');
 
         try {
             if (this.isPublicSign) {
                 // Appel API public
+                console.log(`[QUOTES] Signing public quote: ${id}`);
                 const res = await fetch(`${Auth.apiBase}/api/public/quote/${id}/sign`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ signature: dataUrl })
                 });
 
-                if (!res.ok) throw new Error('Erreur lors de la signature');
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Erreur serveur (${res.status}) lors de la signature`);
+                }
 
                 App.showNotification('Devis signé avec succès !', 'success');
                 this.closeSignatureModal();
@@ -953,24 +973,32 @@ const Quotes = {
     },
 
     async initQuotePayment(id) {
-        App.showLoader();
+        console.log(`[QUOTES] Initializing payment for quote: ${id}`);
+        if (typeof App !== 'undefined' && App.showLoader) App.showLoader();
+
         try {
-            const res = await fetch(`${Auth.apiBase}/api/payments/create-quote-session`, {
+            const endpoint = `${Auth.apiBase}/api/payments/create-quote-session`;
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ quoteId: id })
             });
 
-            if (!res.ok) throw new Error('Impossible de créer la session de paiement.');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.message || `Erreur de paiement (${res.status}). Veuillez contacter le prestataire.`);
+            }
+
             const data = await res.json();
 
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                throw new Error('URL de paiement manquante.');
+                throw new Error('URL de paiement manquante dans la réponse du serveur.');
             }
         } catch (err) {
-            App.hideLoader();
+            console.error('[QUOTES] Payment error:', err);
+            if (typeof App !== 'undefined' && App.hideLoader) App.hideLoader();
             App.showNotification(err.message, 'error');
         }
     },
@@ -1057,21 +1085,29 @@ const Quotes = {
                             <thead>
                                 <tr>
                                     <th>Description</th>
+                                    <th style="text-align: center;">Qté</th>
+                                    <th style="text-align: right;">P.U.</th>
                                     <th style="text-align: right;">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${(quote.items || []).map(item => `
-                                    <tr>
-                                        <td>${item.description}</td>
-                                        <td style="text-align: right;">${App.formatCurrency(item.total)}</td>
-                                    </tr>
-                                `).join('')}
+                                ${(quote.items || []).map(item => {
+                const itemTotal = (item.quantity || 1) * (item.unitPrice || 0);
+                return `
+                                        <tr>
+                                            <td>${item.description}</td>
+                                            <td style="text-align: center;">${item.quantity || 1}</td>
+                                            <td style="text-align: right;">${App.formatCurrency(item.unitPrice || 0)}</td>
+                                            <td style="text-align: right;">${App.formatCurrency(itemTotal)}</td>
+                                        </tr>
+                                    `;
+            }).join('')}
                             </tbody>
                         </table>
 
                         <div class="quote-totals">
-                            <div class="total-row"><span>Sous-total</span> <span>${App.formatCurrency(quote.subtotal)}</span></div>
+                            <div class="total-row"><span>Sous-total (HT)</span> <span>${App.formatCurrency(quote.subtotal)}</span></div>
+                            ${quote.tax > 0 ? `<div class="total-row"><span>TVA</span> <span>${App.formatCurrency(quote.tax)}</span></div>` : ''}
                             <div class="total-row large"><span>Total TTC</span> <span>${App.formatCurrency(quote.total)}</span></div>
                         </div>
 
