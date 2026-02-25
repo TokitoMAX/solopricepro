@@ -6,12 +6,15 @@ const { createClient } = require('@supabase/supabase-js');
 // Route pour créer une session d'abonnement ou de paiement SaaS
 // Helper pour obtenir le token PayPal
 async function getPayPalAccessToken() {
-    const isProd = process.env.NODE_ENV === 'production' && process.env.PAYPAL_MODE !== 'sandbox';
-    const clientId = process.env.PAYPAL_CLIENT_ID;
-    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-    const baseUrl = isProd ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+    const isLive = process.env.PAYPAL_MODE === 'live' || (process.env.NODE_ENV === 'production' && process.env.PAYPAL_MODE !== 'sandbox');
+    const clientId = isLive ? process.env.PAYPAL_LIVE_CLIENT_ID : process.env.PAYPAL_CLIENT_ID;
+    const clientSecret = isLive ? process.env.PAYPAL_LIVE_CLIENT_SECRET : process.env.PAYPAL_CLIENT_SECRET;
+    const baseUrl = isLive ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
-    if (!clientId || !clientSecret) throw new Error('PayPal configuration missing');
+    if (!clientId || !clientSecret) {
+        console.error(`[PAYPAL] Configuration missing for ${isLive ? 'LIVE' : 'SANDBOX'} mode.`);
+        throw new Error(`PayPal configuration missing (${isLive ? 'LIVE' : 'SANDBOX'})`);
+    }
 
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
     const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
@@ -23,7 +26,11 @@ async function getPayPalAccessToken() {
         body: 'grant_type=client_credentials'
     });
 
-    if (!res.ok) throw new Error('Failed to get PayPal Access Token');
+    if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.error(`[PAYPAL] Auth Failed (${isLive ? 'LIVE' : 'SANDBOX'}):`, errData);
+        throw new Error('Failed to get PayPal Access Token');
+    }
     const { access_token } = await res.json();
     return { token: access_token, baseUrl };
 }
@@ -118,7 +125,11 @@ router.post('/create-quote-paypal-order', async (req, res) => {
 
     } catch (err) {
         console.error('Create PayPal Quote Order Error:', err);
-        res.status(500).json({ message: "Erreur serveur.", error: err.message });
+        res.status(500).json({
+            message: "Erreur lors de l'initialisation du paiement PayPal.",
+            details: err.message,
+            hint: "Vérifiez vos identifiants PayPal (ID/Secret) et le mode (Sandbox/Live)."
+        });
     }
 });
 
@@ -353,20 +364,20 @@ router.post('/paypal-capture', async (req, res) => {
         console.log(`📡 [PAYPAL] Tentative de capture pour Commande: ${orderID}, Tier: ${tier}, User: ${userId}`);
 
         // 1. Détecter l'environnement et valider les clés
-        const isProd = process.env.NODE_ENV === 'production' && process.env.PAYPAL_MODE !== 'sandbox';
-        const clientId = process.env.PAYPAL_CLIENT_ID;
-        const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-        const baseUrl = isProd ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+        const isLive = process.env.PAYPAL_MODE === 'live' || (process.env.NODE_ENV === 'production' && process.env.PAYPAL_MODE !== 'sandbox');
+        const clientId = isLive ? process.env.PAYPAL_LIVE_CLIENT_ID : process.env.PAYPAL_CLIENT_ID;
+        const clientSecret = isLive ? process.env.PAYPAL_LIVE_CLIENT_SECRET : process.env.PAYPAL_CLIENT_SECRET;
+        const baseUrl = isLive ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
         if (!clientId || !clientSecret) {
-            console.error('❌ [PAYPAL] Erreur: PAYPAL_CLIENT_ID ou PAYPAL_CLIENT_SECRET manquant dans .env');
+            console.error(`❌ [PAYPAL] Erreur: Identifiants ${isLive ? 'LIVE' : 'SANDBOX'} manquants dans .env`);
             return res.status(500).json({
                 status: 'failed',
-                message: 'Configuration PayPal manquante sur le serveur (API Keys).'
+                message: `Configuration PayPal manquante (Mode: ${isLive ? 'LIVE' : 'SANDBOX'}).`
             });
         }
 
-        console.log(`📡 [PAYPAL] Tentative de capture (${isProd ? 'LIVE' : 'SANDBOX'}) pour Commande: ${orderID}, Tier: ${tier}, User: ${userId}`);
+        console.log(`📡 [PAYPAL] Tentative de capture (${isLive ? 'LIVE' : 'SANDBOX'}) pour Commande: ${orderID}, Tier: ${tier}, User: ${userId}`);
 
         // 2. Obtenir un Access Token PayPal
         const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
