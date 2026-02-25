@@ -648,13 +648,8 @@ const App = {
             }
         }
 
-        // Sidebar Cleanup (v4.6)
-        // Hide "Estimator" (Scoper) ONLY. Ensure we don't accidentally hide the parent if it's shared (unlikely, but safe).
-        const scoperNav = document.querySelector('[data-nav="scoper"]');
-        if (scoperNav && !isPro) {
-            const parent = scoperNav.closest('.nav-item');
-            if (parent) parent.style.display = 'none';
-        }
+        // Sidebar Cleanup (v20260225_0100)
+        // Scoper is now visible for all tiers (with PRO badge if gated)
 
         // Ensure "Marketplace" and "Pipeline" (Kanban) are visible
         const marketNav = document.querySelector('[data-nav="marketplace"]');

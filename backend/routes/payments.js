@@ -37,6 +37,7 @@ async function getPayPalAccessToken() {
 
 // Route pour créer une commande PayPal pour un DEVIS (Expert ou Plateforme)
 router.post('/create-quote-paypal-order', async (req, res) => {
+    let step = 'init';
     try {
         const { quoteId, type } = req.body; // type: 'expert' ou 'platform'
         const supabase = req.app.get('supabase');
@@ -44,19 +45,24 @@ router.post('/create-quote-paypal-order', async (req, res) => {
         if (!quoteId || !type) return res.status(400).json({ message: "Paramètres manquants." });
 
         // 1. Récupérer le devis
+        step = 'fetch_quote';
         const { data: quote, error: quoteError } = await supabase
             .from('sp_quotes')
             .select('*')
             .eq('id', quoteId)
             .single();
 
-        if (quoteError || !quote) return res.status(404).json({ message: "Devis introuvable." });
+        if (quoteError || !quote) {
+            console.error(`[PAYPAL-ORDER] Quote not found: ${quoteId}`, quoteError);
+            return res.status(404).json({ message: "Devis introuvable.", details: quoteError });
+        }
 
         // 2. Déterminer le montant et le Payee (le destinataire)
+        step = 'prepare_amount';
         let amount, description, payeeEmail;
 
         if (type === 'expert') {
-            amount = quote.itemsSubtotal || quote.subtotal;
+            amount = quote.itemsSubtotal || quote.subtotal || 0;
             description = `Acompte Devis #${quote.number} - Prestation`;
 
             // Récupérer l'email PayPal de l'expert
@@ -71,7 +77,6 @@ router.post('/create-quote-paypal-order', async (req, res) => {
         } else {
             amount = quote.margin || 0;
             description = `Protection & Service SoloPrice - Devis #${quote.number}`;
-            // Payee par défaut = le compte SoloPrice lié au Client ID (pas besoin de spécifier payee pour le compte principal)
         }
 
         if (amount <= 0 && type === 'platform') {
@@ -79,21 +84,23 @@ router.post('/create-quote-paypal-order', async (req, res) => {
         }
 
         // 3. Créer la commande PayPal
+        step = 'get_access_token';
         const { token, baseUrl } = await getPayPalAccessToken();
 
+        step = 'create_order_request';
         const orderData = {
             intent: 'CAPTURE',
             purchase_units: [{
                 amount: {
                     currency_code: 'EUR',
-                    value: amount.toFixed(2)
+                    value: Number(amount).toFixed(2)
                 },
                 description: description,
                 custom_id: JSON.stringify({ quoteId, type, userId: quote.user_id })
             }],
             application_context: {
-                return_url: `${process.env.APP_URL}/#view-quote=${quoteId}?paypal_order_id={PAYPAL_ORDER_ID}&type=${type}`,
-                cancel_url: `${process.env.APP_URL}/#view-quote=${quoteId}?payment=cancel`,
+                return_url: `${process.env.APP_URL || ''}/#view-quote=${quoteId}?paypal_order_id={PAYPAL_ORDER_ID}&type=${type}`,
+                cancel_url: `${process.env.APP_URL || ''}/#view-quote=${quoteId}?payment=cancel`,
                 user_action: 'PAY_NOW',
                 shipping_preference: 'NO_SHIPPING'
             }
@@ -116,19 +123,23 @@ router.post('/create-quote-paypal-order', async (req, res) => {
         const paypalOrder = await paypalRes.json();
 
         if (!paypalRes.ok) {
-            console.error('PayPal Order Error:', paypalOrder);
-            return res.status(500).json({ message: "Erreur lors de la création de la commande PayPal.", details: paypalOrder });
+            console.error('PayPal Order API Error:', paypalOrder);
+            return res.status(500).json({
+                message: "PayPal a refusé la création de la commande.",
+                details: paypalOrder.message || JSON.stringify(paypalOrder),
+                step: step
+            });
         }
 
         const approvalUrl = paypalOrder.links.find(l => l.rel === 'approve')?.href;
         res.json({ orderId: paypalOrder.id, approval_url: approvalUrl });
 
     } catch (err) {
-        console.error('Create PayPal Quote Order Error:', err);
+        console.error(`💥 [PAYPAL-ORDER] Failure at step: ${step}`, err);
         res.status(500).json({
             message: "Erreur lors de l'initialisation du paiement PayPal.",
             details: err.message,
-            hint: "Vérifiez vos identifiants PayPal (ID/Secret) et le mode (Sandbox/Live)."
+            step: step
         });
     }
 });
