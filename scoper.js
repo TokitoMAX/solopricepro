@@ -12,6 +12,7 @@ const Scoper = {
         if (!container) return;
 
         const isPro = Storage.isPro();
+        if (!this.currentObjectiveStep) this.currentObjectiveStep = Storage.get('sp_scoper_current_step') || 1;
 
         container.innerHTML = `
             <div class="page-header">
@@ -46,92 +47,213 @@ const Scoper = {
         const content = document.getElementById('scoper-tab-content');
         if (!content) return;
 
+        const data = Storage.get('sp_calculator_data') || {};
+        const currentStep = this.currentObjectiveStep || 1;
+
         content.innerHTML = `
-            <div class="calculator-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                <div class="calculator-inputs glass-card" style="padding: 2rem;">
-                    <div style="margin-bottom: 2.5rem;">
-                        <h3 style="margin-bottom: 0.5rem;">Cibler mon revenu net</h3>
-                        <p class="text-xs text-muted">La base de tout business sain : savoir combien on doit facturer pour vivre dignement.</p>
-                    </div>
+            <div class="strategy-wizard" style="max-width: 900px; margin: 0 auto;">
+                <!-- Wizard Header / Steps -->
+                <div class="wizard-steps" style="display: flex; justify-content: space-between; margin-bottom: 3rem; position: relative;">
+                    <div style="position: absolute; top: 20px; left: 0; width: 100%; height: 2px; background: var(--border); z-index: 1;"></div>
+                    <div style="position: absolute; top: 20px; left: 0; width: ${(currentStep - 1) * 33.33}%; height: 2px; background: var(--primary); z-index: 2; transition: width 0.3s ease;"></div>
                     
-                    <div class="input-group">
-                        <label class="form-label">Revenu Net Mensuel souhaité (€)</label>
-                        <input type="number" id="monthlyRevenue" class="form-input" placeholder="ex: 3000" oninput="Scoper.calculateObjective()">
-                        <p class="text-xs text-muted">Ce que vous voulez "dans votre poche" après charges et impôts.</p>
+                    ${[1, 2, 3, 4].map(s => {
+            const labels = ['REVENU', 'RYTHME', 'CHARGES', 'VERDICT'];
+            const icons = ['fa-money-bill-wave', 'fa-calendar-alt', 'fa-shield-alt', 'fa-flag-checkered'];
+            const isActive = currentStep === s;
+            const isDone = currentStep > s;
+            return `
+                            <div class="wizard-step-item ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}" 
+                                 onclick="Scoper.goToObjectiveStep(${s})"
+                                 style="position: relative; z-index: 3; text-align: center; cursor: pointer;">
+                                <div class="step-icon" style="width: 40px; height: 40px; border-radius: 50%; background: ${isDone ? 'var(--primary)' : (isActive ? 'var(--primary-dark)' : '#111')}; border: 2px solid ${isActive || isDone ? 'var(--primary)' : 'var(--border)'}; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; transition: all 0.3s;">
+                                    <i class="fas ${isDone ? 'fa-check' : icons[s - 1]}" style="color: ${isActive || isDone ? 'var(--white)' : 'var(--text-muted)'}; font-size: 0.9rem;"></i>
+                                </div>
+                                <span style="font-size: 0.7rem; font-weight: 700; color: ${isActive || isDone ? 'var(--primary-light)' : 'var(--text-muted)'}; letter-spacing: 1px;">${labels[s - 1]}</span>
+                            </div>
+                        `;
+        }).join('')}
+                </div>
+
+                <div class="wizard-step-content glass-card" style="padding: 3rem; min-height: 400px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                    <div id="step-save-indicator" style="position: absolute; top: 1rem; right: 1.5rem; font-size: 0.7rem; color: var(--primary-light); opacity: 0.5; transition: opacity 0.3s; pointer-events: none;">
+                        <i class="fas fa-check"></i> En attente
+                    </div>
+                    <div id="step-form-container">
+                        ${this.renderCurrentStepForm(currentStep)}
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="input-group">
-                            <label class="form-label">Jours facturés / mois</label>
-                            <input type="number" id="workingDays" class="form-input" value="15" oninput="Scoper.calculateObjective()">
-                        </div>
-                        <div class="input-group">
-                            <label class="form-label">Heures / jour</label>
-                            <input type="number" id="hoursPerDay" class="form-input" value="7" oninput="Scoper.calculateObjective()">
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="form-label">Charges Fixes Mensuelles (€)</label>
-                        <input type="number" id="monthlyCharges" class="form-input" value="500" oninput="Scoper.calculateObjective()">
-                        <p class="text-xs text-muted">Logiciels, assurance, loyer...</p>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="form-label">Cotisations / Impôts (%)</label>
-                        <input type="number" id="taxRate" class="form-input" value="22" oninput="Scoper.calculateObjective()">
-                        <p class="text-xs text-muted">Ex: 22% (Auto-entrepreneur BNC).</p>
+                    <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                        <button class="button-outline" ${currentStep === 1 ? 'disabled' : ''} onclick="Scoper.prevObjectiveStep()">
+                            Retour
+                        </button>
+                        ${currentStep < 4 ? `
+                            <button class="button-primary" onclick="Scoper.nextObjectiveStep()">
+                                Continuer <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                            </button>
+                        ` : `
+                            <button class="button-primary" onclick="Scoper.saveObjective()">
+                                Adopter mon TJM Stratégique <i class="fas fa-check" style="margin-left: 10px;"></i>
+                            </button>
+                        `}
                     </div>
                 </div>
 
-                <div class="results-panel glass-card" style="padding: 2rem; border-color: var(--primary-glass);">
-                    <h3 style="margin-bottom: 1.5rem;">Votre TJM Stratégique</h3>
-                    
-                    <div class="result-cards" style="display: grid; gap: 1rem; margin-bottom: 2rem;">
-                        <div class="result-card primary" style="background: var(--primary-glass); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--primary);">
-                            <div class="result-label" style="font-size: 0.85rem; color: var(--text-muted);">TJM Cible (Hors Taxes)</div>
-                            <div class="result-value" id="dailyRate" style="font-size: 2.5rem; font-weight: 800; color: var(--primary-light);">0€/j</div>
-                        </div>
-                        <div class="result-card" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
-                            <div class="result-label" style="font-size: 0.75rem; color: var(--text-muted);">Taux Horaire</div>
-                            <div class="result-value" id="hourlyRate" style="font-size: 1.4rem; font-weight: 700;">0€/h</div>
-                        </div>
-                    </div>
-
-                    <div class="breakdown-section" style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem;">
-                            <span class="text-muted">Chiffre d'Affaires Mensuel requis :</span>
-                            <span id="breakdownTotal" style="font-weight: 700;">0€</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.85rem; opacity: 0.8;">
-                            <span>Provision Cotisations :</span>
-                            <span id="breakdownTax">0€</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.85rem; opacity: 0.8;">
-                            <span>Frais de fonctionnement :</span>
-                            <span id="breakdownCharges">0€</span>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 2rem;">
-                        <button class="button-primary full-width" onclick="Scoper.saveObjective()">
-                            Adopter ce TJM Stratégique
-                        </button>
-                    </div>
-
-                    <div id="objective-next-step" style="display: none; margin-top: 1.5rem; padding: 1.2rem; background: rgba(16, 185, 129, 0.05); border: 1px dashed var(--primary); border-radius: 12px; animation: fadeIn 0.4s ease;">
-                        <p style="font-size: 0.85rem; font-weight: 600; color: var(--primary-light); margin-bottom: 8px;">🚀 Étape Suivante : Votre première mission</p>
-                        <p style="font-size: 0.75rem; color: var(--white); opacity: 0.8; margin-bottom: 15px;">Maintenant que vous connaissez votre TJM cible, utilisez le <strong>Chiffrage Projet</strong> pour calculer le prix d'un devis en protégeant votre rentabilité.</p>
-                        <button class="button-outline small full-width" onclick="Scoper.render('project')">
-                            Découvrir le Chiffrage Projet
-                        </button>
-                    </div>
+                <div id="objective-next-step" style="display: none; margin-top: 2rem; padding: 1.5rem; background: var(--primary-glass); border: 1px solid var(--primary); border-radius: 12px; text-align: center; animation: fadeInUp 0.5s ease;">
+                    <h4 style="color: var(--primary-light); margin-bottom: 10px;">🚀 Stratégie validée !</h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 1.5rem;">Votre TJM est maintenant enregistré. Utilisez-le pour chiffrer vos futurs projets avec l'onglet <strong>Chiffrage Projet</strong>.</p>
+                    <button class="button-primary" onclick="Scoper.render('project')">Commencer un chiffrage</button>
                 </div>
             </div>
         `;
+    },
 
-        this.loadObjectiveInputs();
-        this.calculateObjective();
+    renderCurrentStepForm(step) {
+        const data = Storage.get('sp_calculator_data') || { monthlyRevenue: 3000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22 };
+
+        switch (step) {
+            case 1: // REVENU
+                return `
+                    <div class="step-header" style="margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Cibler votre revenu net</h2>
+                        <p class="text-muted">Combien voulez-vous réellement toucher par mois, après avoir tout payé ?</p>
+                    </div>
+                    <div class="input-group">
+                        <label class="form-label" style="font-size: 1.1rem;">Revenu Net Mensuel souhaité (€)</label>
+                        <input type="number" id="monthlyRevenue" class="form-input large" value="${data.monthlyRevenue || ''}" placeholder="ex: 3000" oninput="Scoper.autoSaveObjective()" style="font-size: 1.5rem; padding: 1.2rem;">
+                        <p class="text-xs text-muted" style="margin-top: 10px;">💡 C'est votre "salaire" cible. Soyez ambitieux mais réaliste pour votre marché.</p>
+                    </div>
+                `;
+            case 2: // RYTHME
+                return `
+                    <div class="step-header" style="margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Définir votre rythme</h2>
+                        <p class="text-muted">Un freelance ne facture pas 20 jours par mois. Prévoyez du temps pour la prospection et l'administratif.</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div class="input-group">
+                            <label class="form-label">Jours facturés / mois</label>
+                            <input type="number" id="workingDays" class="form-input" value="${data.workingDays || 15}" oninput="Scoper.autoSaveObjective()">
+                            <p class="text-xs text-muted" style="margin-top: 8px;">Moyenne conseillée : 10 à 15 jours.</p>
+                        </div>
+                        <div class="input-group">
+                            <label class="form-label">Heures productives / jour</label>
+                            <input type="number" id="hoursPerDay" class="form-input" value="${data.hoursPerDay || 7}" oninput="Scoper.autoSaveObjective()">
+                            <p class="text-xs text-muted" style="margin-top: 8px;">Le temps réel passé sur les dossiers.</p>
+                        </div>
+                    </div>
+                `;
+            case 3: // CHARGES
+                return `
+                    <div class="step-header" style="margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Provisionner charges & taxes</h2>
+                        <p class="text-muted">Le CA n'est pas votre revenu. Il faut payer l'État et vos outils.</p>
+                    </div>
+                    <div class="input-group">
+                        <label class="form-label">Charges Fixes Mensuelles (€)</label>
+                        <input type="number" id="monthlyCharges" class="form-input" value="${data.monthlyCharges || 500}" oninput="Scoper.autoSaveObjective()">
+                        <p class="text-xs text-muted">Abonnements SaaS, loyer, mutuelle, assurance...</p>
+                    </div>
+                    <div class="input-group">
+                        <label class="form-label">Cotisations / Impôts (%)</label>
+                        <input type="number" id="taxRate" class="form-input" value="${data.taxRate || 22}" oninput="Scoper.autoSaveObjective()">
+                        <p class="text-xs text-muted">Auto-entrepreneur : ~22% (BNC) ou ~12% (Achat-Revente).</p>
+                    </div>
+                `;
+            case 4: // VERDICT
+                const results = this.calculateObjectiveData(data);
+                return `
+                    <div class="step-header" style="margin-bottom: 2rem; text-align: center;">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">C'est prêt ! Voici votre TJM cible</h2>
+                        <p class="text-muted">Si vous facturez ce prix, vous atteindrez votre objectif de revenu net.</p>
+                    </div>
+                    
+                    <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 2.5rem; text-align: center; border-radius: 20px; margin-bottom: 2rem;">
+                        <div style="font-size: 1.1rem; color: var(--primary-light); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">TJM STRATÉGIQUE</div>
+                        <div style="font-size: 4rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${results.dailyRate}€<span style="font-size: 1.5rem; font-weight: 400; opacity: 0.7;"> / jour</span></div>
+                    </div>
+
+                    <div class="verdict-breakdown" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px;">CA Mensuel Requis</div>
+                            <div style="font-weight: 700;">${results.revenueNeeded}€</div>
+                        </div>
+                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px;">Taxes (Est.)</div>
+                            <div style="font-weight: 700;">${results.taxAmount}€</div>
+                        </div>
+                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px;">Taux Horaire</div>
+                            <div style="font-weight: 700;">${results.hourlyRate}€/h</div>
+                        </div>
+                    </div>
+                `;
+        }
+    },
+
+    goToObjectiveStep(step) {
+        this.currentObjectiveStep = step;
+        Storage.set('sp_scoper_current_step', step);
+        this.render('objective');
+    },
+
+    nextObjectiveStep() {
+        if (!this.currentObjectiveStep) this.currentObjectiveStep = Storage.get('sp_scoper_current_step') || 1;
+        if (this.currentObjectiveStep < 4) {
+            this.currentObjectiveStep++;
+            Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
+            this.render('objective');
+        }
+    },
+
+    prevObjectiveStep() {
+        if (this.currentObjectiveStep > 1) {
+            this.currentObjectiveStep--;
+            Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
+            this.render('objective');
+        }
+    },
+
+    autoSaveObjective() {
+        const data = {
+            monthlyRevenue: parseFloat(document.getElementById('monthlyRevenue')?.value) || 0,
+            workingDays: parseFloat(document.getElementById('workingDays')?.value) || 1,
+            hoursPerDay: parseFloat(document.getElementById('hoursPerDay')?.value) || 1,
+            monthlyCharges: parseFloat(document.getElementById('monthlyCharges')?.value) || 0,
+            taxRate: parseFloat(document.getElementById('taxRate')?.value) || 0
+        };
+        Storage.set('sp_calculator_data', data);
+
+        // Show subtle visual confirmation
+        const indicator = document.getElementById('step-save-indicator');
+        if (indicator) {
+            indicator.style.opacity = '1';
+            indicator.innerHTML = '<i class="fas fa-sync fa-spin"></i> Synchronisation...';
+            clearTimeout(this.saveTimeout);
+            this.saveTimeout = setTimeout(() => {
+                indicator.innerHTML = '<i class="fas fa-check"></i> Enregistré en temps réel';
+                setTimeout(() => { indicator.style.opacity = '0.5'; }, 1000);
+            }, 500);
+        }
+    },
+
+    calculateObjectiveData(data) {
+        const rate = (data.taxRate || 0) / 100;
+        let revenueNeeded = 0;
+        if (rate < 1) {
+            revenueNeeded = ((data.monthlyRevenue || 0) + (data.monthlyCharges || 0)) / (1 - rate);
+        }
+
+        const monthlyHours = (data.workingDays || 1) * (data.hoursPerDay || 1);
+        const hourlyRate = monthlyHours > 0 ? revenueNeeded / monthlyHours : 0;
+        const dailyRate = hourlyRate * (data.hoursPerDay || 1);
+
+        return {
+            dailyRate: Math.ceil(dailyRate),
+            hourlyRate: Math.ceil(hourlyRate),
+            revenueNeeded: Math.ceil(revenueNeeded),
+            taxAmount: Math.ceil(revenueNeeded * rate)
+        };
     },
 
     renderProjectTab() {
@@ -263,30 +385,6 @@ const Scoper = {
             if (document.getElementById('monthlyCharges')) document.getElementById('monthlyCharges').value = data.monthlyCharges || 500;
             if (document.getElementById('taxRate')) document.getElementById('taxRate').value = data.taxRate || 22;
         }
-    },
-
-    calculateObjective() {
-        const monthlyRevenue = parseFloat(document.getElementById('monthlyRevenue')?.value) || 0;
-        const workingDays = parseFloat(document.getElementById('workingDays')?.value) || 1;
-        const hoursPerDay = parseFloat(document.getElementById('hoursPerDay')?.value) || 1;
-        const monthlyCharges = parseFloat(document.getElementById('monthlyCharges')?.value) || 0;
-        const taxRate = parseFloat(document.getElementById('taxRate')?.value) || 0;
-
-        const rate = taxRate / 100;
-        let revenueNeeded = 0;
-        if (rate < 1) {
-            revenueNeeded = (monthlyRevenue + monthlyCharges) / (1 - rate);
-        }
-
-        const monthlyHours = workingDays * hoursPerDay;
-        const hourlyRate = monthlyHours > 0 ? revenueNeeded / monthlyHours : 0;
-        const dailyRate = hourlyRate * hoursPerDay;
-
-        document.getElementById('dailyRate').textContent = `${Math.ceil(dailyRate)}€/j`;
-        document.getElementById('hourlyRate').textContent = `${Math.ceil(hourlyRate)}€/h`;
-        document.getElementById('breakdownTotal').textContent = `${Math.ceil(revenueNeeded)}€`;
-        document.getElementById('breakdownTax').textContent = `${Math.ceil(revenueNeeded * rate)}€`;
-        document.getElementById('breakdownCharges').textContent = `${Math.ceil(monthlyCharges)}€`;
     },
 
     async saveObjective() {
