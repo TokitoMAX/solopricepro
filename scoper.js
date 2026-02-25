@@ -80,7 +80,7 @@ const Scoper = {
                         <i class="fas fa-check"></i> En attente
                     </div>
                     <div id="step-form-container">
-                        ${this.renderCurrentStepForm(currentStep)}
+                        ${this.renderCurrentStepForm(currentStep, data)}
                     </div>
 
                     <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
@@ -108,8 +108,8 @@ const Scoper = {
         `;
     },
 
-    renderCurrentStepForm(step) {
-        const data = Storage.get('sp_calculator_data') || { monthlyRevenue: 3000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22 };
+    renderCurrentStepForm(step, data) {
+        if (!data) data = Storage.get('sp_calculator_data') || { monthlyRevenue: 3000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22 };
 
         switch (step) {
             case 1: // REVENU
@@ -215,13 +215,23 @@ const Scoper = {
     },
 
     autoSaveObjective() {
+        const currentData = Storage.get('sp_calculator_data') || {};
         const data = {
-            monthlyRevenue: parseFloat(document.getElementById('monthlyRevenue')?.value) || 0,
-            workingDays: parseFloat(document.getElementById('workingDays')?.value) || 1,
-            hoursPerDay: parseFloat(document.getElementById('hoursPerDay')?.value) || 1,
-            monthlyCharges: parseFloat(document.getElementById('monthlyCharges')?.value) || 0,
-            taxRate: parseFloat(document.getElementById('taxRate')?.value) || 0
+            ...currentData,
+            monthlyRevenue: document.getElementById('monthlyRevenue') ? (parseFloat(document.getElementById('monthlyRevenue').value) || 0) : (currentData.monthlyRevenue || 0),
+            workingDays: document.getElementById('workingDays') ? (parseFloat(document.getElementById('workingDays').value) || 1) : (currentData.workingDays || 1),
+            hoursPerDay: document.getElementById('hoursPerDay') ? (parseFloat(document.getElementById('hoursPerDay').value) || 1) : (currentData.hoursPerDay || 1),
+            monthlyCharges: document.getElementById('monthlyCharges') ? (parseFloat(document.getElementById('monthlyCharges').value) || 0) : (currentData.monthlyCharges || 0),
+            taxRate: document.getElementById('taxRate') ? (parseFloat(document.getElementById('taxRate').value) || 0) : (currentData.taxRate || 0)
         };
+
+        // Final calculation for step 4 if we are on it
+        if (this.currentObjectiveStep === 4) {
+            const results = this.calculateObjectiveData(data);
+            data.dailyRate = results.dailyRate;
+            data.hourlyRate = results.hourlyRate;
+        }
+
         Storage.set('sp_calculator_data', data);
 
         // Show subtle visual confirmation
@@ -388,22 +398,22 @@ const Scoper = {
     },
 
     async saveObjective() {
-        const data = {
-            monthlyRevenue: parseFloat(document.getElementById('monthlyRevenue')?.value) || 0,
-            workingDays: parseFloat(document.getElementById('workingDays')?.value) || 1,
-            hoursPerDay: parseFloat(document.getElementById('hoursPerDay')?.value) || 1,
-            monthlyCharges: parseFloat(document.getElementById('monthlyCharges')?.value) || 0,
-            taxRate: parseFloat(document.getElementById('taxRate')?.value) || 0,
-            dailyRate: Math.ceil(parseFloat(document.getElementById('dailyRate').textContent)),
-            hourlyRate: Math.ceil(parseFloat(document.getElementById('hourlyRate').textContent))
+        // Enforce a final calculation from latest data
+        const data = Storage.get('sp_calculator_data') || {};
+        const results = this.calculateObjectiveData(data);
+
+        const finalData = {
+            ...data,
+            dailyRate: results.dailyRate,
+            hourlyRate: results.hourlyRate
         };
 
-        if (data.dailyRate <= 0) {
-            App.showNotification('Veuillez fixer un objectif valide', 'warning');
+        if (finalData.dailyRate <= 0) {
+            App.showNotification('Veuillez fixer un objectif valide étape par étape', 'warning');
             return;
         }
 
-        await Storage.set('sp_calculator_data', data);
+        await Storage.set('sp_calculator_data', finalData);
         App.showNotification('Stratégie TJM enregistrée !', 'success');
 
         // Show next step hint
