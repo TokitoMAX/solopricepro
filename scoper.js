@@ -119,11 +119,19 @@ const Scoper = {
                         <p class="text-muted">Cela nous aide à calibrer votre TJM par rapport au marché.</p>
                     </div>
                     <div class="sector-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                        ${['tech', 'design', 'marketing', 'conseil', 'media', 'artisanat'].map(s => `
-                            <div class="sector-card ${data.sector === s ? 'active' : ''}" 
-                                 onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateSector('${s}')"
-                                 style="padding: 1.2rem; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s; background: ${data.sector === s ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; border-color: ${data.sector === s ? 'var(--primary)' : 'var(--border)'}; text-align: center;">
-                                <div style="font-weight: 700; text-transform: capitalize;">${s}</div>
+                        ${[
+                        { id: 'tech', label: 'Tech & Web', icon: 'fa-code' },
+                        { id: 'design', label: 'Design & Branding', icon: 'fa-pen-nib' },
+                        { id: 'marketing', label: 'Marketing & Com', icon: 'fa-ad' },
+                        { id: 'conseil', label: 'Conseil & Strat', icon: 'fa-lightbulb' },
+                        { id: 'media', label: 'Média & Vidéo', icon: 'fa-video' },
+                        { id: 'artisanat', label: 'Artisanat & Prod', icon: 'fa-hammer' }
+                    ].map(s => `
+                            <div class="sector-card ${data.sector === s.id ? 'active' : ''}" 
+                                 onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateSector('${s.id}')"
+                                 style="padding: 1.2rem; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s; background: ${data.sector === s.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; border-color: ${data.sector === s.id ? 'var(--primary)' : 'var(--border)'}; text-align: center;">
+                                <i class="fas ${s.icon}" style="font-size: 1.2rem; color: ${data.sector === s.id ? 'var(--primary-light)' : 'var(--text-muted)'}; margin-bottom: 8px; display: block;"></i>
+                                <div style="font-weight: 700; font-size: 0.85rem;">${s.label}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -176,50 +184,48 @@ const Scoper = {
                         <p class="text-xs text-muted">Auto-entrepreneur : ~22% (BNC) ou ~12% (Achat-Revente).</p>
                     </div>
                 `;
-            case 5: // VERDICT / ROADMAP
+            case 5: // VERDICT / ROADMAP / MATRICE
                 const results = this.calculateObjectiveData(data);
                 const diagnostic = this.getRealityDiagnostic(results.dailyRate, data);
+                const matrix = this.getStrategicMatrix(results, data);
 
                 return `
                     <div class="step-header" style="margin-bottom: 2rem; text-align: center;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Votre Feuille de Route Business</h2>
-                        <p class="text-muted">Voici le plan pour atteindre vos ${data.monthlyRevenue}€ nets.</p>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Votre Matrice Stratégique</h2>
+                        <p class="text-muted">Plan de bataille pour encaisser ${data.monthlyRevenue}€ nets par mois.</p>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
-                        <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 2.5rem; text-align: center; border-radius: 20px;">
-                            <div style="font-size: 1.1rem; color: var(--primary-light); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">TJM CIBLE</div>
-                            <div style="font-size: 4rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow); line-height: 1;">${results.dailyRate}€<span style="font-size: 1.2rem; font-weight: 400; opacity: 0.7; display: block; margin-top: 5px;">/ jour</span></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+                        <!-- Col 1: Verdict & Finance -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 2rem; text-align: center; border-radius: 20px;">
+                                <div style="font-size: 0.9rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">TJM DE SÉCURITÉ</div>
+                                <div style="font-size: 3.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow); line-height: 1;">${results.dailyRate}€<span style="font-size: 1rem; font-weight: 400; opacity: 0.7; display: block; margin-top: 5px;">par jour (Base H.T)</span></div>
+                            </div>
+
+                            <div class="verdict-breakdown" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--border);">
+                                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">CA Requis / mois</div>
+                                    <div style="font-size: 1.1rem; font-weight: 800;">${results.revenueNeeded}€</div>
+                                </div>
+                                <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--border);">
+                                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Réserve Cotis.</div>
+                                    <div style="font-size: 1.1rem; font-weight: 800; color: #f43f5e;">${results.taxAmount}€</div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="roadmap-steps" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <div class="roadmap-step" style="padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid var(--primary);">
-                                <h4 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--primary-light);">1. VALIDATION</h4>
-                                <p style="font-size: 0.8rem; line-height: 1.4;">${diagnostic.title} - ${diagnostic.desc}</p>
-                            </div>
-                            <div class="roadmap-step" style="padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid var(--success);">
-                                <h4 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--success);">2. ACTION</h4>
-                                <p style="font-size: 0.8rem; line-height: 1.4;">Pour ce TJM, visez des clients de type ${data.sector === 'tech' ? 'PME/Grands Comptes' : 'TPE/Particuliers'}.</p>
-                            </div>
-                            <div class="roadmap-step" style="padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid var(--warning);">
-                                <h4 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--warning);">3. RÉALISME</h4>
-                                <p style="font-size: 0.8rem; line-height: 1.4;">Si c'est trop dur à vendre, passez à ${data.workingDays + 2} jours pour baisser le TJM.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="verdict-breakdown" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem;">
-                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
-                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">CA Branc Mensuel</div>
-                            <div style="font-size: 1.1rem; font-weight: 800;">${results.revenueNeeded}€</div>
-                        </div>
-                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
-                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Réserve Taxes</div>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #f43f5e;">${results.taxAmount}€</div>
-                        </div>
-                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
-                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Valeur Heure</div>
-                            <div style="font-size: 1.1rem; font-weight: 800;">${results.hourlyRate}€/h</div>
+                        <!-- Col 2: Strategic Pillars -->
+                        <div class="strategic-roadmap" style="display: grid; grid-template-columns: 1fr; gap: 0.8rem;">
+                            ${matrix.map((p, idx) => `
+                                <div class="roadmap-pillar" style="padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid ${p.color}; transition: transform 0.3s; cursor: default;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                        <i class="fas ${p.icon}" style="color: ${p.color}; font-size: 0.8rem;"></i>
+                                        <h4 style="font-size: 0.75rem; letter-spacing: 1px; color: ${p.color}; text-transform: uppercase;">${p.title}</h4>
+                                    </div>
+                                    <p style="font-size: 0.82rem; line-height: 1.4; color: var(--text-muted);">${p.desc}</p>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 `;
@@ -287,6 +293,54 @@ const Scoper = {
                 setTimeout(() => { indicator.style.opacity = '0.5'; }, 1000);
             }, 500);
         }
+    },
+
+    getStrategicMatrix(results, data) {
+        const sector = data.sector || 'tech';
+        const tjm = results.dailyRate;
+        const diag = this.getRealityDiagnostic(tjm, data);
+
+        return [
+            {
+                title: 'Positionnement Marché',
+                desc: `${diag.title}. ${diag.desc}`,
+                color: diag.color,
+                icon: diag.icon
+            },
+            {
+                title: 'Argumentaire Valeur',
+                desc: this.getCoachingValue(sector, tjm),
+                color: 'var(--primary-light)',
+                icon: 'fa-lightbulb'
+            },
+            {
+                title: 'Cible Client Idéale',
+                desc: this.getCoachingTarget(sector, tjm),
+                color: 'var(--success)',
+                icon: 'fa-bullseye'
+            },
+            {
+                title: 'Levier d\'Optimisation',
+                desc: tjm > 800 ? 'Proposez du forfait pour masquer le TJM.' : 'Augmentez votre rythme de 2j pour baisser la pression.',
+                color: 'var(--warning)',
+                icon: 'fa-adjust'
+            }
+        ];
+    },
+
+    getCoachingValue(sector, tjm) {
+        const values = {
+            tech: tjm > 600 ? 'Vendez l\'expertise archi-logicielle, pas juste du code.' : 'Misez sur la rapidité de livraison et la propreté du code.',
+            design: tjm > 500 ? 'Vendez de la stratégie de marque globale (Impact Business).' : 'Vendez des livrables de haute qualité esthétique.',
+            conseil: 'Vendez le ROI (Retour sur Investissement) de votre intervention.'
+        };
+        return values[sector] || values.tech;
+    },
+
+    getCoachingTarget(sector, tjm) {
+        if (tjm > 700) return 'Scale-ups, Grands Comptes et PME en forte croissance.';
+        if (tjm > 400) return 'PME installées et agences en sous-traitance.';
+        return 'TPE, Indépendants et petites structures locales.';
     },
 
     getRealityDiagnostic(tjm, data = {}) {
@@ -512,6 +566,15 @@ const Scoper = {
                     </div>
                     <h2 style="font-size: 2rem; margin-bottom: 1rem;">Objectif Adopté !</h2>
                     <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 2rem;">Votre stratégie est maintenant scellée. Votre TJM de <strong>${finalData.dailyRate}€/j</strong> servira de boussole pour tous vos chiffrages.</p>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button class="button-primary" onclick="Scoper.render('project')" style="padding: 1rem 2rem; font-size: 1rem;">
+                            <i class="fas fa-calculator" style="margin-right: 10px;"></i> Lancer un Chiffrage PRO
+                        </button>
+                        <button class="button-outline" onclick="Dashboard.render()" style="padding: 1rem 2rem;">
+                            Retour au Dashboard
+                        </button>
+                    </div>
                 </div>
             `;
             // Hide the wizard tabs/steps and actions to focus on success
