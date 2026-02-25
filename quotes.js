@@ -1107,46 +1107,51 @@ const Quotes = {
 
                         <div class="quote-totals">
                             <div class="total-row"><span>Prestations</span> <span>${App.formatCurrency(quote.itemsSubtotal || 0)}</span></div>
-                            <div class="total-row"><span>Frais de service SoloPrice</span> <span>${App.formatCurrency(quote.margin || 0)}</span></div>
+                            <div class="total-row"><span>Frais de Service & Protection SoloPrice</span> <span>${App.formatCurrency(quote.margin || 0)}</span></div>
                             ${quote.tax > 0 ? `<div class="total-row"><span>TVA</span> <span>${App.formatCurrency(quote.tax)}</span></div>` : ''}
                             <div class="total-row large"><span>Total TTC</span> <span>${App.formatCurrency(quote.total)}</span></div>
                         </div>
 
-                        ${quote.status === 'sent' || quote.status === 'draft' ? `
-                            <div class="public-actions">
-                                <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
+                        <div class="public-actions-wrapper">
+                            ${quote.signature ? `
+                                <div class="status-alert success-glass">
+                                    <i class="fas fa-check-circle"></i> Devis signé et validé le ${App.formatDate(quote.accepted_at || quote.createdAt)}
+                                </div>
+                            ` : ''}
+
+                            <div class="public-actions-stack">
                                 ${!quote.signature ? `
-                                    <button class="btn btn-primary btn-large" onclick="Quotes.openSignatureModal('${quote.id}', true)">
-                                        <i class="fas fa-pen-nib"></i> Signer le Devis (uniquement)
+                                    <button class="button-primary big-action" onclick="Quotes.openSignatureModal('${quote.id}', true)">
+                                        <i class="fas fa-pen-nib"></i> Signer le Devis
                                     </button>
-                                ` : `
-                                    <div class="signed-badge">
-                                        <i class="fas fa-check-circle"></i> Devis Signé le ${new Date(quote.accepted_at || quote.createdAt).toLocaleDateString()}
-                                    </div>
-                                `}
+                                ` : ''}
 
                                 ${quote.status !== 'paid' ? `
-                                    <button class="btn btn-success btn-large" onclick="Quotes.initQuotePayment('${quote.id}')">
-                                        <i class="fas fa-credit-card"></i> Payer l'Acompte / Total
+                                    <button class="button-success big-action" onclick="Quotes.initQuotePayment('${quote.id}')">
+                                        <i class="fas fa-shield-alt"></i> ${quote.signature ? 'Sécuriser le projet (Payer l\'acompte)' : 'Payer l\'acompte / Total'}
                                     </button>
                                 ` : `
-                                    <div class="paid-badge">
-                                        <i class="fas fa-receipt"></i> Devis Payé
+                                    <div class="status-alert info-glass">
+                                        <i class="fas fa-receipt"></i> Paiement déjà effectué. Merci !
                                     </div>
                                 `}
                             </div>
                             
-                            <p class="action-caption">
-                                Le paiement via SoloPrice Pro sécurise la prestation pour les deux parties.
-                            </p>
-                        ` : (quote.status === 'accepted' || quote.status === 'paid' ? `
-                            <div class="signature-success">
-                                <i class="fas fa-check-circle"></i>
-                                <h3>Devis validé et signé</h3>
-                                <p>Le ${App.formatDate(quote.accepted_at || quote.createdAt)}</p>
-                                ${quote.signature ? `<div style="background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 1rem;"><img src="${quote.signature}" class="client-signature-display" alt="Signature"></div>` : ''}
+                            ${!quote.signature || quote.status !== 'paid' ? `
+                                <p class="action-caption">
+                                    <i class="fas fa-lock"></i> Paiement sécurisé via SoloPrice Pro.
+                                </p>
+                            ` : ''}
+                        </div>
+
+                        ${quote.signature ? `
+                            <div class="signature-display-area">
+                                <h4>Signature du client</h4>
+                                <div class="signature-img-wrapper">
+                                    <img src="${quote.signature}" alt="Signature">
+                                </div>
                             </div>
-                        ` : '')}
+                        ` : ''}
                     </div>
                     
                     <footer class="public-footer">

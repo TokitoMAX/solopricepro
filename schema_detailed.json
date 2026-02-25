@@ -1,0 +1,37 @@
+{
+  "rpcError": "Could not find the function public.query_sql(sql_query) in the schema cache",
+  "sampleRow": {
+    "id": "mlqpfh5qzg0imssu3qj",
+    "user_id": "73a494c2-941c-459b-b848-85b7448bfcb4",
+    "clientId": "mllpe88hacxkik3evwa",
+    "number": "DEV-0002",
+    "status": "draft",
+    "createdAt": "2026-02-17T14:34:32.222+00:00",
+    "validUntil": null,
+    "items": [
+      {
+        "quantity": 1,
+        "unitPrice": 233,
+        "description": "ddd"
+      }
+    ],
+    "subtotal": 233,
+    "tax": 19.805,
+    "total": 252.805,
+    "signature": null,
+    "taxContext": null,
+    "notes": null,
+    "title": null,
+    "items_subtotal": 0,
+    "margin": 0,
+    "tax_context": null,
+    "itemsSubtotal": 0,
+    "expert_paid_at": null,
+    "platform_paid_at": null,
+    "accepted_at": null
+  },
+  "inferredTypes": {
+    "id": "string",
+    "signature": "object"
+  }
+}

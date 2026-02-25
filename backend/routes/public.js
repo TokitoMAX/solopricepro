@@ -70,7 +70,7 @@ router.post('/quote/:id/sign', async (req, res) => {
             .update({
                 status: 'accepted',
                 signature: signature,
-                // accepted_at: new Date().toISOString() // Temporairement désactivé si la colonne n'existe pas
+                accepted_at: new Date().toISOString()
             })
             .eq('id', id)
             .select();
