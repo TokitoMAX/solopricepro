@@ -49,7 +49,10 @@ const Scoper = {
         content.innerHTML = `
             <div class="calculator-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <div class="calculator-inputs glass-card" style="padding: 2rem;">
-                    <h3 style="margin-bottom: 1.5rem;">Cibler mon revenu net</h3>
+                    <div style="margin-bottom: 2.5rem;">
+                        <h3 style="margin-bottom: 0.5rem;">Cibler mon revenu net</h3>
+                        <p class="text-xs text-muted">La base de tout business sain : savoir combien on doit facturer pour vivre dignement.</p>
+                    </div>
                     
                     <div class="input-group">
                         <label class="form-label">Revenu Net Mensuel souhaité (€)</label>
@@ -113,6 +116,14 @@ const Scoper = {
                     <div style="margin-top: 2rem;">
                         <button class="button-primary full-width" onclick="Scoper.saveObjective()">
                             Adopter ce TJM Stratégique
+                        </button>
+                    </div>
+
+                    <div id="objective-next-step" style="display: none; margin-top: 1.5rem; padding: 1.2rem; background: rgba(16, 185, 129, 0.05); border: 1px dashed var(--primary); border-radius: 12px; animation: fadeIn 0.4s ease;">
+                        <p style="font-size: 0.85rem; font-weight: 600; color: var(--primary-light); margin-bottom: 8px;">🚀 Étape Suivante : Votre première mission</p>
+                        <p style="font-size: 0.75rem; color: var(--white); opacity: 0.8; margin-bottom: 15px;">Maintenant que vous connaissez votre TJM cible, utilisez le <strong>Chiffrage Projet</strong> pour calculer le prix d'un devis en protégeant votre rentabilité.</p>
+                        <button class="button-outline small full-width" onclick="Scoper.render('project')">
+                            Découvrir le Chiffrage Projet
                         </button>
                     </div>
                 </div>
@@ -289,12 +300,24 @@ const Scoper = {
             hourlyRate: Math.ceil(parseFloat(document.getElementById('hourlyRate').textContent))
         };
 
+        if (data.dailyRate <= 0) {
+            App.showNotification('Veuillez fixer un objectif valide', 'warning');
+            return;
+        }
+
         await Storage.set('sp_calculator_data', data);
         App.showNotification('Stratégie TJM enregistrée !', 'success');
 
+        // Show next step hint
+        const hint = document.getElementById('objective-next-step');
+        if (hint) hint.style.display = 'block';
+
         // Refresh onboarding if needed
         if (typeof Onboarding !== 'undefined') {
-            Dashboard.render();
+            const dashboard = document.getElementById('dashboard');
+            if (dashboard && dashboard.classList.contains('active')) {
+                Dashboard.render();
+            }
         }
     },
 
@@ -489,23 +512,23 @@ const Scoper = {
 
         const ratio = targetHT > 0 ? (finalHT / targetHT) * 100 : 100;
         let color = 'var(--text-muted)';
-        let message = 'Basé sur ton TJM standard';
+        let message = 'Basé sur votre objectif net';
 
         if (ratio > 110) {
             color = 'var(--success)';
-            message = `Prix Premium (+${Math.round(ratio - 100)}% de valeur ajoutée)`;
+            message = `Prix Premium (+${Math.round(ratio - 100)}% vs objectif stratégique)`;
         } else if (ratio < 90) {
             color = 'var(--danger)';
-            message = `Attention : Prix inférieur à ton TJM cible (-${Math.round(100 - ratio)}%)`;
+            message = `Attention : Inférieur à votre TJM cible (-${Math.round(100 - ratio)}%)`;
         } else {
             color = 'var(--primary)';
-            message = 'Prix aligné sur ton TJM cible';
+            message = 'Prix parfait : Aligné sur vos besoins nets';
         }
 
         container.innerHTML = `
             <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 10px; border-left: 4px solid ${color};">
-                <div style="font-size: 0.75rem; font-weight: 600; color: ${color}; text-transform: uppercase; letter-spacing: 0.5px;">Indicateur de Santé</div>
-                <div style="font-size: 0.9rem; margin-top: 4px;">${message}</div>
+                <div style="font-size: 0.75rem; font-weight: 600; color: ${color}; text-transform: uppercase; letter-spacing: 0.5px;">Indicateur de Rentabilité</div>
+                <div style="font-size: 0.9rem; margin-top: 4px; color: var(--white);">${message}</div>
             </div>
         `;
     },
