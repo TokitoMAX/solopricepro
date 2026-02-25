@@ -972,54 +972,123 @@ const Quotes = {
         }
     },
 
-    async initQuotePayment(id) {
-        console.log(`[QUOTES] Initializing payment for quote: ${id}`);
+    async payExpert(id) {
+        console.log(`[QUOTES] Initializing EXPERT payment for quote: ${id}`);
         if (typeof App !== 'undefined' && App.showLoader) App.showLoader();
 
         try {
-            const endpoint = `${Auth.apiBase}/api/payments/create-quote-session`;
+            const endpoint = `${Auth.apiBase}/api/payments/create-quote-paypal-order`;
             const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ quoteId: id })
+                body: JSON.stringify({ quoteId: id, type: 'expert' })
             });
 
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.message || `Erreur de paiement (${res.status}). Veuillez contacter le prestataire.`);
+                throw new Error(errorData.message || `Erreur de paiement prestataire (${res.status}).`);
             }
 
             const data = await res.json();
-
-            if (data.url) {
-                window.location.href = data.url;
+            if (data.approval_url) {
+                window.location.href = data.approval_url;
             } else {
-                throw new Error('URL de paiement manquante dans la réponse du serveur.');
+                throw new Error('URL de paiement PayPal manquante.');
             }
         } catch (err) {
-            console.error('[QUOTES] Payment error:', err);
+            console.error('[QUOTES] Expert payment error:', err);
             if (typeof App !== 'undefined' && App.hideLoader) App.hideLoader();
             App.showNotification(err.message, 'error');
         }
     },
 
-    async renderPublicView(id, paymentStatus = null) {
+    async payPlatform(id) {
+        console.log(`[QUOTES] Initializing PLATFORM payment for quote: ${id}`);
+        if (typeof App !== 'undefined' && App.showLoader) App.showLoader();
+
+        try {
+            const endpoint = `${Auth.apiBase}/api/payments/create-quote-paypal-order`;
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quoteId: id, type: 'platform' })
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.message || `Erreur de paiement protection (${res.status}).`);
+            }
+
+            const data = await res.json();
+            if (data.approval_url) {
+                window.location.href = data.approval_url;
+            } else {
+                throw new Error('URL de paiement PayPal manquante.');
+            }
+        } catch (err) {
+            console.error('[QUOTES] Platform payment error:', err);
+            if (typeof App !== 'undefined' && App.hideLoader) App.hideLoader();
+            App.showNotification(err.message, 'error');
+        }
+    },
+
+    async renderPublicView(id, params) {
         const container = document.getElementById(this.lastContainerId || 'quotes-content');
         if (!container) return;
+
+        // Extraire le statut de paiement des paramètres (soit URLSearchParams, soit string legacy)
+        let paymentStatus = null;
+        let paypalOrderId = null;
+        let paymentType = null;
+
+        if (params instanceof URLSearchParams) {
+            paymentStatus = params.get('payment');
+            paypalOrderId = params.get('paypal_order_id');
+            paymentType = params.get('type');
+        } else {
+            paymentStatus = params;
+        }
 
         container.innerHTML = '<div class="loader-spinner" style="margin: 5rem auto;"></div>';
 
         try {
-            // Si on revient d'un paiement Stripe, on attend un peu que le Webhook traite
-            if (paymentStatus === 'success') {
+            // --- GESTION DES CAPTURES PAYPAL ---
+            if (paypalOrderId) {
+                container.innerHTML = `
+                    <div style="text-align: center; margin: 5rem 0;">
+                        <div class="loader-spinner" style="margin-bottom: 2rem;"></div>
+                        <h2 class="gradient-text">Sécurisation du paiement (${paymentType === 'expert' ? 'Prestataire' : 'SoloPrice'})...</h2>
+                        <p class="text-muted">Nous confirmons la transaction auprès de PayPal.</p>
+                    </div>
+                `;
+
+                try {
+                    const captureRes = await fetch(`${Auth.apiBase}/api/payments/paypal-capture-quote`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderID: paypalOrderId })
+                    });
+
+                    if (!captureRes.ok) throw new Error('Échec de la confirmation PayPal.');
+
+                    paymentStatus = 'success';
+                    App.showNotification(`Paiement ${paymentType === 'expert' ? 'Prestataire' : 'SoloPrice'} validé !`, 'success');
+                } catch (capErr) {
+                    console.error('Capture Error:', capErr);
+                    paymentStatus = 'error';
+                    App.showNotification(capErr.message, 'error');
+                }
+            }
+
+            // --- GESTION LEGACY STRIPE ---
+            if (paymentStatus === 'success' && !paypalOrderId) {
                 container.innerHTML = `
                     <div style="text-align: center; margin: 5rem 0;">
                         <div class="loader-spinner" style="margin-bottom: 2rem;"></div>
                         <h2 class="gradient-text">Vérification de votre paiement...</h2>
-                        <p class="text-muted">Nous confirmons la transaction auprès de notre partenaire Stripe.</p>
+                        <p class="text-muted">Nous confirmons la transaction auprès de notre partenaire.</p>
                     </div>
                 `;
-                // Attente de 2 secondes avant de vérifier le statut réel
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
 
@@ -1122,19 +1191,33 @@ const Quotes = {
                             <div class="public-actions-stack">
                                 ${!quote.signature ? `
                                     <button class="button-primary big-action" onclick="Quotes.openSignatureModal('${quote.id}', true)">
-                                        <i class="fas fa-pen-nib"></i> Signer le Devis
+                                        <i class="fas fa-pen-nib"></i> 1. Signer le Devis
                                     </button>
                                 ` : ''}
 
-                                ${quote.status !== 'paid' ? `
-                                    <button class="button-success big-action" onclick="Quotes.initQuotePayment('${quote.id}')">
-                                        <i class="fas fa-shield-alt"></i> ${quote.signature ? 'Sécuriser le projet (Payer l\'acompte)' : 'Payer l\'acompte / Total'}
-                                    </button>
-                                ` : `
-                                    <div class="status-alert info-glass">
-                                        <i class="fas fa-receipt"></i> Paiement déjà effectué. Merci !
-                                    </div>
-                                `}
+                                <div class="dual-payment-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <!-- Expert Payment -->
+                                    ${!quote.expert_paid_at ? `
+                                        <button class="button-success big-action" onclick="Quotes.payExpert('${quote.id}')">
+                                            <i class="fab fa-paypal"></i> ${quote.signature ? '2. Payer le Prestataire' : 'Payer le Prestataire'}
+                                        </button>
+                                    ` : `
+                                        <div class="status-alert success-glass" style="margin-bottom: 0;">
+                                            <i class="fas fa-check-double"></i> Acompte prestataire réglé
+                                        </div>
+                                    `}
+
+                                    <!-- Platform Protection -->
+                                    ${!quote.platform_paid_at ? `
+                                        <button class="button-success big-action" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: rgba(59, 130, 246, 0.3);" onclick="Quotes.payPlatform('${quote.id}')">
+                                            <i class="fas fa-shield-alt"></i> ${quote.signature ? '3. Activer la Protection SoloPrice' : 'Activer la Protection SoloPrice'}
+                                        </button>
+                                    ` : `
+                                        <div class="status-alert info-glass" style="margin-bottom: 0;">
+                                            <i class="fas fa-shield-check"></i> Protection SoloPrice active
+                                        </div>
+                                    `}
+                                </div>
                             </div>
                             
                             ${!quote.signature || quote.status !== 'paid' ? `

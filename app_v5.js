@@ -1210,7 +1210,8 @@ const App = {
             if (quotesPage) quotesPage.classList.add('active');
 
             if (typeof Quotes !== 'undefined') {
-                Quotes.renderPublicView(quoteId, paymentStatus);
+                // Passer tous les paramètres pour gérer PayPal (orderId, etc.)
+                Quotes.renderPublicView(quoteId, params);
             }
             return true;
         }

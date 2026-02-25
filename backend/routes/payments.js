@@ -4,11 +4,37 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { createClient } = require('@supabase/supabase-js');
 
 // Route pour créer une session d'abonnement ou de paiement SaaS
-// Route pour créer une session de paiement pour un DEVIS (Signature & Commission)
-router.post('/create-quote-session', async (req, res) => {
+// Helper pour obtenir le token PayPal
+async function getPayPalAccessToken() {
+    const isProd = process.env.NODE_ENV === 'production' && process.env.PAYPAL_MODE !== 'sandbox';
+    const clientId = process.env.PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+    const baseUrl = isProd ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+
+    if (!clientId || !clientSecret) throw new Error('PayPal configuration missing');
+
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=client_credentials'
+    });
+
+    if (!res.ok) throw new Error('Failed to get PayPal Access Token');
+    const { access_token } = await res.json();
+    return { token: access_token, baseUrl };
+}
+
+// Route pour créer une commande PayPal pour un DEVIS (Expert ou Plateforme)
+router.post('/create-quote-paypal-order', async (req, res) => {
     try {
-        const { quoteId } = req.body;
+        const { quoteId, type } = req.body; // type: 'expert' ou 'platform'
         const supabase = req.app.get('supabase');
+
+        if (!quoteId || !type) return res.status(400).json({ message: "Paramètres manquants." });
 
         // 1. Récupérer le devis
         const { data: quote, error: quoteError } = await supabase
@@ -17,60 +43,82 @@ router.post('/create-quote-session', async (req, res) => {
             .eq('id', quoteId)
             .single();
 
-        if (quoteError || !quote) {
-            return res.status(404).json({ message: "Devis introuvable." });
+        if (quoteError || !quote) return res.status(404).json({ message: "Devis introuvable." });
+
+        // 2. Déterminer le montant et le Payee (le destinataire)
+        let amount, description, payeeEmail;
+
+        if (type === 'expert') {
+            amount = quote.itemsSubtotal || quote.subtotal;
+            description = `Acompte Devis #${quote.number} - Prestation`;
+
+            // Récupérer l'email PayPal de l'expert
+            const { data: profile } = await supabase
+                .from('sp_user_profile')
+                .select('paypal_email')
+                .eq('user_id', quote.user_id)
+                .single();
+
+            payeeEmail = profile?.paypal_email;
+            if (!payeeEmail) return res.status(400).json({ message: "Le prestataire n'a pas configuré son email PayPal de réception." });
+        } else {
+            amount = quote.margin || 0;
+            description = `Protection & Service SoloPrice - Devis #${quote.number}`;
+            // Payee par défaut = le compte SoloPrice lié au Client ID (pas besoin de spécifier payee pour le compte principal)
         }
 
-        // 2. Créer la session Stripe
-        const amount = Math.round(quote.total * 100);
+        if (amount <= 0 && type === 'platform') {
+            return res.status(400).json({ message: "Aucun frais de protection pour ce devis." });
+        }
 
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [
-                {
-                    price_data: {
-                        currency: 'eur',
-                        product_data: {
-                            name: `Règlement Devis #${quote.number}`,
-                            description: 'Paiement sécurisé via SoloPrice Pro',
-                        },
-                        unit_amount: amount,
-                    },
-                    quantity: 1,
+        // 3. Créer la commande PayPal
+        const { token, baseUrl } = await getPayPalAccessToken();
+
+        const orderData = {
+            intent: 'CAPTURE',
+            purchase_units: [{
+                amount: {
+                    currency_code: 'EUR',
+                    value: amount.toFixed(2)
                 },
-            ],
-            mode: 'payment',
-            success_url: `${process.env.APP_URL}/#view-quote=${quoteId}?payment=success`,
-            cancel_url: `${process.env.APP_URL}/#view-quote=${quoteId}?payment=cancel`,
-            metadata: {
-                quoteId: quoteId,
-                userId: quote.user_id,
-                type: 'quote_payment'
+                description: description,
+                custom_id: JSON.stringify({ quoteId, type, userId: quote.user_id })
+            }],
+            application_context: {
+                return_url: `${process.env.APP_URL}/#view-quote=${quoteId}?paypal_order_id={PAYPAL_ORDER_ID}&type=${type}`,
+                cancel_url: `${process.env.APP_URL}/#view-quote=${quoteId}?payment=cancel`,
+                user_action: 'PAY_NOW',
+                shipping_preference: 'NO_SHIPPING'
             }
+        };
+
+        // Si c'est pour l'expert, on spécifie le destinataire
+        if (type === 'expert' && payeeEmail) {
+            orderData.purchase_units[0].payee = { email_address: payeeEmail };
+        }
+
+        const paypalRes = await fetch(`${baseUrl}/v2/checkout/orders`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
         });
 
-        // 3. Enregistrer la tentative de paiement pour fiabilité
-        try {
-            await supabase.from('sp_payments').insert({
-                user_id: quote.user_id,
-                quote_id: quoteId,
-                amount: quote.total,
-                currency: 'eur',
-                method: 'stripe',
-                status: 'pending',
-                provider_id: session.id,
-                metadata: { type: 'quote_payment' }
-            });
-            console.log(`📡 [STRIPE] Session enregistrée dans sp_payments pour le devis ${quoteId}`);
-        } catch (payErr) {
-            console.error('❌ [STRIPE] Erreur enregistrement sp_payments:', payErr.message);
-            // On continue quand même pour ne pas bloquer le paiement
+        const paypalOrder = await paypalRes.json();
+
+        if (!paypalRes.ok) {
+            console.error('PayPal Order Error:', paypalOrder);
+            return res.status(500).json({ message: "Erreur lors de la création de la commande PayPal.", details: paypalOrder });
         }
 
-        res.json({ id: session.id, url: session.url });
+        const approvalUrl = paypalOrder.links.find(l => l.rel === 'approve')?.href;
+        res.json({ orderId: paypalOrder.id, approval_url: approvalUrl });
+
     } catch (err) {
-        console.error('Quote Stripe Session Error:', err);
-        res.status(500).json({ message: 'Erreur Stripe Devis', error: err.message });
+        console.error('Create PayPal Quote Order Error:', err);
+        res.status(500).json({ message: "Erreur serveur.", error: err.message });
     }
 });
 
@@ -207,7 +255,92 @@ router.post('/webhook', async (req, res) => {
     res.json({ received: true });
 });
 
-// Route pour capturer un paiement PayPal (v2) et promouvoir l'utilisateur
+// Route pour capturer un paiement PayPal pour un DEVIS
+router.post('/paypal-capture-quote', async (req, res) => {
+    try {
+        const { orderID } = req.body;
+        const supabase = req.app.get('supabase');
+
+        if (!orderID) return res.status(400).json({ message: "ID de commande manquant." });
+
+        const { token, baseUrl } = await getPayPalAccessToken();
+
+        // 1. Capturer la commande
+        const captureRes = await fetch(`${baseUrl}/v2/checkout/orders/${orderID}/capture`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const captureData = await captureRes.json();
+
+        if (captureData.status === 'COMPLETED') {
+            const purchaseUnit = captureData.purchase_units[0];
+            const customData = JSON.parse(purchaseUnit.payments.captures[0].custom_id || purchaseUnit.custom_id);
+            const { quoteId, type, userId } = customData;
+
+            console.log(`✅ [PAYPAL-QUOTE] Capture réussie (${type}) pour le devis ${quoteId}`);
+
+            const supabaseUrl = process.env.SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            const adminClient = createClient(supabaseUrl, serviceKey, {
+                auth: { autoRefreshToken: false, persistSession: false }
+            });
+
+            // 1. Mettre à jour le devis (Champ spécifique selon le type)
+            const updateFields = {};
+            if (type === 'expert') {
+                updateFields.expert_paid_at = new Date().toISOString();
+            } else {
+                updateFields.platform_paid_at = new Date().toISOString();
+            }
+
+            const { data: updatedQuote, error: updateError } = await adminClient
+                .from('sp_quotes')
+                .update(updateFields)
+                .eq('id', quoteId)
+                .select()
+                .single();
+
+            if (updateError) throw updateError;
+
+            // 2. Vérifier si les DEUX sont payés pour passer le devis en "paid"
+            if (updatedQuote.expert_paid_at && updatedQuote.platform_paid_at) {
+                await adminClient
+                    .from('sp_quotes')
+                    .update({ status: 'paid' })
+                    .eq('id', quoteId);
+                console.log(`🚀 [PAYPAL-QUOTE] Devis ${quoteId} entièrement PAYÉ.`);
+            }
+
+            // 3. Enregistrer la transaction pour historique
+            await adminClient.from('sp_payments').insert({
+                user_id: userId,
+                quote_id: quoteId,
+                amount: parseFloat(purchaseUnit.payments.captures[0].amount.value),
+                currency: 'EUR',
+                method: 'paypal',
+                status: 'completed',
+                provider_id: orderID,
+                metadata: { type: `quote_${type}_payment`, quoteId },
+                completed_at: new Date().toISOString()
+            });
+
+            return res.json({ status: 'success', message: 'Paiement enregistré.' });
+        } else {
+            console.error(`❌ [PAYPAL-QUOTE] Échec capture:`, captureData);
+            return res.status(400).json({ status: 'failed', message: 'Échec de la capture.', details: captureData });
+        }
+
+    } catch (err) {
+        console.error('PayPal Quote Capture Error:', err);
+        res.status(500).json({ message: 'Erreur lors de la capture.', error: err.message });
+    }
+});
+
+// Route pour capturer un paiement PayPal (v2) et promouvoir l'utilisateur (SaaS)
 router.post('/paypal-capture', async (req, res) => {
     try {
         const { orderID, tier, userId } = req.body;

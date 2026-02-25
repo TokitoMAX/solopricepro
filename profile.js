@@ -113,6 +113,11 @@ const Profile = {
                                     <label class="form-label">Lien de paiement direct</label>
                                     <input type="url" name="payment_link" class="form-input" value="${company.payment_link || ''}" placeholder="https://buy.stripe.com/...">
                                 </div>
+                                <div class="form-group full-width" style="margin-top: 1rem; padding: 1rem; border-radius: 12px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.1);">
+                                    <label class="form-label" style="color: #3b82f6;"><i class="fab fa-paypal"></i> Email PayPal de réception *</label>
+                                    <input type="email" name="paypal_email" class="form-input" value="${company.paypal_email || ''}" placeholder="votre-email@paypal.com">
+                                    <p class="text-xs text-muted" style="margin-top: 0.5rem;">Obligatoire pour recevoir les acomptes devis directement sur votre compte.</p>
+                                </div>
                             </div>
 
                             <div class="form-actions" style="margin-top: 2rem;">
@@ -171,7 +176,8 @@ const Profile = {
             payment_type: formData.get('payment_type') || 'iban',
             iban: formData.get('iban') || '',
             bic: formData.get('bic') || '',
-            payment_link: formData.get('payment_link') || ''
+            payment_link: formData.get('payment_link') || '',
+            paypal_email: formData.get('paypal_email') || ''
         };
 
         try {
