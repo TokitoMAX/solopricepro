@@ -1115,28 +1115,36 @@ const Quotes = {
                         ${quote.status === 'sent' || quote.status === 'draft' ? `
                             <div class="public-actions">
                                 <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px; margin: 0 auto;">
-                                    <button class="button-primary big" onclick="Quotes.initQuotePayment('${quote.id}')">
-                                        <i class="fas fa-credit-card"></i> Payer & Signer (Sécurisé)
+                                ${!quote.signature ? `
+                                    <button class="btn btn-primary btn-large" onclick="Quotes.openSignatureModal('${quote.id}', true)">
+                                        <i class="fas fa-pen-nib"></i> Signer le Devis (uniquement)
                                     </button>
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
-                                        <div style="height: 1px; background: rgba(255,255,255,0.1); flex: 1;"></div>
-                                        <span class="text-muted" style="font-size: 0.8rem;">OU</span>
-                                        <div style="height: 1px; background: rgba(255,255,255,0.1); flex: 1;"></div>
+                                ` : `
+                                    <div class="signed-badge">
+                                        <i class="fas fa-check-circle"></i> Devis Signé le ${new Date(quote.accepted_at || quote.createdAt).toLocaleDateString()}
                                     </div>
-                                    <button class="button-outline" onclick="Quotes.openSignatureModal('${quote.id}', true)">
-                                        <i class="fas fa-pen-nib"></i> Signer uniquement
+                                `}
+
+                                ${quote.status !== 'paid' ? `
+                                    <button class="btn btn-success btn-large" onclick="Quotes.initQuotePayment('${quote.id}')">
+                                        <i class="fas fa-credit-card"></i> Payer l'Acompte / Total
                                     </button>
-                                </div>
-                                <p class="text-muted" style="margin-top: 2rem; font-size: 0.85rem;">
-                                    Le paiement via SoloPrice Pro sécurise la prestation pour les deux parties.
-                                </p>
+                                ` : `
+                                    <div class="paid-badge">
+                                        <i class="fas fa-receipt"></i> Devis Payé
+                                    </div>
+                                `}
                             </div>
+                            
+                            <p class="action-caption">
+                                Le paiement via SoloPrice Pro sécurise la prestation pour les deux parties.
+                            </p>
                         ` : (quote.status === 'accepted' || quote.status === 'paid' ? `
                             <div class="signature-success">
                                 <i class="fas fa-check-circle"></i>
                                 <h3>Devis validé et signé</h3>
                                 <p>Le ${App.formatDate(quote.accepted_at || quote.createdAt)}</p>
-                                ${quote.client_signature ? `<div style="background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 1rem;"><img src="${quote.client_signature}" class="client-signature-display" alt="Signature"></div>` : ''}
+                                ${quote.signature ? `<div style="background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 1rem;"><img src="${quote.signature}" class="client-signature-display" alt="Signature"></div>` : ''}
                             </div>
                         ` : '')}
                     </div>

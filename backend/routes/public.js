@@ -64,18 +64,27 @@ router.post('/quote/:id/sign', async (req, res) => {
     }
 
     try {
+        console.log(`[PUBLIC-SIGN] Attempting to sign quote ${id}`);
         const { data, error } = await supabase
             .from('sp_quotes')
             .update({
                 status: 'accepted',
-                client_signature: signature,
-                accepted_at: new Date().toISOString()
+                signature: signature,
+                // accepted_at: new Date().toISOString() // Temporairement désactivé si la colonne n'existe pas
             })
             .eq('id', id)
             .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ [PUBLIC-SIGN-QUOTE] Supabase Error:', error);
+            return res.status(500).json({
+                message: "Erreur lors de l'enregistrement de la signature.",
+                details: error.message,
+                code: error.code
+            });
+        }
 
+        console.log(`✅ [PUBLIC-SIGN] Quote ${id} signed successfully`);
         res.json({
             success: true,
             message: "Devis signé avec succès !",
@@ -85,7 +94,7 @@ router.post('/quote/:id/sign', async (req, res) => {
     } catch (err) {
         console.error('❌ [PUBLIC-SIGN-QUOTE] Critical Error:', err);
         res.status(500).json({
-            message: "Erreur lors de l'enregistrement de la signature.",
+            message: "Une erreur inattendue est survenue.",
             debug: err.message
         });
     }
