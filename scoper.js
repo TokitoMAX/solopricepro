@@ -451,17 +451,21 @@ const Scoper = {
                         <h3 class="results-title" style="font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Analyse Financière</h3>
                     </div>
 
-                    <div class="result-cards" style="display: grid; gap: 1rem; margin-bottom: 2.5rem;">
-                        <div class="result-card primary" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary); padding: 1.5rem; border-radius: 12px;">
-                            <div class="result-label" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Montant à Facturer (TTC)</div>
-                            <div class="result-value" id="scoper-total-price" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">0€</div>
-                            <div class="result-description" id="scoper-tax-info" style="font-size: 0.8rem; opacity: 0.7;">Zone: France (20%)</div>
+                    <div class="result-cards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                        <div class="result-card primary" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary); padding: 1.2rem; border-radius: 12px; grid-column: span 2;">
+                            <div class="result-label" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total à Facturer (TTC)</div>
+                            <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">0€</div>
+                            <div id="scoper-tax-info" style="font-size: 0.75rem; opacity: 0.7;">TVA: France (20.0%)</div>
                         </div>
 
-                        <div class="result-card" style="background: #111; border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
-                            <div class="result-label" style="font-size: 0.75rem; color: var(--text-muted);">Temps de Production Est.</div>
-                            <div class="result-value" id="scoper-total-time" style="font-size: 1.4rem; font-weight: 700; color: var(--white);">0h</div>
-                            <div class="result-description" id="scoper-range" style="font-size: 0.75rem;">Sécurité incluse</div>
+                        <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
+                            <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Temps Est.</div>
+                            <div class="result-value" id="scoper-total-time" style="font-size: 1.2rem; font-weight: 700;">0h</div>
+                        </div>
+
+                        <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
+                            <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">TJM Réel</div>
+                            <div class="result-value" id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-light);">0€/j</div>
                         </div>
                     </div>
 
@@ -469,9 +473,9 @@ const Scoper = {
                         <h4 class="breakdown-title" style="margin-bottom: 1.5rem; font-weight: 600;">Stratégie & Rentabilité</h4>
                         
                         <div class="input-group">
-                            <label class="form-label">TJM appliqué à ce projet (€)</label>
+                            <label class="form-label">TJM Stratégique de Référence (€)</label>
                             <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="border-color: var(--primary-light);">
-                            <p class="text-xs text-muted" style="margin-top: 4px;">Défaut : TJM Stratégique définit dans les Réglages.</p>
+                            <p class="text-xs text-muted" style="margin-top: 4px;">Utilisez votre boussole définit à l'étape "Objectif".</p>
                         </div>
 
                         <div class="input-group">
@@ -775,13 +779,17 @@ const Scoper = {
             rangeEl.textContent = `Production: ${minH}h à ${maxH}h (+${buffer}% sécu)`;
         }
 
-        this.renderProfitability(totalFinalHT, totalCalculatedHT);
+        const actualTjm = totalHoursInternal > 0 ? (totalFinalHT / (totalHoursInternal / 7)) : 0;
+        const actualTjmEl = document.getElementById('scoper-actual-tjm');
+        if (actualTjmEl) actualTjmEl.textContent = `${Math.round(actualTjm)}€/j`;
+
+        this.renderProfitability(actualTjm, tjm);
 
         const btn = document.getElementById('btn-create-quote');
         if (btn) btn.disabled = this.tasks.length === 0;
     },
 
-    renderProfitability(finalHT, targetHT) {
+    renderProfitability(actualTjm, targetTjm) {
         const container = document.getElementById('scoper-profitability-indicator');
         if (!container) return;
 
@@ -790,25 +798,39 @@ const Scoper = {
             return;
         }
 
-        const ratio = targetHT > 0 ? (finalHT / targetHT) * 100 : 100;
+        const diff = actualTjm - targetTjm;
         let color = 'var(--text-muted)';
-        let message = 'Basé sur votre objectif net';
+        let status = 'Neutre';
+        let advice = '';
+        let icon = 'fa-info-circle';
 
-        if (ratio > 110) {
+        if (diff >= 50) {
             color = 'var(--success)';
-            message = `Prix Premium (+${Math.round(ratio - 100)}% vs objectif stratégique)`;
-        } else if (ratio < 90) {
+            status = 'PROJET RENTABLE';
+            advice = 'Votre TJM réel est au-dessus de votre objectif. C\'est une mission haute valeur.';
+            icon = 'fa-rocket';
+        } else if (diff <= -50) {
             color = 'var(--danger)';
-            message = `Attention : Inférieur à votre TJM cible (-${Math.round(100 - ratio)}%)`;
+            status = 'ALERTE RENTABILITÉ';
+            advice = 'Vous êtes en dessous de votre boussole. Augmentez votre prix ou baissez le temps passé.';
+            icon = 'fa-exclamation-triangle';
         } else {
             color = 'var(--primary)';
-            message = 'Prix parfait : Aligné sur vos besoins nets';
+            status = 'OBJECTIF ALIGNÉ';
+            advice = 'Le projet respecte parfaitement votre stratégie financière.';
+            icon = 'fa-check-circle';
         }
 
         container.innerHTML = `
-            <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 10px; border-left: 4px solid ${color};">
-                <div style="font-size: 0.75rem; font-weight: 600; color: ${color}; text-transform: uppercase; letter-spacing: 0.5px;">Indicateur de Rentabilité</div>
-                <div style="font-size: 0.9rem; margin-top: 4px; color: var(--white);">${message}</div>
+            <div style="padding: 1.2rem; background: rgba(255,255,255,0.02); border-radius: 12px; border-left: 4px solid ${color}; border: 1px solid ${color}44; border-left-width: 4px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <i class="fas ${icon}" style="color: ${color}; font-size: 0.9rem;"></i>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: ${color}; text-transform: uppercase; letter-spacing: 0.5px;">${status}</div>
+                </div>
+                <div style="font-size: 0.85rem; line-height: 1.4; color: var(--white);">${advice}</div>
+                <div style="margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
+                    Écart : <strong style="color: ${diff >= 0 ? 'var(--success)' : 'var(--danger)'}">${diff >= 0 ? '+' : ''}${Math.round(diff)}€/j</strong> par rapport à l'objectif.
+                </div>
             </div>
         `;
     },
