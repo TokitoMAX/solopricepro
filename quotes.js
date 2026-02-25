@@ -1198,9 +1198,18 @@ const Quotes = {
                                 <div class="dual-payment-container" style="display: flex; flex-direction: column; gap: 1rem;">
                                     <!-- Expert Payment -->
                                     ${!quote.expert_paid_at ? `
-                                        <button class="button-success big-action" onclick="Quotes.payExpert('${quote.id}')">
-                                            <i class="fab fa-paypal"></i> ${quote.signature ? '2. Payer le Prestataire' : 'Payer le Prestataire'}
-                                        </button>
+                                        <div class="payment-action-group">
+                                            <button class="button-success big-action ${!provider.paypal_email ? 'disabled' : ''}" 
+                                                onclick="${provider.paypal_email ? `Quotes.payExpert('${quote.id}')` : 'App.showNotification(\'Le prestataire n\\\'a pas encore configuré son compte de réception PayPal.\', \'warning\')'}"
+                                                style="${!provider.paypal_email ? 'opacity: 0.5; cursor: not-allowed; filter: grayscale(1);' : ''}">
+                                                <i class="fab fa-paypal"></i> ${quote.signature ? '2. Payer le Prestataire' : 'Payer le Prestataire'}
+                                            </button>
+                                            ${!provider.paypal_email ? `
+                                                <p class="text-xs text-muted" style="text-align: center; margin-top: -0.25rem; color: #f59e0b;">
+                                                    <i class="fas fa-exclamation-triangle"></i> Compte de réception non configuré par l'expert.
+                                                </p>
+                                            ` : ''}
+                                        </div>
                                     ` : `
                                         <div class="status-alert success-glass" style="margin-bottom: 0;">
                                             <i class="fas fa-check-double"></i> Acompte prestataire réglé
