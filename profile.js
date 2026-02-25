@@ -100,16 +100,6 @@ const Profile = {
                                     </p>
                                 </div>
                             </div>
-                                <div class="form-group full-width" style="margin-top: 1.5rem; padding: 1.5rem; border-radius: 16px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);">
-                                    <label class="form-label" style="color: #3b82f6; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fab fa-paypal" style="font-size: 1.2rem;"></i> Email PayPal de réception <span style="background: #3b82f6; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: auto;">OBLIGATOIRE POUR DEVIS</span>
-                                    </label>
-                                    <input type="email" name="paypal_email" class="form-input" value="${company.paypal_email || ''}" placeholder="votre-email@paypal.com" style="background: rgba(255,255,255,0.05); border-color: rgba(59, 130, 246, 0.3); font-size: 1.1rem;">
-                                    <p class="text-xs" style="margin-top: 0.75rem; color: #60a5fa; line-height: 1.4;">
-                                        <i class="fas fa-info-circle"></i> Cette adresse est utilisée pour recevoir vos acomptes directement. Assurez-vous qu'elle est correcte.
-                                    </p>
-                                </div>
-                            </div>
 
                             <div class="form-actions" style="margin-top: 2rem;">
                                 <button type="submit" class="button-primary full-width">Mettre à jour mon profil</button>
