@@ -20,7 +20,7 @@ const Onboarding = {
             {
                 id: 'strategy',
                 title: 'Fixer ma stratégie',
-                description: 'Définissez votre TJM et votre objectif de salaire net.',
+                description: 'Ciblez votre revenu net et votre TJM de sécurité.',
                 isComplete: !!(calculator && calculator.dailyRate),
                 nav: 'scoper'
             },

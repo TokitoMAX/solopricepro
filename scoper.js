@@ -7,19 +7,132 @@ const Scoper = {
         hideHours: true
     },
 
-    render() {
+    render(tab = 'objective') {
         const container = document.getElementById('scoper-content');
         if (!container) return;
 
-        // VERROUILLAGE FREEMIUM STRICT
-        // Si pas PRO, on affiche le mur et on arrête tout rendu interactif
         const isPro = Storage.isPro();
-        if (!isPro) {
-            container.innerHTML = PremiumWall.renderPageWall('Estimateur de Projet');
+
+        container.innerHTML = `
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Stratégie & Chiffrage</h1>
+                    <p class="page-subtitle">Définissez votre objectif de revenu et chiffrez vos prestations avec précision.</p>
+                </div>
+            </div>
+
+            <div class="tabs-container" style="margin-bottom: 2rem;">
+                <div class="tabs-header" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border);">
+                    <button class="tab-btn ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')" style="padding: 1rem; background: none; border: none; color: ${tab === 'objective' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'objective' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-bullseye"></i> Mon Objectif TJM
+                    </button>
+                    <button class="tab-btn ${tab === 'project' ? 'active' : ''}" onclick="Scoper.render('project')" style="padding: 1rem; background: none; border: none; color: ${tab === 'project' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'project' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-calculator"></i> Chiffrage Projet ${!isPro ? '<i class="fas fa-lock" style="font-size: 0.7rem; margin-left: 5px; opacity: 0.5;"></i>' : ''}
+                    </button>
+                </div>
+            </div>
+
+            <div id="scoper-tab-content"></div>
+        `;
+
+        if (tab === 'objective') {
+            this.renderObjectiveTab();
+        } else {
+            this.renderProjectTab();
+        }
+    },
+
+    renderObjectiveTab() {
+        const content = document.getElementById('scoper-tab-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="calculator-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="calculator-inputs glass-card" style="padding: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem;">Cibler mon revenu net</h3>
+                    
+                    <div class="input-group">
+                        <label class="form-label">Revenu Net Mensuel souhaité (€)</label>
+                        <input type="number" id="monthlyRevenue" class="form-input" placeholder="ex: 3000" oninput="Scoper.calculateObjective()">
+                        <p class="text-xs text-muted">Ce que vous voulez "dans votre poche" après charges et impôts.</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="input-group">
+                            <label class="form-label">Jours facturés / mois</label>
+                            <input type="number" id="workingDays" class="form-input" value="15" oninput="Scoper.calculateObjective()">
+                        </div>
+                        <div class="input-group">
+                            <label class="form-label">Heures / jour</label>
+                            <input type="number" id="hoursPerDay" class="form-input" value="7" oninput="Scoper.calculateObjective()">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="form-label">Charges Fixes Mensuelles (€)</label>
+                        <input type="number" id="monthlyCharges" class="form-input" value="500" oninput="Scoper.calculateObjective()">
+                        <p class="text-xs text-muted">Logiciels, assurance, loyer...</p>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="form-label">Cotisations / Impôts (%)</label>
+                        <input type="number" id="taxRate" class="form-input" value="22" oninput="Scoper.calculateObjective()">
+                        <p class="text-xs text-muted">Ex: 22% (Auto-entrepreneur BNC).</p>
+                    </div>
+                </div>
+
+                <div class="results-panel glass-card" style="padding: 2rem; border-color: var(--primary-glass);">
+                    <h3 style="margin-bottom: 1.5rem;">Votre TJM Stratégique</h3>
+                    
+                    <div class="result-cards" style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                        <div class="result-card primary" style="background: var(--primary-glass); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--primary);">
+                            <div class="result-label" style="font-size: 0.85rem; color: var(--text-muted);">TJM Cible (Hors Taxes)</div>
+                            <div class="result-value" id="dailyRate" style="font-size: 2.5rem; font-weight: 800; color: var(--primary-light);">0€/j</div>
+                        </div>
+                        <div class="result-card" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+                            <div class="result-label" style="font-size: 0.75rem; color: var(--text-muted);">Taux Horaire</div>
+                            <div class="result-value" id="hourlyRate" style="font-size: 1.4rem; font-weight: 700;">0€/h</div>
+                        </div>
+                    </div>
+
+                    <div class="breakdown-section" style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem;">
+                            <span class="text-muted">Chiffre d'Affaires Mensuel requis :</span>
+                            <span id="breakdownTotal" style="font-weight: 700;">0€</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.85rem; opacity: 0.8;">
+                            <span>Provision Cotisations :</span>
+                            <span id="breakdownTax">0€</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.85rem; opacity: 0.8;">
+                            <span>Frais de fonctionnement :</span>
+                            <span id="breakdownCharges">0€</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <button class="button-primary full-width" onclick="Scoper.saveObjective()">
+                            Adopter ce TJM Stratégique
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.loadObjectiveInputs();
+        this.calculateObjective();
+    },
+
+    renderProjectTab() {
+        const content = document.getElementById('scoper-tab-content');
+        if (!content) return;
+
+        if (!Storage.isPro()) {
+            content.innerHTML = PremiumWall.renderPageWall('Estimateur de Projet');
             return;
         }
 
-        container.innerHTML = `
+        content.innerHTML = `
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Chiffrage Projet</h1>
@@ -128,6 +241,61 @@ const Scoper = {
     getTJM() {
         const calcData = Storage.get('sp_calculator_data');
         return calcData?.dailyRate || 400;
+    },
+
+    loadObjectiveInputs() {
+        const data = Storage.get('sp_calculator_data');
+        if (data) {
+            if (document.getElementById('monthlyRevenue')) document.getElementById('monthlyRevenue').value = data.monthlyRevenue || 3000;
+            if (document.getElementById('workingDays')) document.getElementById('workingDays').value = data.workingDays || 15;
+            if (document.getElementById('hoursPerDay')) document.getElementById('hoursPerDay').value = data.hoursPerDay || 7;
+            if (document.getElementById('monthlyCharges')) document.getElementById('monthlyCharges').value = data.monthlyCharges || 500;
+            if (document.getElementById('taxRate')) document.getElementById('taxRate').value = data.taxRate || 22;
+        }
+    },
+
+    calculateObjective() {
+        const monthlyRevenue = parseFloat(document.getElementById('monthlyRevenue')?.value) || 0;
+        const workingDays = parseFloat(document.getElementById('workingDays')?.value) || 1;
+        const hoursPerDay = parseFloat(document.getElementById('hoursPerDay')?.value) || 1;
+        const monthlyCharges = parseFloat(document.getElementById('monthlyCharges')?.value) || 0;
+        const taxRate = parseFloat(document.getElementById('taxRate')?.value) || 0;
+
+        const rate = taxRate / 100;
+        let revenueNeeded = 0;
+        if (rate < 1) {
+            revenueNeeded = (monthlyRevenue + monthlyCharges) / (1 - rate);
+        }
+
+        const monthlyHours = workingDays * hoursPerDay;
+        const hourlyRate = monthlyHours > 0 ? revenueNeeded / monthlyHours : 0;
+        const dailyRate = hourlyRate * hoursPerDay;
+
+        document.getElementById('dailyRate').textContent = `${Math.ceil(dailyRate)}€/j`;
+        document.getElementById('hourlyRate').textContent = `${Math.ceil(hourlyRate)}€/h`;
+        document.getElementById('breakdownTotal').textContent = `${Math.ceil(revenueNeeded)}€`;
+        document.getElementById('breakdownTax').textContent = `${Math.ceil(revenueNeeded * rate)}€`;
+        document.getElementById('breakdownCharges').textContent = `${Math.ceil(monthlyCharges)}€`;
+    },
+
+    async saveObjective() {
+        const data = {
+            monthlyRevenue: parseFloat(document.getElementById('monthlyRevenue')?.value) || 0,
+            workingDays: parseFloat(document.getElementById('workingDays')?.value) || 1,
+            hoursPerDay: parseFloat(document.getElementById('hoursPerDay')?.value) || 1,
+            monthlyCharges: parseFloat(document.getElementById('monthlyCharges')?.value) || 0,
+            taxRate: parseFloat(document.getElementById('taxRate')?.value) || 0,
+            dailyRate: Math.ceil(parseFloat(document.getElementById('dailyRate').textContent)),
+            hourlyRate: Math.ceil(parseFloat(document.getElementById('hourlyRate').textContent))
+        };
+
+        await Storage.set('sp_calculator_data', data);
+        App.showNotification('Stratégie TJM enregistrée !', 'success');
+
+        // Refresh onboarding if needed
+        if (typeof Onboarding !== 'undefined') {
+            Dashboard.render();
+        }
     },
 
     updateSettings(key, value) {

@@ -49,22 +49,22 @@ const Kanban = {
                 <!-- Column: In Progress / Invoices Sent -->
                 <div class="kanban-column">
                     <div class="kanban-column-header">
-                        <span>EN COURS / FACTURÉ</span>
+                        <span>À RÉCUPÉRER (Facturé)</span>
                         <span class="badge">${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length}</span>
                     </div>
                     <div class="kanban-cards">
-                        ${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length > 0 ? invoices.filter(i => i.status === 'sent' || i.status === 'overdue').map(invoice => this.renderInvoiceCard(invoice)).join('') : '<div class="kanban-empty-info">Aucune facture en cours</div>'}
+                        ${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length > 0 ? invoices.filter(i => i.status === 'sent' || i.status === 'overdue').map(invoice => this.renderInvoiceCard(invoice)).join('') : '<div class="kanban-empty-info">Aucune facture en attente</div>'}
                     </div>
                 </div>
 
                 <!-- Column: Paid (Real Net Cash) -->
                 <div class="kanban-column">
                     <div class="kanban-column-header">
-                        <span>PAYÉS / NET</span>
+                        <span>ENCAISSÉ (Vrai Cash)</span>
                         <span class="badge">${invoices.filter(i => i.status === 'paid').length}</span>
                     </div>
                     <div class="kanban-cards">
-                        ${invoices.filter(i => i.status === 'paid').length > 0 ? invoices.filter(i => i.status === 'paid').map(invoice => this.renderPaidCard(invoice)).join('') : '<div class="kanban-empty-info">Aucun paiement encaissé</div>'}
+                        ${invoices.filter(i => i.status === 'paid').length > 0 ? invoices.filter(i => i.status === 'paid').map(invoice => this.renderPaidCard(invoice)).join('') : '<div class="kanban-empty-info">Aucun encaissement réel</div>'}
                     </div>
                 </div>
             </div>
