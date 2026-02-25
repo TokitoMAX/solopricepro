@@ -6,13 +6,19 @@ const { createClient } = require('@supabase/supabase-js');
 // Route pour créer une session d'abonnement ou de paiement SaaS
 // Helper pour obtenir le token PayPal
 async function getPayPalAccessToken() {
-    const isLive = process.env.PAYPAL_MODE === 'live' || (process.env.NODE_ENV === 'production' && process.env.PAYPAL_MODE !== 'sandbox');
+    const mode = process.env.PAYPAL_MODE;
+    const isLive = mode === 'live' || (process.env.NODE_ENV === 'production' && mode !== 'sandbox');
+
+    console.log(`[PAYPAL-DEBUG] Mode: ${mode}, isLive: ${isLive}, NodeEnv: ${process.env.NODE_ENV}`);
+
     const clientId = isLive ? process.env.PAYPAL_LIVE_CLIENT_ID : process.env.PAYPAL_CLIENT_ID;
     const clientSecret = isLive ? process.env.PAYPAL_LIVE_CLIENT_SECRET : process.env.PAYPAL_CLIENT_SECRET;
     const baseUrl = isLive ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
+    console.log(`[PAYPAL-DEBUG] Using Keys: ${clientId ? clientId.substring(0, 8) + '...' : 'MISSING'} / ${clientSecret ? 'PRESENT' : 'MISSING'}`);
+
     if (!clientId || !clientSecret) {
-        console.error(`[PAYPAL] Configuration missing for ${isLive ? 'LIVE' : 'SANDBOX'} mode.`);
+        console.error(`[PAYPAL] Configuration missing for ${isLive ? 'LIVE' : 'SANDBOX'} mode. (Mode was: ${mode})`);
         throw new Error(`PayPal configuration missing (${isLive ? 'LIVE' : 'SANDBOX'})`);
     }
 
