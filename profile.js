@@ -90,29 +90,16 @@ const Profile = {
                                 Ces informations seront affichées sur vos devis pour que vos clients puissent vous régler directement.
                             </p>
                             <div class="form-grid">
-                                <div class="form-group">
-                                    <label class="form-label">Mode de règlement préféré</label>
-                                    <select name="payment_type" class="form-input" onchange="Profile.togglePaymentFields(this.value)">
-                                        <option value="iban" ${company.payment_type === 'iban' || !company.payment_type ? 'selected' : ''}>Virement Bancaire (IBAN)</option>
-                                        <option value="link" ${company.payment_type === 'link' ? 'selected' : ''}>Lien de Paiement (Stripe/PayPal)</option>
-                                    </select>
+                                <div class="form-group full-width" style="margin-top: 1.5rem; padding: 1.5rem; border-radius: 16px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);">
+                                    <label class="form-label" style="color: #3b82f6; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fab fa-paypal" style="font-size: 1.2rem;"></i> Email PayPal de réception <span style="background: #3b82f6; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: auto;">OBLIGATOIRE POUR DEVIS</span>
+                                    </label>
+                                    <input type="email" name="paypal_email" class="form-input" value="${company.paypal_email || ''}" placeholder="votre-email@paypal.com" style="background: rgba(255,255,255,0.05); border-color: rgba(59, 130, 246, 0.3); font-size: 1.1rem;">
+                                    <p class="text-xs" style="margin-top: 0.75rem; color: #60a5fa; line-height: 1.4;">
+                                        <i class="fas fa-info-circle"></i> Cette adresse est utilisée pour recevoir vos acomptes directement. Assurez-vous qu'elle est correcte.
+                                    </p>
                                 </div>
-                                <div id="iban-fields" class="form-group full-width" style="display: ${company.payment_type === 'link' ? 'none' : 'block'};">
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label class="form-label">IBAN</label>
-                                            <input type="text" name="iban" class="form-input" value="${company.iban || ''}" placeholder="FR76 ...">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">BIC / SWIFT</label>
-                                            <input type="text" name="bic" class="form-input" value="${company.bic || ''}" placeholder="XXXXFRYY">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="link-fields" class="form-group full-width" style="display: ${company.payment_type === 'link' ? 'block' : 'none'};">
-                                    <label class="form-label">Lien de paiement direct</label>
-                                    <input type="url" name="payment_link" class="form-input" value="${company.payment_link || ''}" placeholder="https://buy.stripe.com/...">
-                                </div>
+                            </div>
                                 <div class="form-group full-width" style="margin-top: 1.5rem; padding: 1.5rem; border-radius: 16px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);">
                                     <label class="form-label" style="color: #3b82f6; font-weight: 700; display: flex; align-items: center; gap: 8px;">
                                         <i class="fab fa-paypal" style="font-size: 1.2rem;"></i> Email PayPal de réception <span style="background: #3b82f6; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: auto;">OBLIGATOIRE POUR DEVIS</span>
@@ -177,10 +164,6 @@ const Profile = {
             footer_mentions: formData.get('footer_mentions') || '',
             logo: formData.get('logo') || '',
             portfolio: formData.get('portfolio') || '',
-            payment_type: formData.get('payment_type') || 'iban',
-            iban: formData.get('iban') || '',
-            bic: formData.get('bic') || '',
-            payment_link: formData.get('payment_link') || '',
             paypal_email: formData.get('paypal_email') || ''
         };
 
@@ -245,18 +228,6 @@ const Profile = {
         if (logoInput) logoInput.value = '';
         document.getElementById('logo-preview').innerHTML = '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>';
         App.showNotification('Logo supprimé dans la prévisualisation. Enregistrez pour confirmer.', 'info');
-    },
-
-    togglePaymentFields(value) {
-        const ibanFields = document.getElementById('iban-fields');
-        const linkFields = document.getElementById('link-fields');
-        if (value === 'iban') {
-            ibanFields.style.display = 'block';
-            linkFields.style.display = 'none';
-        } else {
-            ibanFields.style.display = 'none';
-            linkFields.style.display = 'block';
-        }
     }
 };
 

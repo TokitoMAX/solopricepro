@@ -175,11 +175,10 @@ const PDFGenerator = {
                     <p style="margin-bottom: 15px; color: var(--text-light);">Ce document contient deux instructions de règlement distinctes pour garantir l'indépendance des prestataires.</p>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
                             <strong style="color: var(--primary); display: block; margin-bottom: 5px;">PART PRESTATAIRE : ${App.formatCurrency((invoice.itemsSubtotal || 0) * (1 + (invoice.tax / (invoice.subtotal || 1))))}</strong>
                             <p style="font-size: 11px; margin: 0;">
                                 À régler à : <strong>${user.company.name}</strong><br>
-                                ${user.company.payment_type === 'link' ? `Lien direct : <a href="${user.company.payment_link}" target="_blank">${user.company.payment_link}</a>` : `IBAN : ${user.company.iban || 'Non renseigné'}<br>BIC : ${user.company.bic || ''}`}
+                                Règlement par carte bancaire ou PayPal via votre espace client sécurisé.
                             </p>
                         </div>
                         <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
@@ -434,7 +433,7 @@ const PDFGenerator = {
                             </span>
                             <p style="font-size: 11px; margin: 0;">
                                 Destinataire : <strong>${providerName}</strong><br>
-                                ${user?.company?.payment_type === 'link' ? `Paiement en ligne : <a href="${user.company.payment_link}" style="color: var(--primary);">${user.company.payment_link}</a>` : `Reglement par virement après facturation.<br>Coordonnées fournies sur facture finale.`}
+                                Règlement sécurisé en ligne (Carte / PayPal) via le bouton de validation.
                             </p>
                         </div>
                         <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">

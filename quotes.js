@@ -1338,41 +1338,22 @@ const Quotes = {
                     <button class="modal-close" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">✕</button>
                 </div>
                 <div class="modal-body" style="padding: 1.5rem 0;">
-                    <p style="margin-bottom: 1.5rem; text-align: center;">Veuillez procéder aux deux règlements indépendants pour valider la mission :</p>
+                    <p style="margin-bottom: 1.5rem; text-align: center;">Veuillez procéder au règlement pour valider la mission.</p>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="payment-card" style="background: var(--bg-sidebar); border: 1px solid var(--primary-glass); padding: 1.5rem; border-radius: 12px;">
-                            <h4 style="color: var(--primary-light); margin-bottom: 0.5rem;">Prestations</h4>
-                            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem;">${App.formatCurrency(expertAmount)}</div>
-                            <div style="font-size: 0.85rem; line-height: 1.4;">
-                                <strong>Destinataire :</strong><br>${user.company.name}<br><br>
-                                ${user.company.payment_type === 'link' ? `
-                                    <a href="${user.company.payment_link}" target="_blank" class="button-primary small" style="display: block; text-align: center; margin-top: 10px;">Payer via Stripe/PayPal</a>
-                                    <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">Cliquez pour ouvrir le lien de paiement de l'expert.</p>
-                                ` : `
-                                    <strong>IBAN :</strong><br><code style="background: rgba(0,0,0,0.2); padding: 2px 4px; display: block; margin: 5px 0; word-break: break-all;">${user.company.iban || 'Non renseigné'}</code>
-                                    <strong>BIC :</strong><br><code>${user.company.bic || ''}</code>
-                                `}
-                            </div>
-                        </div>
-
-                        <div class="payment-card" style="background: var(--bg-sidebar); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; opacity: 0.9;">
-                            <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Frais Service</h4>
-                            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem;">${App.formatCurrency(platformAmount)}</div>
-                            <div style="font-size: 0.85rem; line-height: 1.4;">
-                                <strong>Destinataire :</strong><br>SoloPrice Pro (Gestion)<br><br>
-                                <strong>IBAN Service :</strong><br><code style="background: rgba(0,0,0,0.2); padding: 2px 4px; display: block; margin: 5px 0; word-break: break-all;">FR76 1234 5678 9012 3456 7890 123</code>
-                                <strong>BIC :</strong><br><code>SOLOPRFRXXX</code>
-                            </div>
-                        </div>
+                    <div style="background: var(--bg-sidebar); border: 1px solid var(--primary-glass); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
+                        <h4 style="color: var(--primary-light); margin-bottom: 0.5rem;">Total à payer : ${App.formatCurrency(expertAmount + platformAmount)}</h4>
+                        <p style="font-size: 0.85rem; line-height: 1.4;">
+                            Le règlement se fait exclusivement en ligne via la plateforme sécurisée SoloPrice Pro pour garantir la protection de vos fonds.
+                        </p>
                     </div>
+
                     <div class="info-box" style="margin-top: 1.5rem; font-size: 0.75rem; background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 10px; border-radius: 8px;">
-                        <i class="fas fa-shield-alt"></i> <strong>Fiabilité :</strong> Une fois les virements effectués, veuillez envoyer une preuve de virement à support@soloprice.pro pour une validation accélérée.
+                        <i class="fas fa-shield-alt"></i> <strong>Paiement Sécurisé :</strong> Les fonds sont bloqués jusqu'à validation de la prestation selon les conditions générales.
                     </div>
                 </div>
                 <div class="modal-footer" style="justify-content: center; gap: 1rem;">
                     <button class="button-outline" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.downloadPDF('${id}'); Quotes.render();">Télécharger Devis PDF</button>
-                    <button class="button-primary" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">J'ai effectué les virements</button>
+                    <button class="button-primary" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">Retour au Devis pour payer</button>
                 </div>
             </div>
         `;
