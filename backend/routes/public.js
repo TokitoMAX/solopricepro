@@ -83,8 +83,11 @@ router.post('/quote/:id/sign', async (req, res) => {
         });
 
     } catch (err) {
-        console.error('[PUBLIC-SIGN-QUOTE] Error:', err);
-        res.status(500).json({ message: "Erreur lors de l'enregistrement de la signature." });
+        console.error('❌ [PUBLIC-SIGN-QUOTE] Critical Error:', err);
+        res.status(500).json({
+            message: "Erreur lors de l'enregistrement de la signature.",
+            debug: err.message
+        });
     }
 });
 

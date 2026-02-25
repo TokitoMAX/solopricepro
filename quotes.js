@@ -1106,7 +1106,8 @@ const Quotes = {
                         </table>
 
                         <div class="quote-totals">
-                            <div class="total-row"><span>Sous-total (HT)</span> <span>${App.formatCurrency(quote.subtotal)}</span></div>
+                            <div class="total-row"><span>Prestations</span> <span>${App.formatCurrency(quote.itemsSubtotal || 0)}</span></div>
+                            <div class="total-row"><span>Frais de service SoloPrice</span> <span>${App.formatCurrency(quote.margin || 0)}</span></div>
                             ${quote.tax > 0 ? `<div class="total-row"><span>TVA</span> <span>${App.formatCurrency(quote.tax)}</span></div>` : ''}
                             <div class="total-row large"><span>Total TTC</span> <span>${App.formatCurrency(quote.total)}</span></div>
                         </div>
