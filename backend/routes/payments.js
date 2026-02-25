@@ -6,10 +6,18 @@ const { createClient } = require('@supabase/supabase-js');
 // Route pour créer une session d'abonnement ou de paiement SaaS
 // Helper pour obtenir le token PayPal
 async function getPayPalAccessToken() {
-    const mode = process.env.PAYPAL_MODE;
-    const isLive = mode === 'live' || (process.env.NODE_ENV === 'production' && mode !== 'sandbox');
+    const rawMode = process.env.PAYPAL_MODE || '';
+    const mode = rawMode.trim().toLowerCase();
 
-    console.log(`[PAYPAL-DEBUG] Mode: ${mode}, isLive: ${isLive}, NodeEnv: ${process.env.NODE_ENV}`);
+    // Si mode est 'live' OU si on est sur Vercel sans être en mode 'sandbox'
+    // On rajoute une sécurité : si les clés LIVE sont détectées, on passe en LIVE par défaut.
+    const isLive = mode === 'live' ||
+        (process.env.NODE_ENV === 'production' && mode !== 'sandbox') ||
+        (!!process.env.PAYPAL_LIVE_CLIENT_ID && mode !== 'sandbox');
+
+    const paypalKeys = Object.keys(process.env).filter(k => k.startsWith('PAYPAL_'));
+    console.log(`[PAYPAL-ENV-DEBUG] Present Keys: ${paypalKeys.join(', ')}`);
+    console.log(`[PAYPAL-DEBUG] Mode Config: "${mode}", isLive: ${isLive}, NodeEnv: ${process.env.NODE_ENV}`);
 
     const clientId = isLive ? process.env.PAYPAL_LIVE_CLIENT_ID : process.env.PAYPAL_CLIENT_ID;
     const clientSecret = isLive ? process.env.PAYPAL_LIVE_CLIENT_SECRET : process.env.PAYPAL_CLIENT_SECRET;
@@ -18,8 +26,8 @@ async function getPayPalAccessToken() {
     console.log(`[PAYPAL-DEBUG] Using Keys: ${clientId ? clientId.substring(0, 8) + '...' : 'MISSING'} / ${clientSecret ? 'PRESENT' : 'MISSING'}`);
 
     if (!clientId || !clientSecret) {
-        console.error(`[PAYPAL] Configuration missing for ${isLive ? 'LIVE' : 'SANDBOX'} mode. (Mode was: ${mode})`);
-        throw new Error(`PayPal configuration missing (${isLive ? 'LIVE' : 'SANDBOX'})`);
+        console.error(`[PAYPAL] Configuration missing for ${isLive ? 'LIVE' : 'SANDBOX'} mode. (Raw Mode: "${rawMode}")`);
+        throw new Error(`PayPal configuration missing (${isLive ? 'LIVE' : 'SANDBOX'}). Vérifiez vos clés ${isLive ? 'LIVE_' : ''}CLIENT_ID dans le .env.`);
     }
 
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
