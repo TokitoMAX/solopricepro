@@ -55,11 +55,11 @@ const Scoper = {
                 <!-- Wizard Header / Steps -->
                 <div class="wizard-steps" style="display: flex; justify-content: space-between; margin-bottom: 3rem; position: relative;">
                     <div style="position: absolute; top: 20px; left: 0; width: 100%; height: 2px; background: var(--border); z-index: 1;"></div>
-                    <div style="position: absolute; top: 20px; left: 0; width: ${(currentStep - 1) * 33.33}%; height: 2px; background: var(--primary); z-index: 2; transition: width 0.3s ease;"></div>
+                    <div style="position: absolute; top: 20px; left: 0; width: ${(currentStep - 1) * 25}%; height: 2px; background: var(--primary); z-index: 2; transition: width 0.3s ease;"></div>
                     
-                    ${[1, 2, 3, 4].map(s => {
-            const labels = ['REVENU', 'RYTHME', 'CHARGES', 'VERDICT'];
-            const icons = ['fa-money-bill-wave', 'fa-calendar-alt', 'fa-shield-alt', 'fa-flag-checkered'];
+                    ${[1, 2, 3, 4, 5].map(s => {
+            const labels = ['PROFIL', 'REVENU', 'RYTHME', 'CHARGES', 'VERDICT'];
+            const icons = ['fa-user-tie', 'fa-money-bill-wave', 'fa-calendar-alt', 'fa-shield-alt', 'fa-flag-checkered'];
             const isActive = currentStep === s;
             const isDone = currentStep > s;
             return `
@@ -87,7 +87,7 @@ const Scoper = {
                         <button class="button-outline" ${currentStep === 1 ? 'disabled' : ''} onclick="Scoper.prevObjectiveStep()">
                             Retour
                         </button>
-                        ${currentStep < 4 ? `
+                        ${currentStep < 5 ? `
                             <button class="button-primary" onclick="Scoper.nextObjectiveStep()">
                                 Continuer <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                             </button>
@@ -109,10 +109,26 @@ const Scoper = {
     },
 
     renderCurrentStepForm(step, data) {
-        if (!data) data = Storage.get('sp_calculator_data') || { monthlyRevenue: 3000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22 };
+        if (!data) data = Storage.get('sp_calculator_data') || { monthlyRevenue: 3000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech' };
 
         switch (step) {
-            case 1: // REVENU
+            case 1: // PROFIL
+                return `
+                    <div class="step-header" style="margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">C'est quoi votre métier ?</h2>
+                        <p class="text-muted">Cela nous aide à calibrer votre TJM par rapport au marché.</p>
+                    </div>
+                    <div class="sector-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        ${['tech', 'design', 'marketing', 'conseil', 'media', 'artisanat'].map(s => `
+                            <div class="sector-card ${data.sector === s ? 'active' : ''}" 
+                                 onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateSector('${s}')"
+                                 style="padding: 1.2rem; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s; background: ${data.sector === s ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; border-color: ${data.sector === s ? 'var(--primary)' : 'var(--border)'}; text-align: center;">
+                                <div style="font-weight: 700; text-transform: capitalize;">${s}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            case 2: // REVENU (Ancien 1)
                 return `
                     <div class="step-header" style="margin-bottom: 2rem;">
                         <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Cibler votre revenu net</h2>
@@ -124,7 +140,7 @@ const Scoper = {
                         <p class="text-xs text-muted" style="margin-top: 10px;">💡 C'est votre "salaire" cible. Soyez ambitieux mais réaliste pour votre marché.</p>
                     </div>
                 `;
-            case 2: // RYTHME
+            case 3: // RYTHME (Ancien 2)
                 return `
                     <div class="step-header" style="margin-bottom: 2rem;">
                         <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Définir votre rythme</h2>
@@ -143,7 +159,7 @@ const Scoper = {
                         </div>
                     </div>
                 `;
-            case 3: // CHARGES
+            case 4: // CHARGES (Ancien 3)
                 return `
                     <div class="step-header" style="margin-bottom: 2rem;">
                         <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Provisionner charges & taxes</h2>
@@ -160,44 +176,50 @@ const Scoper = {
                         <p class="text-xs text-muted">Auto-entrepreneur : ~22% (BNC) ou ~12% (Achat-Revente).</p>
                     </div>
                 `;
-            case 4: // VERDICT
+            case 5: // VERDICT / ROADMAP
                 const results = this.calculateObjectiveData(data);
-                const diagnostic = this.getRealityDiagnostic(results.dailyRate);
+                const diagnostic = this.getRealityDiagnostic(results.dailyRate, data);
 
                 return `
                     <div class="step-header" style="margin-bottom: 2rem; text-align: center;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">C'est prêt ! Voici votre TJM cible</h2>
-                        <p class="text-muted">Si vous facturez ce prix, vous atteindrez votre objectif de revenu net.</p>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Votre Feuille de Route Business</h2>
+                        <p class="text-muted">Voici le plan pour atteindre vos ${data.monthlyRevenue}€ nets.</p>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
                         <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 2.5rem; text-align: center; border-radius: 20px;">
-                            <div style="font-size: 1.1rem; color: var(--primary-light); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">TJM STRATÉGIQUE</div>
-                            <div style="font-size: 4rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow); line-height: 1;">${results.dailyRate}€<span style="font-size: 1.2rem; font-weight: 400; opacity: 0.7; display: block; margin-top: 5px;">par jour (Hors Taxes)</span></div>
+                            <div style="font-size: 1.1rem; color: var(--primary-light); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">TJM CIBLE</div>
+                            <div style="font-size: 4rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow); line-height: 1;">${results.dailyRate}€<span style="font-size: 1.2rem; font-weight: 400; opacity: 0.7; display: block; margin-top: 5px;">/ jour</span></div>
                         </div>
 
-                        <div class="reality-check glass-card" style="padding: 1.8rem; border-color: ${diagnostic.color}33; border-left: 4px solid ${diagnostic.color}; background: rgba(255,255,255,0.02);">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                                <i class="fas ${diagnostic.icon}" style="color: ${diagnostic.color}; font-size: 1.2rem;"></i>
-                                <h4 style="color: ${diagnostic.color}; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Diagnostic de Réalisme</h4>
+                        <div class="roadmap-steps" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div class="roadmap-step" style="padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid var(--primary);">
+                                <h4 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--primary-light);">1. VALIDATION</h4>
+                                <p style="font-size: 0.8rem; line-height: 1.4;">${diagnostic.title} - ${diagnostic.desc}</p>
                             </div>
-                            <p style="font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; color: var(--white);">${diagnostic.title}</p>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">${diagnostic.desc}</p>
+                            <div class="roadmap-step" style="padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid var(--success);">
+                                <h4 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--success);">2. ACTION</h4>
+                                <p style="font-size: 0.8rem; line-height: 1.4;">Pour ce TJM, visez des clients de type ${data.sector === 'tech' ? 'PME/Grands Comptes' : 'TPE/Particuliers'}.</p>
+                            </div>
+                            <div class="roadmap-step" style="padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid var(--warning);">
+                                <h4 style="font-size: 0.9rem; margin-bottom: 5px; color: var(--warning);">3. RÉALISME</h4>
+                                <p style="font-size: 0.8rem; line-height: 1.4;">Si c'est trop dur à vendre, passez à ${data.workingDays + 2} jours pour baisser le TJM.</p>
+                            </div>
                         </div>
                     </div>
 
                     <div class="verdict-breakdown" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem;">
-                        <div style="padding: 1.2rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
-                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">CA Mensuel Requis</div>
-                            <div style="font-size: 1.2rem; font-weight: 800;">${results.revenueNeeded}€</div>
+                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
+                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">CA Branc Mensuel</div>
+                            <div style="font-size: 1.1rem; font-weight: 800;">${results.revenueNeeded}€</div>
                         </div>
-                        <div style="padding: 1.2rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
-                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Taxes & Cotis. Est.</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: #f43f5e;">${results.taxAmount}€</div>
+                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
+                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Réserve Taxes</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: #f43f5e;">${results.taxAmount}€</div>
                         </div>
-                        <div style="padding: 1.2rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
-                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Taux Horaire</div>
-                            <div style="font-size: 1.2rem; font-weight: 800;">${results.hourlyRate}€/h</div>
+                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
+                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Valeur Heure</div>
+                            <div style="font-size: 1.1rem; font-weight: 800;">${results.hourlyRate}€/h</div>
                         </div>
                     </div>
                 `;
@@ -212,7 +234,7 @@ const Scoper = {
 
     nextObjectiveStep() {
         if (!this.currentObjectiveStep) this.currentObjectiveStep = Storage.get('sp_scoper_current_step') || 1;
-        if (this.currentObjectiveStep < 4) {
+        if (this.currentObjectiveStep < 5) {
             this.currentObjectiveStep++;
             Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
             this.render('objective');
@@ -227,6 +249,13 @@ const Scoper = {
         }
     },
 
+    updateSector(sector) {
+        const data = Storage.get('sp_calculator_data') || {};
+        data.sector = sector;
+        Storage.set('sp_calculator_data', data);
+        setTimeout(() => this.nextObjectiveStep(), 300);
+    },
+
     autoSaveObjective() {
         const currentData = Storage.get('sp_calculator_data') || {};
         const data = {
@@ -238,8 +267,8 @@ const Scoper = {
             taxRate: document.getElementById('taxRate') ? (parseFloat(document.getElementById('taxRate').value) || 0) : (currentData.taxRate || 0)
         };
 
-        // Final calculation for step 4 if we are on it
-        if (this.currentObjectiveStep === 4) {
+        // Final calculation for step 5 if we are on it
+        if (this.currentObjectiveStep === 5) {
             const results = this.calculateObjectiveData(data);
             data.dailyRate = results.dailyRate;
             data.hourlyRate = results.hourlyRate;
@@ -260,36 +289,40 @@ const Scoper = {
         }
     },
 
-    getRealityDiagnostic(tjm) {
+    getRealityDiagnostic(tjm, data = {}) {
         if (tjm <= 0) return { title: 'Objectif nul', desc: 'Veuillez remplir les étapes précédentes.', color: 'var(--text-muted)', icon: 'fa-info-circle' };
 
-        if (tjm < 300) {
+        const sector = data.sector || 'tech';
+
+        // Thresholds vary by sector
+        let expertThreshold = 500;
+        let seniorThreshold = 800;
+
+        if (sector === 'artisanat' || sector === 'media') {
+            expertThreshold = 350;
+            seniorThreshold = 600;
+        }
+
+        if (tjm < expertThreshold * 0.7) {
             return {
                 title: 'TJM "Entrée de Marché"',
-                desc: 'Cohérent pour un profil débutant ou une mission simple. Attention à ne pas vous brader sur le long terme.',
+                desc: 'Cohérent pour débuter. Attention à ne pas rester trop longtemps dans cette zone de prix.',
                 color: 'var(--primary)',
                 icon: 'fa-seedling'
             };
-        } else if (tjm >= 300 && tjm < 600) {
+        } else if (tjm >= expertThreshold * 0.7 && tjm < seniorThreshold) {
             return {
                 title: 'TJM "Expert Confirmé"',
-                desc: 'La zone saine pour un indépendant avec de l\'expérience. Tangible et réaliste pour la majorité des PME.',
+                desc: `La zone saine pour le secteur ${sector}. C'est tangible et réaliste pour la majorité des clients.`,
                 color: 'var(--success)',
                 icon: 'fa-check-circle'
             };
-        } else if (tjm >= 600 && tjm < 900) {
-            return {
-                title: 'TJM "Sénior / Niche"',
-                desc: 'Profil hautement qualifié ou expertise rare. Demande une solide réputation pour être accepté sans friction.',
-                color: 'var(--warning)',
-                icon: 'fa-star'
-            };
         } else {
             return {
-                title: 'TJM "Consultant Stratégique"',
-                desc: 'Haut de marché. Cohérent pour de la direction de projet ou du conseil de haut niveau, mais plus rare à placer.',
-                color: '#f43f5e',
-                icon: 'fa-crown'
+                title: 'TJM "Sénior / Niche"',
+                desc: 'Profil haut de gamme. Demande une solide réputation ou une expertise rare pour éviter les blocages clients.',
+                color: 'var(--warning)',
+                icon: 'fa-star'
             };
         }
     },
