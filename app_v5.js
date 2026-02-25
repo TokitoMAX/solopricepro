@@ -1203,6 +1203,12 @@ const App = {
 
             this.enterApp(false, false);
             this.enterPublicMode();
+
+            // ACTIVER LA PAGE PARENTE (Indispensable pour la visibilité)
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const quotesPage = document.getElementById('quotes');
+            if (quotesPage) quotesPage.classList.add('active');
+
             if (typeof Quotes !== 'undefined') {
                 Quotes.renderPublicView(quoteId, paymentStatus);
             }
