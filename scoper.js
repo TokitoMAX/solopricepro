@@ -133,12 +133,12 @@ const Scoper = {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div class="input-group">
                             <label class="form-label">Jours facturés / mois</label>
-                            <input type="number" id="workingDays" class="form-input" value="${data.workingDays || 15}" oninput="Scoper.autoSaveObjective()">
+                            <input type="number" id="workingDays" class="form-input" value="${data.workingDays ?? 15}" oninput="Scoper.autoSaveObjective()">
                             <p class="text-xs text-muted" style="margin-top: 8px;">Moyenne conseillée : 10 à 15 jours.</p>
                         </div>
                         <div class="input-group">
                             <label class="form-label">Heures productives / jour</label>
-                            <input type="number" id="hoursPerDay" class="form-input" value="${data.hoursPerDay || 7}" oninput="Scoper.autoSaveObjective()">
+                            <input type="number" id="hoursPerDay" class="form-input" value="${data.hoursPerDay ?? 7}" oninput="Scoper.autoSaveObjective()">
                             <p class="text-xs text-muted" style="margin-top: 8px;">Le temps réel passé sur les dossiers.</p>
                         </div>
                     </div>
@@ -151,40 +151,53 @@ const Scoper = {
                     </div>
                     <div class="input-group">
                         <label class="form-label">Charges Fixes Mensuelles (€)</label>
-                        <input type="number" id="monthlyCharges" class="form-input" value="${data.monthlyCharges || 500}" oninput="Scoper.autoSaveObjective()">
+                        <input type="number" id="monthlyCharges" class="form-input" value="${data.monthlyCharges ?? 500}" oninput="Scoper.autoSaveObjective()">
                         <p class="text-xs text-muted">Abonnements SaaS, loyer, mutuelle, assurance...</p>
                     </div>
                     <div class="input-group">
                         <label class="form-label">Cotisations / Impôts (%)</label>
-                        <input type="number" id="taxRate" class="form-input" value="${data.taxRate || 22}" oninput="Scoper.autoSaveObjective()">
+                        <input type="number" id="taxRate" class="form-input" value="${data.taxRate ?? 22}" oninput="Scoper.autoSaveObjective()">
                         <p class="text-xs text-muted">Auto-entrepreneur : ~22% (BNC) ou ~12% (Achat-Revente).</p>
                     </div>
                 `;
             case 4: // VERDICT
                 const results = this.calculateObjectiveData(data);
+                const diagnostic = this.getRealityDiagnostic(results.dailyRate);
+
                 return `
                     <div class="step-header" style="margin-bottom: 2rem; text-align: center;">
                         <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">C'est prêt ! Voici votre TJM cible</h2>
                         <p class="text-muted">Si vous facturez ce prix, vous atteindrez votre objectif de revenu net.</p>
                     </div>
                     
-                    <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 2.5rem; text-align: center; border-radius: 20px; margin-bottom: 2rem;">
-                        <div style="font-size: 1.1rem; color: var(--primary-light); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">TJM STRATÉGIQUE</div>
-                        <div style="font-size: 4rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${results.dailyRate}€<span style="font-size: 1.5rem; font-weight: 400; opacity: 0.7;"> / jour</span></div>
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
+                        <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 2.5rem; text-align: center; border-radius: 20px;">
+                            <div style="font-size: 1.1rem; color: var(--primary-light); font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">TJM STRATÉGIQUE</div>
+                            <div style="font-size: 4rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow); line-height: 1;">${results.dailyRate}€<span style="font-size: 1.2rem; font-weight: 400; opacity: 0.7; display: block; margin-top: 5px;">par jour (Hors Taxes)</span></div>
+                        </div>
+
+                        <div class="reality-check glass-card" style="padding: 1.8rem; border-color: ${diagnostic.color}33; border-left: 4px solid ${diagnostic.color}; background: rgba(255,255,255,0.02);">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                <i class="fas ${diagnostic.icon}" style="color: ${diagnostic.color}; font-size: 1.2rem;"></i>
+                                <h4 style="color: ${diagnostic.color}; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Diagnostic de Réalisme</h4>
+                            </div>
+                            <p style="font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; color: var(--white);">${diagnostic.title}</p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">${diagnostic.desc}</p>
+                        </div>
                     </div>
 
-                    <div class="verdict-breakdown" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center;">
-                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px;">CA Mensuel Requis</div>
-                            <div style="font-weight: 700;">${results.revenueNeeded}€</div>
+                    <div class="verdict-breakdown" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem;">
+                        <div style="padding: 1.2rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">CA Mensuel Requis</div>
+                            <div style="font-size: 1.2rem; font-weight: 800;">${results.revenueNeeded}€</div>
                         </div>
-                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center;">
-                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px;">Taxes (Est.)</div>
-                            <div style="font-weight: 700;">${results.taxAmount}€</div>
+                        <div style="padding: 1.2rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Taxes & Cotis. Est.</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; color: #f43f5e;">${results.taxAmount}€</div>
                         </div>
-                        <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center;">
-                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px;">Taux Horaire</div>
-                            <div style="font-weight: 700;">${results.hourlyRate}€/h</div>
+                        <div style="padding: 1.2rem; background: rgba(255,255,255,0.03); border-radius: 12px; text-align: center; border: 1px solid var(--border);">
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Taux Horaire</div>
+                            <div style="font-size: 1.2rem; font-weight: 800;">${results.hourlyRate}€/h</div>
                         </div>
                     </div>
                 `;
@@ -247,16 +260,57 @@ const Scoper = {
         }
     },
 
-    calculateObjectiveData(data) {
-        const rate = (data.taxRate || 0) / 100;
+    getRealityDiagnostic(tjm) {
+        if (tjm <= 0) return { title: 'Objectif nul', desc: 'Veuillez remplir les étapes précédentes.', color: 'var(--text-muted)', icon: 'fa-info-circle' };
+
+        if (tjm < 300) {
+            return {
+                title: 'TJM "Entrée de Marché"',
+                desc: 'Cohérent pour un profil débutant ou une mission simple. Attention à ne pas vous brader sur le long terme.',
+                color: 'var(--primary)',
+                icon: 'fa-seedling'
+            };
+        } else if (tjm >= 300 && tjm < 600) {
+            return {
+                title: 'TJM "Expert Confirmé"',
+                desc: 'La zone saine pour un indépendant avec de l\'expérience. Tangible et réaliste pour la majorité des PME.',
+                color: 'var(--success)',
+                icon: 'fa-check-circle'
+            };
+        } else if (tjm >= 600 && tjm < 900) {
+            return {
+                title: 'TJM "Sénior / Niche"',
+                desc: 'Profil hautement qualifié ou expertise rare. Demande une solide réputation pour être accepté sans friction.',
+                color: 'var(--warning)',
+                icon: 'fa-star'
+            };
+        } else {
+            return {
+                title: 'TJM "Consultant Stratégique"',
+                desc: 'Haut de marché. Cohérent pour de la direction de projet ou du conseil de haut niveau, mais plus rare à placer.',
+                color: '#f43f5e',
+                icon: 'fa-crown'
+            };
+        }
+    },
+
+    calculateObjectiveData(data = {}) {
+        // Unified defaults for calculations
+        const revenue = parseFloat(data.monthlyRevenue) || 3000;
+        const days = parseFloat(data.workingDays) || 15;
+        const hours = parseFloat(data.hoursPerDay) || 7;
+        const charges = parseFloat(data.monthlyCharges) || 500;
+        const taxRate = parseFloat(data.taxRate) || 0; // Taxes default to 0 if not set, but UI shows 22
+
+        const rate = taxRate / 100;
         let revenueNeeded = 0;
         if (rate < 1) {
-            revenueNeeded = ((data.monthlyRevenue || 0) + (data.monthlyCharges || 0)) / (1 - rate);
+            revenueNeeded = (revenue + charges) / (1 - rate);
         }
 
-        const monthlyHours = (data.workingDays || 1) * (data.hoursPerDay || 1);
+        const monthlyHours = days * hours;
         const hourlyRate = monthlyHours > 0 ? revenueNeeded / monthlyHours : 0;
-        const dailyRate = hourlyRate * (data.hoursPerDay || 1);
+        const dailyRate = hourlyRate * hours;
 
         return {
             dailyRate: Math.ceil(dailyRate),
@@ -414,11 +468,33 @@ const Scoper = {
         }
 
         await Storage.set('sp_calculator_data', finalData);
-        App.showNotification('Stratégie TJM enregistrée !', 'success');
 
-        // Show next step hint
+        // Final Success View
+        const formContainer = document.getElementById('step-form-container');
+        if (formContainer) {
+            formContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem; animation: scaleIn 0.5s ease;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
+                        <i class="fas fa-check" style="font-size: 2.5rem; color: white;"></i>
+                    </div>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem;">Objectif Adopté !</h2>
+                    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 2rem;">Votre stratégie est maintenant scellée. Votre TJM de <strong>${finalData.dailyRate}€/j</strong> servira de boussole pour tous vos chiffrages.</p>
+                </div>
+            `;
+            // Hide the wizard tabs/steps and actions to focus on success
+            const actions = document.querySelector('.wizard-actions');
+            const steps = document.querySelector('.wizard-steps');
+            if (actions) actions.style.display = 'none';
+            if (steps) steps.style.opacity = '0.3';
+        }
+
         const hint = document.getElementById('objective-next-step');
-        if (hint) hint.style.display = 'block';
+        if (hint) {
+            hint.style.display = 'block';
+            hint.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        App.showNotification('Stratégie TJM scellée avec succès !', 'success');
 
         // Refresh onboarding if needed
         if (typeof Onboarding !== 'undefined') {
