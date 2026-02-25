@@ -1,37 +1,25 @@
 {
   "rpcError": "Could not find the function public.query_sql(sql_query) in the schema cache",
   "sampleRow": {
-    "id": "mlqpfh5qzg0imssu3qj",
+    "id": "dfdac79e-33ff-4b92-8656-53c36b1e1ae8",
     "user_id": "73a494c2-941c-459b-b848-85b7448bfcb4",
-    "clientId": "mllpe88hacxkik3evwa",
-    "number": "DEV-0002",
-    "status": "draft",
-    "createdAt": "2026-02-17T14:34:32.222+00:00",
-    "validUntil": null,
-    "items": [
-      {
-        "quantity": 1,
-        "unitPrice": 233,
-        "description": "ddd"
-      }
-    ],
-    "subtotal": 233,
-    "tax": 19.805,
-    "total": 252.805,
-    "signature": null,
-    "taxContext": null,
-    "notes": null,
-    "title": null,
-    "items_subtotal": 0,
-    "margin": 0,
-    "tax_context": null,
-    "itemsSubtotal": 0,
-    "expert_paid_at": null,
-    "platform_paid_at": null,
-    "accepted_at": null
+    "name": "Domtom Connect",
+    "siret": "",
+    "email": "domtomconnect@gmail.com",
+    "phone": "0620783377",
+    "address": "4 chemin le bouleur",
+    "footer_mentions": "",
+    "logo": "https://kisldntelhrnilrihelr.supabase.co/storage/v1/object/public/logos/logos/1771346717117_DC%20-%201.png",
+    "portfolio": "",
+    "created_at": "2026-02-17T16:45:19.750284+00:00",
+    "updated_at": "2026-02-17T16:45:19.750284+00:00",
+    "payment_type": "iban",
+    "iban": null,
+    "bic": null,
+    "payment_link": null
   },
   "inferredTypes": {
     "id": "string",
-    "signature": "object"
+    "signature": "undefined"
   }
 }

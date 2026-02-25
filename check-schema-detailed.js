@@ -12,14 +12,14 @@ async function checkSchema() {
             sql_query: `
                 SELECT column_name, data_type, character_maximum_length 
                 FROM information_schema.columns 
-                WHERE table_name = 'sp_quotes'
+                WHERE table_name = 'sp_user_profile'
             `
         });
 
         if (error) {
             results.rpcError = error.message;
             // Fallback: try to guess from a row
-            const { data: rows } = await supabase.from('sp_quotes').select('*').limit(1);
+            const { data: rows } = await supabase.from('sp_user_profile').select('*').limit(1);
             results.sampleRow = rows[0];
             results.inferredTypes = rows.length > 0 ? {
                 id: typeof rows[0].id,
