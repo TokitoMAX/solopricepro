@@ -648,9 +648,7 @@ const App = {
         // Afficher les badges PRO dans la sidebar pour les fonctions limitées
         document.querySelectorAll('.nav-item').forEach(item => {
             const nav = item.dataset.nav;
-            const proFeatures = ['kanban', 'scoper', 'expenses'];
-
-            // Supprimer d'anciens badges pour éviter les doublons
+            const proFeatures = ['kanban', 'expenses']; // 'scoper' is now partially free
             const oldBadge = item.querySelector('.pro-lock-badge');
             if (oldBadge) oldBadge.remove();
 

@@ -546,9 +546,9 @@ const Scoper = {
                     
                     <div style="display: flex; gap: 1rem; justify-content: center;">
                         <button class="button-primary" onclick="Scoper.render('project')" style="padding: 1rem 2rem; font-size: 1rem;">
-                            <i class="fas fa-calculator" style="margin-right: 10px;"></i> Lancer un Chiffrage PRO
+                            <i class="fas fa-calculator" style="margin-right: 10px;"></i> Tester sur un Projet (Pack PRO)
                         </button>
-                        <button class="button-outline" onclick="Dashboard.render()" style="padding: 1rem 2rem;">
+                        <button class="button-outline" onclick="App.navigateTo('dashboard')" style="padding: 1rem 2rem;">
                             Retour au Dashboard
                         </button>
                     </div>
