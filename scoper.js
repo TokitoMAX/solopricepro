@@ -1089,10 +1089,13 @@ const Scoper = {
         }
 
         const data = Storage.get('sp_calculator_data') || {};
+        const sector = data.sector || 'tech';
+        const target = data.target || 'pme';
+
         const results = PricingEngine.calculateObjective(data);
         const scenarios = PricingEngine.getScenarios(results);
-        const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, data.sector);
-        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, data.sector, data.target);
+        const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, sector);
+        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target);
 
         content.innerHTML = `
             <style>
@@ -1116,7 +1119,7 @@ const Scoper = {
                 <div class="expert-hero">
                     <div style="font-size: 0.75rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Closing Engineer Mode</div>
                     <h1 style="font-size: 2.8rem; margin-bottom: 1rem; color: white; letter-spacing: -1px;">Votre Arsenal de Vente</h1>
-                    <p style="color: #e9d5ff; font-size: 1.15rem; max-width: 700px; margin: 0 auto; opacity: 0.9;">Voici votre stratégie de combat personnalisée pour un profil <strong>${data.sector.toUpperCase()}</strong> face à une cible <strong>${data.target.toUpperCase()}</strong>.</p>
+                    <p style="color: #e9d5ff; font-size: 1.15rem; max-width: 700px; margin: 0 auto; opacity: 0.9;">Voici votre stratégie de combat personnalisée pour un profil <strong>${sector.toUpperCase()}</strong> face à une cible <strong>${target.toUpperCase()}</strong>.</p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
@@ -1213,17 +1216,20 @@ const Scoper = {
         const performanceGap = targetTJM > 0 ? Math.round(((avgActualTJM - targetTJM) / targetTJM) * 100) : 0;
 
         // Données du journal
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', entries: [] };
+        let journal = Storage.get('sp_journal');
+        if (!journal || Array.isArray(journal) || !journal.mood) {
+            journal = { mood: 'motivated', entries: [] };
+        }
         const victories = journal.entries?.filter(e => e.type === 'victory') || [];
         const blockages = journal.entries?.filter(e => e.type === 'blockage') || [];
 
         const mentorWords = {
             confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite sur vos prochains chiffrages. Le marché achète votre certitude avant votre savoir-faire.",
             stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' à un mauvais projet est votre plus grande victoire.",
-            motive: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages en attente avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
+            motivated: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages en attente avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
         };
 
-        const currentWord = mentorWords[journal.mood] || mentorWords.motive;
+        const currentWord = mentorWords[journal.mood] || mentorWords.motivated;
 
         content.innerHTML = `
             <style>
