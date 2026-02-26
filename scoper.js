@@ -249,11 +249,11 @@ const Scoper = {
                             <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid #a855f7; background: rgba(168, 85, 247, 0.05);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                                     <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">Psychologie de Vente</span>
-                                    ${(!Storage.isPro() || !Storage.getUser()?.isExpert) ? '<span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">PACK EXPERT</span>' : ''}
+                                    ${!Storage.isExpert() ? '<span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">PACK EXPERT</span>' : ''}
                                 </div>
                                 
                                 ${(() => {
-                        if (!(Storage.isPro() && Storage.getUser()?.isExpert)) {
+                        if (!Storage.isExpert()) {
                             return `<p style="font-size: 0.85rem; color: #e9d5ff; font-style: italic; line-height: 1.5;">Débloquez le Pack EXPERT pour accéder aux stratégies de closing (Ancrage, Diagnostic, Inversion de risque).</p>`;
                         }
                         const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, data.sector, data.target);
@@ -1016,7 +1016,7 @@ const Scoper = {
     },
 
     importService(serviceId) {
-        if (!Auth.getUser()?.isPro && this.tasks.length >= 5) {
+        if (!Storage.isPro() && this.tasks.length >= 5) {
             App.showUpgradeModal('scoper_limit');
             return;
         }
