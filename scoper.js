@@ -30,7 +30,10 @@ const Scoper = {
                     </button>
                     <button class="tab-btn ${tab === 'project' ? 'active' : ''}" onclick="Scoper.render('project')" style="padding: 1rem; background: none; border: none; color: ${tab === 'project' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'project' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-calculator"></i> Chiffrage Projet 
-                        ${!isPro ? '<span style="font-size: 0.6rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Pro</span>' : ''}
+                    </button>
+                    <button class="tab-btn ${tab === 'closing' ? 'active' : ''}" onclick="Scoper.render('closing')" style="padding: 1rem; background: none; border: none; color: ${tab === 'closing' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'closing' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-magic"></i> Stratégie de Closing
+                        ${!Storage.isExpert() ? '<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Expert</span>' : ''}
                     </button>
                 </div>
             </div>
@@ -40,6 +43,8 @@ const Scoper = {
 
         if (tab === 'objective') {
             this.renderObjectiveTab();
+        } else if (tab === 'closing') {
+            this.renderClosingTab();
         } else {
             this.renderProjectTab();
         }
@@ -95,8 +100,8 @@ const Scoper = {
                             </button>
                         ` : `
                             <div style="display: flex; gap: 1rem;">
-                                <button class="button-outline" onclick="Scoper.generateRoadmapPDF()" style="border-color: var(--primary); color: var(--primary-light);">
-                                    <i class="fas fa-file-pdf" style="margin-right: 10px;"></i> Ma Roadmap (Gratuit)
+                                <button class="button-primary" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none;" onclick="Scoper.render('closing')">
+                                    Coach de Vente Expert <i class="fas fa-magic" style="margin-left: 10px;"></i>
                                 </button>
                                 <button class="button-primary" onclick="Scoper.saveObjective()">
                                     Adopter ce TJM <i class="fas fa-check" style="margin-left: 10px;"></i>
@@ -245,33 +250,22 @@ const Scoper = {
                                 </p>
                             </div>
 
-                            <!-- Advanced Sales Psychology (EXPERT) -->
-                            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid #a855f7; background: rgba(168, 85, 247, 0.05);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">Psychologie de Vente</span>
-                                    ${!Storage.isExpert() ? '<span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">PACK EXPERT</span>' : ''}
+                            <!-- Coaching de Vente EXPERT -->
+                            <div class="expert-teaser-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid #a855f7; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(124, 58, 237, 0.1)); position: relative; cursor: pointer; transition: all 0.3s ease;" onclick="Scoper.render('closing')">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">Coaching de Vente</span>
+                                    <span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">PACK EXPERT</span>
                                 </div>
-                                
-                                ${(() => {
-                        if (!Storage.isExpert()) {
-                            return `<p style="font-size: 0.85rem; color: #e9d5ff; font-style: italic; line-height: 1.5;">Débloquez le Pack EXPERT pour accéder aux stratégies de closing (Ancrage, Diagnostic, Inversion de risque).</p>`;
-                        }
-                        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, data.sector, data.target);
-                        return `
-                                        <div style="margin-bottom: 1rem;">
-                                            <div style="font-size: 0.9rem; font-weight: 700; color: white; margin-bottom: 4px;">${tactics.title}</div>
-                                            <div style="font-size: 0.75rem; color: #c084fc; font-weight: 600;">Technique : ${tactics.technique}</div>
-                                        </div>
-                                        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #a855f7;">
-                                            <div style="font-size: 0.7rem; color: #c084fc; text-transform: uppercase; margin-bottom: 4px; font-weight: 800;">Script recommandé :</div>
-                                            <div style="font-size: 0.85rem; color: #e9d5ff; line-height: 1.4;">${tactics.script}</div>
-                                        </div>
-                                        <div style="padding: 12px; border-radius: 8px; background: rgba(244, 63, 94, 0.05); border: 1px dashed rgba(244, 63, 94, 0.2);">
-                                            <div style="font-size: 0.7rem; color: #f43f5e; text-transform: uppercase; margin-bottom: 4px; font-weight: 800;">Contrer l'objection prix :</div>
-                                            <div style="font-size: 0.85rem; color: #fda4af;">${tactics.objection}</div>
-                                        </div>
-                                    `;
-                    })()}
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div style="width: 45px; height: 45px; border-radius: 12px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; color: #c084fc;">
+                                        <i class="fas fa-magic" style="font-size: 1.2rem;"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 700; color: white; font-size: 0.95rem;">Prêt pour le Closing ?</div>
+                                        <div style="font-size: 0.75rem; color: #e9d5ff; opacity: 0.8;">Accédez à votre Arsenal de Vente personnalisé.</div>
+                                    </div>
+                                    <i class="fas fa-chevron-right" style="color: #c084fc; opacity: 0.5;"></i>
+                                </div>
                             </div>
 
                             <!-- Scenario Selector -->
@@ -1063,5 +1057,164 @@ const Scoper = {
     selectScenario(scenario) {
         this.selectedScenario = scenario;
         this.render('objective');
+    },
+
+    /**
+     * Rendu de l'onglet Closing (Arsenal de Vente EXPERT)
+     */
+    renderClosingTab() {
+        const content = document.getElementById('scoper-tab-content');
+        if (!content) return;
+
+        if (!Storage.isExpert()) {
+            content.innerHTML = `
+                <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid #a855f7;">
+                    <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(168, 85, 247, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #a855f7;">
+                        <i class="fas fa-magic" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Arsenal de Closing Expert</h2>
+                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.</p>
+                    <button class="button-primary large" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none;" onclick="App.showUpgradeModal('premium_feature')">
+                        🚀 Passer au Pack EXPERT
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        const data = Storage.get('sp_calculator_data') || {};
+        const results = PricingEngine.calculateObjective(data);
+        const scenarios = PricingEngine.getScenarios(results);
+        const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, data.sector);
+        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, data.sector, data.target);
+
+        content.innerHTML = `
+            <style>
+                .objection-card {
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid var(--border);
+                    border-radius: 20px;
+                    padding: 1.5rem;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    cursor: pointer;
+                    position: relative;
+                    overflow: hidden;
+                }
+                .objection-card:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); transform: translateY(-5px); }
+                .objection-card.active { background: rgba(168, 85, 247, 0.1); border-color: #a855f7; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+                
+                .rebuttal-box { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease; }
+                .objection-card.active .rebuttal-box { max-height: 200px; opacity: 1; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+                
+                .diag-question { padding: 1.2rem; border-radius: 16px; background: rgba(0,0,0,0.2); border-left: 4px solid #a855f7; margin-bottom: 1rem; font-size: 0.95rem; color: #e9d5ff; transition: transform 0.2s; cursor: default; }
+                .diag-question:hover { transform: translateX(10px); background: rgba(168, 85, 247, 0.05); }
+
+                .expert-hero {
+                    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(30, 10, 60, 0.4) 100%);
+                    border-radius: 30px; padding: 4rem 2rem; text-align: center; border: 1px solid rgba(168, 85, 247, 0.2); margin-bottom: 3rem; position: relative; overflow: hidden;
+                }
+            </style>
+
+            <div class="expert-closing-tab" style="animation: fadeIn 0.5s ease;">
+                <div class="expert-hero">
+                    <div style="font-size: 0.75rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Closing Engineer Mode</div>
+                    <h1 style="font-size: 2.8rem; margin-bottom: 1rem; color: white; letter-spacing: -1px;">Votre Arsenal de Vente</h1>
+                    <p style="color: #e9d5ff; font-size: 1.15rem; max-width: 700px; margin: 0 auto; opacity: 0.9;">Voici votre stratégie de combat personnalisée pour un profil <strong>${data.sector.toUpperCase()}</strong> face à une cible <strong>${data.target.toUpperCase()}</strong>.</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
+                    <!-- Posture Diagnostic -->
+                    <div class="glass-card" style="padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border);">
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;">
+                            <div style="width: 55px; height: 55px; border-radius: 15px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #a855f7;">
+                                <i class="fas fa-stethoscope" style="font-size: 1.8rem;"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">La Posture Dr. Expert</h3>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);">Posez ces 3 questions pour matérialiser le coût du problème.</div>
+                            </div>
+                        </div>
+                        <div class="questions-list">
+                            ${tactics.diagnostic.questions.map((q, i) => `
+                                <div class="diag-question">
+                                    <span style="color: #a855f7; font-weight: 900; margin-right: 12px; font-style: italic;">Q${i + 1}</span>
+                                    ${q}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="margin-top: 2rem; padding: 1.2rem; background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent); border-radius: 16px; border-left: 4px solid #10b981;">
+                            <div style="font-size: 0.7rem; color: #10b981; font-weight: 800; text-transform: uppercase; margin-bottom: 6px;">L'Argument ROI Imbattable :</div>
+                            <div style="font-size: 1rem; font-weight: 700; color: white;">"${tactics.roi.argument}"</div>
+                        </div>
+                    </div>
+
+                    <!-- Strategie d'Ancrage -->
+                    <div class="glass-card" style="padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border); background: rgba(255,255,255,0.01);">
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;">
+                            <div style="width: 55px; height: 55px; border-radius: 15px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                                <i class="fas fa-anchor" style="font-size: 1.8rem;"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">L'Ancrage de Puissance</h3>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);">Utilisez le contraste pour rendre votre prix évident.</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 20px; padding: 2rem; position: relative; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="opacity: 0.3; transform: scale(0.9); margin-bottom: 1.5rem;">
+                                <div style="font-size: 0.75rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-crown"></i> OPTION ELITE (Ancre)
+                                </div>
+                                <div style="font-size: 2.2rem; font-weight: 900; color: white;">${scenarios.elite.tjm}€ <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
+                            </div>
+                            
+                            <div style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; border-radius: 18px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); position: relative;">
+                                <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase; margin-bottom: 5px;">Votre Prix de Closing</div>
+                                <div style="font-size: 2.5rem; font-weight: 900; color: white;">${scenarios.security.tjm}€ <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
+                                <div style="position: absolute; top: -12px; right: -12px; background: #10b981; color: white; font-size: 0.65rem; padding: 5px 12px; border-radius: 20px; font-weight: 900; box-shadow: 0 5px 15px rgba(16,185,129,0.3);">PRIX ACCEPTE</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(59, 130, 246, 0.05); border-radius: 16px; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                            <div style="font-size: 0.7rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">Logique Psychologique :</div>
+                            <div style="font-size: 0.9rem; color: #bfdbfe; font-style: italic; line-height: 1.5;">"${tactics.anchoring.logic}"</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulateur d'Objections -->
+                <div class="glass-card" style="padding: 3rem; border-radius: 35px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);">
+                    <div style="text-align: center; margin-bottom: 3rem;">
+                        <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: white;">Simulateur d'Objections</h3>
+                        <p class="text-muted">Cliquez sur une objection pour simuler la réponse parfaite.</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                        ${tactics.objections.map((obj, i) => `
+                            <div class="objection-card" onclick="this.classList.toggle('active')">
+                                <div style="font-size: 0.7rem; font-weight: 900; color: #f43f5e; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Objection Courante</div>
+                                <div style="font-size: 1.15rem; font-weight: 800; color: white; line-height: 1.3;">"${obj.hook}"</div>
+                                
+                                <div class="rebuttal-box">
+                                    <div style="font-size: 0.7rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+                                        <i class="fas fa-bolt"></i> Contre-Attaque Expert
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: #e9d5ff; line-height: 1.5; font-style: italic;">
+                                        ${obj.rebuttal}
+                                    </div>
+                                </div>
+                                <div style="margin-top: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">
+                                    <i class="fas fa-mouse-pointer" style="margin-right: 5px;"></i> CLIQUEZ POUR DEBLOQUER
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div style="margin-top: 4rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="fas fa-shield-alt"></i> Ces stratégies sont basées sur l'ingénierie de vente SoloPrice-Pro v4.1
+                </div>
+            </div>
+        `;
     }
 };

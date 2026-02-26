@@ -158,48 +158,94 @@ const PricingEngine = {
 
     /**
      * Ingénierie de Vente Avancée - [EXPERT]
-     * S'adapte au secteur et à la cible.
+     * Génère un arsenal complet de vente personnalisé au secteur et à la cible.
      */
     getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme') {
-        const sectorArguments = {
-            tech: "Focus sur la dette technique évitée et la scalabilité.",
-            design: "Focus sur l'identité de marque et la conversion utilisateur.",
-            conseil: "Focus sur le gain de productivité et le ROI organisationnel.",
-            artisanat: "Focus sur la durabilité et la qualité des matériaux.",
-            media: "Focus sur l'engagement et l'image de marque."
+        const sectorData = {
+            tech: {
+                focus: "Dette Technique & Perte de Marché",
+                questions: [
+                    "Combien vous coûte chaque mois d'indisponibilité de ce système ?",
+                    "Quel est l'impact sur votre équipe si ce développement prend 3 mois de retard interne ?",
+                    "Si on ne règle pas ce bug structurel maintenant, quel est le risque d'échec du prochain scale ?"
+                ],
+                roi: "Réduction de 40% des coûts opérationnels sur 12 mois."
+            },
+            design: {
+                focus: "Image Low-Cost & Faible Conversion",
+                questions: [
+                    "Quel est le taux de rebond actuel sur votre tunnel de vente ?",
+                    "Combien de clients potentiels perdent confiance à cause de cette interface datée ?",
+                    "Si votre identité visuelle ne change pas, comment allez-vous justifier vos nouveaux tarifs ?"
+                ],
+                roi: "Augmentation directe du taux de transformation de +15% minimum."
+            },
+            conseil: {
+                focus: "Stagnation & Coût d'Opportunité",
+                questions: [
+                    "Quel est le coût de chaque décision prise sans ces données stratégiques ?",
+                    "Combien d'heures par semaine votre équipe perd-elle sur des process non optimisés ?",
+                    "Si votre stratégie ne pivote pas ce trimestre, où en sera votre CA dans un an ?"
+                ],
+                roi: "Gain de 10h/semaine de productivité pour vos cadres dirigeants."
+            },
+            artisanat: {
+                focus: "Réparations Coûteuses & Mauvaise Réputation",
+                questions: [
+                    "Quel est le coût d'une intervention en urgence si l'installation lâche ?",
+                    "Combien vaut pour vous la tranquillité d'esprit sur les 10 prochaines années ?",
+                    "Si les finitions ne sont pas parfaites, quel message envoyez-vous à vos futurs clients ?"
+                ],
+                roi: "Zéro coût de maintenance sur les 5 premières années (Garantie Total)."
+            },
+            media: {
+                focus: "Invisibilité & Perte d'Attention",
+                questions: [
+                    "Combien vous coûte l'acquisition d'un client sans image de marque forte ?",
+                    "Si votre contenu ne se démarque pas, comment allez-vous capter l'attention de votre cible cette année ?",
+                    "Quel est l'impact d'une communication 'bricolée' sur votre crédibilité ?"
+                ],
+                roi: "Baisse de 30% du coût d'acquisition client (CAC) via l'organique."
+            }
         };
 
-        const targetArguments = {
-            'tpe': "Rassurez sur la simplicité et la maîtrise du budget.",
-            'pme': "Misez sur la croissance et la structure.",
-            'grands-comptes': "Parlez de réduction de risque et de conformité."
+        const currentSector = sectorData[sector] || sectorData.tech;
+        const targetLabel = { 'tpe': 'Indépendant/TPE', 'pme': 'PME/Startup', 'grands-comptes': 'Grand Compte/Institution' }[target] || 'PME';
+
+        return {
+            title: "Arsenal de Closing Expert",
+            subtitle: `Stratégie optimisée pour un profil ${sector.toUpperCase()} face à un ${targetLabel}`,
+            diagnostic: {
+                title: "La Posture Dr. Expert",
+                description: "Ne vendez pas, diagnostiquez. Posez ces 3 questions pour que le client réalise le coût de son problème.",
+                questions: currentSector.questions
+            },
+            anchoring: {
+                title: "L'Ancrage de Puissance",
+                description: "Présentez toujours la valeur avant le prix. Utilisez l'effet de contraste.",
+                strategy: `Ancrez sur le Pack ELITE à ${scenarios.elite.tjm}€ pour faire passer le Pack CONFORT (${scenarios.security.tjm}€) pour un investissement 'Évident'.`,
+                logic: `Expliquez que l'Elite est pour une 'Domination Totale' alors que le Sécurité est pour une 'Croissance Sereine'.`
+            },
+            roi: {
+                title: "L'Argument Choc (ROI)",
+                description: "Transformez le coût en investissement mathématique.",
+                argument: currentSector.roi
+            },
+            objections: [
+                {
+                    hook: "C'est trop cher.",
+                    rebuttal: `Recadrez sur l'inaction : 'Je comprends. Mais si on ne fait rien, combien vous coûtera la ${currentSector.focus} dans 6 mois ?'`
+                },
+                {
+                    hook: "On doit réfléchir.",
+                    rebuttal: "Questionnez le risque : 'Bien sûr. Quelle est l'information manquante aujourd'hui pour être certain que ce projet soit un succès ?'"
+                },
+                {
+                    hook: "Un concurrent est moins cher.",
+                    rebuttal: "Misez sur l'expertise : 'Exact. Et quel est le prix d'un projet qui doit être refait dans un an parce qu'il n'était pas assez robuste ?'"
+                }
+            ]
         };
-
-        const baseArg = sectorArguments[sector] || sectorArguments.tech;
-        const targetArg = targetArguments[target] || targetArguments.pme;
-
-        if (score > 75) {
-            return {
-                title: `Stratégie : Vitesse & Exécution (${sector.toUpperCase()})`,
-                technique: "Le Biais d'Urgence",
-                script: `Argumentez sur le coût du retard : '${baseArg} ${targetArg} Chaque mois sans cette solution, vous perdez en compétitivité.'`,
-                objection: "Si le client dit 'C'est cher', répondez : 'Le coût de l'opportunité manquée est bien plus élevé que mon tarif.'"
-            };
-        } else if (score > 45) {
-            return {
-                title: "Stratégie : Valeur Contextuelle",
-                technique: "L'Ancrage par le Haut",
-                script: `Pour une cible ${target.toUpperCase()}, montrez le pack Elite (${scenarios.elite.tjm}€) pour ancrer la valeur. Le pack Confort deviendra le choix logique.`,
-                objection: `Recadrez sur la qualité : 'Pour une structure comme la vôtre, un prix bas est une hypothèque sur la pérennité du projet ${sector}.'`
-            };
-        } else {
-            return {
-                title: "Stratégie : Posture d'Expert (Diagnostic)",
-                technique: "L'Asymétrie d'Expertise",
-                script: `Ne vendez pas, diagnostiquez. ${targetArg} 'Mon intervention en ${sector} résout votre blocage X pour débloquer votre revenu Y.'`,
-                objection: "Contrez par l'expérience : 'Vous ne payez pas pour mon temps, mais pour la certitude du résultat.'"
-            };
-        }
     }
 };
 
