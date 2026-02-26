@@ -141,8 +141,65 @@ const PricingEngine = {
 
         if (score > 100) score = 100;
         if (score < 10) score = 10;
-
         return score;
+    },
+
+    /**
+     * Calcule le "Facteur PITA" (Pain In The Ass) - [PRO]
+     * @param {number} urgency - 1 à 5
+     * @param {number} complexity - 1 à 5
+     * @param {number} clientDiff - 1 à 5
+     * @returns {number} - Multiplicateur (ex: 1.15 pour +15%)
+     */
+    getPitaIncentive(urgency = 1, complexity = 1, clientDiff = 1) {
+        const points = (urgency - 1) + (complexity - 1) + (clientDiff - 1);
+        return 1 + (points * 0.05);
+    },
+
+    /**
+     * Ingénierie de Vente Avancée - [EXPERT]
+     * S'adapte au secteur et à la cible.
+     */
+    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme') {
+        const sectorArguments = {
+            tech: "Focus sur la dette technique évitée et la scalabilité.",
+            design: "Focus sur l'identité de marque et la conversion utilisateur.",
+            conseil: "Focus sur le gain de productivité et le ROI organisationnel.",
+            artisanat: "Focus sur la durabilité et la qualité des matériaux.",
+            media: "Focus sur l'engagement et l'image de marque."
+        };
+
+        const targetArguments = {
+            'tpe': "Rassurez sur la simplicité et la maîtrise du budget.",
+            'pme': "Misez sur la croissance et la structure.",
+            'grands-comptes': "Parlez de réduction de risque et de conformité."
+        };
+
+        const baseArg = sectorArguments[sector] || sectorArguments.tech;
+        const targetArg = targetArguments[target] || targetArguments.pme;
+
+        if (score > 75) {
+            return {
+                title: `Stratégie : Vitesse & Exécution (${sector.toUpperCase()})`,
+                technique: "Le Biais d'Urgence",
+                script: `Argumentez sur le coût du retard : '${baseArg} ${targetArg} Chaque mois sans cette solution, vous perdez en compétitivité.'`,
+                objection: "Si le client dit 'C'est cher', répondez : 'Le coût de l'opportunité manquée est bien plus élevé que mon tarif.'"
+            };
+        } else if (score > 45) {
+            return {
+                title: "Stratégie : Valeur Contextuelle",
+                technique: "L'Ancrage par le Haut",
+                script: `Pour une cible ${target.toUpperCase()}, montrez le pack Elite (${scenarios.elite.tjm}€) pour ancrer la valeur. Le pack Confort deviendra le choix logique.`,
+                objection: `Recadrez sur la qualité : 'Pour une structure comme la vôtre, un prix bas est une hypothèque sur la pérennité du projet ${sector}.'`
+            };
+        } else {
+            return {
+                title: "Stratégie : Posture d'Expert (Diagnostic)",
+                technique: "L'Asymétrie d'Expertise",
+                script: `Ne vendez pas, diagnostiquez. ${targetArg} 'Mon intervention en ${sector} résout votre blocage X pour débloquer votre revenu Y.'`,
+                objection: "Contrez par l'expérience : 'Vous ne payez pas pour mon temps, mais pour la certitude du résultat.'"
+            };
+        }
     }
 };
 

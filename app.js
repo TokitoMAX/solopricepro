@@ -724,14 +724,22 @@ const App = {
         const titleEl = modal.querySelector('.upgrade-title');
 
         if (step === 'comparison') {
-            titleEl.textContent = 'Accès SoloPrice PRO';
+            titleEl.innerHTML = `Accès SoloPrice <span class="gradient-text">PRO</span>`;
             container.innerHTML = `
+            <!-- ROI Calculator Prompt -->
+            <div style="grid-column: 1 / -1; background: rgba(var(--primary-rgb), 0.05); border: 1px solid var(--primary-glass); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 1.5rem;">💡</div>
+                <div style="font-size: 0.85rem; line-height: 1.4; color: var(--text-secondary);">
+                    <strong>L'abonnement qui se paie seul :</strong> Sur un projet à 1500€, une simple "Prime de Risque" (Facteur PITA) de 10% ajoute <strong>150€</strong> à votre facture. Votre pack PRO est rentabilisé 10 fois sur une seule vente.
+                </div>
+            </div>
+
             <!-- Standard -->
             <div class="pricing-card-mini standard" onclick="App.closeModal()">
                 <div class="card-tier">STANDARD</div>
                 <div class="card-price">0€<span>/mois</span></div>
                 <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> Marketplace : 1 réponse/mois</li>
+                    <li><i class="fas fa-check-circle"></i> Roadmap PDF Offerte</li>
                     <li><i class="fas fa-minus"></i> 1 Client Actif</li>
                     <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
                 </ul>
@@ -745,10 +753,10 @@ const App = {
                 <div class="card-price">15€<span>/mois</span></div>
                 <div class="card-value-tag">Idéal pour produire sans limites</div>
                 <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> Devis/Factures <strong>Illimités</strong></li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Chiffrage Projet</strong> Illimité</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Prime de Risque</strong> (PITA)</li>
+                    <li><i class="fas fa-check-circle"></i> Analyse de <strong>Marge Nette</strong></li>
                     <li><i class="fas fa-check-circle"></i> Votre <strong>Logo</strong> sur PDF</li>
-                    <li><i class="fas fa-check-circle"></i> Pipeline Kanban Complet</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Zéro Limite</strong> sur les documents</li>
                 </ul>
                 <button class="card-select-btn pro">Passer Pro</button>
             </div>
@@ -760,10 +768,10 @@ const App = {
                 <div class="card-price">29€<span>/mois</span></div>
                 <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
                 <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Signature Électronique</strong> Sur Place</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Assistant Relance</strong> (Recouvrement)</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Coaching Rentabilité</strong> Avancé</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Scripts de Négociation</strong></li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Arguments de Vente</strong> (IA)</li>
+                    <li><i class="fas fa-check-circle"></i> Market Power Analyzer</li>
+                    <li><i class="fas fa-check-circle"></i> Signature Électronique</li>
                 </ul>
                 <button class="card-select-btn expert" style="background: #a855f7; color: white;">Devenir Expert</button>
             </div>

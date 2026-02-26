@@ -136,9 +136,28 @@ const Scoper = {
                     ].map(s => `
                             <div class="sector-card ${data.sector === s.id ? 'active' : ''}" 
                                  onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateSector('${s.id}')"
-                                 style="padding: 1.2rem; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s; background: ${data.sector === s.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; border-color: ${data.sector === s.id ? 'var(--primary)' : 'var(--border)'}; text-align: center;">
+                                 style="padding: 1.2rem; border: 1px solid ${data.sector === s.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 12px; cursor: pointer; transition: all 0.3s; background: ${data.sector === s.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; text-align: center;">
                                 <i class="fas ${s.icon}" style="font-size: 1.2rem; color: ${data.sector === s.id ? 'var(--primary-light)' : 'var(--text-muted)'}; margin-bottom: 8px; display: block;"></i>
                                 <div style="font-weight: 700; font-size: 0.85rem;">${s.label}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="step-header" style="margin: 2.5rem 0 1rem;">
+                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Cible Client Principale</h3>
+                        <p class="text-muted" style="font-size: 0.85rem;">Vos scripts de vente seront adaptés à cette typologie.</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        ${[
+                        { id: 'tpe', label: 'TPE / Indépendants', icon: 'fa-user' },
+                        { id: 'pme', label: 'PME & Startups', icon: 'fa-building' },
+                        { id: 'grands-comptes', label: 'Grands Comptes', icon: 'fa-city' }
+                    ].map(t => `
+                            <div class="target-card ${data.target === t.id ? 'active' : ''}" 
+                                 onclick="document.querySelectorAll('.target-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateTarget('${t.id}')"
+                                 style="flex: 1; padding: 1rem; border: 1px solid ${data.target === t.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 12px; cursor: pointer; background: ${data.target === t.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; text-align: center;">
+                                <i class="fas ${t.icon}" style="font-size: 1rem; color: ${data.target === t.id ? 'var(--primary-light)' : 'var(--text-muted)'}; margin-bottom: 5px;"></i>
+                                <div style="font-weight: 600; font-size: 0.75rem;">${t.label}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -226,6 +245,35 @@ const Scoper = {
                                 </p>
                             </div>
 
+                            <!-- Advanced Sales Psychology (EXPERT) -->
+                            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid #a855f7; background: rgba(168, 85, 247, 0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">Psychologie de Vente</span>
+                                    ${(!Storage.isPro() || !Storage.getUser()?.isExpert) ? '<span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">PACK EXPERT</span>' : ''}
+                                </div>
+                                
+                                ${(() => {
+                        if (!(Storage.isPro() && Storage.getUser()?.isExpert)) {
+                            return `<p style="font-size: 0.85rem; color: #e9d5ff; font-style: italic; line-height: 1.5;">Débloquez le Pack EXPERT pour accéder aux stratégies de closing (Ancrage, Diagnostic, Inversion de risque).</p>`;
+                        }
+                        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, data.sector, data.target);
+                        return `
+                                        <div style="margin-bottom: 1rem;">
+                                            <div style="font-size: 0.9rem; font-weight: 700; color: white; margin-bottom: 4px;">${tactics.title}</div>
+                                            <div style="font-size: 0.75rem; color: #c084fc; font-weight: 600;">Technique : ${tactics.technique}</div>
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #a855f7;">
+                                            <div style="font-size: 0.7rem; color: #c084fc; text-transform: uppercase; margin-bottom: 4px; font-weight: 800;">Script recommandé :</div>
+                                            <div style="font-size: 0.85rem; color: #e9d5ff; line-height: 1.4;">${tactics.script}</div>
+                                        </div>
+                                        <div style="padding: 12px; border-radius: 8px; background: rgba(244, 63, 94, 0.05); border: 1px dashed rgba(244, 63, 94, 0.2);">
+                                            <div style="font-size: 0.7rem; color: #f43f5e; text-transform: uppercase; margin-bottom: 4px; font-weight: 800;">Contrer l'objection prix :</div>
+                                            <div style="font-size: 0.85rem; color: #fda4af;">${tactics.objection}</div>
+                                        </div>
+                                    `;
+                    })()}
+                            </div>
+
                             <!-- Scenario Selector -->
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                                 ${Object.entries(scenarios).map(([key, s]) => `
@@ -296,7 +344,21 @@ const Scoper = {
         const data = Storage.get('sp_calculator_data') || {};
         data.sector = sector;
         Storage.set('sp_calculator_data', data);
-        setTimeout(() => this.nextObjectiveStep(), 300);
+        this.checkStepCompletion();
+    },
+
+    updateTarget(target) {
+        const data = Storage.get('sp_calculator_data') || {};
+        data.target = target;
+        Storage.set('sp_calculator_data', data);
+        this.checkStepCompletion();
+    },
+
+    checkStepCompletion() {
+        const data = Storage.get('sp_calculator_data') || {};
+        if (data.sector && data.target && this.currentObjectiveStep === 1) {
+            setTimeout(() => this.nextObjectiveStep(), 400);
+        }
     },
 
     autoSaveObjective() {
@@ -450,6 +512,28 @@ const Scoper = {
                             <label class="form-label">TJM Stratégique de Référence (€)</label>
                             <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="border-color: var(--primary-light);">
                             <p class="text-xs text-muted" style="margin-top: 4px;">Utilisez votre boussole définit à l'étape "Objectif".</p>
+                        </div>
+
+                        <div class="input-group" style="margin-top: 1.5rem;">
+                            <label class="form-label" style="display: flex; justify-content: space-between;">
+                                <span>Facteur PITA (Prime de Risque)</span>
+                                <span class="badge" style="background: var(--primary-glass); color: var(--primary-light); font-size: 0.6rem;">PACK PRO</span>
+                            </label>
+                            <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; margin-top: 5px; display: grid; gap: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Urgence</span>
+                                    <input type="range" id="scoper-pita-urgency" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Complexité</span>
+                                    <input type="range" id="scoper-pita-complexity" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Diff. Client</span>
+                                    <input type="range" id="scoper-pita-client" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
+                                </div>
+                                <div id="pita-multiplier-display" style="font-size: 0.75rem; text-align: right; color: var(--primary-light); font-weight: 700;">Impact : +0%</div>
+                            </div>
                         </div>
 
                         <div class="input-group">
@@ -714,6 +798,17 @@ const Scoper = {
         const tjm = tjmEl ? parseFloat(tjmEl.value) : (this.getTJM() || 400);
         const buffer = bufferEl ? parseFloat(bufferEl.value) : 20;
 
+        const urgency = parseInt(document.getElementById('scoper-pita-urgency')?.value) || 1;
+        const complexity = parseInt(document.getElementById('scoper-pita-complexity')?.value) || 1;
+        const client = parseInt(document.getElementById('scoper-pita-client')?.value) || 1;
+
+        const pitaMultiplier = PricingEngine.getPitaIncentive(urgency, complexity, client);
+        const impactPercent = Math.round((pitaMultiplier - 1) * 100);
+        const pitaDisplay = document.getElementById('pita-multiplier-display');
+        if (pitaDisplay) pitaDisplay.textContent = `Impact : +${impactPercent}%`;
+
+        const finalTJM = tjm * pitaMultiplier;
+
         let totalHoursInternal = 0;
         let totalCalculatedHT = 0;
         let totalFinalHT = 0;
@@ -722,7 +817,7 @@ const Scoper = {
             const safeHours = t.max * (1 + buffer / 100);
             totalHoursInternal += safeHours;
 
-            const taskCalculatedHT = (safeHours / 7) * tjm;
+            const taskCalculatedHT = (safeHours / 7) * finalTJM;
             totalCalculatedHT += taskCalculatedHT;
 
             totalFinalHT += t.manualPrice !== null ? t.manualPrice : taskCalculatedHT;
