@@ -469,11 +469,16 @@ const Storage = {
         console.log(`🏷️ [STORAGE] Current Tier calculated: ${tier}`);
         return tier;
     },
-
     _calculateTier() {
-        // 1. Priorité à l'admin (insensible à la casse)
-        if (typeof Auth !== 'undefined' && Auth.user && Auth.user.email && Auth.user.email.toLowerCase() === 'domtomconnect@gmail.com') {
-            return 'expert';
+        // 1. Priorité à l'admin (email spécifique ou rôle admin)
+        if (typeof Auth !== 'undefined' && Auth.user) {
+            const user = Auth.user;
+            const isAdminEmail = user.email && user.email.toLowerCase() === 'domtomconnect@gmail.com';
+            const isAdminRole = user.role === 'admin' || user.user_metadata?.role === 'admin';
+
+            if (isAdminEmail || isAdminRole) {
+                return 'expert';
+            }
         }
 
         // 2. Vérifier les métadonnées auth (source de vérité du backend)
