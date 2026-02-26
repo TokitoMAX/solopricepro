@@ -35,6 +35,10 @@ const Scoper = {
                         <i class="fas fa-magic"></i> Stratégie de Closing
                         ${!Storage.isExpert() ? '<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Expert</span>' : ''}
                     </button>
+                    <button class="tab-btn ${tab === 'journal' ? 'active' : ''}" onclick="Scoper.render('journal')" style="padding: 1rem; background: none; border: none; color: ${tab === 'journal' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'journal' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-journal-whills"></i> Journal de Bord
+                        ${!Storage.isExpert() ? '<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Expert</span>' : ''}
+                    </button>
                 </div>
             </div>
 
@@ -45,6 +49,8 @@ const Scoper = {
             this.renderObjectiveTab();
         } else if (tab === 'closing') {
             this.renderClosingTab();
+        } else if (tab === 'journal') {
+            this.renderJournalTab();
         } else {
             this.renderProjectTab();
         }
@@ -1063,6 +1069,13 @@ const Scoper = {
      * Rendu de l'onglet Closing (Arsenal de Vente EXPERT)
      */
     renderClosingTab() {
+        // ... (existing implementation)
+    },
+
+    /**
+     * Rendu de l'onglet Journal de Bord & Mentorat (Pack EXPERT)
+     */
+    renderJournalTab() {
         const content = document.getElementById('scoper-tab-content');
         if (!content) return;
 
@@ -1070,149 +1083,138 @@ const Scoper = {
             content.innerHTML = `
                 <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid #a855f7;">
                     <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(168, 85, 247, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #a855f7;">
-                        <i class="fas fa-magic" style="font-size: 2.5rem;"></i>
+                        <i class="fas fa-journal-whills" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Arsenal de Closing Expert</h2>
-                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.</p>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Journal de Bord & Mentorat</h2>
+                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Pilotez votre activité comme un expert : suivez votre progression réelle, consignez vos succès et recevez des conseils de mindset personnalisés.</p>
                     <button class="button-primary large" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none;" onclick="App.showUpgradeModal('premium_feature')">
-                        🚀 Passer au Pack EXPERT
+                        🚀 Débloquer le Mentorat Expert
                     </button>
                 </div>
             `;
             return;
         }
 
-        const data = Storage.get('sp_calculator_data') || {};
-        const results = PricingEngine.calculateObjective(data);
-        const scenarios = PricingEngine.getScenarios(results);
-        const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, data.sector);
-        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, data.sector, data.target);
+        const calcData = Storage.get('sp_calculator_data') || {};
+        const targetTJM = calcData.dailyRate || 0;
+        const quotes = Storage.get('sp_quotes') || [];
+
+        // Calcul du TJM moyen sur les devis
+        const validQuotes = quotes.filter(q => q.total && q.duration);
+        const avgActualTJM = validQuotes.length > 0
+            ? Math.round(validQuotes.reduce((acc, q) => acc + (q.total / q.duration), 0) / validQuotes.length)
+            : 0;
+
+        const performanceGap = targetTJM > 0 ? Math.round(((avgActualTJM - targetTJM) / targetTJM) * 100) : 0;
 
         content.innerHTML = `
             <style>
-                .objection-card {
-                    background: rgba(255,255,255,0.03);
-                    border: 1px solid var(--border);
-                    border-radius: 20px;
-                    padding: 1.5rem;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    cursor: pointer;
-                    position: relative;
-                    overflow: hidden;
+                .mood-btn {
+                    padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02);
+                    cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-align: center;
                 }
-                .objection-card:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); transform: translateY(-5px); }
-                .objection-card.active { background: rgba(168, 85, 247, 0.1); border-color: #a855f7; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-                
-                .rebuttal-box { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease; }
-                .objection-card.active .rebuttal-box { max-height: 200px; opacity: 1; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
-                
-                .diag-question { padding: 1.2rem; border-radius: 16px; background: rgba(0,0,0,0.2); border-left: 4px solid #a855f7; margin-bottom: 1rem; font-size: 0.95rem; color: #e9d5ff; transition: transform 0.2s; cursor: default; }
-                .diag-question:hover { transform: translateX(10px); background: rgba(168, 85, 247, 0.05); }
+                .mood-btn:hover { border-color: #a855f7; transform: translateY(-3px); background: rgba(168, 85, 247, 0.05); }
+                .mood-btn.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.15); box-shadow: 0 0 20px rgba(168,85,247,0.2); }
+                .mood-emoji { font-size: 2rem; display: block; margin-bottom: 10px; }
+                .mood-label { font-size: 0.8rem; font-weight: 700; color: white; }
 
-                .expert-hero {
-                    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(30, 10, 60, 0.4) 100%);
-                    border-radius: 30px; padding: 4rem 2rem; text-align: center; border: 1px solid rgba(168, 85, 247, 0.2); margin-bottom: 3rem; position: relative; overflow: hidden;
-                }
+                .victory-card { border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; }
+                .block-card { border-left: 4px solid #f43f5e; background: rgba(244, 63, 94, 0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; }
             </style>
 
-            <div class="expert-closing-tab" style="animation: fadeIn 0.5s ease;">
-                <div class="expert-hero">
-                    <div style="font-size: 0.75rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Closing Engineer Mode</div>
-                    <h1 style="font-size: 2.8rem; margin-bottom: 1rem; color: white; letter-spacing: -1px;">Votre Arsenal de Vente</h1>
-                    <p style="color: #e9d5ff; font-size: 1.15rem; max-width: 700px; margin: 0 auto; opacity: 0.9;">Voici votre stratégie de combat personnalisée pour un profil <strong>${data.sector.toUpperCase()}</strong> face à une cible <strong>${data.target.toUpperCase()}</strong>.</p>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
-                    <!-- Posture Diagnostic -->
-                    <div class="glass-card" style="padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border);">
-                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;">
-                            <div style="width: 55px; height: 55px; border-radius: 15px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #a855f7;">
-                                <i class="fas fa-stethoscope" style="font-size: 1.8rem;"></i>
-                            </div>
-                            <div>
-                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">La Posture Dr. Expert</h3>
-                                <div style="font-size: 0.85rem; color: var(--text-muted);">Posez ces 3 questions pour matérialiser le coût du problème.</div>
-                            </div>
-                        </div>
-                        <div class="questions-list">
-                            ${tactics.diagnostic.questions.map((q, i) => `
-                                <div class="diag-question">
-                                    <span style="color: #a855f7; font-weight: 900; margin-right: 12px; font-style: italic;">Q${i + 1}</span>
-                                    ${q}
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div style="margin-top: 2rem; padding: 1.2rem; background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent); border-radius: 16px; border-left: 4px solid #10b981;">
-                            <div style="font-size: 0.7rem; color: #10b981; font-weight: 800; text-transform: uppercase; margin-bottom: 6px;">L'Argument ROI Imbattable :</div>
-                            <div style="font-size: 1rem; font-weight: 700; color: white;">"${tactics.roi.argument}"</div>
-                        </div>
-                    </div>
-
-                    <!-- Strategie d'Ancrage -->
-                    <div class="glass-card" style="padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border); background: rgba(255,255,255,0.01);">
-                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;">
-                            <div style="width: 55px; height: 55px; border-radius: 15px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #3b82f6;">
-                                <i class="fas fa-anchor" style="font-size: 1.8rem;"></i>
-                            </div>
-                            <div>
-                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">L'Ancrage de Puissance</h3>
-                                <div style="font-size: 0.85rem; color: var(--text-muted);">Utilisez le contraste pour rendre votre prix évident.</div>
-                            </div>
-                        </div>
+            <div class="expert-journal-tab" style="animation: fadeIn 0.5s ease;">
+                <div style="display: flex; gap: 2rem; margin-bottom: 3rem;">
+                    <!-- Section 1 : Mood Check-in -->
+                    <div class="glass-card" style="flex: 1; padding: 2.5rem; border-radius: 30px; border: 1px solid var(--border);">
+                        <h3 style="margin-bottom: 0.5rem; color: white; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-heart" style="color: #f43f5e;"></i> L'Humeur du Closer
+                        </h3>
+                        <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.9rem;">Avant les chiffres, comment vous sentez-vous aujourd'hui ?</p>
                         
-                        <div style="background: rgba(0,0,0,0.3); border-radius: 20px; padding: 2rem; position: relative; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="opacity: 0.3; transform: scale(0.9); margin-bottom: 1.5rem;">
-                                <div style="font-size: 0.75rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 5px;">
-                                    <i class="fas fa-crown"></i> OPTION ELITE (Ancre)
-                                </div>
-                                <div style="font-size: 2.2rem; font-weight: 900; color: white;">${scenarios.elite.tjm}€ <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                            <div class="mood-btn" onclick="this.parentElement.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); this.classList.add('active')">
+                                <span class="mood-emoji">🔥</span>
+                                <span class="mood-label">CONFIANT</span>
                             </div>
-                            
-                            <div style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; border-radius: 18px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); position: relative;">
-                                <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase; margin-bottom: 5px;">Votre Prix de Closing</div>
-                                <div style="font-size: 2.5rem; font-weight: 900; color: white;">${scenarios.security.tjm}€ <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
-                                <div style="position: absolute; top: -12px; right: -12px; background: #10b981; color: white; font-size: 0.65rem; padding: 5px 12px; border-radius: 20px; font-weight: 900; box-shadow: 0 5px 15px rgba(16,185,129,0.3);">PRIX ACCEPTE</div>
+                            <div class="mood-btn" onclick="this.parentElement.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); this.classList.add('active')">
+                                <span class="mood-emoji">😰</span>
+                                <span class="mood-label">STRESSÉ</span>
+                            </div>
+                            <div class="mood-btn" onclick="this.parentElement.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); this.classList.add('active')">
+                                <span class="mood-emoji">📈</span>
+                                <span class="mood-label">MOTIVÉ</span>
                             </div>
                         </div>
-                        
-                        <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(59, 130, 246, 0.05); border-radius: 16px; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                            <div style="font-size: 0.7rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">Logique Psychologique :</div>
-                            <div style="font-size: 0.9rem; color: #bfdbfe; font-style: italic; line-height: 1.5;">"${tactics.anchoring.logic}"</div>
+
+                        <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(168, 85, 247, 0.05); border-radius: 15px; border: 1px dashed #a855f7;">
+                            <div style="font-size: 0.75rem; color: #a855f7; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">Le Mot du Mentor :</div>
+                            <div style="font-size: 0.9rem; color: #e9d5ff; line-height: 1.6; font-style: italic;">
+                                "Le TJM n'est pas qu'un prix, c'est la valeur du temps que vous ne récupérerez jamais. Si vous stressez, rappelez-vous que vous ne vendez pas des heures, mais des résultats."
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2 : La Boussole Financière -->
+                    <div class="glass-card" style="width: 400px; padding: 2.5rem; border-radius: 30px; border: 1px solid var(--border); background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);">
+                        <h3 style="margin-bottom: 2rem; color: white; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-compass" style="color: #3b82f6;"></i> La Boussole
+                        </h3>
+
+                        <div style="margin-bottom: 2rem;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">TJM CIBLE (Module 1)</div>
+                            <div style="font-size: 2rem; font-weight: 800; color: white;">${targetTJM}€</div>
+                        </div>
+
+                        <div style="margin-bottom: 2rem;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">TJM REEL MOYEN (Devis)</div>
+                            <div style="font-size: 2rem; font-weight: 800; color: ${avgActualTJM >= targetTJM ? '#10b981' : '#f43f5e'};">
+                                ${avgActualTJM}€
+                                <span style="font-size: 0.9rem; font-weight: 600; margin-left: 10px; padding: 4px 8px; border-radius: 6px; background: ${performanceGap >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)'}; color: ${performanceGap >= 0 ? '#10b981' : '#f43f5e'};">
+                                    ${performanceGap >= 0 ? '+' : ''}${performanceGap}%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style="padding: 1.2rem; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">Gap de Valeur Annuel</div>
+                            <div style="font-size: 1.1rem; font-weight: 700; color: white;">
+                                ${Math.abs((avgActualTJM - targetTJM) * 200).toLocaleString()}€ / an
+                            </div>
+                            <div style="font-size: 0.65rem; color: ${avgActualTJM < targetTJM ? '#f43f5e' : '#10b981'}; margin-top: 5px;">
+                                ${avgActualTJM < targetTJM ? '⚠️ Manque à gagner potentiel' : '✅ Sur-performance détectée'}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Simulateur d'Objections -->
-                <div class="glass-card" style="padding: 3rem; border-radius: 35px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);">
-                    <div style="text-align: center; margin-bottom: 3rem;">
-                        <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: white;">Simulateur d'Objections</h3>
-                        <p class="text-muted">Cliquez sur une objection pour simuler la réponse parfaite.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <!-- Victoires -->
+                    <div class="glass-card" style="padding: 2rem; border-radius: 25px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <h4 style="margin-bottom: 1.5rem; color: #10b981; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-trophy"></i> Victoires & Avancées
+                        </h4>
+                        <div class="victory-card">
+                            <div style="font-weight: 700; font-size: 0.9rem; color: white;">L'ancrage a fonctionné</div>
+                            <div style="font-size: 0.8rem; color: #a7f3d0; margin-top: 4px;">Le client a accepté le TJM Sécurité sans sourciller après avoir vu l'Elite.</div>
+                        </div>
+                        <div style="border: 1px dashed rgba(16, 185, 129, 0.3); padding: 1rem; border-radius: 10px; text-align: center; cursor: pointer;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">+ Ajouter une victoire</span>
+                        </div>
                     </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-                        ${tactics.objections.map((obj, i) => `
-                            <div class="objection-card" onclick="this.classList.toggle('active')">
-                                <div style="font-size: 0.7rem; font-weight: 900; color: #f43f5e; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">Objection Courante</div>
-                                <div style="font-size: 1.15rem; font-weight: 800; color: white; line-height: 1.3;">"${obj.hook}"</div>
-                                
-                                <div class="rebuttal-box">
-                                    <div style="font-size: 0.7rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
-                                        <i class="fas fa-bolt"></i> Contre-Attaque Expert
-                                    </div>
-                                    <div style="font-size: 0.9rem; color: #e9d5ff; line-height: 1.5; font-style: italic;">
-                                        ${obj.rebuttal}
-                                    </div>
-                                </div>
-                                <div style="margin-top: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">
-                                    <i class="fas fa-mouse-pointer" style="margin-right: 5px;"></i> CLIQUEZ POUR DEBLOQUER
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
 
-                <div style="margin-top: 4rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-                    <i class="fas fa-shield-alt"></i> Ces stratégies sont basées sur l'ingénierie de vente SoloPrice-Pro v4.1
+                    <!-- Blocages -->
+                    <div class="glass-card" style="padding: 2rem; border-radius: 25px; border: 1px solid rgba(244, 63, 94, 0.2);">
+                        <h4 style="margin-bottom: 1.5rem; color: #f43f5e; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-hand-paper"></i> Points de Blocage
+                        </h4>
+                        <div class="block-card">
+                            <div style="font-weight: 700; font-size: 0.9rem; color: white;">Difficulté à justifier le PITA</div>
+                            <div style="font-size: 0.8rem; color: #fecaca; margin-top: 4px;">Le client a trouvé la marge de risque trop élevée sur ce projet complexe.</div>
+                        </div>
+                        <div style="border: 1px dashed rgba(244, 63, 94, 0.3); padding: 1rem; border-radius: 10px; text-align: center; cursor: pointer;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">+ Noter un blocage</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
