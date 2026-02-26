@@ -1212,6 +1212,19 @@ const Scoper = {
         const avgActualTJM = validQuotes.length > 0 ? Math.round(validQuotes.reduce((acc, q) => acc + (q.total / q.duration), 0) / validQuotes.length) : 0;
         const performanceGap = targetTJM > 0 ? Math.round(((avgActualTJM - targetTJM) / targetTJM) * 100) : 0;
 
+        // Données du journal
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', entries: [] };
+        const victories = journal.entries?.filter(e => e.type === 'victory') || [];
+        const blockages = journal.entries?.filter(e => e.type === 'blockage') || [];
+
+        const mentorWords = {
+            confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite sur vos prochains chiffrages. Le marché achète votre certitude avant votre savoir-faire.",
+            stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' à un mauvais projet est votre plus grande victoire.",
+            motive: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages en attente avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
+        };
+
+        const currentWord = mentorWords[journal.mood] || mentorWords.motive;
+
         content.innerHTML = `
             <style>
                 .mood-btn { padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.3s; text-align: center; }
@@ -1219,26 +1232,36 @@ const Scoper = {
                 .mood-btn.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.15); box-shadow: 0 0 20px rgba(168,85,247,0.2); }
                 .mood-emoji { font-size: 2rem; display: block; margin-bottom: 10px; }
                 .mood-label { font-size: 0.8rem; font-weight: 700; color: white; }
-                .victory-card { border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; }
-                .block-card { border-left: 4px solid #f43f5e; background: rgba(244, 63, 94, 0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; }
+                .victory-card { border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05); padding: 1.2rem; border-radius: 12px; margin-bottom: 1rem; position: relative; }
+                .block-card { border-left: 4px solid #f43f5e; background: rgba(244, 63, 94, 0.05); padding: 1.2rem; border-radius: 12px; margin-bottom: 1rem; position: relative; }
+                .remove-entry { position: absolute; top: 0.5rem; right: 0.5rem; opacity: 0; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+                .victory-card:hover .remove-entry, .block-card:hover .remove-entry { opacity: 1; }
             </style>
 
             <div class="expert-journal-tab" style="animation: fadeIn 0.5s ease;">
                 <div style="display: flex; gap: 2rem; margin-bottom: 3rem;">
+                    <!-- Section 1 : Mood Check-in -->
                     <div class="glass-card" style="flex: 1; padding: 2.5rem; border-radius: 30px; border: 1px solid var(--border);">
                         <h3 style="margin-bottom: 0.5rem; color: white; display: flex; align-items: center; gap: 10px;"><i class="fas fa-heart" style="color: #f43f5e;"></i> L'Humeur du Closer</h3>
                         <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.9rem;">Comment vous sentez-vous aujourd'hui ?</p>
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                            <div class="mood-btn" onclick="this.parentElement.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); this.classList.add('active')"><span class="mood-emoji">🔥</span><span class="mood-label">CONFIANT</span></div>
-                            <div class="mood-btn" onclick="this.parentElement.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); this.classList.add('active')"><span class="mood-emoji">😰</span><span class="mood-label">STRESSÉ</span></div>
-                            <div class="mood-btn" onclick="this.parentElement.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); this.classList.add('active')"><span class="mood-emoji">📈</span><span class="mood-label">MOTIVÉ</span></div>
+                            <div class="mood-btn ${journal.mood === 'confiant' ? 'active' : ''}" onclick="Scoper.updateJournalMood('confiant')">
+                                <span class="mood-emoji">🔥</span><span class="mood-label">CONFIANT</span>
+                            </div>
+                            <div class="mood-btn ${journal.mood === 'stresse' ? 'active' : ''}" onclick="Scoper.updateJournalMood('stresse')">
+                                <span class="mood-emoji">😰</span><span class="mood-label">STRESSÉ</span>
+                            </div>
+                            <div class="mood-btn ${journal.mood === 'motivated' ? 'active' : ''}" onclick="Scoper.updateJournalMood('motivated')">
+                                <span class="mood-emoji">📈</span><span class="mood-label">MOTIVÉ</span>
+                            </div>
                         </div>
-                        <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(168, 85, 247, 0.05); border-radius: 15px; border: 1px dashed #a855f7;">
+                        <div id="mentor-box" style="margin-top: 2rem; padding: 1.5rem; background: rgba(168, 85, 247, 0.05); border-radius: 15px; border: 1px dashed #a855f7; transition: all 0.5s ease;">
                             <div style="font-size: 0.75rem; color: #a855f7; font-weight: 800; text-transform: uppercase;">Le Mot du Mentor :</div>
-                            <div style="font-size: 0.9rem; color: #e9d5ff; font-style: italic;">"Le TJM n'est pas qu'un prix, c'est la valeur du temps que vous ne récupérerez jamais."</div>
+                            <div id="mentor-text" style="font-size: 0.9rem; color: #e9d5ff; font-style: italic; margin-top: 5px;">"${currentWord}"</div>
                         </div>
                     </div>
 
+                    <!-- Section 2 : La Boussole Financière -->
                     <div class="glass-card" style="width: 400px; padding: 2.5rem; border-radius: 30px; border: 1px solid var(--border);">
                         <h3 style="margin-bottom: 2rem; color: white; display: flex; align-items: center; gap: 10px;"><i class="fas fa-compass" style="color: #3b82f6;"></i> La Boussole</h3>
                         <div style="margin-bottom: 2rem;"><div style="font-size: 0.8rem; color: var(--text-muted);">TJM CIBLE (Calculé)</div><div style="font-size: 2rem; font-weight: 800; color: white;">${targetTJM}€</div></div>
@@ -1251,16 +1274,112 @@ const Scoper = {
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <!-- Victoires -->
                     <div class="glass-card" style="padding: 2rem; border-radius: 25px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                        <h4 style="margin-bottom: 1.5rem; color: #10b981;"><i class="fas fa-trophy"></i> Victoires</h4>
-                        <div class="victory-card"><div style="font-weight: 700; color: white;">L'ancrage a fonctionné</div></div>
+                        <h4 style="margin-bottom: 1.5rem; color: #10b981; display: flex; align-items: center; justify-content: space-between;">
+                            <span><i class="fas fa-trophy"></i> Victoires & Avancées</span>
+                            <button class="button-primary small" onclick="Scoper.addJournalEntry('victory')" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981;">+</button>
+                        </h4>
+                        <div id="victories-list">
+                            ${victories.length > 0 ? victories.map(e => `
+                                <div class="victory-card">
+                                    <div style="font-weight: 700; color: white; font-size: 0.9rem;">${e.text}</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">${new Date(e.date).toLocaleDateString()}</div>
+                                    <i class="fas fa-trash remove-entry" onclick="Scoper.removeJournalEntry('${e.id}')"></i>
+                                </div>
+                            `).join('') : '<p class="text-muted" style="font-size: 0.8rem; text-align: center; margin: 2rem 0;">Aucune victoire notée encore. Prêt pour le closing ?</p>'}
+                        </div>
                     </div>
+
+                    <!-- Blocages -->
                     <div class="glass-card" style="padding: 2rem; border-radius: 25px; border: 1px solid rgba(244, 63, 94, 0.2);">
-                        <h4 style="margin-bottom: 1.5rem; color: #f43f5e;"><i class="fas fa-hand-paper"></i> Blocages</h4>
-                        <div class="block-card"><div style="font-weight: 700; color: white;">Justification du PITA</div></div>
+                        <h4 style="margin-bottom: 1.5rem; color: #f43f5e; display: flex; align-items: center; justify-content: space-between;">
+                            <span><i class="fas fa-hand-paper"></i> Points de Blocage</span>
+                            <button class="button-primary small" onclick="Scoper.addJournalEntry('blockage')" style="background: rgba(244, 63, 94, 0.2); border: 1px solid #f43f5e; color: #f43f5e;">+</button>
+                        </h4>
+                        <div id="blockages-list">
+                            ${blockages.length > 0 ? blockages.map(e => `
+                                <div class="block-card">
+                                    <div style="font-weight: 700; color: white; font-size: 0.9rem;">${e.text}</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">${new Date(e.date).toLocaleDateString()}</div>
+                                    <i class="fas fa-trash remove-entry" onclick="Scoper.removeJournalEntry('${e.id}')"></i>
+                                </div>
+                            `).join('') : '<p class="text-muted" style="font-size: 0.8rem; text-align: center; margin: 2rem 0;">Tout roule ? Notez ici les obstacles pour que le mentor vous aide.</p>'}
+                        </div>
                     </div>
                 </div>
             </div>
         `;
+    },
+
+    /**
+     * Logique de mise à jour du mood (Interactivité)
+     */
+    updateJournalMood(mood) {
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', entries: [] };
+        journal.mood = mood;
+        Storage.set('sp_journal', journal);
+
+        // Update UI sans re-render complet pour la fluidité
+        const mentorWords = {
+            confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite sur vos prochains chiffrages. Le marché achète votre certitude avant votre savoir-faire.",
+            stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' à un mauvais projet est votre plus grande victoire.",
+            motivated: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages en attente avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
+        };
+
+        const text = mentorWords[mood];
+        const mentorBox = document.getElementById('mentor-box');
+        const mentorText = document.getElementById('mentor-text');
+
+        if (mentorBox && mentorText) {
+            mentorBox.style.transform = 'scale(0.98)';
+            mentorBox.style.opacity = '0.5';
+            setTimeout(() => {
+                mentorText.innerText = `"${text}"`;
+                mentorBox.style.transform = 'scale(1)';
+                mentorBox.style.opacity = '1';
+                // Update button active state
+                document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+                const btns = document.querySelectorAll('.mood-btn');
+                if (mood === 'confiant') btns[0].classList.add('active');
+                if (mood === 'stresse') btns[1].classList.add('active');
+                if (mood === 'motivated') btns[2].classList.add('active');
+            }, 200);
+        }
+    },
+
+    /**
+     * Ajouter une entrée au journal
+     */
+    addJournalEntry(type) {
+        const label = type === 'victory' ? 'victoire' : 'blocage';
+        const text = prompt(`Quelle ${label} souhaitez-vous noter aujourd'hui ?`);
+        if (!text || text.trim() === '') return;
+
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', entries: [] };
+        if (!journal.entries) journal.entries = [];
+
+        journal.entries.unshift({
+            id: 'jrn_' + Date.now(),
+            type,
+            text: text.trim(),
+            date: new Date().toISOString()
+        });
+
+        Storage.set('sp_journal', journal);
+        this.renderJournalTab();
+        App.showNotification(`${label.charAt(0).toUpperCase() + label.slice(1)} enregistrée.`, 'success');
+    },
+
+    /**
+     * Supprimer une entrée
+     */
+    removeJournalEntry(id) {
+        const journal = Storage.get('sp_journal');
+        if (!journal || !journal.entries) return;
+
+        journal.entries = journal.entries.filter(e => e.id !== id);
+        Storage.set('sp_journal', journal);
+        this.renderJournalTab();
     }
 };

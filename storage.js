@@ -35,6 +35,7 @@ const Storage = {
         PROVIDERS: 'sp_network_providers',
         REVENUES: 'sp_revenues',
         MY_MISSIONS: 'sp_my_missions',
+        JOURNAL: 'sp_journal',
         CALCULATOR: 'sp_calculator_data' // Alias for compatibility with calculator.js
     },
 
