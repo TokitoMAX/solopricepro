@@ -24,11 +24,13 @@ const Scoper = {
 
             <div class="tabs-container" style="margin-bottom: 2rem;">
                 <div class="tabs-header" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border);">
-                    <button class="tab-btn ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')" style="padding: 1rem; background: none; border: none; color: ${tab === 'objective' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'objective' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600;">
+                    <button class="tab-btn ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')" style="padding: 1rem; background: none; border: none; color: ${tab === 'objective' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'objective' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-bullseye"></i> Mon Objectif TJM
+                        <span style="font-size: 0.6rem; background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Offert</span>
                     </button>
-                    <button class="tab-btn ${tab === 'project' ? 'active' : ''}" onclick="Scoper.render('project')" style="padding: 1rem; background: none; border: none; color: ${tab === 'project' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'project' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600;">
-                        <i class="fas fa-calculator"></i> Chiffrage Projet ${!isPro ? '<i class="fas fa-lock" style="font-size: 0.7rem; margin-left: 5px; opacity: 0.5;"></i>' : ''}
+                    <button class="tab-btn ${tab === 'project' ? 'active' : ''}" onclick="Scoper.render('project')" style="padding: 1rem; background: none; border: none; color: ${tab === 'project' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'project' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-calculator"></i> Chiffrage Projet 
+                        ${!isPro ? '<span style="font-size: 0.6rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Pro</span>' : ''}
                     </button>
                 </div>
             </div>
@@ -92,9 +94,14 @@ const Scoper = {
                                 Continuer <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                             </button>
                         ` : `
-                            <button class="button-primary" onclick="Scoper.saveObjective()">
-                                Adopter mon TJM Stratégique <i class="fas fa-check" style="margin-left: 10px;"></i>
-                            </button>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="button-outline" onclick="Scoper.generateRoadmapPDF()" style="border-color: var(--primary); color: var(--primary-light);">
+                                    <i class="fas fa-file-pdf" style="margin-right: 10px;"></i> Ma Roadmap (Gratuit)
+                                </button>
+                                <button class="button-primary" onclick="Scoper.saveObjective()">
+                                    Adopter ce TJM <i class="fas fa-check" style="margin-left: 10px;"></i>
+                                </button>
+                            </div>
                         `}
                     </div>
                 </div>
@@ -186,46 +193,76 @@ const Scoper = {
                 `;
             case 5: // VERDICT / ROADMAP / MATRICE
                 const results = PricingEngine.calculateObjective(data);
+                const scenarios = PricingEngine.getScenarios(results);
+                const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, data.sector);
                 const diagnostic = PricingEngine.getMarketDiagnostic(results.dailyRate, data.sector);
-                const matrix = this.getStrategicMatrix(results, data);
+
+                // We use a local state for the selected scenario in the UI
+                const activeScenario = this.selectedScenario || 'security';
+                const currentTJM = scenarios[activeScenario].tjm;
+                const currentAnnual = scenarios[activeScenario].annual;
 
                 return `
                     <div class="step-header" style="margin-bottom: 2rem; text-align: center;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Votre Matrice Stratégique</h2>
-                        <p class="text-muted">Plan de bataille pour encaisser ${data.monthlyRevenue}€ nets par mois.</p>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Dashboard de Puissance Marché</h2>
+                        <p class="text-muted">Simulez votre impact financier et testez votre force de frappe.</p>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
-                        <!-- Col 1: Verdict & Finance -->
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
+                        <!-- Col 1: Scénarios & Puissance -->
                         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                            <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 2rem; text-align: center; border-radius: 20px;">
-                                <div style="font-size: 0.9rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">TJM DE SÉCURITÉ</div>
-                                <div style="font-size: 3.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow); line-height: 1;">${results.dailyRate}€<span style="font-size: 1rem; font-weight: 400; opacity: 0.7; display: block; margin-top: 5px;">par jour (Base H.T)</span></div>
+                            
+                            <!-- Market Power Gauge -->
+                            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(255,255,255,0.02); position: relative; overflow: hidden;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--primary-light);">Market Power Score</span>
+                                    <span style="font-size: 1.2rem; font-weight: 900; color: var(--white);">${powerScore}/100</span>
+                                </div>
+                                <div style="height: 8px; background: var(--border); border-radius: 4px; position: relative;">
+                                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: ${powerScore}%; background: linear-gradient(90deg, #f43f5e 0%, var(--primary) 100%); border-radius: 4px; transition: width 0.5s;"></div>
+                                </div>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px;">
+                                    ${powerScore > 70 ? '<strong>Prix Massif</strong> : Facile à vendre, volume élevé possible.' : (powerScore > 40 ? '<strong>Prix Équilibré</strong> : Nécessite une bonne preuve sociale.' : '<strong>Prix Premium</strong> : Demande une autorité d\'expert reconnue.')}
+                                </p>
                             </div>
 
-                            <div class="verdict-breakdown" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--border);">
-                                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">CA Requis / mois</div>
-                                    <div style="font-size: 1.1rem; font-weight: 800;">${results.revenueNeeded}€</div>
-                                </div>
-                                <div style="padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--border);">
-                                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Réserve Cotis.</div>
-                                    <div style="font-size: 1.1rem; font-weight: 800; color: #f43f5e;">${results.taxAmount}€</div>
-                                </div>
+                            <!-- Scenario Selector -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                ${Object.entries(scenarios).map(([key, s]) => `
+                                    <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1rem; border-radius: 12px; border: 2px solid ${activeScenario === key ? 'var(--primary)' : 'var(--border)'}; background: ${activeScenario === key ? 'var(--primary-glass)' : 'transparent'}; text-align: center; transition: all 0.2s;">
+                                        <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: ${activeScenario === key ? 'var(--primary-light)' : 'var(--text-muted)'};">${s.label}</div>
+                                        <div style="font-size: 1.1rem; font-weight: 900; margin: 4px 0;">${s.tjm}€</div>
+                                        <div style="font-size: 0.6rem; opacity: 0.7;">${s.annual.toLocaleString()}€/an</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; text-align: center; border-radius: 20px;">
+                                <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">PROJECTION REVENU ANNUEL</div>
+                                <div style="font-size: 2.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${currentAnnual.toLocaleString()}€<span style="font-size: 0.9rem; font-weight: 400; opacity: 0.7; display: block;">Projection basée sur ${data.workingDays}j facturés / mois</span></div>
                             </div>
                         </div>
 
-                        <!-- Col 2: Strategic Pillars -->
-                        <div class="strategic-roadmap" style="display: grid; grid-template-columns: 1fr; gap: 0.8rem;">
-                            ${matrix.map((p, idx) => `
-                                <div class="roadmap-pillar" style="padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid ${p.color}; transition: transform 0.3s; cursor: default;">
-                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                                        <i class="fas ${p.icon}" style="color: ${p.color}; font-size: 0.8rem;"></i>
-                                        <h4 style="font-size: 0.75rem; letter-spacing: 1px; color: ${p.color}; text-transform: uppercase;">${p.title}</h4>
-                                    </div>
-                                    <p style="font-size: 0.82rem; line-height: 1.4; color: var(--text-muted);">${p.desc}</p>
-                                </div>
-                            `).join('')}
+                        <!-- Col 2: Pourquoi passer au Chiffrage ? -->
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary-glass);">
+                                <h3 style="font-size: 1rem; color: var(--primary-light); margin-bottom: 10px;"><i class="fas fa-rocket"></i> Suite Logique : Chiffrage Projet</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">
+                                    Maintenant que vous avez votre <strong>TJM stratégique (${currentTJM}€)</strong>, il est crucial de vérifier s'il passe sur un contrat réel. 
+                                </p>
+                                <ul style="padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Vos prix couvrent-ils vos dépenses réelles ?</li>
+                                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Combien reste-t-il vraiment dans votre poche ?</li>
+                                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Quel impact sur votre marge nette ?</li>
+                                </ul>
+                                <button class="button-primary" onclick="Scoper.render('project')" style="width: 100%; justify-content: center; padding: 12px;">
+                                    Tester ce TJM sur un Projet <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                                </button>
+                            </div>
+
+                            <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center; opacity: 0.5;">
+                                <i class="fas fa-magic" style="margin-right: 5px;"></i> Diagnostic propulsé par SoloPrice PRO
+                            </p>
                         </div>
                     </div>
                 `;
@@ -329,18 +366,11 @@ const Scoper = {
     },
 
     getCoachingValue(sector, tjm) {
-        const values = {
-            tech: tjm > 600 ? 'Vendez l\'expertise archi-logicielle, pas juste du code.' : 'Misez sur la rapidité de livraison et la propreté du code.',
-            design: tjm > 500 ? 'Vendez de la stratégie de marque globale (Impact Business).' : 'Vendez des livrables de haute qualité esthétique.',
-            conseil: 'Vendez le ROI (Retour sur Investissement) de votre intervention.'
-        };
-        return values[sector] || values.tech;
+        return PricingEngine.getCoachingValue(sector, tjm);
     },
 
     getCoachingTarget(sector, tjm) {
-        if (tjm > 700) return 'Scale-ups, Grands Comptes et PME en forte croissance.';
-        if (tjm > 400) return 'PME installées et agences en sous-traitance.';
-        return 'TPE, Indépendants et petites structures locales.';
+        return PricingEngine.getCoachingTarget(sector, tjm);
     },
 
     getRealityDiagnostic(tjm, data = {}) {
@@ -925,5 +955,18 @@ const Scoper = {
 
         document.getElementById('catalog-selector-overlay')?.remove();
         App.showNotification(`"${service.label}" importé.`, 'success');
+    },
+
+    generateRoadmapPDF() {
+        const data = Storage.get('sp_calculator_data') || {};
+        const results = PricingEngine.calculateObjective(data);
+        const user = Storage.get(Storage.KEYS.USER);
+
+        PDFGenerator.generateTJMCard(results, data, user);
+    },
+
+    selectScenario(scenario) {
+        this.selectedScenario = scenario;
+        this.render('objective');
     }
 };

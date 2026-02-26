@@ -658,5 +658,136 @@ const PDFGenerator = {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    },
+
+    generateTJMCard(results, data, user) {
+        const date = new Date().toLocaleDateString('fr-FR');
+        const advice = PricingEngine.getStrategicAdvice(results.dailyRate, data.sector);
+        const providerName = user?.company?.name || user?.user_metadata?.company_name || 'Expert Indépendant';
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Ma Roadmap de Rentabilité - SoloPrice Pro</title>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+                <style>
+                    :root { --primary: #10b981; --primary-dark: #059669; --text: #111827; --text-light: #6b7280; --border: #e5e7eb; --bg-light: #f9fafb; }
+                    body { font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.5; max-width: 800px; margin: 0 auto; padding: 40px; background: #fff; }
+                    .card { border: 2px solid var(--primary); border-radius: 24px; padding: 40px; position: relative; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); }
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+                    .logo { font-size: 20px; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
+                    .badge { background: var(--primary); color: white; padding: 6px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+                    
+                    .title-section { text-align: center; margin-bottom: 50px; }
+                    .title-section h1 { font-size: 32px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; }
+                    .title-section p { color: var(--text-light); font-size: 16px; font-weight: 500; }
+
+                    .main-stats { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; margin-bottom: 50px; }
+                    .tjm-box { background: var(--primary); color: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4); }
+                    .tjm-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; opacity: 0.9; margin-bottom: 5px; }
+                    .tjm-value { font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 10px; }
+                    .tjm-sub { font-size: 14px; opacity: 0.8; }
+
+                    .finance-box { padding: 25px; border: 1px solid var(--border); border-radius: 20px; background: white; }
+                    .finance-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+                    .finance-row:last-child { border: none; }
+                    .finance-label { font-size: 13px; color: var(--text-light); }
+                    .finance-val { font-weight: 700; font-size: 15px; }
+
+                    .strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 50px; }
+                    .pillar { padding: 20px; border-radius: 16px; border: 1px solid var(--border); background: white; }
+                    .pillar h3 { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--primary); margin: 0 0 10px 0; letter-spacing: 1px; }
+                    .pillar p { font-size: 13px; color: var(--text); margin: 0; font-weight: 500; }
+
+                    .next-step { background: #fefce8; border: 1px solid #fef08a; padding: 30px; border-radius: 20px; text-align: center; }
+                    .next-step h2 { font-size: 18px; font-weight: 800; margin: 0 0 10px 0; color: #854d0e; }
+                    .next-step p { font-size: 14px; color: #713f12; margin-bottom: 20px; }
+                    .btn-fake { display: inline-block; background: var(--primary); color: white; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 14px; }
+
+                    .footer { margin-top: 40px; text-align: center; font-size: 11px; color: var(--text-light); }
+                    .watermark-bg { position: absolute; bottom: -50px; right: -50px; font-size: 200px; font-weight: 900; color: rgba(16, 185, 129, 0.03); transform: rotate(-25deg); pointer-events: none; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="watermark-bg">SOLO</div>
+                    <div class="header">
+                        <div class="logo">SOLOPRICE <span style="color:var(--text)">PRO</span></div>
+                        <div class="badge">Stratégie Individuelle</div>
+                    </div>
+
+                    <div class="title-section">
+                        <h1>Ma Roadmap de Rentabilité</h1>
+                        <p>Préparé pour <strong>${providerName}</strong> &bull; ${date}</p>
+                    </div>
+
+                    <div class="main-stats">
+                        <div class="tjm-box">
+                            <div class="tjm-label">TJM de Sécurité</div>
+                            <div class="tjm-value">${results.dailyRate}€</div>
+                            <div class="tjm-sub">Tarif Journalier Minimum (H.T)</div>
+                        </div>
+
+                        <div class="finance-box">
+                            <div class="finance-row">
+                                <span class="finance-label">CA Requis / mois</span>
+                                <span class="finance-val">${results.revenueNeeded}€</span>
+                            </div>
+                            <div class="finance-row">
+                                <span class="finance-label">Réserve Cotisations</span>
+                                <span class="finance-val" style="color:#ef4444;">-${results.taxAmount}€</span>
+                            </div>
+                            <div class="finance-row">
+                                <span class="finance-label">Revenu Net Cible</span>
+                                <span class="finance-val" style="color:var(--primary-dark);">${data.monthlyRevenue}€</span>
+                            </div>
+                            <div class="finance-row" style="border: none;">
+                                <span class="finance-label">Rythme Facturé</span>
+                                <span class="finance-val">${data.workingDays} j/mois</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="strategy-grid">
+                        <div class="pillar">
+                            <h3>Positionnement Marché</h3>
+                            <p>${advice.diagnostic.title}</p>
+                            <p style="font-size: 11px; color: var(--text-light); margin-top: 5px;">${advice.diagnostic.desc}</p>
+                        </div>
+                        <div class="pillar">
+                            <h3>Argumentaire Valeur</h3>
+                            <p>${advice.valueProposition}</p>
+                        </div>
+                        <div class="pillar">
+                            <h3>Cible Client Idéale</h3>
+                            <p>${advice.idealTarget}</p>
+                        </div>
+                        <div class="pillar">
+                            <h3>Levier d'Optimisation</h3>
+                            <p>${advice.optimization}</p>
+                        </div>
+                    </div>
+
+                    <div class="next-step">
+                        <h2>🚀 Prêt à passer à l'action ?</h2>
+                        <p>Votre TJM de sécurité est maintenant défini. La prochaine étape est de l'appliquer sur une mission réelle pour vérifier sa validité terrain.</p>
+                        <div class="btn-fake">Utiliser le Chiffrage Projet</div>
+                    </div>
+
+                    <div class="footer">
+                        Généré par SoloPrice Pro &bull; www.soloprice-pro.fr &bull; Le copilote financier des indépendants.
+                    </div>
+                </div>
+                <script>
+                    window.onload = function() { setTimeout(() => window.print(), 500); }
+                </script>
+            </body>
+            </html>
+        `;
+
+        this.openBlob(htmlContent);
+        App.showNotification('Roadmap Stratégique générée avec succès !', 'success');
     }
 };

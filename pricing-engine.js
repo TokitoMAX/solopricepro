@@ -76,6 +76,73 @@ const PricingEngine = {
                 icon: 'fa-star'
             };
         }
+    },
+
+    /**
+     * Génère un résumé stratégique complet pour le PDF
+     */
+    getStrategicAdvice(tjm, sector = 'tech') {
+        const diagnostic = this.getMarketDiagnostic(tjm, sector);
+        return {
+            diagnostic,
+            valueProposition: this.getCoachingValue(sector, tjm),
+            idealTarget: this.getCoachingTarget(sector, tjm),
+            optimization: tjm > 800 ? 'Proposez du forfait pour masquer le TJM.' : 'Augmentez votre rythme de 2j pour baisser la pression.'
+        };
+    },
+
+    getCoachingValue(sector, tjm) {
+        const values = {
+            tech: tjm > 600 ? 'Vendez l\'expertise archi-logicielle, pas juste du code.' : 'Misez sur la rapidité de livraison et la propreté du code.',
+            design: tjm > 500 ? 'Vendez de la stratégie de marque globale (Impact Business).' : 'Vendez des livrables de haute qualité esthétique.',
+            conseil: 'Vendez le ROI (Retour sur Investissement) de votre intervention.'
+        };
+        return values[sector] || values.tech;
+    },
+
+    getCoachingTarget(sector, tjm) {
+        if (tjm > 700) return 'Scale-ups, Grands Comptes et PME en forte croissance.';
+        if (tjm > 400) return 'PME installées et agences en sous-traitance.';
+        return 'TPE, Indépendants et petites structures locales.';
+    },
+
+    getScenarios(results) {
+        const base = results.dailyRate;
+        return {
+            security: {
+                label: 'Sécurité',
+                tjm: base,
+                annual: base * 12 * 15, // Simplified projection
+                desc: 'Couvre vos besoins et charges.'
+            },
+            growth: {
+                label: 'Croissance',
+                tjm: Math.ceil(base * 1.15),
+                annual: Math.ceil(base * 1.15) * 12 * 15,
+                desc: 'Capacité d\'investissement (+15%).'
+            },
+            elite: {
+                label: 'Elite',
+                tjm: Math.ceil(base * 1.30),
+                annual: Math.ceil(base * 1.30) * 12 * 15,
+                desc: 'Haute valeur / Niche (+30%).'
+            }
+        };
+    },
+
+    getMarketPowerScore(tjm, sector = 'tech') {
+        let average = 500;
+        if (sector === 'artisanat') average = 350;
+
+        // Lower TJM = Higher Market Power (easier to sell)
+        // Higher TJM = Lower Market Power (needs more authority)
+        const ratio = average / tjm;
+        let score = Math.round(ratio * 70); // Base score
+
+        if (score > 100) score = 100;
+        if (score < 10) score = 10;
+
+        return score;
     }
 };
 
