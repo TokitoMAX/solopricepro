@@ -185,8 +185,8 @@ const Scoper = {
                     </div>
                 `;
             case 5: // VERDICT / ROADMAP / MATRICE
-                const results = this.calculateObjectiveData(data);
-                const diagnostic = this.getRealityDiagnostic(results.dailyRate, data);
+                const results = PricingEngine.calculateObjective(data);
+                const diagnostic = PricingEngine.getMarketDiagnostic(results.dailyRate, data.sector);
                 const matrix = this.getStrategicMatrix(results, data);
 
                 return `
@@ -275,7 +275,7 @@ const Scoper = {
 
         // Final calculation for step 5 if we are on it
         if (this.currentObjectiveStep === 5) {
-            const results = this.calculateObjectiveData(data);
+            const results = PricingEngine.calculateObjective(data);
             data.dailyRate = results.dailyRate;
             data.hourlyRate = results.hourlyRate;
         }
@@ -344,67 +344,11 @@ const Scoper = {
     },
 
     getRealityDiagnostic(tjm, data = {}) {
-        if (tjm <= 0) return { title: 'Objectif nul', desc: 'Veuillez remplir les étapes précédentes.', color: 'var(--text-muted)', icon: 'fa-info-circle' };
-
-        const sector = data.sector || 'tech';
-
-        // Thresholds vary by sector
-        let expertThreshold = 500;
-        let seniorThreshold = 800;
-
-        if (sector === 'artisanat' || sector === 'media') {
-            expertThreshold = 350;
-            seniorThreshold = 600;
-        }
-
-        if (tjm < expertThreshold * 0.7) {
-            return {
-                title: 'TJM "Entrée de Marché"',
-                desc: 'Cohérent pour débuter. Attention à ne pas rester trop longtemps dans cette zone de prix.',
-                color: 'var(--primary)',
-                icon: 'fa-seedling'
-            };
-        } else if (tjm >= expertThreshold * 0.7 && tjm < seniorThreshold) {
-            return {
-                title: 'TJM "Expert Confirmé"',
-                desc: `La zone saine pour le secteur ${sector}. C'est tangible et réaliste pour la majorité des clients.`,
-                color: 'var(--success)',
-                icon: 'fa-check-circle'
-            };
-        } else {
-            return {
-                title: 'TJM "Sénior / Niche"',
-                desc: 'Profil haut de gamme. Demande une solide réputation ou une expertise rare pour éviter les blocages clients.',
-                color: 'var(--warning)',
-                icon: 'fa-star'
-            };
-        }
+        return PricingEngine.getMarketDiagnostic(tjm, data.sector);
     },
 
     calculateObjectiveData(data = {}) {
-        // Unified defaults for calculations
-        const revenue = parseFloat(data.monthlyRevenue) || 3000;
-        const days = parseFloat(data.workingDays) || 15;
-        const hours = parseFloat(data.hoursPerDay) || 7;
-        const charges = parseFloat(data.monthlyCharges) || 500;
-        const taxRate = parseFloat(data.taxRate) || 0; // Taxes default to 0 if not set, but UI shows 22
-
-        const rate = taxRate / 100;
-        let revenueNeeded = 0;
-        if (rate < 1) {
-            revenueNeeded = (revenue + charges) / (1 - rate);
-        }
-
-        const monthlyHours = days * hours;
-        const hourlyRate = monthlyHours > 0 ? revenueNeeded / monthlyHours : 0;
-        const dailyRate = hourlyRate * hours;
-
-        return {
-            dailyRate: Math.ceil(dailyRate),
-            hourlyRate: Math.ceil(hourlyRate),
-            revenueNeeded: Math.ceil(revenueNeeded),
-            taxAmount: Math.ceil(revenueNeeded * rate)
-        };
+        return PricingEngine.calculateObjective(data);
     },
 
     renderProjectTab() {
@@ -543,9 +487,8 @@ const Scoper = {
     },
 
     async saveObjective() {
-        // Enforce a final calculation from latest data
         const data = Storage.get('sp_calculator_data') || {};
-        const results = this.calculateObjectiveData(data);
+        const results = PricingEngine.calculateObjective(data);
 
         const finalData = {
             ...data,
