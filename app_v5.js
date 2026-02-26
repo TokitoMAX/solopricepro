@@ -205,6 +205,18 @@ const App = {
 
     // Navigation entre pages avec support d'arguments pour le rendu
     navigateTo(page, ...args) {
+        // Redirection des alias vers les bons onglets du réseau
+        if (page === 'clients') return this.navigateTo('network', 'clients');
+        if (page === 'leads') return this.navigateTo('network', 'leads');
+
+        // Prévenir les boucles infinies si on demande la même page et le même onglet
+        const currentTab = args[0] || null;
+        const lastTab = localStorage.getItem(`sp_last_tab_${page}`);
+        if (this.currentPage === page && currentTab === lastTab && !this.forceRender) {
+            console.log(`[NAV] Already on ${page} (tab: ${currentTab}). Skipping render.`);
+            return;
+        }
+
         // Fermer le menu mobile si ouvert
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.querySelector('.sidebar-backdrop');
@@ -241,13 +253,16 @@ const App = {
             // Mettre à jour l'état actif de la navigation
             document.querySelectorAll('[data-nav]').forEach(link => {
                 link.classList.remove('active');
-                if (link.dataset.nav === page) {
-                    link.classList.add('active');
+                if (link.dataset.nav === page || (page === 'network' && (link.dataset.nav === 'clients' || link.dataset.nav === 'leads'))) {
+                    // Logic for active class on sidebar items
+                    if (link.dataset.nav === page) link.classList.add('active');
                 }
             });
 
             // Update mobile header
             this.updateMobileHeader(page);
+        } else {
+            console.error(`[NAV] Page element #${page} not found in DOM.`);
         }
     },
 

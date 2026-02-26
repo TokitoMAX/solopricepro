@@ -49,9 +49,9 @@ const Network = {
         if (activeTab) activeTab.classList.add('active');
 
         // Logic only if we are on the network page
-        if (App.currentPage === 'network') {
+        if (typeof App !== 'undefined' && App.currentPage === 'network') {
             const route = App.getPageFromHash();
-            if (!route || route.tab !== tabId) {
+            if (route && route.page === 'network' && route.tab !== tabId) {
                 Analytics.trackEvent('switch_cercle_tab', { tab: tabId });
                 App.navigateTo('network', tabId);
             }
