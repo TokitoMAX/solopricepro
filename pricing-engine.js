@@ -171,14 +171,23 @@ const PricingEngine = {
                 ],
                 roi: "Réduction de 40% des coûts opérationnels sur 12 mois."
             },
+            marketing: {
+                focus: "Invisibilité & Opportunités Perdues",
+                questions: [
+                    "Combien de prospects qualifiés perdez-vous chaque mois faute de stratégie claire ?",
+                    "Si votre concurrent prend la parole avant vous, quel sera le coût pour regagner ce terrain ?",
+                    "Quel est l'impact d'une image de marque 'floue' sur vos marges actuelles ?"
+                ],
+                roi: "Augmentation de +25% du volume de leads qualifiés sous 6 mois."
+            },
             design: {
                 focus: "Image Low-Cost & Faible Conversion",
                 questions: [
                     "Quel est le taux de rebond actuel sur votre tunnel de vente ?",
-                    "Combien de clients potentiels perdent confiance à cause de cette interface datée ?",
-                    "Si votre identité visuelle ne change pas, comment allez-vous justifier vos nouveaux tarifs ?"
+                    "Combien de clients potentiels perdent confiance à cause d'une interface datée ?",
+                    "Si votre identité ne change pas, comment allez-vous justifier vos nouveaux tarifs ?"
                 ],
-                roi: "Augmentation directe du taux de transformation de +15% minimum."
+                roi: "Augmentation du taux de transformation de +15% minimum."
             },
             conseil: {
                 focus: "Stagnation & Coût d'Opportunité",
@@ -196,21 +205,24 @@ const PricingEngine = {
                     "Combien vaut pour vous la tranquillité d'esprit sur les 10 prochaines années ?",
                     "Si les finitions ne sont pas parfaites, quel message envoyez-vous à vos futurs clients ?"
                 ],
-                roi: "Zéro coût de maintenance sur les 5 premières années (Garantie Total)."
+                roi: "Zéro coût de maintenance sur les 5 premières années."
             },
             media: {
                 focus: "Invisibilité & Perte d'Attention",
                 questions: [
                     "Combien vous coûte l'acquisition d'un client sans image de marque forte ?",
-                    "Si votre contenu ne se démarque pas, comment allez-vous capter l'attention de votre cible cette année ?",
+                    "Si votre contenu ne se démarque pas, comment allez-vous capter l'attention de votre cible ?",
                     "Quel est l'impact d'une communication 'bricolée' sur votre crédibilité ?"
                 ],
-                roi: "Baisse de 30% du coût d'acquisition client (CAC) via l'organique."
+                roi: "Baisse de 30% du coût d'acquisition client (CAC)."
             }
         };
 
         const currentSector = sectorData[sector] || sectorData.tech;
         const targetLabel = { 'tpe': 'Indépendant/TPE', 'pme': 'PME/Startup', 'grands-comptes': 'Grand Compte/Institution' }[target] || 'PME';
+
+        const securityTJM = scenarios.security.tjm;
+        const eliteTJM = scenarios.elite.tjm;
 
         return {
             title: "Arsenal de Closing Expert",
@@ -223,8 +235,8 @@ const PricingEngine = {
             anchoring: {
                 title: "L'Ancrage de Puissance",
                 description: "Présentez toujours la valeur avant le prix. Utilisez l'effet de contraste.",
-                strategy: `Ancrez sur le Pack ELITE à ${scenarios.elite.tjm}€ pour faire passer le Pack CONFORT (${scenarios.security.tjm}€) pour un investissement 'Évident'.`,
-                logic: `Expliquez que l'Elite est pour une 'Domination Totale' alors que le Sécurité est pour une 'Croissance Sereine'.`
+                strategy: `Ancrez sur le Pack ELITE à ${eliteTJM}€ pour faire passer le Pack CONFORT (${securityTJM}€) pour un investissement 'Évident'.`,
+                logic: `Expliquez que l'Elite (${eliteTJM}€) est pour une 'Domination Totale' alors que le Sécurité ($${securityTJM}€) est pour une 'Croissance Sereine'.`
             },
             roi: {
                 title: "L'Argument Choc (ROI)",
@@ -234,15 +246,15 @@ const PricingEngine = {
             objections: [
                 {
                     hook: "C'est trop cher.",
-                    rebuttal: `Recadrez sur l'inaction : 'Je comprends. Mais si on ne fait rien, combien vous coûtera la ${currentSector.focus} dans 6 mois ?'`
+                    rebuttal: `Recadrez sur l'inaction : 'Je comprends que ${securityTJM}€ soit un budget. Mais si on ne fait rien, combien vous coûtera la ${currentSector.focus} dans 6 mois ?'`
                 },
                 {
                     hook: "On doit réfléchir.",
-                    rebuttal: "Questionnez le risque : 'Bien sûr. Quelle est l'information manquante aujourd'hui pour être certain que ce projet soit un succès ?'"
+                    rebuttal: `Questionnez le risque : 'Bien sûr. Quelle est l'information manquante aujourd'hui pour être certain qu'investir ${securityTJM}€ dans ce projet soit un succès total ?'`
                 },
                 {
                     hook: "Un concurrent est moins cher.",
-                    rebuttal: "Misez sur l'expertise : 'Exact. Et quel est le prix d'un projet qui doit être refait dans un an parce qu'il n'était pas assez robuste ?'"
+                    rebuttal: `Misez sur l'expertise : 'Exact, on trouve toujours moins cher que ${securityTJM}€. Mais quel est le prix d'un projet qui doit être refait dans un an parce qu'il n'était pas assez robuste ?'`
                 }
             ]
         };
