@@ -150,7 +150,7 @@ const Auth = {
             }
 
             if (result.requiresConfirmation || (result.user && !result.session)) {
-                this.showSuccess(result.message || 'Inscription réussie ! Veuillez confirmer votre email.');
+                this.showSuccess(result.message || 'Inscription réussie ! Veuillez confirmer votre email (vérifiez vos spams).');
                 if (typeof closeAllModals === 'function') closeAllModals();
                 return result;
             }
@@ -321,6 +321,7 @@ const Auth = {
         console.warn('🔐 Session expired or invalid. Clearing tokens...');
         localStorage.removeItem('sp_token');
         localStorage.removeItem('sp_user');
+        sessionStorage.removeItem('sp_in_app'); // CRITICAL: Stop reload loop
         this.token = null;
         this.user = null;
 

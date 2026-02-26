@@ -588,12 +588,51 @@
         </div>
     </div>
 
+    <!-- NETWORK ADD MODAL -->
+    <div id="network-add-modal" class="modal-overlay" role="dialog">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <button type="button" class="modal-close" onclick="Network.hideAddModal()">✕</button>
+            <div class="modal-header">
+                <h2>Ajouter un Partenaire</h2>
+                <p class="text-muted">Enrichissez votre réseau local.</p>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="Network.addProvider(event)">
+                    <div class="form-group">
+                        <label class="form-label">Nom / Entreprise</label>
+                        <input type="text" name="name" class="form-input" required placeholder="Ex: Jean Expertise">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Spécialité</label>
+                        <input type="text" name="specialty" class="form-input" required
+                            placeholder="Ex: Plomberie, Design...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ville</label>
+                        <input type="text" name="city" class="form-input" placeholder="Ex: Fort-de-France">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-input" placeholder="contact@exemple.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Téléphone</label>
+                        <input type="tel" name="phone" class="form-input" placeholder="0690...">
+                    </div>
+                    <button type="submit" class="button-primary full-width" style="margin-top: 1rem;">Enregistrer le
+                        Partenaire</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Script de démarrage -->
     <link rel="stylesheet" href="styles.css?v=20260225_0100">
     <script src="auth.js?v=20260225_0215"></script>
     <script src="storage.js?v=20260225_0215"></script>
     <script src="taxes.js?v=20260225_0215"></script>
     <script src="app_v5.js?v=20260225_0215"></script>
+    <script src="settings.js?v=20260225_0215"></script>
     <script src="premium-wall.js?v=20260225_0215"></script>
     <script src="onboarding.js?v=20260225_0215"></script>
     <script src="dashboard.js?v=20260225_0215"></script>

@@ -14,7 +14,7 @@ const Onboarding = {
                 id: 'profile',
                 title: 'Compléter mon profil',
                 description: 'Ajoutez votre SIRET et vos coordonnées Pro.',
-                isComplete: !!(user.companyName && user.siret),
+                isComplete: !!((user.companyName || (user.company && user.company.name)) && (user.siret || (user.company && user.company.siret))),
                 nav: 'profile'
             },
             {
