@@ -145,6 +145,7 @@ const Storage = {
 
         // 3. Default fallback
         if (key === this.KEYS.SETTINGS) return {};
+        if (key === this.KEYS.JOURNAL) return { mood: 'motivated', entries: [] };
         // Default fallback for tables
         return [];
     },

@@ -1362,8 +1362,11 @@ const Scoper = {
         const text = prompt(`Quelle ${label} souhaitez-vous noter aujourd'hui ?`);
         if (!text || text.trim() === '') return;
 
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', entries: [] };
-        if (!journal.entries) journal.entries = [];
+        let journal = Storage.get('sp_journal');
+        if (!journal || typeof journal !== 'object' || Array.isArray(journal)) {
+            journal = { mood: 'motivated', entries: [] };
+        }
+        if (!Array.isArray(journal.entries)) journal.entries = [];
 
         journal.entries.unshift({
             id: 'jrn_' + Date.now(),

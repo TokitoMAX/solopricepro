@@ -31,7 +31,7 @@ router.post('/register', async (req, res) => {
             password,
             options: {
                 data: {
-                    company_name: finalCompanyName,
+                    company_name: company,
                     full_name: '', // Optional
                 }
             }
@@ -122,6 +122,17 @@ router.post('/login', async (req, res) => {
         }
 
         console.log('✅ Login successful for:', email);
+
+        if (!data.user || !data.session) {
+            console.error('❌ Login error: User or Session missing', {
+                hasUser: !!data.user,
+                hasSession: !!data.session
+            });
+            return res.status(401).json({
+                message: "Session non créée. Veuillez vérifier si votre email a été confirmé."
+            });
+        }
+
         res.json({
             user: {
                 id: data.user.id,
@@ -135,11 +146,12 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         console.error('💥 Catch Error /login:', {
             message: error.message,
-            name: error.name
+            name: error.name,
+            stack: error.stack
         });
         res.status(500).json({
             message: 'Erreur serveur lors de la connexion',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            error: process.env.NODE_ENV === 'development' ? error.stack : error.message
         });
     }
 });
