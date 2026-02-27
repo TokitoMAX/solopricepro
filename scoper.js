@@ -147,7 +147,11 @@ const Scoper = {
                     ].map(s => `
                             <div class="sector-card ${data.sector === s.id ? 'active' : ''}" 
                                  onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateSector('${s.id}')"
-                                 style="padding: 1.2rem; border: 1px solid ${data.sector === s.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 12px; cursor: pointer; transition: all 0.3s; background: ${data.sector === s.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; text-align: center;">
+                                 style="padding: 1.2rem; border: 1px solid ${data.sector === s.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: ${data.sector === s.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                 <style>
+                                    .sector-card:hover { transform: translateY(-3px); border-color: var(--primary-light) !important; background: rgba(var(--primary-rgb), 0.1) !important; }
+                                    .sector-card:active { transform: scale(0.95); }
+                                 </style>
                                 <i class="fas ${s.icon}" style="font-size: 1.2rem; color: ${data.sector === s.id ? 'var(--primary-light)' : 'var(--text-muted)'}; margin-bottom: 8px; display: block;"></i>
                                 <div style="font-weight: 700; font-size: 0.85rem;">${s.label}</div>
                             </div>
@@ -166,7 +170,11 @@ const Scoper = {
                     ].map(t => `
                             <div class="target-card ${data.target === t.id ? 'active' : ''}" 
                                  onclick="document.querySelectorAll('.target-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateTarget('${t.id}')"
-                                 style="flex: 1; padding: 1rem; border: 1px solid ${data.target === t.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 12px; cursor: pointer; background: ${data.target === t.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; text-align: center;">
+                                 style="flex: 1; padding: 1rem; border: 1px solid ${data.target === t.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: ${data.target === t.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                 <style>
+                                    .target-card:hover { transform: translateY(-2px); border-color: var(--primary-light) !important; background: rgba(var(--primary-rgb), 0.1) !important; }
+                                    .target-card:active { transform: scale(0.97); }
+                                 </style>
                                 <i class="fas ${t.icon}" style="font-size: 1rem; color: ${data.target === t.id ? 'var(--primary-light)' : 'var(--text-muted)'}; margin-bottom: 5px;"></i>
                                 <div style="font-weight: 600; font-size: 0.75rem;">${t.label}</div>
                             </div>
@@ -1215,102 +1223,143 @@ const Scoper = {
         const avgActualTJM = validQuotes.length > 0 ? Math.round(validQuotes.reduce((acc, q) => acc + (q.total / q.duration), 0) / validQuotes.length) : 0;
         const performanceGap = targetTJM > 0 ? Math.round(((avgActualTJM - targetTJM) / targetTJM) * 100) : 0;
 
-        // Données du journal
         let journal = Storage.get('sp_journal');
-        if (!journal || Array.isArray(journal) || !journal.mood) {
-            journal = { mood: 'motivated', entries: [] };
+        if (!journal || typeof journal !== 'object' || Array.isArray(journal)) {
+            journal = { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
         }
-        const victories = journal.entries?.filter(e => e.type === 'victory') || [];
-        const blockages = journal.entries?.filter(e => e.type === 'blockage') || [];
+
+        const victories = (journal.entries || []).filter(e => e.type === 'victory');
+        const blockages = (journal.entries || []).filter(e => e.type === 'blockage');
 
         const mentorWords = {
-            confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite sur vos prochains chiffrages. Le marché achète votre certitude avant votre savoir-faire.",
-            stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' à un mauvais projet est votre plus grande victoire.",
-            motivated: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages en attente avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
+            confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite. Le marché achète votre certitude avant votre savoir-faire.",
+            stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' est une victoire.",
+            motivated: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
         };
-
-        const currentWord = mentorWords[journal.mood] || mentorWords.motivated;
 
         content.innerHTML = `
             <style>
-                .mood-btn { padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.3s; text-align: center; }
-                .mood-btn:hover { border-color: #a855f7; transform: translateY(-3px); background: rgba(168, 85, 247, 0.05); }
-                .mood-btn.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.15); box-shadow: 0 0 20px rgba(168,85,247,0.2); }
-                .mood-emoji { font-size: 2rem; display: block; margin-bottom: 10px; }
-                .mood-label { font-size: 0.8rem; font-weight: 700; color: white; }
-                .victory-card { border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.05); padding: 1.2rem; border-radius: 12px; margin-bottom: 1rem; position: relative; }
-                .block-card { border-left: 4px solid #f43f5e; background: rgba(244, 63, 94, 0.05); padding: 1.2rem; border-radius: 12px; margin-bottom: 1rem; position: relative; }
-                .remove-entry { position: absolute; top: 0.5rem; right: 0.5rem; opacity: 0; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
-                .victory-card:hover .remove-entry, .block-card:hover .remove-entry { opacity: 1; }
+                .mindset-grid { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
+                .energy-slider::-webkit-slider-runnable-track { background: linear-gradient(90deg, #f43f5e, #eab308, #10b981); border-radius: 10px; height: 8px; }
+                .energy-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: white; margin-top: -6px; cursor: pointer; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+                .journal-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 24px; padding: 2rem; height: 100%; transition: 0.3s; }
+                .journal-card:hover { border-color: rgba(var(--primary-rgb), 0.3); }
+                .mood-btn { padding: 1.2rem; border-radius: 18px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); cursor: pointer; transition: 0.3s; text-align: center; }
+                .mood-btn.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); box-shadow: 0 0 15px rgba(168,85,247,0.2); }
+                .entry-item { padding: 1rem; border-radius: 12px; margin-bottom: 0.8rem; background: rgba(255,255,255,0.02); border-left: 4px solid transparent; position: relative; animation: slideIn 0.3s ease; }
+                .entry-item.victory { border-left-color: #10b981; }
+                .entry-item.blockage { border-left-color: #f43f5e; }
+                .remove-entry { position: absolute; right: 1rem; top: 1rem; opacity: 0; cursor: pointer; transition: 0.2s; }
+                .entry-item:hover .remove-entry { opacity: 1; }
+                @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
             </style>
 
-            <div class="expert-journal-tab" style="animation: fadeIn 0.5s ease;">
-                <div style="display: flex; gap: 2rem; margin-bottom: 3rem;">
-                    <!-- Section 1 : Mood Check-in -->
-                    <div class="glass-card" style="flex: 1; padding: 2.5rem; border-radius: 30px; border: 1px solid var(--border);">
-                        <h3 style="margin-bottom: 0.5rem; color: white; display: flex; align-items: center; gap: 10px;"><i class="fas fa-heart" style="color: #f43f5e;"></i> L'Humeur du Closer</h3>
-                        <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.9rem;">Comment vous sentez-vous aujourd'hui ?</p>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                            <div class="mood-btn ${journal.mood === 'confiant' ? 'active' : ''}" onclick="Scoper.updateJournalMood('confiant')">
-                                <span class="mood-emoji">🔥</span><span class="mood-label">CONFIANT</span>
-                            </div>
-                            <div class="mood-btn ${journal.mood === 'stresse' ? 'active' : ''}" onclick="Scoper.updateJournalMood('stresse')">
-                                <span class="mood-emoji">😰</span><span class="mood-label">STRESSÉ</span>
-                            </div>
-                            <div class="mood-btn ${journal.mood === 'motivated' ? 'active' : ''}" onclick="Scoper.updateJournalMood('motivated')">
-                                <span class="mood-emoji">📈</span><span class="mood-label">MOTIVÉ</span>
-                            </div>
-                        </div>
-                        <div id="mentor-box" style="margin-top: 2rem; padding: 1.5rem; background: rgba(168, 85, 247, 0.05); border-radius: 15px; border: 1px dashed #a855f7; transition: all 0.5s ease;">
-                            <div style="font-size: 0.75rem; color: #a855f7; font-weight: 800; text-transform: uppercase;">Le Mot du Mentor :</div>
-                            <div id="mentor-text" style="font-size: 0.9rem; color: #e9d5ff; font-style: italic; margin-top: 5px;">"${currentWord}"</div>
-                        </div>
-                    </div>
-
-                    <!-- Section 2 : La Boussole Financière -->
-                    <div class="glass-card" style="width: 400px; padding: 2.5rem; border-radius: 30px; border: 1px solid var(--border);">
-                        <h3 style="margin-bottom: 2rem; color: white; display: flex; align-items: center; gap: 10px;"><i class="fas fa-compass" style="color: #3b82f6;"></i> La Boussole</h3>
-                        <div style="margin-bottom: 2rem;"><div style="font-size: 0.8rem; color: var(--text-muted);">TJM CIBLE (Calculé)</div><div style="font-size: 2rem; font-weight: 800; color: white;">${targetTJM}€</div></div>
-                        <div style="margin-bottom: 2rem;"><div style="font-size: 0.8rem; color: var(--text-muted);">TJM REEL MOYEN</div><div style="font-size: 2rem; font-weight: 800; color: ${avgActualTJM >= targetTJM ? '#10b981' : '#f43f5e'};">${avgActualTJM}€ <span style="font-size: 0.9rem;">(${performanceGap >= 0 ? '+' : ''}${performanceGap}%)</span></div></div>
-                        <div style="padding: 1.2rem; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">Gap de Valeur Annuel</div>
-                            <div style="font-size: 1.1rem; font-weight: 700; color: white;">${Math.abs((avgActualTJM - targetTJM) * 200).toLocaleString()}€ / an</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <!-- Victoires -->
-                    <div class="glass-card" style="padding: 2rem; border-radius: 25px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                        <h4 style="margin-bottom: 1.5rem; color: #10b981; display: flex; align-items: center; justify-content: space-between;">
-                            <span><i class="fas fa-trophy"></i> Victoires & Avancées</span>
-                            <button class="button-primary small" onclick="Scoper.addJournalEntry('victory')" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981;">+</button>
-                        </h4>
-                        <div id="victories-list">
-                            ${victories.length > 0 ? victories.map(e => `
-                                <div class="victory-card">
-                                    <div style="font-weight: 700; color: white; font-size: 0.9rem;">${e.text}</div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">${new Date(e.date).toLocaleDateString()}</div>
-                                    <i class="fas fa-trash remove-entry" onclick="Scoper.removeJournalEntry('${e.id}')"></i>
+            <div class="mindset-dashboard" style="animation: fadeIn 0.5s ease;">
+                <div class="mindset-grid">
+                    <div class="main-column" style="display: flex; flex-direction: column; gap: 2rem;">
+                        
+                        <!-- Section 1 : Mindset & Focus -->
+                        <div class="journal-card">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
+                                <div>
+                                    <h2 style="font-size: 1.5rem; color: white; margin-bottom: 0.5rem;"><i class="fas fa-brain" style="color: #a855f7; margin-right: 10px;"></i> Mindset du Jour</h2>
+                                    <p class="text-muted">Pilotez votre psychologie pour maintenir la performance.</p>
                                 </div>
-                            `).join('') : '<p class="text-muted" style="font-size: 0.8rem; text-align: center; margin: 2rem 0;">Aucune victoire notée encore. Prêt pour le closing ?</p>'}
+                                <div style="text-align: right;">
+                                    <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800;">MODE EXPERT</span>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-muted);">ÉTAT D'ESPRIT</label>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem;">
+                                        <div class="mood-btn ${journal.mood === 'confiant' ? 'active' : ''}" onclick="Scoper.updateJournalMood('confiant')">
+                                            <span style="font-size: 1.5rem; display: block;">🔥</span><span style="font-size: 0.7rem; font-weight: 800;">CONFIANT</span>
+                                        </div>
+                                        <div class="mood-btn ${journal.mood === 'stresse' ? 'active' : ''}" onclick="Scoper.updateJournalMood('stresse')">
+                                            <span style="font-size: 1.5rem; display: block;">😰</span><span style="font-size: 0.7rem; font-weight: 800;">STRESSÉ</span>
+                                        </div>
+                                        <div class="mood-btn ${journal.mood === 'motivated' ? 'active' : ''}" onclick="Scoper.updateJournalMood('motivated')">
+                                            <span style="font-size: 1.5rem; display: block;">📈</span><span style="font-size: 0.7rem; font-weight: 800;">MOTIVÉ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-muted);">NIVEAU D'ÉNERGIE : <span id="energy-val" style="color: white; margin-left: 5px;">${journal.energy || 7}/10</span></label>
+                                    <input type="range" min="1" max="10" value="${journal.energy || 7}" class="energy-slider" style="width: 100%; margin-top: 10px;" oninput="document.getElementById('energy-val').innerText = this.value + '/10'; Scoper.updateJournalEnergy(this.value)">
+                                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.65rem; color: var(--text-muted);">
+                                        <span>Épuisé</span><span>Optimal</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 2.5rem; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 18px; border: 1px solid rgba(255,255,255,0.05);">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 900; color: #a855f7; text-transform: uppercase; margin-bottom: 8px;">🎯 FOCUS PRIORITAIRE (The One Big Thing)</label>
+                                <input type="text" id="daily-focus" class="form-input invisible" placeholder="Quelle est la seule chose qui rendrait tout le reste plus facile ?" value="${journal.dailyFocus || ''}" 
+                                       style="background: transparent; border: none; font-size: 1.2rem; color: white; width: 100%; padding: 0;"
+                                       onchange="Scoper.updateDailyFocus(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- Section 2 : Victoires & Blocages -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div class="journal-card">
+                                <h3 style="color: #10b981; font-size: 1.1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <span><i class="fas fa-trophy"></i> Victoires</span>
+                                    <button class="button-primary small" onclick="Scoper.addJournalEntry('victory')" style="background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981;">+</button>
+                                </h3>
+                                <div id="victories-list" style="max-height: 300px; overflow-y: auto;">
+                                    ${victories.length > 0 ? victories.map(e => `
+                                        <div class="entry-item victory">
+                                            <div style="font-weight: 700; color: white; font-size: 0.85rem;">${e.text}</div>
+                                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">${new Date(e.date).toLocaleDateString()}</div>
+                                            <i class="fas fa-trash remove-entry" onclick="Scoper.removeJournalEntry('${e.id}')"></i>
+                                        </div>
+                                    `).join('') : '<p class="text-muted" style="text-align: center; margin-top: 2rem; font-size: 0.8rem;">Notez vos petits succès.</p>'}
+                                </div>
+                            </div>
+                            <div class="journal-card">
+                                <h3 style="color: #f43f5e; font-size: 1.1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <span><i class="fas fa-ghost"></i> Blocages</span>
+                                    <button class="button-primary small" onclick="Scoper.addJournalEntry('blockage')" style="background: rgba(244, 63, 94, 0.1); border-color: #f43f5e; color: #f43f5e;">+</button>
+                                </h3>
+                                <div id="blockages-list" style="max-height: 300px; overflow-y: auto;">
+                                    ${blockages.length > 0 ? blockages.map(e => `
+                                        <div class="entry-item blockage">
+                                            <div style="font-weight: 700; color: white; font-size: 0.85rem;">${e.text}</div>
+                                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">${new Date(e.date).toLocaleDateString()}</div>
+                                            <i class="fas fa-trash remove-entry" onclick="Scoper.removeJournalEntry('${e.id}')"></i>
+                                        </div>
+                                    `).join('') : '<p class="text-muted" style="text-align: center; margin-top: 2rem; font-size: 0.8rem;">Notez ce qui vous ralentit.</p>'}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Blocages -->
-                    <div class="glass-card" style="padding: 2rem; border-radius: 25px; border: 1px solid rgba(244, 63, 94, 0.2);">
-                        <h4 style="margin-bottom: 1.5rem; color: #f43f5e; display: flex; align-items: center; justify-content: space-between;">
-                            <span><i class="fas fa-hand-paper"></i> Points de Blocage</span>
-                            <button class="button-primary small" onclick="Scoper.addJournalEntry('blockage')" style="background: rgba(244, 63, 94, 0.2); border: 1px solid #f43f5e; color: #f43f5e;">+</button>
-                        </h4>
-                        <div id="blockages-list">
-                            ${blockages.length > 0 ? blockages.map(e => `
-                                <div class="block-card">
-                                    <div style="font-weight: 700; color: white; font-size: 0.9rem;">${e.text}</div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">${new Date(e.date).toLocaleDateString()}</div>
-                                    <i class="fas fa-trash remove-entry" onclick="Scoper.removeJournalEntry('${e.id}')"></i>
-                                </div>
-                            `).join('') : '<p class="text-muted" style="font-size: 0.8rem; text-align: center; margin: 2rem 0;">Tout roule ? Notez ici les obstacles pour que le mentor vous aide.</p>'}
+                    <div class="sidebar-column" style="display: flex; flex-direction: column; gap: 2rem;">
+                        <!-- Mentor Word -->
+                        <div class="journal-card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(0,0,0,0.4) 100%); border-color: rgba(168, 85, 247, 0.2);">
+                            <h3 style="font-size: 0.9rem; color: #a855f7; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem;"><i class="fas fa-quote-left"></i> Conseil du Mentor</h3>
+                            <div id="mentor-text" style="font-size: 1.1rem; color: #e9d5ff; font-style: italic; line-height: 1.5;">"${mentorWords[journal.mood] || mentorWords.motivated}"</div>
+                        </div>
+
+                        <!-- Performance Gap -->
+                        <div class="journal-card">
+                            <h3 style="font-size: 0.9rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 1.5rem;"><i class="fas fa-compass"></i> Boussole Réelle</h3>
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">OBJECTIF TJM</div>
+                                <div style="font-size: 1.8rem; font-weight: 900; color: white;">${targetTJM}€</div>
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">TJM RÉEL MOYEN</div>
+                                <div style="font-size: 1.8rem; font-weight: 900; color: ${avgActualTJM >= targetTJM ? '#10b981' : '#f43f5e'};">${avgActualTJM}€</div>
+                                <span style="font-size: 0.8rem; font-weight: 700;">(${performanceGap >= 0 ? '+' : ''}${performanceGap}% de l'objectif)</span>
+                            </div>
+                            <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 15px; text-align: center;">
+                                <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px;">GAIN POTENTIEL / AN</div>
+                                <div style="font-size: 1.2rem; font-weight: 900; color: #10b981;">+${Math.abs((targetTJM - avgActualTJM) * 200).toLocaleString()}€</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1322,29 +1371,23 @@ const Scoper = {
      * Logique de mise à jour du mood (Interactivité)
      */
     updateJournalMood(mood) {
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', entries: [] };
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
         journal.mood = mood;
-        Storage.set('sp_journal', journal);
+        Storage.saveJournal(journal);
 
-        // Update UI sans re-render complet pour la fluidité
         const mentorWords = {
-            confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite sur vos prochains chiffrages. Le marché achète votre certitude avant votre savoir-faire.",
-            stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' à un mauvais projet est votre plus grande victoire.",
-            motivated: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages en attente avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
+            confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite. Le marché achète votre certitude avant votre savoir-faire.",
+            stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' est une victoire.",
+            motivated: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
         };
 
         const text = mentorWords[mood];
-        const mentorBox = document.getElementById('mentor-box');
         const mentorText = document.getElementById('mentor-text');
-
-        if (mentorBox && mentorText) {
-            mentorBox.style.transform = 'scale(0.98)';
-            mentorBox.style.opacity = '0.5';
+        if (mentorText) {
+            mentorText.style.opacity = '0';
             setTimeout(() => {
                 mentorText.innerText = `"${text}"`;
-                mentorBox.style.transform = 'scale(1)';
-                mentorBox.style.opacity = '1';
-                // Update button active state
+                mentorText.style.opacity = '1';
                 document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
                 const btns = document.querySelectorAll('.mood-btn');
                 if (mood === 'confiant') btns[0].classList.add('active');
@@ -1354,18 +1397,25 @@ const Scoper = {
         }
     },
 
-    /**
-     * Ajouter une entrée au journal
-     */
+    updateJournalEnergy(val) {
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
+        journal.energy = parseInt(val);
+        Storage.saveJournal(journal);
+    },
+
+    updateDailyFocus(text) {
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
+        journal.dailyFocus = text.trim();
+        Storage.saveJournal(journal);
+        App.showNotification('Focus quotidien enregistré.', 'success');
+    },
+
     addJournalEntry(type) {
         const label = type === 'victory' ? 'victoire' : 'blocage';
-        const text = prompt(`Quelle ${label} souhaitez-vous noter aujourd'hui ?`);
+        const text = prompt(`Quelle ${label} souhaitez-vous noter ?`);
         if (!text || text.trim() === '') return;
 
-        let journal = Storage.get('sp_journal');
-        if (!journal || typeof journal !== 'object' || Array.isArray(journal)) {
-            journal = { mood: 'motivated', entries: [] };
-        }
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
         if (!Array.isArray(journal.entries)) journal.entries = [];
 
         journal.entries.unshift({
@@ -1375,20 +1425,17 @@ const Scoper = {
             date: new Date().toISOString()
         });
 
-        Storage.set('sp_journal', journal);
+        Storage.saveJournal(journal);
         this.renderJournalTab();
-        App.showNotification(`${label.charAt(0).toUpperCase() + label.slice(1)} enregistrée.`, 'success');
+        App.showNotification(`${label} enregistrée.`, 'success');
     },
 
-    /**
-     * Supprimer une entrée
-     */
     removeJournalEntry(id) {
         const journal = Storage.get('sp_journal');
         if (!journal || !journal.entries) return;
 
         journal.entries = journal.entries.filter(e => e.id !== id);
-        Storage.set('sp_journal', journal);
+        Storage.saveJournal(journal);
         this.renderJournalTab();
     }
 };

@@ -610,6 +610,11 @@ const Storage = {
         }
     },
 
+    async saveJournal(data) {
+        this.set(this.KEYS.JOURNAL, data);
+        return this.add(this.KEYS.JOURNAL, data);
+    },
+
     // --- Legacy / Compatibility Helpers ---
 
     getUser() {
