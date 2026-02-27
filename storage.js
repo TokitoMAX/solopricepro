@@ -81,7 +81,8 @@ const Storage = {
             this.KEYS.MARKETPLACE_APPLICATIONS, // Generic fetch (Candidate view)
             this.KEYS.MARKETPLACE_INVITATIONS,   // Add Invitations Sync
             this.KEYS.PROVIDERS,
-            this.KEYS.REVENUES
+            this.KEYS.REVENUES,
+            this.KEYS.JOURNAL
         ];
 
         console.log('[STORAGE] Syncing all tables from Supabase...');
@@ -101,7 +102,7 @@ const Storage = {
                     let data = await res.json();
 
                     // Singular tables normalization: [{ ... }] -> { ... }
-                    const singularKeyList = [this.KEYS.SETTINGS, this.KEYS.CALCULATOR_DATA, this.KEYS.USER_PROFILE, 'sp_user_profile'];
+                    const singularKeyList = [this.KEYS.SETTINGS, this.KEYS.CALCULATOR_DATA, this.KEYS.USER_PROFILE, 'sp_user_profile', this.KEYS.JOURNAL];
                     if (singularKeyList.includes(table) && Array.isArray(data)) {
                         data = data.length > 0 ? data[0] : {};
                     }
@@ -156,7 +157,7 @@ const Storage = {
 
         // 2. Persist to localStorage if it looks like transient data (not a huge table)
         // or specifically requested keys like drafts
-        const transientKeys = ['sp_draft_quote_item', 'sp_draft_quote_items', 'sp_user_cache'];
+        const transientKeys = ['sp_draft_quote_item', 'sp_draft_quote_items', 'sp_user_cache', 'sp_journal'];
         if (transientKeys.includes(key) || key.startsWith('sp_draft_')) {
             try {
                 if (value === null) {
