@@ -127,7 +127,8 @@ router.post('/create-quote-paypal-order', async (req, res) => {
 
         // Nettoyage de l'APP_URL pour éviter les doubles slashes ou URLs relatives
         const appBaseUrl = (process.env.APP_URL || 'https://solopricepro.vercel.app').replace(/\/$/, '');
-        const successUrl = `${appBaseUrl}/#view-quote=${quoteId}?paypal_order_id={PAYPAL_ORDER_ID}&type=${type}`;
+        // Note: On reste sur des URLs simples car PayPal peut être strict sur les caractères spéciaux dans les URLs de retour
+        const successUrl = `${appBaseUrl}/#view-quote=${quoteId}?type=${type}`;
         const cancelUrl = `${appBaseUrl}/#view-quote=${quoteId}?payment=cancel`;
 
         const orderData = {
@@ -135,10 +136,10 @@ router.post('/create-quote-paypal-order', async (req, res) => {
             purchase_units: [{
                 amount: {
                     currency_code: 'EUR',
-                    value: Number(amount).toFixed(2)
+                    value: String(Number(amount).toFixed(2))
                 },
-                description: description.substring(0, 127), // Limite PayPal
-                custom_id: `${quoteId}|${type}`.substring(0, 127) // Plus court et sûr
+                description: description.substring(0, 127).replace(/[^a-zA-Z0-9\s#-]/g, ''),
+                custom_id: `${quoteId}_${type}`.substring(0, 127)
             }],
             application_context: {
                 return_url: successUrl,
@@ -150,7 +151,7 @@ router.post('/create-quote-paypal-order', async (req, res) => {
 
         // Si c'est pour l'expert, on spécifie le destinataire
         if (type === 'expert' && payeeEmail) {
-            orderData.purchase_units[0].payee = { email_address: payeeEmail };
+            orderData.purchase_units[0].payee = { email_address: payeeEmail.trim() };
         }
 
         // [DEBUG] Diagnostic complet pour identifier l'erreur de schéma
@@ -172,10 +173,12 @@ router.post('/create-quote-paypal-order', async (req, res) => {
             console.error('❌ PayPal Order API Error:', JSON.stringify(paypalOrder, null, 2));
 
             // Extraction des détails spécifiques de PayPal pour l'utilisateur
-            const issues = paypalOrder.details ? paypalOrder.details.map(d => `${d.issue}: ${d.description}`).join(' | ') : '';
+            const issues = paypalOrder.details
+                ? paypalOrder.details.map(d => `${d.field ? '[' + d.field + '] ' : ''}${d.issue}: ${d.description}`).join(' | ')
+                : '';
 
             return res.status(500).json({
-                message: "PayPal a refusé la création de la commande (Erreur de schéma).",
+                message: "PayPal a refusé la création de la commande (Syntaxe invalide).",
                 details: issues || paypalOrder.message || paypalOrder.name,
                 paypal_error: paypalOrder,
                 step: step
