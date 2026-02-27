@@ -60,23 +60,40 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// 2. Body Parsers (Ordre CRITIQUE)
-// 2a. WEBHOOKS (Raw Body)
-app.use('/api/payments/webhook', express.raw({ type: '*/*' }), (req, res, next) => {
-    req.rawBody = req.body;
+// 3. GESTION DU BODY (Version Ultra-Robuste pour Vercel)
+app.use((req, res, next) => {
+    // Cas 1 : Webhook (Besoin du buffer brut)
+    if (req.originalUrl && req.originalUrl.includes('/webhook')) {
+        return express.raw({ type: '*/*' })(req, res, (err) => {
+            if (err) return next(err);
+            req.rawBody = req.body;
+            next();
+        });
+    }
+
+    // Cas 2 : Body déjà analysé par Vercel (Objet présent et non vide)
+    if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
+        console.log(`📦 [V-PARSER] Body détecté (Déjà analysé): [${Object.keys(req.body).join(', ')}]`);
+        return next();
+    }
+
+    // Cas 3 : Analyse manuelle selon le Content-Type
+    const contentType = req.get('Content-Type') || '';
+    if (contentType.includes('application/json')) {
+        return express.json({ limit: '10mb' })(req, res, next);
+    }
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+        return express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
+    }
+
     next();
 });
 
-// 2b. JSON & URL-ENCODED (Pour tout le reste)
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// 3. LOG DIAGNOSTIC (Optionnel mais utile)
+// [LOG] Diagnostic final avant les routes
 app.use('/api', (req, res, next) => {
     if (req.method === 'POST') {
-        const bodyKeys = req.body ? Object.keys(req.body) : 'NONE';
-        const contentType = req.get('Content-Type');
-        console.log(`🏁 [API-DISPATCH] Path: ${req.path}, Keys: ${bodyKeys}, CT: ${contentType}`);
+        const hasBody = (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0);
+        console.log(`🏁 [DISPATCH] ${req.path} | Body: ${hasBody ? 'OK' : 'VIDE'} | CT: ${req.get('Content-Type')}`);
     }
     next();
 });

@@ -67,13 +67,13 @@ router.post('/create-quote-paypal-order', async (req, res) => {
             console.error('[PAYPAL-ORDER] ❌ req.body est vide.');
             return res.status(400).json({
                 message: "Les données de paiement (JSON) n'ont pas été reçues par le serveur.",
-                details: "Vérifiez que le déploiement sur Vercel est bien terminé. Si le problème persiste, cela peut être dû à un conflit de configuration sur Vercel."
+                details: "Cela est souvent dû à un cache agressif de Vercel. Veuillez re-déployer avec l'option 'Clean Cache' si possible."
             });
         }
         const { quoteId, type } = req.body; // type: 'expert' ou 'platform'
         const supabase = req.app.get('supabase');
 
-        if (!quoteId || !type) return res.status(400).json({ message: "Paramètres manquants." });
+        if (!quoteId || !type) return res.status(400).json({ message: "Paramètres manquants (quoteId ou type)." });
 
         // 1. Récupérer le devis
         step = 'fetch_quote';
@@ -110,8 +110,13 @@ router.post('/create-quote-paypal-order', async (req, res) => {
             description = `Protection & Service SoloPrice - Devis #${quote.number}`;
         }
 
-        if (amount <= 0 && type === 'platform') {
-            return res.status(400).json({ message: "Aucun frais de protection pour ce devis." });
+        // VALIDATION CRITIQUE DU MONTANT (Anti "Request not well-formed")
+        if (!amount || amount <= 0 || isNaN(amount)) {
+            console.error(`[PAYPAL-ORDER] ❌ Montant invalide (${amount}) pour le devis ${quoteId}`);
+            return res.status(400).json({
+                message: "Le montant du devis est invalide (0 ou non défini).",
+                details: `Montant détecté : ${amount} EUR. PayPal rejette les transactions à 0 EUR.`
+            });
         }
 
         // 3. Créer la commande PayPal
