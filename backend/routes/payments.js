@@ -63,6 +63,13 @@ async function getPayPalAccessToken() {
 router.post('/create-quote-paypal-order', async (req, res) => {
     let step = 'init';
     try {
+        if (!req.body) {
+            console.error('[PAYPAL-ORDER] ❌ Body is missing in request.');
+            return res.status(400).json({
+                message: "Le corps de la requête est vide.",
+                details: "Body parser failure or stream already consumed."
+            });
+        }
         const { quoteId, type } = req.body; // type: 'expert' ou 'platform'
         const supabase = req.app.get('supabase');
 

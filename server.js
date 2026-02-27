@@ -67,16 +67,18 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// 3. JSON Parser pour le reste
-app.use((req, res, next) => {
-    // Exclusion totale pour le webhook
-    if (req.originalUrl && req.originalUrl.includes('/webhook')) {
-        return next();
-    }
-    express.json({ limit: '10mb' })(req, res, next);
-});
-
+// 3. JSON Parser pour le reste (Standard)
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// [DEBUG] Logging des headers pour les routes API en cas de problème de body
+app.use('/api', (req, res, next) => {
+    if (req.method === 'POST') {
+        console.log(`📡 [API-DEBUG] POST ${req.path} - Content-Type: ${req.get('Content-Type')}`);
+        console.log(`📡 [API-DEBUG] Body keys: ${req.body ? Object.keys(req.body).join(', ') : 'NONE/UNDEFINED'}`);
+    }
+    next();
+});
 
 // Routes
 // Health Check & Debug
