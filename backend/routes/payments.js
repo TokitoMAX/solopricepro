@@ -37,7 +37,7 @@ async function getPayPalAccessToken() {
         }
 
         console.error(`[PAYPAL] Configuration missing for ${modeLabel} mode. Missing: ${missing.join(', ')}`);
-        throw new Error(`PayPal configuration missing (${modeLabel}). Manquant: ${missing.join(', ')}. Vérifiez votre tableau de bord Vercel ou votre fichier .env.`);
+        throw new Error(`PayPal configuration missing (${modeLabel}). Mode détecté: "${mode}" (Env: ${process.env.NODE_ENV || 'dev'}). Manquant: ${missing.join(', ')}. Vérifiez votre tableau de bord Vercel ou votre fichier .env.`);
     }
 
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
