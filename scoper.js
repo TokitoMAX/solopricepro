@@ -1237,6 +1237,12 @@ const Scoper = {
                                     <button class="mood-btn ${journal.mood === 'stresse' ? 'active' : ''}" onclick="Scoper.updateJournalMood('stresse')">LOW</button>
                                 </div>
                             </div>
+                            <div class="gauge-item" style="margin-top: 1.5rem;">
+                                <div class="gauge-label">Focus Quotidien</div>
+                                <textarea class="form-input" style="width: 100%; margin-top: 0.5rem; height: 60px; font-size: 0.85rem; background: var(--border-glass);" 
+                                          placeholder="Votre priorité aujourd'hui..."
+                                          onchange="Scoper.updateDailyFocus(this.value)">${journal.daily_focus || ''}</textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1362,7 +1368,6 @@ const Scoper = {
         const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
         journal.daily_focus = text.trim();
         Storage.saveJournal(journal);
-        App.showNotification('Focus quotidien enregistré.', 'success');
     },
 
     addJournalEntry(type) {

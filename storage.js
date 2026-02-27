@@ -614,8 +614,18 @@ const Storage = {
     },
 
     async saveJournal(data) {
-        this.set(this.KEYS.JOURNAL, data);
-        return this.add(this.KEYS.JOURNAL, data);
+        if (!Auth.user) return;
+
+        // Ensure user_id and id are preserved for proper UPSERT
+        const cached = this._cache[this.KEYS.JOURNAL] || {};
+        const journalToSave = {
+            ...cached,
+            ...data,
+            user_id: Auth.user.id
+        };
+
+        this.set(this.KEYS.JOURNAL, journalToSave);
+        return this.add(this.KEYS.JOURNAL, journalToSave);
     },
 
     // --- Legacy / Compatibility Helpers ---
