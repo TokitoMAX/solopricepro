@@ -116,9 +116,15 @@ router.post('/create-quote-paypal-order', async (req, res) => {
 
         // 3. Créer la commande PayPal
         step = 'get_access_token';
-        const { token, baseUrl } = await getPayPalAccessToken();
+        const { token, baseUrl: paypalApiUrl } = await getPayPalAccessToken();
 
         step = 'create_order_request';
+
+        // Nettoyage de l'APP_URL pour éviter les doubles slashes ou URLs relatives
+        const appBaseUrl = (process.env.APP_URL || 'https://solopricepro.vercel.app').replace(/\/$/, '');
+        const successUrl = `${appBaseUrl}/#view-quote=${quoteId}?paypal_order_id={PAYPAL_ORDER_ID}&type=${type}`;
+        const cancelUrl = `${appBaseUrl}/#view-quote=${quoteId}?payment=cancel`;
+
         const orderData = {
             intent: 'CAPTURE',
             purchase_units: [{
@@ -126,12 +132,12 @@ router.post('/create-quote-paypal-order', async (req, res) => {
                     currency_code: 'EUR',
                     value: Number(amount).toFixed(2)
                 },
-                description: description,
-                custom_id: JSON.stringify({ quoteId, type, userId: quote.user_id })
+                description: description.substring(0, 127), // Limite PayPal
+                custom_id: `${quoteId}|${type}`.substring(0, 127) // Plus court et sûr
             }],
             application_context: {
-                return_url: `${process.env.APP_URL || ''}/#view-quote=${quoteId}?paypal_order_id={PAYPAL_ORDER_ID}&type=${type}`,
-                cancel_url: `${process.env.APP_URL || ''}/#view-quote=${quoteId}?payment=cancel`,
+                return_url: successUrl,
+                cancel_url: cancelUrl,
                 user_action: 'PAY_NOW',
                 shipping_preference: 'NO_SHIPPING'
             }
