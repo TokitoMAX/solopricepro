@@ -10,8 +10,8 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
 
-// Load environment variables
-dotenv.config();
+// Load environment variables with absolute path for reliability
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // Validation des variables d'environnement critiques
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'STRIPE_WEBHOOK_SECRET'];

@@ -986,7 +986,8 @@ const Quotes = {
 
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.message || `Erreur de paiement prestataire (${res.status}).`);
+                const msg = errorData.details || errorData.message || `Erreur de paiement prestataire (${res.status}).`;
+                throw new Error(msg);
             }
 
             const data = await res.json();

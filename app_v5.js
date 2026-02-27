@@ -1462,20 +1462,4 @@ const App = {
 
 window.App = App;
 
-// Auto-démarrage quand le DOM est prêt
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        try {
-            App.init();
-            console.log("App initialized");
-        } catch (e) {
-            console.error("App Init Error:", e);
-        }
-    });
-} else {
-    try {
-        App.init();
-    } catch (e) {
-        console.error("App Init Error:", e);
-    }
-}
+// Note: App.init() must be called explicitly from index.html after all modules have loaded.

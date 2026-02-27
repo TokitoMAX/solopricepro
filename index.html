@@ -797,6 +797,13 @@
                 errEl.textContent = err && err.message ? err.message : 'Erreur de mise à jour.';
             });
         }
+
+        // Start application after all modules have loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof App !== 'undefined') {
+                App.init();
+            }
+        });
     </script>
 </body>
 

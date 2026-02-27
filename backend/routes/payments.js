@@ -26,8 +26,18 @@ async function getPayPalAccessToken() {
     console.log(`[PAYPAL-DEBUG] Using Keys: ${clientId ? clientId.substring(0, 8) + '...' : 'MISSING'} / ${clientSecret ? 'PRESENT' : 'MISSING'}`);
 
     if (!clientId || !clientSecret) {
-        console.error(`[PAYPAL] Configuration missing for ${isLive ? 'LIVE' : 'SANDBOX'} mode. (Raw Mode: "${rawMode}")`);
-        throw new Error(`PayPal configuration missing (${isLive ? 'LIVE' : 'SANDBOX'}). Vérifiez vos clés ${isLive ? 'LIVE_' : ''}CLIENT_ID dans le .env.`);
+        const modeLabel = isLive ? 'LIVE' : 'SANDBOX';
+        const missing = [];
+        if (isLive) {
+            if (!process.env.PAYPAL_LIVE_CLIENT_ID) missing.push('PAYPAL_LIVE_CLIENT_ID');
+            if (!process.env.PAYPAL_LIVE_CLIENT_SECRET) missing.push('PAYPAL_LIVE_CLIENT_SECRET');
+        } else {
+            if (!process.env.PAYPAL_CLIENT_ID) missing.push('PAYPAL_CLIENT_ID');
+            if (!process.env.PAYPAL_CLIENT_SECRET) missing.push('PAYPAL_CLIENT_SECRET');
+        }
+
+        console.error(`[PAYPAL] Configuration missing for ${modeLabel} mode. Missing: ${missing.join(', ')}`);
+        throw new Error(`PayPal configuration missing (${modeLabel}). Manquant: ${missing.join(', ')}. Vérifiez votre tableau de bord Vercel ou votre fichier .env.`);
     }
 
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
