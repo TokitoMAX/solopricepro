@@ -127,9 +127,9 @@ router.post('/create-quote-paypal-order', async (req, res) => {
 
         // Nettoyage de l'APP_URL pour éviter les doubles slashes ou URLs relatives
         const appBaseUrl = (process.env.APP_URL || 'https://solopricepro.vercel.app').replace(/\/$/, '');
-        // Note: On reste sur des URLs simples car PayPal peut être strict sur les caractères spéciaux dans les URLs de retour
-        const successUrl = `${appBaseUrl}/#view-quote=${quoteId}?type=${type}`;
-        const cancelUrl = `${appBaseUrl}/#view-quote=${quoteId}?payment=cancel`;
+        // On place les params AVANT le hash pour une validation URL plus standard côté PayPal
+        const successUrl = `${appBaseUrl}/?quoteId=${quoteId}&type=${type}#view-quote`;
+        const cancelUrl = `${appBaseUrl}/?payment=cancel#view-quote=${quoteId}`;
 
         const orderData = {
             intent: 'CAPTURE',
