@@ -142,11 +142,15 @@ router.post('/create-quote-paypal-order', async (req, res) => {
             orderData.purchase_units[0].payee = { email_address: payeeEmail };
         }
 
+        // [DEBUG] Diagnostic complet pour identifier l'erreur de schéma
+        console.log('[PAYPAL-ORDER] Request Body:', JSON.stringify(orderData, null, 2));
+
         const paypalRes = await fetch(`${baseUrl}/v2/checkout/orders`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'PayPal-Request-Id': `quote_${quoteId}_${Date.now()}`
             },
             body: JSON.stringify(orderData)
         });
@@ -154,10 +158,15 @@ router.post('/create-quote-paypal-order', async (req, res) => {
         const paypalOrder = await paypalRes.json();
 
         if (!paypalRes.ok) {
-            console.error('PayPal Order API Error:', paypalOrder);
+            console.error('❌ PayPal Order API Error:', JSON.stringify(paypalOrder, null, 2));
+
+            // Extraction des détails spécifiques de PayPal pour l'utilisateur
+            const issues = paypalOrder.details ? paypalOrder.details.map(d => `${d.issue}: ${d.description}`).join(' | ') : '';
+
             return res.status(500).json({
-                message: "PayPal a refusé la création de la commande.",
-                details: paypalOrder.message || JSON.stringify(paypalOrder),
+                message: "PayPal a refusé la création de la commande (Erreur de schéma).",
+                details: issues || paypalOrder.message || paypalOrder.name,
+                paypal_error: paypalOrder,
                 step: step
             });
         }
