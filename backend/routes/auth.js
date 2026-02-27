@@ -97,7 +97,18 @@ router.post('/login', async (req, res) => {
     const supabase = req.app.get('supabase');
 
     try {
-        console.log(`🔑 Tentative de connexion pour: ${email}`);
+        console.log(`🔑 Tentative de connexion pour: ${email || 'EMAIL MANQUANT'}`);
+
+        // Validation basique
+        if (!req.body || Object.keys(req.body).length === 0) {
+            console.error('❌ [AUTH] Body manquant ou vide');
+            return res.status(400).json({ message: "Requête malformée : body manquant." });
+        }
+
+        if (!email || !password) {
+            console.error('❌ [AUTH] Email ou mot de passe manquant dans le body');
+            return res.status(400).json({ message: "L'email et le mot de passe sont obligatoires." });
+        }
 
         if (!supabase) {
             console.error('❌ Supabase client is NULL in login route');
@@ -106,10 +117,14 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        const { data, error } = await supabase.auth.signInWithPassword({
+        console.log('📡 Envoi de la requête à Supabase...');
+        const result = await supabase.auth.signInWithPassword({
             email,
             password
         });
+
+        const data = result.data || {};
+        const error = result.error;
 
         if (error) {
             console.error('❌ Login error:', {

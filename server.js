@@ -62,7 +62,7 @@ app.use(cors({
 
 // 3. GESTION DU BODY (Version Ultra-Robuste pour Vercel)
 app.use((req, res, next) => {
-    // Cas 1 : Webhook (Besoin du buffer brut)
+    // Cas 1 : Webhook (Besoin du buffer brut) - On passe AVANT tout autre parser
     if (req.originalUrl && req.originalUrl.includes('/webhook')) {
         return express.raw({ type: '*/*' })(req, res, (err) => {
             if (err) return next(err);
@@ -71,22 +71,18 @@ app.use((req, res, next) => {
         });
     }
 
-    // Cas 2 : Body déjà analysé par Vercel (Objet présent et non vide)
-    if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
-        console.log(`📦 [V-PARSER] Body détecté (Déjà analysé): [${Object.keys(req.body).join(', ')}]`);
+    // Cas 2 : Body déjà analysé par Vercel (Objet présent)
+    // On est plus souple : s'il y a un objet body, on le garde
+    if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+        console.log(`📦 [BODY-PARSER] Body déjà présent (Vercel/Middleware prioritaire)`);
         return next();
     }
 
-    // Cas 3 : Analyse manuelle selon le Content-Type
-    const contentType = req.get('Content-Type') || '';
-    if (contentType.includes('application/json')) {
-        return express.json({ limit: '10mb' })(req, res, next);
-    }
-    if (contentType.includes('application/x-www-form-urlencoded')) {
-        return express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
-    }
-
-    next();
+    // Cas 3 : Analyse standard Express (pour local et déploiements classiques)
+    express.json({ limit: '10mb' })(req, res, (err) => {
+        if (err) return next(err);
+        express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
+    });
 });
 
 // [LOG] Diagnostic final avant les routes
