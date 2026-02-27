@@ -32,7 +32,7 @@ const PAYPAL_CONFIG = {
     }
 };
 const App = {
-    currentPage: 'dashboard',
+    currentPage: null, // null until first navigation — prevents the deduplication guard from skipping the initial render
 
     // Initialisation de l'application
     async init() {
@@ -74,6 +74,10 @@ const App = {
 
                 console.log('📡 [APP] Step 4: Entering app');
                 this.enterApp(false, false);
+
+                // Reset currentPage to null so the deduplication guard in navigateTo
+                // does NOT skip the initial render (the page content would be empty otherwise).
+                this.currentPage = null;
 
                 const route = this.getPageFromHash();
                 if (route) {
