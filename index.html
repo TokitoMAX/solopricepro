@@ -800,8 +800,19 @@
 
         // Start application after all modules have loaded
         document.addEventListener('DOMContentLoaded', () => {
-            if (typeof App !== 'undefined') {
+            console.log("📡 [DOM] Content Loaded - Starting App");
+            if (typeof App !== 'undefined' && App.init) {
                 App.init();
+            } else {
+                console.error("❌ [DOM] CRITICAL: App module not found!");
+                // Emergency loader hide if scripts failed to load
+                setTimeout(() => {
+                    const l = document.getElementById('app-loader');
+                    if (l) {
+                        l.style.opacity = '0';
+                        setTimeout(() => l.style.display = 'none', 500);
+                    }
+                }, 2000);
             }
         });
     </script>

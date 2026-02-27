@@ -94,9 +94,14 @@ const Storage = {
                     endpoint = `${Auth.apiBase}/api/marketplace/invitations`;
                 }
 
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
                 const res = await fetch(endpoint, {
-                    headers: { 'Authorization': `Bearer ${Auth.token}` }
+                    headers: { 'Authorization': `Bearer ${Auth.token}` },
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
 
                 if (res.ok) {
                     let data = await res.json();

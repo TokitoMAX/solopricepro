@@ -36,40 +36,45 @@ const App = {
 
     // Initialisation de l'application
     async init() {
+        console.log('🚀 [APP] Init started');
+
+        // Safety timeout to hide loader if init hangs (e.g. slow network)
+        const safetyTimer = setTimeout(() => {
+            const loader = document.getElementById('app-loader');
+            if (loader && loader.style.display !== 'none') {
+                console.warn('⚠️ [APP] Init took too long (>10s). Forcing loader hide.');
+                this.hideLoader();
+            }
+        }, 10000);
+
         try {
-            console.log('[APP] SoloPrice Pro Initializing...');
+            console.log('📡 [APP] Step 1: Core components');
             this.setupNavigation();
             this.migrateData();
             this.setupMobileOverlay();
-            this.checkFreemiumLimits();
-            this.renderUserInfo();
-            this.loadPayPalSDK(); // Chargement dynamique du script PayPal
-            this.handlePaymentReturn(); // Check for Stripe/PayPal returns
-            if (window.Network) Network.init();
-            // Nouvelle gestion centralisée du Hash (incluant Reset Password et Quotes publiques)
-            if (this.handleUrlHash()) {
-                this.hideLoader();
-                return;
-            }
 
-            const isLoggedIn = Auth.isLoggedIn();
+            console.log('📡 [APP] Step 2: Session check');
+            const isLoggedIn = (typeof Auth !== 'undefined') ? Auth.isLoggedIn() : false;
             const inApp = sessionStorage.getItem('sp_in_app') === 'true';
             const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
 
-            console.log('🔍 Session Check:', { isLoggedIn, inApp, savedPage });
+            console.log('🔍 [APP] Current state:', { isLoggedIn, inApp, savedPage });
 
             if (isLoggedIn || inApp) {
-                // Ensure data is synced BEFORE showing app content
                 if (isLoggedIn) {
-                    console.log('📡 Waiting for data sync...');
-                    if (Auth.refreshUser) await Auth.refreshUser(); // Get latest tier/metadata
-                    await Storage.init();
-                    console.log('✅ Data sync complete. Tier:', Storage.getTier());
+                    console.log('📡 [APP] Step 3: Syncing data...');
+                    if (typeof Auth !== 'undefined' && Auth.refreshUser) {
+                        try { await Auth.refreshUser(); } catch (e) { console.error('Refresh user failed', e); }
+                    }
+                    if (typeof Storage !== 'undefined' && Storage.init) {
+                        await Storage.init();
+                    }
+                    console.log('✅ [APP] Data sync complete');
                 }
 
-                this.enterApp(false, false); // Pass avoidNavigate=true
+                console.log('📡 [APP] Step 4: Entering app');
+                this.enterApp(false, false);
 
-                // Priorité au hash (#page=xxx) sur le localStorage
                 const route = this.getPageFromHash();
                 if (route) {
                     this.navigateTo(route.page, route.tab);
@@ -78,16 +83,33 @@ const App = {
                     this.navigateTo(savedPage, lastTab);
                 }
             } else {
-                // Landing page by default if never entered
+                console.log('📡 [APP] Step 3: Showing landing');
                 const landing = document.getElementById('landing-page');
                 const appWrapper = document.getElementById('app-wrapper');
                 if (landing) landing.style.display = 'block';
                 if (appWrapper) appWrapper.style.display = 'none';
                 this.updateLandingStats();
             }
+
+            console.log('📡 [APP] Step 5: Post-init tasks');
+            this.checkFreemiumLimits();
+            this.renderUserInfo();
+            this.loadPayPalSDK();
+            this.handlePaymentReturn();
+            if (window.Network && Network.init) Network.init();
+
+            if (this.handleUrlHash()) {
+                console.log('📡 [APP] Hash handled, stopping init.');
+                clearTimeout(safetyTimer);
+                this.hideLoader();
+                return;
+            }
+
         } catch (e) {
-            console.error('❌ Critical Init Error:', e);
+            console.error('❌ [APP] Critical Init Error:', e);
         } finally {
+            console.log('🏁 [APP] Init finished');
+            clearTimeout(safetyTimer);
             this.hideLoader();
         }
 

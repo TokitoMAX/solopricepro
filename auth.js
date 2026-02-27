@@ -339,6 +339,8 @@ const Auth = {
 // Global Fetch Interceptor for Auth Errors
 (function () {
     const originalFetch = window.fetch;
+    let isHandlingError = false;
+
     window.fetch = async function () {
         try {
             const response = await originalFetch.apply(this, arguments);
@@ -348,7 +350,8 @@ const Auth = {
             const isAuthEndpoint = typeof url === 'string' && (url.includes('/api/auth/login') || url.includes('/api/auth/register'));
 
             if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
-                if (typeof Auth !== 'undefined' && Auth.handleExpiredSession) {
+                if (!isHandlingError && typeof Auth !== 'undefined' && Auth.handleExpiredSession) {
+                    isHandlingError = true;
                     Auth.handleExpiredSession();
                 }
             }
