@@ -156,7 +156,7 @@ router.post('/create-quote-paypal-order', async (req, res) => {
         // [DEBUG] Diagnostic complet pour identifier l'erreur de schéma
         console.log('[PAYPAL-ORDER] Request Body:', JSON.stringify(orderData, null, 2));
 
-        const paypalRes = await fetch(`${baseUrl}/v2/checkout/orders`, {
+        const paypalRes = await fetch(`${paypalApiUrl}/v2/checkout/orders`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
