@@ -63,11 +63,11 @@ async function getPayPalAccessToken() {
 router.post('/create-quote-paypal-order', async (req, res) => {
     let step = 'init';
     try {
-        if (!req.body) {
-            console.error('[PAYPAL-ORDER] ❌ Body is missing in request.');
+        if (!req.body || (typeof req.body === 'object' && Object.keys(req.body).length === 0)) {
+            console.error('[PAYPAL-ORDER] ❌ req.body is empty or undefined.');
             return res.status(400).json({
-                message: "Le corps de la requête est vide.",
-                details: "Body parser failure or stream already consumed."
+                message: "Les données de paiement n'ont pas été reçues par le serveur.",
+                details: "Veuillez vérifier les logs '📦 [BODY-PARSER]' sur Vercel. Le flux de données a peut-être été consommé par un autre middleware."
             });
         }
         const { quoteId, type } = req.body; // type: 'expert' ou 'platform'
