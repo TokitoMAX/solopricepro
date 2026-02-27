@@ -133,10 +133,13 @@ const Storage = {
     },
 
     get(key) {
-        // 1. Check if it's a known table in cache
-        if (this._cache[key]) return this._cache[key];
+        // 1. Check if it's a known table in cache (and not an empty object for singular keys)
+        const cached = this._cache[key];
+        if (cached && (Array.isArray(cached) ? cached.length > 0 : Object.keys(cached).length > 0)) {
+            return cached;
+        }
 
-        // 2. Check localStorage for transient data (drafts, settings, etc.)
+        // 2. Check localStorage
         try {
             const local = localStorage.getItem(key);
             if (local) return JSON.parse(local);

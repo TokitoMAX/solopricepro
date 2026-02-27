@@ -1209,9 +1209,11 @@ const Scoper = {
         const calcData = Storage.get('sp_calculator_data') || {};
         const targetTJM = calcData.dailyRate || 0;
         const quotes = Storage.getInvoices() || [];
-        const avgActualTJM = quotes.length > 0 ? Math.round(quotes.reduce((acc, q) => acc + (q.total / 10), 0) / quotes.length) : 0; // Simulation
+        const avgActualTJM = quotes.length > 0 ? Math.round(quotes.reduce((acc, q) => acc + (parseFloat(q.total || 0) / 10), 0) / quotes.length) : 0; // Simulation
 
-        let journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
+        const defaultJournal = { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
+        let journal = { ...defaultJournal, ...(Storage.get('sp_journal') || {}) };
+        if (!Array.isArray(journal.entries)) journal.entries = [];
 
         content.innerHTML = `
             <div class="elite-journal-container">
@@ -1258,7 +1260,7 @@ const Scoper = {
                                     </div>
                                     <div class="pillar-text">${entry.text}</div>
                                     <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; justify-content: space-between;">
-                                        <span>${new Date(entry.date).toLocaleDateString()}</span>
+                                        <span>${entry.date ? new Date(entry.date).toLocaleDateString() : 'N/A'}</span>
                                         <span style="cursor: pointer; color: var(--danger);" onclick="Scoper.removeJournalEntry('${entry.id}')">Archiver</span>
                                     </div>
                                 </div>
