@@ -449,12 +449,12 @@ const Scoper = {
         }
 
         content.innerHTML = `
-    < div class="page-header" >
+    <div class="page-header">
         <div>
             <h1 class="page-title">Chiffrage Projet</h1>
             <p class="page-subtitle">Calculez le prix juste pour cette mission spécifique (Valeur & Risque).</p>
         </div>
-            </div >
+    </div>
 
     <div class="calculator-container" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem;">
 
@@ -697,7 +697,7 @@ const Scoper = {
 
         if (this.tasks.length === 0) {
             container.innerHTML = `
-    < div class="empty-state" style = "padding: 3rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: 12px; border: 2px dashed var(--border);" >
+    <div class="empty-state" style="padding: 3rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: 12px; border: 2px dashed var(--border);">
                     <p class="text-muted">Aucune tâche définie.</p>
                     <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
                         <button class="button-primary small" onclick="Scoper.addTask()">+ Tâche Vide</button>
@@ -716,7 +716,7 @@ const Scoper = {
             const calculatedPrice = (hours / 7) * tjm;
 
             return `
-    < div class="scoper-task-row" data - index="${index}" >
+    <div class="scoper-task-row" data-index="${index}">
                     <div class="task-main">
                         <input type="text" placeholder="Nom de la prestation (ex: Design UI)" class="form-input task-name" value="${task.name}" onchange="Scoper.updateTask(${index}, 'name', this.value)">
                     </div>
@@ -1224,8 +1224,9 @@ const Scoper = {
                         <div class="readiness-grid">
                             <div class="gauge-item">
                                 <div class="gauge-label">Capital Énergie</div>
-                                <div class="gauge-value">${journal.energy}/10</div>
+                                <div class="gauge-value" id="energy-value-display">${journal.energy}/10</div>
                                 <input type="range" min="1" max="10" value="${journal.energy}" class="input-range" style="width: 100%; margin-top: 1rem;" 
+                                       oninput="Scoper.updateJournalEnergyOptimistic(this.value)"
                                        onchange="Scoper.updateJournalEnergy(this.value)">
                             </div>
                             <div class="gauge-item" style="margin-top: 1.5rem;">
@@ -1331,19 +1332,30 @@ const Scoper = {
             setTimeout(() => {
                 mentorText.innerText = `"${text}"`;
                 mentorText.style.opacity = '1';
+                // Move mood button active state update to BEFORE the transition to avoid flicker
                 document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
                 const btns = document.querySelectorAll('.mood-btn');
                 if (mood === 'confiant') btns[0].classList.add('active');
-                if (mood === 'stresse') btns[1].classList.add('active');
-                if (mood === 'motivated') btns[2].classList.add('active');
+                if (mood === 'motivated') btns[1].classList.add('active');
+                if (mood === 'stresse') btns[2].classList.add('active');
             }, 200);
         }
+    },
+
+    updateJournalEnergyOptimistic(val) {
+        const display = document.getElementById('energy-value-display');
+        if (display) display.innerText = `${val}/10`;
     },
 
     updateJournalEnergy(val) {
         const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
         journal.energy = parseInt(val);
-        Storage.saveJournal(journal);
+
+        // Debounce save to avoid network flooding
+        clearTimeout(this._journalSaveTimeout);
+        this._journalSaveTimeout = setTimeout(() => {
+            Storage.saveJournal(journal);
+        }, 1000);
     },
 
     updateDailyFocus(text) {
