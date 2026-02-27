@@ -2440,6 +2440,279 @@ section {
     display: block;
 }
 
+/* ==========================================================================
+   ELITE STRATEGIC DESIGN SYSTEM (Overhaul)
+   ========================================================================== */
+
+/* Elite Container & Layout */
+.elite-journal-container {
+    display: grid;
+    grid-template-columns: 320px 1fr 350px;
+    gap: 1.5rem;
+    padding: 1rem;
+    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 1200px) {
+    .elite-journal-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Elite Cards - Executive Glassmorphism */
+.elite-card {
+    background: linear-gradient(165deg, rgba(24, 27, 33, 0.95) 0%, rgba(15, 17, 21, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 1.8rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.elite-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.elite-card:hover {
+    border-color: rgba(16, 185, 129, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.1);
+}
+
+.elite-card-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.elite-card-title i {
+    color: var(--primary);
+}
+
+/* Sector & Target Cards - Tactile & Premium */
+.sector-card,
+.target-card {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sector-card .sector-icon,
+.target-card .target-icon {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.sector-card .sector-label,
+.target-card .target-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+
+/* Hover State */
+.sector-card:hover,
+.target-card:hover {
+    background: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.3);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(16, 185, 129, 0.1);
+}
+
+.sector-card:hover .sector-icon,
+.target-card:hover .target-icon {
+    color: var(--primary-light);
+    transform: scale(1.1);
+}
+
+/* Active/Selected State - Persistence Fix */
+.sector-card.active.selected,
+.target-card.active.selected {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border: 2px solid var(--primary) !important;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.3), inset 0 0 10px rgba(16, 185, 129, 0.1) !important;
+}
+
+.sector-card.active.selected .sector-icon,
+.target-card.active.selected .target-icon {
+    color: var(--primary-light) !important;
+}
+
+.sector-card.active.selected .sector-label,
+.target-card.active.selected .target-label {
+    color: white !important;
+    font-weight: 800;
+}
+
+/* Tactile Feedback (Click) */
+.sector-card:active,
+.target-card:active {
+    transform: scale(0.95);
+    background: rgba(16, 185, 129, 0.2);
+}
+
+/* Strategic Log - Pillar Design */
+.pillar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.pillar-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.2rem;
+    transition: 0.3s;
+    border-left: 4px solid var(--gray);
+}
+
+.pillar-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    transform: translateX(5px);
+}
+
+.pillar-type {
+    font-size: 0.65rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.pillar-type.leverage {
+    color: var(--primary);
+}
+
+.pillar-type.roadblock {
+    color: var(--danger);
+}
+
+.pillar-item.leverage {
+    border-left-color: var(--primary);
+}
+
+.pillar-item.roadblock {
+    border-left-color: var(--danger);
+}
+
+.pillar-text {
+    font-size: 0.95rem;
+    color: white;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* Boussole & Stats */
+.compass-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: white;
+}
+
+/* Mood Selector High-Performance */
+.mood-selector .mood-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mood-selector .mood-btn:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.mood-selector .mood-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+/* Performance Gauges */
+.gauge-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.gauge-value {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: white;
+}
+
+.input-range {
+    -webkit-appearance: none;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    outline: none;
+}
+
+.input-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    border: 2px solid white;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

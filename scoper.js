@@ -145,15 +145,10 @@ const Scoper = {
                         { id: 'media', label: 'Média & Vidéo', icon: 'fa-video' },
                         { id: 'artisanat', label: 'Artisanat & Prod', icon: 'fa-hammer' }
                     ].map(s => `
-                            <div class="sector-card ${data.sector === s.id ? 'active' : ''}" 
-                                 onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateSector('${s.id}')"
-                                 style="padding: 1.2rem; border: 1px solid ${data.sector === s.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: ${data.sector === s.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                                 <style>
-                                    .sector-card:hover { transform: translateY(-3px); border-color: var(--primary-light) !important; background: rgba(var(--primary-rgb), 0.1) !important; }
-                                    .sector-card:active { transform: scale(0.95); }
-                                 </style>
-                                <i class="fas ${s.icon}" style="font-size: 1.2rem; color: ${data.sector === s.id ? 'var(--primary-light)' : 'var(--text-muted)'}; margin-bottom: 8px; display: block;"></i>
-                                <div style="font-weight: 700; font-size: 0.85rem;">${s.label}</div>
+                            <div class="sector-card ${data.sector === s.id ? 'active selected' : ''}" 
+                                 onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active', 'selected')); this.classList.add('active', 'selected'); Scoper.updateSector('${s.id}')">
+                                <i class="fas ${s.icon} sector-icon"></i>
+                                <div class="sector-label">${s.label}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -168,15 +163,10 @@ const Scoper = {
                         { id: 'pme', label: 'PME & Startups', icon: 'fa-building' },
                         { id: 'grands-comptes', label: 'Grands Comptes', icon: 'fa-city' }
                     ].map(t => `
-                            <div class="target-card ${data.target === t.id ? 'active' : ''}" 
-                                 onclick="document.querySelectorAll('.target-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateTarget('${t.id}')"
-                                 style="flex: 1; padding: 1rem; border: 1px solid ${data.target === t.id ? 'var(--primary)' : 'var(--border)'}; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: ${data.target === t.id ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                                 <style>
-                                    .target-card:hover { transform: translateY(-2px); border-color: var(--primary-light) !important; background: rgba(var(--primary-rgb), 0.1) !important; }
-                                    .target-card:active { transform: scale(0.97); }
-                                 </style>
-                                <i class="fas ${t.icon}" style="font-size: 1rem; color: ${data.target === t.id ? 'var(--primary-light)' : 'var(--text-muted)'}; margin-bottom: 5px;"></i>
-                                <div style="font-weight: 600; font-size: 0.75rem;">${t.label}</div>
+                            <div class="target-card ${data.target === t.id ? 'active selected' : ''}" 
+                                 onclick="document.querySelectorAll('.target-card').forEach(c => c.classList.remove('active', 'selected')); this.classList.add('active', 'selected'); Scoper.updateTarget('${t.id}')">
+                                <i class="fas ${t.icon} target-icon"></i>
+                                <div class="target-label">${t.label}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -232,96 +222,94 @@ const Scoper = {
             case 5: // VERDICT / ROADMAP / MATRICE
                 const results = PricingEngine.calculateObjective(data);
                 const scenarios = PricingEngine.getScenarios(results);
-                const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, data.sector);
-                const diagnostic = PricingEngine.getMarketDiagnostic(results.dailyRate, data.sector);
-
                 // We use a local state for the selected scenario in the UI
                 const activeScenario = this.selectedScenario || 'security';
                 const currentTJM = scenarios[activeScenario].tjm;
                 const currentAnnual = scenarios[activeScenario].annual;
+                const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, data.sector);
 
                 return `
                     <div class="step-header" style="margin-bottom: 2rem; text-align: center;">
                         <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Dashboard de Puissance Marché</h2>
                         <p class="text-muted">Simulez votre impact financier et testez votre force de frappe.</p>
                     </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
-                        <!-- Col 1: Scénarios & Puissance -->
-                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                            
-                            <!-- Market Power Gauge -->
-                            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(255,255,255,0.02); position: relative; overflow: hidden;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--primary-light);">Market Power Score</span>
-                                    <span style="font-size: 1.2rem; font-weight: 900; color: var(--white);">${powerScore}/100</span>
-                                </div>
-                                <div style="height: 8px; background: var(--border); border-radius: 4px; position: relative;">
-                                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: ${powerScore}%; background: linear-gradient(90deg, #f43f5e 0%, var(--primary) 100%); border-radius: 4px; transition: width 0.5s;"></div>
-                                </div>
-                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px;">
-                                    ${powerScore > 70 ? '<strong>Prix Massif</strong> : Facile à vendre, volume élevé possible.' : (powerScore > 40 ? '<strong>Prix Équilibré</strong> : Nécessite une bonne preuve sociale.' : '<strong>Prix Premium</strong> : Demande une autorité d\'expert reconnue.')}
-                                </p>
-                            </div>
 
-                            <!-- Coaching de Vente EXPERT -->
-                            <div class="expert-teaser-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid #a855f7; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(124, 58, 237, 0.1)); position: relative; cursor: pointer; transition: all 0.3s ease;" onclick="Scoper.render('closing')">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">Coaching de Vente</span>
-                                    <span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">PACK EXPERT</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 15px;">
-                                    <div style="width: 45px; height: 45px; border-radius: 12px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; color: #c084fc;">
-                                        <i class="fas fa-magic" style="font-size: 1.2rem;"></i>
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <div style="font-weight: 700; color: white; font-size: 0.95rem;">Prêt pour le Closing ?</div>
-                                        <div style="font-size: 0.75rem; color: #e9d5ff; opacity: 0.8;">Accédez à votre Arsenal de Vente personnalisé.</div>
-                                    </div>
-                                    <i class="fas fa-chevron-right" style="color: #c084fc; opacity: 0.5;"></i>
-                                </div>
-                            </div>
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
+        <!-- Col 1: Scénarios & Puissance -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
 
-                            <!-- Scenario Selector -->
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                                ${Object.entries(scenarios).map(([key, s]) => `
+            <!-- Market Power Gauge -->
+            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(255,255,255,0.02); position: relative; overflow: hidden;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--primary-light);">Market Power Score</span>
+                    <span style="font-size: 1.2rem; font-weight: 900; color: var(--white);">${powerScore}/100</span>
+                </div>
+                <div style="height: 8px; background: var(--border); border-radius: 4px; position: relative;">
+                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: ${powerScore}%; background: linear-gradient(90deg, #f43f5e 0%, var(--primary) 100%); border-radius: 4px; transition: width 0.5s;"></div>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px;">
+                    ${powerScore > 70 ? '<strong>Prix Massif</strong> : Facile à vendre, volume élevé possible.' : (powerScore > 40 ? '<strong>Prix Équilibré</strong> : Nécessite une bonne preuve sociale.' : '<strong>Prix Premium</strong> : Demande une autorité d\'expert reconnue.')}
+                </p>
+            </div>
+
+            <!-- Coaching de Vente EXPERT -->
+            <div class="expert-teaser-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid #a855f7; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(124, 58, 237, 0.1)); position: relative; cursor: pointer; transition: all 0.3s ease;" onclick="Scoper.render('closing')">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">Coaching de Vente</span>
+                    <span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">PACK EXPERT</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 45px; height: 45px; border-radius: 12px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; color: #c084fc;">
+                        <i class="fas fa-magic" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; color: white; font-size: 0.95rem;">Prêt pour le Closing ?</div>
+                        <div style="font-size: 0.75rem; color: #e9d5ff; opacity: 0.8;">Accédez à votre Arsenal de Vente personnalisé.</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: #c084fc; opacity: 0.5;"></i>
+                </div>
+            </div>
+
+            <!-- Scenario Selector -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                ${Object.entries(scenarios).map(([key, s]) => `
                                     <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1rem; border-radius: 12px; border: 2px solid ${activeScenario === key ? 'var(--primary)' : 'var(--border)'}; background: ${activeScenario === key ? 'var(--primary-glass)' : 'transparent'}; text-align: center; transition: all 0.2s;">
                                         <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: ${activeScenario === key ? 'var(--primary-light)' : 'var(--text-muted)'};">${s.label}</div>
                                         <div style="font-size: 1.1rem; font-weight: 900; margin: 4px 0;">${s.tjm}€</div>
                                         <div style="font-size: 0.6rem; opacity: 0.7;">${s.annual.toLocaleString()}€/an</div>
                                     </div>
                                 `).join('')}
-                            </div>
+            </div>
 
-                            <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; text-align: center; border-radius: 20px;">
-                                <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">PROJECTION REVENU ANNUEL</div>
-                                <div style="font-size: 2.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${currentAnnual.toLocaleString()}€<span style="font-size: 0.9rem; font-weight: 400; opacity: 0.7; display: block;">Projection basée sur ${data.workingDays}j facturés / mois</span></div>
-                            </div>
-                        </div>
+            <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; text-align: center; border-radius: 20px;">
+                <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">PROJECTION REVENU ANNUEL</div>
+                <div style="font-size: 2.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${currentAnnual.toLocaleString()}€<span style="font-size: 0.9rem; font-weight: 400; opacity: 0.7; display: block;">Projection basée sur ${data.workingDays}j facturés / mois</span></div>
+            </div>
+        </div>
 
-                        <!-- Col 2: Pourquoi passer au Chiffrage ? -->
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary-glass);">
-                                <h3 style="font-size: 1rem; color: var(--primary-light); margin-bottom: 10px;"><i class="fas fa-rocket"></i> Suite Logique : Chiffrage Projet</h3>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">
-                                    Maintenant que vous avez votre <strong>TJM stratégique (${currentTJM}€)</strong>, il est crucial de vérifier s'il passe sur un contrat réel. 
-                                </p>
-                                <ul style="padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-                                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Vos prix couvrent-ils vos dépenses réelles ?</li>
-                                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Combien reste-t-il vraiment dans votre poche ?</li>
-                                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Quel impact sur votre marge nette ?</li>
-                                </ul>
-                                <button class="button-primary" onclick="Scoper.render('project')" style="width: 100%; justify-content: center; padding: 12px;">
-                                    Tester ce TJM sur un Projet <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
-                                </button>
-                            </div>
+        <!-- Col 2: Pourquoi passer au Chiffrage ? -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary-glass);">
+                <h3 style="font-size: 1rem; color: var(--primary-light); margin-bottom: 10px;"><i class="fas fa-rocket"></i> Suite Logique : Chiffrage Projet</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">
+                    Maintenant que vous avez votre <strong>TJM stratégique (${currentTJM}€)</strong>, il est crucial de vérifier s'il passe sur un contrat réel.
+                </p>
+                <ul style="padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Vos prix couvrent-ils vos dépenses réelles ?</li>
+                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Combien reste-t-il vraiment dans votre poche ?</li>
+                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Quel impact sur votre marge nette ?</li>
+                </ul>
+                <button class="button-primary" onclick="Scoper.render('project')" style="width: 100%; justify-content: center; padding: 12px;">
+                    Tester ce TJM sur un Projet <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                </button>
+            </div>
 
-                            <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center; opacity: 0.5;">
-                                <i class="fas fa-magic" style="margin-right: 5px;"></i> Diagnostic propulsé par SoloPrice PRO
-                            </p>
-                        </div>
-                    </div>
-                `;
+            <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center; opacity: 0.5;">
+                <i class="fas fa-magic" style="margin-right: 5px;"></i> Diagnostic propulsé par SoloPrice PRO
+            </p>
+        </div>
+    </div>
+`;
         }
     },
 
@@ -410,7 +398,7 @@ const Scoper = {
         return [
             {
                 title: 'Positionnement Marché',
-                desc: `${diag.title}. ${diag.desc}`,
+                desc: `${diag.title}. ${diag.desc} `,
                 color: diag.color,
                 icon: diag.icon
             },
@@ -461,117 +449,117 @@ const Scoper = {
         }
 
         content.innerHTML = `
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Chiffrage Projet</h1>
-                    <p class="page-subtitle">Calculez le prix juste pour cette mission spécifique (Valeur & Risque).</p>
+    < div class="page-header" >
+        <div>
+            <h1 class="page-title">Chiffrage Projet</h1>
+            <p class="page-subtitle">Calculez le prix juste pour cette mission spécifique (Valeur & Risque).</p>
+        </div>
+            </div >
+
+    <div class="calculator-container" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem;">
+
+        <!-- Task List Input -->
+        <div class="calculator-inputs" style="background: #0a0a0a; border: 1px solid var(--border); padding: 2rem; border-radius: var(--radius-lg);">
+            <div class="section-header-inline" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 style="font-size: 1.2rem; font-weight: 700;">Décomposition du Projet</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="button-secondary small" onclick="Scoper.addTask()" title="Ajouter une ligne vide">
+                        + Tâche
+                    </button>
+                    <button class="button-outline small" onclick="Scoper.showCatalogSelector()" title="Importer depuis votre catalogue">
+                        <i class="fas fa-book"></i> Catalogue
+                    </button>
                 </div>
             </div>
 
-            <div class="calculator-container" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem;">
-                
-                <!-- Task List Input -->
-                <div class="calculator-inputs" style="background: #0a0a0a; border: 1px solid var(--border); padding: 2rem; border-radius: var(--radius-lg);">
-                    <div class="section-header-inline" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h3 style="font-size: 1.2rem; font-weight: 700;">Décomposition du Projet</h3>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="button-secondary small" onclick="Scoper.addTask()" title="Ajouter une ligne vide">
-                                + Tâche
-                            </button>
-                            <button class="button-outline small" onclick="Scoper.showCatalogSelector()" title="Importer depuis votre catalogue">
-                                <i class="fas fa-book"></i> Catalogue
-                            </button>
-                        </div>
-                    </div>
+            <div id="scoper-tasks" class="scoper-tasks-list">
+                <!-- Rempli par renderTasks -->
+            </div>
+        </div>
 
-                    <div id="scoper-tasks" class="scoper-tasks-list">
-                        <!-- Rempli par renderTasks -->
-                    </div>
+        <!-- Results & Analysis -->
+        <div class="results-panel" style="background: #050505; border: 1px solid var(--primary-glass); padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow);">
+            <div class="results-header" style="margin-bottom: 2rem;">
+                <h3 class="results-title" style="font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Analyse Financière</h3>
+            </div>
+
+            <div class="result-cards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="result-card primary" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary); padding: 1.2rem; border-radius: 12px; grid-column: span 2;">
+                    <div class="result-label" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total à Facturer (TTC)</div>
+                    <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">0€</div>
+                    <div id="scoper-tax-info" style="font-size: 0.75rem; opacity: 0.7;">TVA: France (20.0%)</div>
                 </div>
 
-                <!-- Results & Analysis -->
-                <div class="results-panel" style="background: #050505; border: 1px solid var(--primary-glass); padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow);">
-                    <div class="results-header" style="margin-bottom: 2rem;">
-                        <h3 class="results-title" style="font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Analyse Financière</h3>
-                    </div>
+                <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
+                    <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Temps Est.</div>
+                    <div class="result-value" id="scoper-total-time" style="font-size: 1.2rem; font-weight: 700;">0h</div>
+                </div>
 
-                    <div class="result-cards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-                        <div class="result-card primary" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary); padding: 1.2rem; border-radius: 12px; grid-column: span 2;">
-                            <div class="result-label" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total à Facturer (TTC)</div>
-                            <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">0€</div>
-                            <div id="scoper-tax-info" style="font-size: 0.75rem; opacity: 0.7;">TVA: France (20.0%)</div>
-                        </div>
-
-                        <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
-                            <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Temps Est.</div>
-                            <div class="result-value" id="scoper-total-time" style="font-size: 1.2rem; font-weight: 700;">0h</div>
-                        </div>
-
-                        <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
-                            <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">TJM Réel</div>
-                            <div class="result-value" id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-light);">0€/j</div>
-                        </div>
-                    </div>
-
-                    <div class="breakdown-section" style="background: transparent; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                        <h4 class="breakdown-title" style="margin-bottom: 1.5rem; font-weight: 600;">Stratégie & Rentabilité</h4>
-                        
-                        <div class="input-group">
-                            <label class="form-label">TJM Stratégique de Référence (€)</label>
-                            <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="border-color: var(--primary-light);">
-                            <p class="text-xs text-muted" style="margin-top: 4px;">Utilisez votre boussole définit à l'étape "Objectif".</p>
-                        </div>
-
-                        <div class="input-group" style="margin-top: 1.5rem;">
-                            <label class="form-label" style="display: flex; justify-content: space-between;">
-                                <span>Facteur PITA (Prime de Risque)</span>
-                                <span class="badge" style="background: var(--primary-glass); color: var(--primary-light); font-size: 0.6rem;">PACK PRO</span>
-                            </label>
-                            <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; margin-top: 5px; display: grid; gap: 10px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Urgence</span>
-                                    <input type="range" id="scoper-pita-urgency" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Complexité</span>
-                                    <input type="range" id="scoper-pita-complexity" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);">Diff. Client</span>
-                                    <input type="range" id="scoper-pita-client" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
-                                </div>
-                                <div id="pita-multiplier-display" style="font-size: 0.75rem; text-align: right; color: var(--primary-light); font-weight: 700;">Impact : +0%</div>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="form-label">Marge de Sécurité (%)</label>
-                            <input type="number" id="scoper-buffer" class="form-input" value="20" onchange="Scoper.calculate()">
-                        </div>
-
-                        <div class="input-group" style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border);">
-                            <label class="checkbox-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <input type="checkbox" id="scoper-hide-hours" ${this.settings.hideHours ? 'checked' : ''} onchange="Scoper.updateSettings('hideHours', this.checked)">
-                                <span style="font-size: 0.85rem; font-weight: 500;">Masquer le détail des heures sur le devis</span>
-                            </label>
-                            <p class="text-xs text-muted" style="margin-top: 5px; margin-left: 25px;">Focus sur la valeur perçue.</p>
-                        </div>
-
-                        <div id="scoper-profitability-indicator" style="margin-top: 1.5rem;">
-                            <!-- Rentabilité interne -->
-                        </div>
-
-                        <div id="scoper-tax-container" style="margin-top: 1rem;"></div>
-                    </div>
-
-                    <div class="calculator-actions" style="margin-top: 2rem;">
-                        <button class="button-primary full-width" id="btn-create-quote" style="padding: 1rem; font-size: 1rem;">
-                            Générer le Devis Officiel
-                        </button>
-                    </div>
+                <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
+                    <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">TJM Réel</div>
+                    <div class="result-value" id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-light);">0€/j</div>
                 </div>
             </div>
-        `;
+
+            <div class="breakdown-section" style="background: transparent; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <h4 class="breakdown-title" style="margin-bottom: 1.5rem; font-weight: 600;">Stratégie & Rentabilité</h4>
+
+                <div class="input-group">
+                    <label class="form-label">TJM Stratégique de Référence (€)</label>
+                    <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="border-color: var(--primary-light);">
+                        <p class="text-xs text-muted" style="margin-top: 4px;">Utilisez votre boussole définit à l'étape "Objectif".</p>
+                </div>
+
+                <div class="input-group" style="margin-top: 1.5rem;">
+                    <label class="form-label" style="display: flex; justify-content: space-between;">
+                        <span>Facteur PITA (Prime de Risque)</span>
+                        <span class="badge" style="background: var(--primary-glass); color: var(--primary-light); font-size: 0.6rem;">PACK PRO</span>
+                    </label>
+                    <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; margin-top: 5px; display: grid; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Urgence</span>
+                            <input type="range" id="scoper-pita-urgency" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Complexité</span>
+                            <input type="range" id="scoper-pita-complexity" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Diff. Client</span>
+                            <input type="range" id="scoper-pita-client" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
+                        </div>
+                        <div id="pita-multiplier-display" style="font-size: 0.75rem; text-align: right; color: var(--primary-light); font-weight: 700;">Impact : +0%</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="form-label">Marge de Sécurité (%)</label>
+                    <input type="number" id="scoper-buffer" class="form-input" value="20" onchange="Scoper.calculate()">
+                </div>
+
+                <div class="input-group" style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border);">
+                    <label class="checkbox-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="scoper-hide-hours" ${this.settings.hideHours ? 'checked' : ''} onchange="Scoper.updateSettings('hideHours', this.checked)">
+                            <span style="font-size: 0.85rem; font-weight: 500;">Masquer le détail des heures sur le devis</span>
+                    </label>
+                    <p class="text-xs text-muted" style="margin-top: 5px; margin-left: 25px;">Focus sur la valeur perçue.</p>
+                </div>
+
+                <div id="scoper-profitability-indicator" style="margin-top: 1.5rem;">
+                    <!-- Rentabilité interne -->
+                </div>
+
+                <div id="scoper-tax-container" style="margin-top: 1rem;"></div>
+            </div>
+
+            <div class="calculator-actions" style="margin-top: 2rem;">
+                <button class="button-primary full-width" id="btn-create-quote" style="padding: 1rem; font-size: 1rem;">
+                    Générer le Devis Officiel
+                </button>
+            </div>
+        </div>
+    </div>
+`;
 
         this.renderTasks();
 
@@ -629,7 +617,7 @@ const Scoper = {
         const formContainer = document.getElementById('step-form-container');
         if (formContainer) {
             formContainer.innerHTML = `
-                <div style="text-align: center; padding: 2rem; animation: scaleIn 0.5s ease;">
+    < div style = "text-align: center; padding: 2rem; animation: scaleIn 0.5s ease;" >
                     <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
                         <i class="fas fa-check" style="font-size: 2.5rem; color: white;"></i>
                     </div>
@@ -644,8 +632,8 @@ const Scoper = {
                             Retour au Dashboard
                         </button>
                     </div>
-                </div>
-            `;
+                </div >
+    `;
             // Hide the wizard tabs/steps and actions to focus on success
             const actions = document.querySelector('.wizard-actions');
             const steps = document.querySelector('.wizard-steps');
@@ -709,14 +697,14 @@ const Scoper = {
 
         if (this.tasks.length === 0) {
             container.innerHTML = `
-                <div class="empty-state" style="padding: 3rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: 12px; border: 2px dashed var(--border);">
+    < div class="empty-state" style = "padding: 3rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: 12px; border: 2px dashed var(--border);" >
                     <p class="text-muted">Aucune tâche définie.</p>
                     <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
                         <button class="button-primary small" onclick="Scoper.addTask()">+ Tâche Vide</button>
                         <button class="button-secondary small" onclick="Scoper.showCatalogSelector()">+ Du Catalogue</button>
                     </div>
-                </div>
-            `;
+                </div >
+    `;
             return;
         }
 
@@ -728,7 +716,7 @@ const Scoper = {
             const calculatedPrice = (hours / 7) * tjm;
 
             return `
-                <div class="scoper-task-row" data-index="${index}">
+    < div class="scoper-task-row" data - index="${index}" >
                     <div class="task-main">
                         <input type="text" placeholder="Nom de la prestation (ex: Design UI)" class="form-input task-name" value="${task.name}" onchange="Scoper.updateTask(${index}, 'name', this.value)">
                     </div>
@@ -756,8 +744,8 @@ const Scoper = {
 
                         <button class="btn-icon btn-danger" onclick="Scoper.removeTask(${index})" title="Supprimer">✕</button>
                     </div>
-                </div>
-            `;
+                </div >
+    `;
         }).join('');
 
         // Inject Styles
@@ -765,36 +753,36 @@ const Scoper = {
             const style = document.createElement('style');
             style.id = 'scoper-styles-v2';
             style.textContent = `
-                .scoper-task-row {
-                    background: var(--bg-card);
-                    border: 1px solid var(--border);
-                    border-radius: 12px;
-                    padding: 1.2rem;
-                    margin-bottom: 1rem;
-                    transition: transform 0.2s;
-                }
-                .scoper-task-row:hover { border-color: var(--primary-glass); }
+        .scoper - task - row {
+    background: var(--bg - card);
+    border: 1px solid var(--border);
+    border - radius: 12px;
+    padding: 1.2rem;
+    margin - bottom: 1rem;
+    transition: transform 0.2s;
+}
+                .scoper - task - row:hover { border - color: var(--primary - glass); }
                 
-                .task-main { margin-bottom: 1rem; }
-                .task-main .task-name { font-weight: 600; font-size: 1rem; width: 100%; }
+                .task - main { margin - bottom: 1rem; }
+                .task - main.task - name { font - weight: 600; font - size: 1rem; width: 100 %; }
                 
-                .task-details {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-end;
-                    gap: 1.5rem;
-                }
+                .task - details {
+    display: flex;
+    justify - content: space - between;
+    align - items: flex - end;
+    gap: 1.5rem;
+}
                 
-                .time-inputs { display: flex; gap: 0.8rem; }
-                .time-field label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; }
-                .form-input.mini { width: 70px; text-align: center; }
+                .time - inputs { display: flex; gap: 0.8rem; }
+                .time - field label { display: block; font - size: 0.7rem; color: var(--text - muted); margin - bottom: 4px; }
+                .form - input.mini { width: 70px; text - align: center; }
                 
-                .price-override { flex: 1; }
-                .price-override label { display: block; font-size: 0.7rem; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
-                .price-override input { width: 100%; border-color: var(--primary-glass); background: rgba(var(--primary-rgb), 0.05); }
+                .price - override { flex: 1; }
+                .price - override label { display: block; font - size: 0.7rem; font - weight: 600; color: var(--primary); margin - bottom: 4px; }
+                .price - override input { width: 100 %; border - color: var(--primary - glass); background: rgba(var(--primary - rgb), 0.05); }
                 
-                .btn-icon.btn-danger { padding: 0.5rem; border-radius: 6px; }
-            `;
+                .btn - icon.btn - danger { padding: 0.5rem; border - radius: 6px; }
+`;
             document.head.appendChild(style);
         }
     },
@@ -813,7 +801,7 @@ const Scoper = {
         const pitaMultiplier = PricingEngine.getPitaIncentive(urgency, complexity, client);
         const impactPercent = Math.round((pitaMultiplier - 1) * 100);
         const pitaDisplay = document.getElementById('pita-multiplier-display');
-        if (pitaDisplay) pitaDisplay.textContent = `Impact : +${impactPercent}%`;
+        if (pitaDisplay) pitaDisplay.textContent = `Impact: +${impactPercent}% `;
 
         const finalTJM = tjm * pitaMultiplier;
 
@@ -837,7 +825,7 @@ const Scoper = {
         if (typeof TaxEngine !== 'undefined') {
             const taxResult = TaxEngine.calculate(totalFinalHT);
             totalTTC = taxResult.ttc;
-            taxLabel = `TTC (incl. ${TaxEngine.getCurrent().name})`;
+            taxLabel = `TTC(incl.${TaxEngine.getCurrent().name})`;
             document.getElementById('scoper-tax-info').textContent = taxLabel;
         }
 
@@ -846,13 +834,13 @@ const Scoper = {
         if (priceEl) priceEl.textContent = App.formatCurrency(totalTTC);
 
         const timeEl = document.getElementById('scoper-total-time');
-        if (timeEl) timeEl.textContent = `${Math.ceil(totalHoursInternal)}h`;
+        if (timeEl) timeEl.textContent = `${Math.ceil(totalHoursInternal)} h`;
 
         const rangeEl = document.getElementById('scoper-range');
         if (rangeEl) {
             const minH = this.tasks.reduce((s, t) => s + t.min, 0);
             const maxH = this.tasks.reduce((s, t) => s + t.max, 0);
-            rangeEl.textContent = `Production: ${minH}h à ${maxH}h (+${buffer}% sécu)`;
+            rangeEl.textContent = `Production: ${minH}h à ${maxH} h(+${buffer} % sécu)`;
         }
 
         const actualTjm = totalHoursInternal > 0 ? (totalFinalHT / (totalHoursInternal / 7)) : 0;
@@ -1206,11 +1194,13 @@ const Scoper = {
 
         if (!Storage.isExpert()) {
             content.innerHTML = `
-                <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid #a855f7;">
-                    <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(168, 85, 247, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #a855f7;"><i class="fas fa-journal-whills" style="font-size: 2.5rem;"></i></div>
-                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Journal de Bord & Mentorat</h2>
-                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Pilotez votre activité comme un expert : suivez votre progression réelle et recevez des conseils de mindset personnalisés.</p>
-                    <button class="button-primary large" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none;" onclick="App.showUpgradeModal('premium_feature')">🚀 Débloquer le Mentorat Expert</button>
+                <div class="lock-screen elite-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem;">
+                    <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: var(--primary);">
+                        <i class="fas fa-shield-alt" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Stratégie High-Performance</h2>
+                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Débloquez le module d'alignement stratégique pour piloter votre TJM avec une précision chirurgicale.</p>
+                    <button class="cta-button" onclick="App.showUpgradeModal('premium_feature')">Passer en Mode EXPERT</button>
                 </div>
             `;
             return;
@@ -1218,153 +1208,104 @@ const Scoper = {
 
         const calcData = Storage.get('sp_calculator_data') || {};
         const targetTJM = calcData.dailyRate || 0;
-        const quotes = Storage.get('sp_quotes') || [];
-        const validQuotes = quotes.filter(q => q.total && q.duration);
-        const avgActualTJM = validQuotes.length > 0 ? Math.round(validQuotes.reduce((acc, q) => acc + (q.total / q.duration), 0) / validQuotes.length) : 0;
-        const performanceGap = targetTJM > 0 ? Math.round(((avgActualTJM - targetTJM) / targetTJM) * 100) : 0;
+        const quotes = Storage.getInvoices() || [];
+        const avgActualTJM = quotes.length > 0 ? Math.round(quotes.reduce((acc, q) => acc + (q.total / 10), 0) / quotes.length) : 0; // Simulation
 
-        let journal = Storage.get('sp_journal');
-        if (!journal || typeof journal !== 'object' || Array.isArray(journal)) {
-            journal = { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
-        }
-
-        const victories = (journal.entries || []).filter(e => e.type === 'victory');
-        const blockages = (journal.entries || []).filter(e => e.type === 'blockage');
-
-        const mentorWords = {
-            confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite. Le marché achète votre certitude avant votre savoir-faire.",
-            stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' est une victoire.",
-            motivated: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
-        };
+        let journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
 
         content.innerHTML = `
-            <style>
-                .mindset-grid { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
-                .energy-slider::-webkit-slider-runnable-track { background: linear-gradient(90deg, #f43f5e, #eab308, #10b981); border-radius: 10px; height: 8px; }
-                .energy-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: white; margin-top: -6px; cursor: pointer; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-                .journal-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 24px; padding: 2rem; height: 100%; transition: 0.3s; }
-                .journal-card:hover { border-color: rgba(var(--primary-rgb), 0.3); }
-                .mood-btn { padding: 1.2rem; border-radius: 18px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); cursor: pointer; transition: 0.3s; text-align: center; }
-                .mood-btn.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); box-shadow: 0 0 15px rgba(168,85,247,0.2); }
-                .entry-item { padding: 1rem; border-radius: 12px; margin-bottom: 0.8rem; background: rgba(255,255,255,0.02); border-left: 4px solid transparent; position: relative; animation: slideIn 0.3s ease; }
-                .entry-item.victory { border-left-color: #10b981; }
-                .entry-item.blockage { border-left-color: #f43f5e; }
-                .remove-entry { position: absolute; right: 1rem; top: 1rem; opacity: 0; cursor: pointer; transition: 0.2s; }
-                .entry-item:hover .remove-entry { opacity: 1; }
-                @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-            </style>
-
-            <div class="mindset-dashboard" style="animation: fadeIn 0.5s ease;">
-                <div class="mindset-grid">
-                    <div class="main-column" style="display: flex; flex-direction: column; gap: 2rem;">
-                        
-                        <!-- Section 1 : Mindset & Focus -->
-                        <div class="journal-card">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
-                                <div>
-                                    <h2 style="font-size: 1.5rem; color: white; margin-bottom: 0.5rem;"><i class="fas fa-brain" style="color: #a855f7; margin-right: 10px;"></i> Mindset du Jour</h2>
-                                    <p class="text-muted">Pilotez votre psychologie pour maintenir la performance.</p>
+            <div class="elite-journal-container">
+                <!-- Col 1: Readiness -->
+                <div class="main-stats">
+                    <div class="elite-card">
+                        <div class="elite-card-title"><i class="fas fa-bolt"></i> État de Force</div>
+                        <div class="readiness-grid">
+                            <div class="gauge-item">
+                                <div class="gauge-label">Capital Énergie</div>
+                                <div class="gauge-value">${journal.energy}/10</div>
+                                <input type="range" min="1" max="10" value="${journal.energy}" class="input-range" style="width: 100%; margin-top: 1rem;" 
+                                       onchange="Scoper.updateJournalEnergy(this.value)">
+                            </div>
+                            <div class="gauge-item" style="margin-top: 1.5rem;">
+                                <div class="gauge-label">Focus Stratégique</div>
+                                <div class="mood-selector" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+                                    <button class="mood-btn ${journal.mood === 'confiant' ? 'active' : ''}" onclick="Scoper.updateJournalMood('confiant')">TOP</button>
+                                    <button class="mood-btn ${journal.mood === 'motivated' ? 'active' : ''}" onclick="Scoper.updateJournalMood('motivated')">OK</button>
+                                    <button class="mood-btn ${journal.mood === 'stresse' ? 'active' : ''}" onclick="Scoper.updateJournalMood('stresse')">LOW</button>
                                 </div>
-                                <div style="text-align: right;">
-                                    <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800;">MODE EXPERT</span>
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-muted);">ÉTAT D'ESPRIT</label>
-                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem;">
-                                        <div class="mood-btn ${journal.mood === 'confiant' ? 'active' : ''}" onclick="Scoper.updateJournalMood('confiant')">
-                                            <span style="font-size: 1.5rem; display: block;">🔥</span><span style="font-size: 0.7rem; font-weight: 800;">CONFIANT</span>
-                                        </div>
-                                        <div class="mood-btn ${journal.mood === 'stresse' ? 'active' : ''}" onclick="Scoper.updateJournalMood('stresse')">
-                                            <span style="font-size: 1.5rem; display: block;">😰</span><span style="font-size: 0.7rem; font-weight: 800;">STRESSÉ</span>
-                                        </div>
-                                        <div class="mood-btn ${journal.mood === 'motivated' ? 'active' : ''}" onclick="Scoper.updateJournalMood('motivated')">
-                                            <span style="font-size: 1.5rem; display: block;">📈</span><span style="font-size: 0.7rem; font-weight: 800;">MOTIVÉ</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-muted);">NIVEAU D'ÉNERGIE : <span id="energy-val" style="color: white; margin-left: 5px;">${journal.energy || 7}/10</span></label>
-                                    <input type="range" min="1" max="10" value="${journal.energy || 7}" class="energy-slider" style="width: 100%; margin-top: 10px;" oninput="document.getElementById('energy-val').innerText = this.value + '/10'; Scoper.updateJournalEnergy(this.value)">
-                                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.65rem; color: var(--text-muted);">
-                                        <span>Épuisé</span><span>Optimal</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="margin-top: 2.5rem; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 18px; border: 1px solid rgba(255,255,255,0.05);">
-                                <label style="display: block; font-size: 0.7rem; font-weight: 900; color: #a855f7; text-transform: uppercase; margin-bottom: 8px;">🎯 FOCUS PRIORITAIRE (The One Big Thing)</label>
-                                <input type="text" id="daily-focus" class="form-input invisible" placeholder="Quelle est la seule chose qui rendrait tout le reste plus facile ?" value="${journal.dailyFocus || ''}" 
-                                       style="background: transparent; border: none; font-size: 1.2rem; color: white; width: 100%; padding: 0;"
-                                       onchange="Scoper.updateDailyFocus(this.value)">
-                            </div>
-                        </div>
-
-                        <!-- Section 2 : Victoires & Blocages -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                            <div class="journal-card">
-                                <h3 style="color: #10b981; font-size: 1.1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                                    <span><i class="fas fa-trophy"></i> Victoires</span>
-                                    <button class="button-primary small" onclick="Scoper.addJournalEntry('victory')" style="background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981;">+</button>
-                                </h3>
-                                <div id="victories-list" style="max-height: 300px; overflow-y: auto;">
-                                    ${victories.length > 0 ? victories.map(e => `
-                                        <div class="entry-item victory">
-                                            <div style="font-weight: 700; color: white; font-size: 0.85rem;">${e.text}</div>
-                                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">${new Date(e.date).toLocaleDateString()}</div>
-                                            <i class="fas fa-trash remove-entry" onclick="Scoper.removeJournalEntry('${e.id}')"></i>
-                                        </div>
-                                    `).join('') : '<p class="text-muted" style="text-align: center; margin-top: 2rem; font-size: 0.8rem;">Notez vos petits succès.</p>'}
-                                </div>
-                            </div>
-                            <div class="journal-card">
-                                <h3 style="color: #f43f5e; font-size: 1.1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                                    <span><i class="fas fa-ghost"></i> Blocages</span>
-                                    <button class="button-primary small" onclick="Scoper.addJournalEntry('blockage')" style="background: rgba(244, 63, 94, 0.1); border-color: #f43f5e; color: #f43f5e;">+</button>
-                                </h3>
-                                <div id="blockages-list" style="max-height: 300px; overflow-y: auto;">
-                                    ${blockages.length > 0 ? blockages.map(e => `
-                                        <div class="entry-item blockage">
-                                            <div style="font-weight: 700; color: white; font-size: 0.85rem;">${e.text}</div>
-                                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">${new Date(e.date).toLocaleDateString()}</div>
-                                            <i class="fas fa-trash remove-entry" onclick="Scoper.removeJournalEntry('${e.id}')"></i>
-                                        </div>
-                                    `).join('') : '<p class="text-muted" style="text-align: center; margin-top: 2rem; font-size: 0.8rem;">Notez ce qui vous ralentit.</p>'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="sidebar-column" style="display: flex; flex-direction: column; gap: 2rem;">
-                        <!-- Mentor Word -->
-                        <div class="journal-card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(0,0,0,0.4) 100%); border-color: rgba(168, 85, 247, 0.2);">
-                            <h3 style="font-size: 0.9rem; color: #a855f7; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem;"><i class="fas fa-quote-left"></i> Conseil du Mentor</h3>
-                            <div id="mentor-text" style="font-size: 1.1rem; color: #e9d5ff; font-style: italic; line-height: 1.5;">"${mentorWords[journal.mood] || mentorWords.motivated}"</div>
-                        </div>
-
-                        <!-- Performance Gap -->
-                        <div class="journal-card">
-                            <h3 style="font-size: 0.9rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 1.5rem;"><i class="fas fa-compass"></i> Boussole Réelle</h3>
-                            <div style="margin-bottom: 1.5rem;">
-                                <div style="font-size: 0.7rem; color: var(--text-muted);">OBJECTIF TJM</div>
-                                <div style="font-size: 1.8rem; font-weight: 900; color: white;">${targetTJM}€</div>
-                            </div>
-                            <div style="margin-bottom: 1.5rem;">
-                                <div style="font-size: 0.7rem; color: var(--text-muted);">TJM RÉEL MOYEN</div>
-                                <div style="font-size: 1.8rem; font-weight: 900; color: ${avgActualTJM >= targetTJM ? '#10b981' : '#f43f5e'};">${avgActualTJM}€</div>
-                                <span style="font-size: 0.8rem; font-weight: 700;">(${performanceGap >= 0 ? '+' : ''}${performanceGap}% de l'objectif)</span>
-                            </div>
-                            <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 15px; text-align: center;">
-                                <div style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 5px;">GAIN POTENTIEL / AN</div>
-                                <div style="font-size: 1.2rem; font-weight: 900; color: #10b981;">+${Math.abs((targetTJM - avgActualTJM) * 200).toLocaleString()}€</div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Col 2: Strategic Log -->
+                <div class="strategic-log">
+                    <div class="elite-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <div class="elite-card-title"><i class="fas fa-list-ul"></i> Log de Performance</div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="calculate-button" style="padding: 0.4rem 1rem; font-size: 0.8rem; margin:0;" onclick="Scoper.addJournalEntry('victory')">+ Effet de Levier</button>
+                                <button class="calculate-button" style="padding: 0.4rem 1rem; font-size: 0.8rem; margin:0; background: #374151;" onclick="Scoper.addJournalEntry('blockage')">+ Friction</button>
+                            </div>
+                        </div>
+
+                        <div class="pillar-list">
+                            ${journal.entries.length === 0 ? '<p class="text-muted" style="text-align: center; padding: 2rem;">Aucun log stratégique à ce jour.</p>' : ''}
+                            ${journal.entries.slice(0, 10).map(entry => `
+                                <div class="pillar-item">
+                                    <div class="pillar-type ${entry.type === 'victory' ? 'leverage' : 'roadblock'}">
+                                        ${entry.type === 'victory' ? 'Levier' : 'Friction'}
+                                    </div>
+                                    <div class="pillar-text">${entry.text}</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; justify-content: space-between;">
+                                        <span>${new Date(entry.date).toLocaleDateString()}</span>
+                                        <span style="cursor: pointer; color: var(--danger);" onclick="Scoper.removeJournalEntry('${entry.id}')">Archiver</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Col 3: Compass & Advisor -->
+                <div class="advisor-column">
+                    <div class="elite-card" style="margin-bottom: 1.5rem;">
+                        <div class="elite-card-title"><i class="fas fa-compass"></i> Boussole Patrimoniale</div>
+                        <div class="compass-stats">
+                            <div class="stat-row">
+                                <span class="stat-label">TJM Objectif</span>
+                                <span class="stat-value">${App.formatCurrency(targetTJM)}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">TJM Réel (Moy)</span>
+                                <span class="stat-value" style="color: ${avgActualTJM < targetTJM ? 'var(--warning)' : 'var(--primary-light)'}">
+                                    ${App.formatCurrency(avgActualTJM)}
+                                </span>
+                            </div>
+                            <div class="stat-row" style="border:none;">
+                                <span class="stat-label">Écart de Valeur</span>
+                                <span class="stat-value" style="color: ${avgActualTJM < targetTJM ? 'var(--danger)' : 'var(--primary-light)'}">
+                                    ${avgActualTJM > 0 ? (avgActualTJM - targetTJM > 0 ? '+' : '') + Math.round((avgActualTJM - targetTJM) / targetTJM * 100) + '%' : '0%'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="elite-card" id="mentor-box" style="background: var(--primary-glass); border-color: var(--primary-glass);">
+                        <div class="elite-card-title" style="color: var(--primary-light);"><i class="fas fa-user-tie"></i> Strategic Advisor</div>
+                        <p id="mentor-text" style="font-size: 0.95rem; font-style: italic; color: var(--text); line-height: 1.6; transition: 0.3s;">
+                            "${this.getEliteAdvice(journal)}"
+                        </p>
+                    </div>
+                </div>
             </div>
         `;
+    },
+
+    getEliteAdvice(journal) {
+        if (journal.energy < 4) return "Readiness Critique. Priorisez la récupération de capital énergie avant toute négociation de haut vol. Déléguez les tâches à faible valeur ajoutée.";
+        if (journal.mood === 'confiant') return "Votre alignement psychologique est optimal. C'est le moment d'attaquer vos prospects 'Grands Comptes' ou d'augmenter vos tarifs de 15%.";
+        return "Stabilité opérationnelle détectée. Concentrez vos efforts sur la réduction des frictions listées dans votre log de performance.";
     },
 
     /**
