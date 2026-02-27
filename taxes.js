@@ -98,7 +98,7 @@ const TaxEngine = {
     },
 
     getCurrent() {
-        return this.contexts[this.currentContext];
+        return this.contexts[this.currentContext] || this.contexts['FR-METRO'];
     },
 
     getSocialRate() {

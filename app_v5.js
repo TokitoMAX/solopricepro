@@ -305,46 +305,75 @@ const App = {
         }
     },
 
-    // Nouveau helper pour le rendu des pages
     renderPageContent(page, ...args) {
-        if (page === 'dashboard' && typeof Dashboard !== 'undefined') Dashboard.render();
-        if (page === 'quotes' && typeof Quotes !== 'undefined') Quotes.render('quotes-content', ...args);
-        if (page === 'invoices' && typeof Invoices !== 'undefined') {
-            this.navigateTo('quotes'); // Redirect to Documents
-            setTimeout(() => Quotes.switchTab('invoices'), 100);
-        }
-        if (page === 'network' && typeof Network !== 'undefined') Network.render(...args);
-        if (page === 'clients') {
-            this.navigateTo('network', 'clients');
-        }
-        if (page === 'leads') {
-            this.navigateTo('network', 'leads');
-        }
-        if (page === 'marketplace' && typeof Marketplace !== 'undefined') {
-            this.checkFreemiumLimits(); // Refresh limits before rendering
-            try {
-                console.log('📡 [MARKETPLACE-ROOT] Rendering v4.0 (Lite)...');
-                Marketplace.render('marketplace-root', ...args);
-            } catch (err) {
-                alert('Marketplace Render Error: ' + err.message);
-                console.error(err);
+        console.log(`📡 [APP] Rendering page: ${page}`, args);
+        try {
+            if (page === 'dashboard') {
+                if (typeof Dashboard !== 'undefined' && Dashboard.render) Dashboard.render();
+                else console.warn('⚠️ Dashboard module not ready');
             }
-        }
-        if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();
-        if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render();
-        if (page === 'profile' && typeof Profile !== 'undefined') Profile.render();
-        if (page === 'settings' && typeof Settings !== 'undefined') Settings.render();
-        if (page === 'services' && typeof Services !== 'undefined') {
-            this.navigateTo('settings', 'billing'); // Redirect to Settings with billing tab
-        }
-        if (page === 'admin') {
-            const user = Storage.getUser();
-            if (user && user.role === 'admin') {
-                this.refreshAdminData();
-            } else {
-                this.showNotification('Accès refusé', 'error');
-                this.navigateTo('dashboard');
+            if (page === 'quotes') {
+                if (typeof Quotes !== 'undefined' && Quotes.render) Quotes.render('quotes-content', ...args);
+                else console.warn('⚠️ Quotes module not ready');
             }
+            if (page === 'invoices') {
+                if (typeof Invoices !== 'undefined') {
+                    this.navigateTo('quotes'); // Redirect to Documents
+                    setTimeout(() => { if (typeof Quotes !== 'undefined' && Quotes.switchTab) Quotes.switchTab('invoices'); }, 100);
+                }
+            }
+            if (page === 'network') {
+                if (typeof Network !== 'undefined' && Network.render) Network.render(...args);
+                else console.warn('⚠️ Network module not ready');
+            }
+            if (page === 'clients') {
+                this.navigateTo('network', 'clients');
+            }
+            if (page === 'leads') {
+                this.navigateTo('network', 'leads');
+            }
+            if (page === 'marketplace') {
+                if (typeof Marketplace !== 'undefined' && Marketplace.render) {
+                    this.checkFreemiumLimits(); // Refresh limits before rendering
+                    try {
+                        console.log('📡 [MARKETPLACE-ROOT] Rendering v4.0 (Lite)...');
+                        Marketplace.render('marketplace-root', ...args);
+                    } catch (err) {
+                        console.error('Marketplace Render Error:', err);
+                    }
+                } else console.warn('⚠️ Marketplace module not ready');
+            }
+            if (page === 'kanban') {
+                if (typeof Kanban !== 'undefined' && Kanban.render) Kanban.render();
+                else console.warn('⚠️ Kanban module not ready');
+            }
+            if (page === 'scoper') {
+                if (typeof Scoper !== 'undefined' && Scoper.render) Scoper.render();
+                else console.warn('⚠️ Scoper module not ready');
+            }
+            if (page === 'profile') {
+                if (typeof Profile !== 'undefined' && Profile.render) Profile.render();
+                else console.warn('⚠️ Profile module not ready');
+            }
+            if (page === 'settings') {
+                if (typeof Settings !== 'undefined' && Settings.render) Settings.render();
+                else console.warn('⚠️ Settings module not ready');
+            }
+            if (page === 'services') {
+                this.navigateTo('settings', 'billing'); // Redirect to Settings with billing tab
+            }
+            if (page === 'admin') {
+                const user = (typeof Storage !== 'undefined') ? Storage.getUser() : null;
+                if (user && user.role === 'admin') {
+                    if (this.refreshAdminData) this.refreshAdminData();
+                } else {
+                    if (this.showNotification) this.showNotification('Accès refusé', 'error');
+                    this.navigateTo('dashboard');
+                }
+            }
+        } catch (e) {
+            console.error(`❌ [APP] Error rendering page ${page}:`, e);
+            if (this.showNotification) this.showNotification('Erreur d\'affichage', 'error');
         }
     },
 
