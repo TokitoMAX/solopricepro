@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.sp_journal (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     mood TEXT DEFAULT 'motivated',
+    energy INTEGER DEFAULT 7,
     entries JSONB DEFAULT '[]'::jsonb,
     daily_focus TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),

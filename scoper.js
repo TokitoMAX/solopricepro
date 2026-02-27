@@ -1211,7 +1211,7 @@ const Scoper = {
         const quotes = Storage.getInvoices() || [];
         const avgActualTJM = quotes.length > 0 ? Math.round(quotes.reduce((acc, q) => acc + (parseFloat(q.total || 0) / 10), 0) / quotes.length) : 0; // Simulation
 
-        const defaultJournal = { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
+        const defaultJournal = { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
         let journal = { ...defaultJournal, ...(Storage.get('sp_journal') || {}) };
         if (!Array.isArray(journal.entries)) journal.entries = [];
 
@@ -1341,14 +1341,14 @@ const Scoper = {
     },
 
     updateJournalEnergy(val) {
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
         journal.energy = parseInt(val);
         Storage.saveJournal(journal);
     },
 
     updateDailyFocus(text) {
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
-        journal.dailyFocus = text.trim();
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
+        journal.daily_focus = text.trim();
         Storage.saveJournal(journal);
         App.showNotification('Focus quotidien enregistré.', 'success');
     },
@@ -1358,7 +1358,7 @@ const Scoper = {
         const text = prompt(`Quelle ${label} souhaitez-vous noter ?`);
         if (!text || text.trim() === '') return;
 
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
+        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
         if (!Array.isArray(journal.entries)) journal.entries = [];
 
         journal.entries.unshift({
