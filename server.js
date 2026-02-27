@@ -47,14 +47,12 @@ try {
 // Injecter supabase (peut être null si échec init)
 app.set('supabase', supabase);
 
-// 1. Logging de base (AVANT TOUT)
+// 1. Logs & CORS
 app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] 📡 ${req.method} ${req.originalUrl || req.path}`);
+    console.log(`[${new Date().toISOString()}] 📡 ${req.method} ${req.path}`);
     next();
 });
 
-// 2. CORS
 app.use(cors({
     origin: true,
     credentials: true,
@@ -62,48 +60,23 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// 3. GESTION UNIFIÉE DU BODY (JSON & RAW)
-// Cette section remplace tous les autres parsers pour éviter les conflits de flux (stream consumed)
-app.use((req, res, next) => {
-    // Cas A : Webhook Stripe/PayPal (nécessite le raw body pour la signature)
-    if (req.originalUrl && req.originalUrl.includes('/webhook')) {
-        console.log(`📦 [BODY-PARSER] Route Webhook détectée -> Passage en mode RAW`);
-        return express.raw({ type: '*/*' })(req, res, (err) => {
-            if (err) return next(err);
-            req.rawBody = req.body; // Stockage du buffer
-            next();
-        });
-    }
-
-    // Cas B : Si le body est déjà présent (ex: Vercel auto-parsing ou middleware précédent)
-    // On vérifie si c'est un objet non-vidé et non-buffer
-    if (req.body && !Buffer.isBuffer(req.body) && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
-        console.log(`📦 [BODY-PARSER] Body déjà présent (Vercel/Express) : ${Object.keys(req.body).join(', ')}`);
-        return next();
-    }
-
-    // Cas C : Parsing JSON Standard pour toutes les autres routes API
-    if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
-        const contentType = req.get('Content-Type') || '';
-        if (contentType.includes('application/json')) {
-            console.log(`📦 [BODY-PARSER] Parsing JSON pour ${req.path}`);
-            return express.json({ limit: '10mb' })(req, res, next);
-        }
-        if (contentType.includes('application/x-www-form-urlencoded')) {
-            console.log(`📦 [BODY-PARSER] Parsing URL-Encoded pour ${req.path}`);
-            return express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
-        }
-    }
-
+// 2. Body Parsers (Ordre CRITIQUE)
+// 2a. WEBHOOKS (Raw Body)
+app.use('/api/payments/webhook', express.raw({ type: '*/*' }), (req, res, next) => {
+    req.rawBody = req.body;
     next();
 });
 
-// [LOG-DEBUG] Post-parsing check
+// 2b. JSON & URL-ENCODED (Pour tout le reste)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 3. LOG DIAGNOSTIC (Optionnel mais utile)
 app.use('/api', (req, res, next) => {
     if (req.method === 'POST') {
-        const hasBody = !!req.body;
-        const keys = hasBody ? Object.keys(req.body) : [];
-        console.log(`🏁 [API-READY] Body: ${hasBody ? 'PRESÉNT' : 'MANQUANT'}, Keys: [${keys.join(', ')}]`);
+        const bodyKeys = req.body ? Object.keys(req.body) : 'NONE';
+        const contentType = req.get('Content-Type');
+        console.log(`🏁 [API-DISPATCH] Path: ${req.path}, Keys: ${bodyKeys}, CT: ${contentType}`);
     }
     next();
 });

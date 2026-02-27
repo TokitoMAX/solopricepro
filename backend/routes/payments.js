@@ -64,10 +64,10 @@ router.post('/create-quote-paypal-order', async (req, res) => {
     let step = 'init';
     try {
         if (!req.body || (typeof req.body === 'object' && Object.keys(req.body).length === 0)) {
-            console.error('[PAYPAL-ORDER] ❌ req.body is empty or undefined.');
+            console.error('[PAYPAL-ORDER] ❌ req.body est vide.');
             return res.status(400).json({
-                message: "Les données de paiement n'ont pas été reçues par le serveur.",
-                details: "Veuillez vérifier les logs '📦 [BODY-PARSER]' sur Vercel. Le flux de données a peut-être été consommé par un autre middleware."
+                message: "Les données de paiement (JSON) n'ont pas été reçues par le serveur.",
+                details: "Vérifiez que le déploiement sur Vercel est bien terminé. Si le problème persiste, cela peut être dû à un conflit de configuration sur Vercel."
             });
         }
         const { quoteId, type } = req.body; // type: 'expert' ou 'platform'
