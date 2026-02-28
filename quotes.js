@@ -122,12 +122,13 @@ const Quotes = {
                                                         <label>Essentiel</label>
                                                         <button onclick="Quotes.edit('${quote.id}')"><i class="fas fa-edit"></i> Modifier</button>
                                                         <button onclick="Quotes.downloadPDF('${quote.id}')"><i class="fas fa-file-pdf"></i> PDF / Aperçu</button>
-                                                        <button onclick="Quotes.fastSend('${quote.id}')"><i class="fas fa-paper-plane"></i> Envoyer rapide</button>
+                                                        <button onclick="Quotes.fastSend('${quote.id}')"><i class="fas fa-paper-plane"></i> Envoyer par Email</button>
+                                                        <button onclick="Quotes.copyPublicLink('${quote.id}')" style="color: #3b82f6;"><i class="fas fa-link"></i> Copier Lien de Signature</button>
                                                     </div>
                                                     
                                                     <div class="menu-section">
                                                         <label>Flux & Validation</label>
-                                                        <button onclick="Quotes.openSignatureModal('${quote.id}')" style="color: #a855f7;"><i class="fas fa-pen-nib"></i> Faire Signer</button>
+                                                        <button onclick="Quotes.openSignatureModal('${quote.id}')" style="color: #a855f7;"><i class="fas fa-pen-nib"></i> Signer en Présence</button>
                                                         <button class="${quote.status === 'accepted' ? 'text-success' : ''}" onclick="Quotes.convertToInvoice('${quote.id}')">
                                                             <i class="fas fa-file-invoice-dollar"></i> Facturer (Virement)
                                                         </button>
@@ -780,6 +781,20 @@ const Quotes = {
         setTimeout(() => {
             window.location.href = mailtoUrl;
         }, 1200);
+    },
+
+    copyPublicLink(id) {
+        const quote = Storage.getQuote(id);
+        if (!quote) return;
+        const baseUrl = window.location.origin + window.location.pathname;
+        const publicLink = `${baseUrl}#view-quote=${quote.id}`;
+
+        navigator.clipboard.writeText(publicLink).then(() => {
+            App.showNotification('Lien de signature/paiement copié dans le presse-papier !', 'success');
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            prompt("Impossible de copier automatiquement. Veuillez copier ce lien :", publicLink);
+        });
     },
 
     // --- Signature Module (Expert Feature) ---
