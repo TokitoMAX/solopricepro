@@ -1114,6 +1114,16 @@ const Scoper = {
         const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, sector);
         const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target);
 
+        // Human-readable labels
+        const sectorLabel = { tech: 'Tech & Web', design: 'Design & Branding', marketing: 'Marketing & Com', conseil: 'Conseil & Strat', media: 'Média & Vidéo', artisanat: 'Artisanat & Prod' }[sector] || sector;
+        const targetLabel = { tpe: 'TPE / Indépendants', pme: 'PME & Startups', 'grands-comptes': 'Grands Comptes' }[target] || target;
+
+        const hasObjective = results.dailyRate > 0;
+        const tjm = results.dailyRate;
+        const monthlyNet = parseFloat(data.monthlyRevenue) || 0;
+        const revenueNeeded = results.revenueNeeded;
+        const taxAmount = results.taxAmount;
+
         content.innerHTML = `
             <style>
                 .objection-card {
@@ -1128,15 +1138,53 @@ const Scoper = {
                 .diag-question:hover { transform: translateX(10px); background: rgba(168, 85, 247, 0.05); }
                 .expert-hero {
                     background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(30, 10, 60, 0.4) 100%);
-                    border-radius: 30px; padding: 4rem 2rem; text-align: center; border: 1px solid rgba(168, 85, 247, 0.2); margin-bottom: 3rem; position: relative; overflow: hidden;
+                    border-radius: 30px; padding: 3rem 2rem 2rem; text-align: center; border: 1px solid rgba(168, 85, 247, 0.2); margin-bottom: 3rem; position: relative; overflow: hidden;
                 }
+                .tjm-stats-row { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem; }
+                .tjm-stat-pill { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1rem 1.5rem; text-align: center; min-width: 130px; }
+                .tjm-stat-pill.primary { border-color: #a855f7; background: rgba(168,85,247,0.1); }
+                .tjm-stat-value { font-size: 1.6rem; font-weight: 900; color: white; }
+                .tjm-stat-label { font-size: 0.65rem; font-weight: 700; color: #c084fc; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+                .no-objective-banner { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 1rem 1.5rem; margin-top: 1.5rem; color: #fbbf24; font-size: 0.9rem; }
             </style>
 
             <div class="expert-closing-tab" style="animation: fadeIn 0.5s ease;">
                 <div class="expert-hero">
                     <div style="font-size: 0.75rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Closing Engineer Mode</div>
-                    <h1 style="font-size: 2.8rem; margin-bottom: 1rem; color: white; letter-spacing: -1px;">Votre Arsenal de Vente</h1>
-                    <p style="color: #e9d5ff; font-size: 1.15rem; max-width: 700px; margin: 0 auto; opacity: 0.9;">Voici votre stratégie de combat personnalisée pour un profil <strong>${sector.toUpperCase()}</strong> face à une cible <strong>${target.toUpperCase()}</strong>.</p>
+                    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: white; letter-spacing: -1px;">Votre Arsenal de Vente</h1>
+                    <p style="color: #e9d5ff; font-size: 1rem; opacity: 0.85; margin-bottom: 0;">
+                        Stratégie personnalisée · <strong>${sectorLabel}</strong> → <strong>${targetLabel}</strong>
+                    </p>
+
+                    ${!hasObjective ? `
+                        <div class="no-objective-banner">
+                            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                            Aucun objectif TJM défini · <a onclick="Scoper.render('objective')" style="color: #fbbf24; cursor:pointer; text-decoration: underline;">Compléter l'Objectif TJM →</a>
+                        </div>
+                    ` : `
+                        <div class="tjm-stats-row">
+                            <div class="tjm-stat-pill primary">
+                                <div class="tjm-stat-value">${tjm}€</div>
+                                <div class="tjm-stat-label">TJM Objectif</div>
+                            </div>
+                            <div class="tjm-stat-pill">
+                                <div class="tjm-stat-value">${monthlyNet.toLocaleString('fr-FR')}€</div>
+                                <div class="tjm-stat-label">Salaire Net / mois</div>
+                            </div>
+                            <div class="tjm-stat-pill">
+                                <div class="tjm-stat-value">${revenueNeeded.toLocaleString('fr-FR')}€</div>
+                                <div class="tjm-stat-label">CA à Facturer</div>
+                            </div>
+                            <div class="tjm-stat-pill">
+                                <div class="tjm-stat-value">${taxAmount.toLocaleString('fr-FR')}€</div>
+                                <div class="tjm-stat-label">Charges / mois</div>
+                            </div>
+                            <div class="tjm-stat-pill">
+                                <div class="tjm-stat-value">${data.workingDays || 15}j</div>
+                                <div class="tjm-stat-label">Jours Facturés</div>
+                            </div>
+                        </div>
+                    `}
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
