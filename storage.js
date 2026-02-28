@@ -138,8 +138,15 @@ const Storage = {
     },
 
     get(key) {
-        // 1. Check if it's a known table in cache (and not an empty object for singular keys)
+        // 1. Check cache
         const cached = this._cache[key];
+
+        // Handle primitive values (numbers, strings, booleans) — Object.keys() doesn't work on these
+        if (cached !== undefined && cached !== null && typeof cached !== 'object') {
+            return cached;
+        }
+
+        // Handle arrays and objects
         if (cached && (Array.isArray(cached) ? cached.length > 0 : Object.keys(cached).length > 0)) {
             return cached;
         }
@@ -163,9 +170,8 @@ const Storage = {
         // 1. Update cache
         this._cache[key] = value;
 
-        // 2. Persist to localStorage if it looks like transient data (not a huge table)
-        // or specifically requested keys like drafts
-        const transientKeys = ['sp_draft_quote_item', 'sp_draft_quote_items', 'sp_user_cache', 'sp_journal'];
+        // 2. Persist to localStorage for transient/UI-preference keys
+        const transientKeys = ['sp_draft_quote_item', 'sp_draft_quote_items', 'sp_user_cache', 'sp_journal', 'sp_scoper_current_step', 'sp_calculator_data'];
         if (transientKeys.includes(key) || key.startsWith('sp_draft_')) {
             try {
                 if (value === null) {
