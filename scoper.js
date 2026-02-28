@@ -341,7 +341,20 @@ const Scoper = {
 
         if (!this.currentObjectiveStep) this.currentObjectiveStep = parseInt(storedStep);
 
-        // Ensure we advance to next step logic
+        // Save current form data to backend before advancing
+        const currentData = Storage.get('sp_calculator_data') || {};
+        const merged = {
+            ...currentData,
+            monthlyRevenue: document.getElementById('monthlyRevenue') ? parseFloat(document.getElementById('monthlyRevenue').value) || currentData.monthlyRevenue : currentData.monthlyRevenue,
+            workingDays: document.getElementById('workingDays') ? parseFloat(document.getElementById('workingDays').value) || currentData.workingDays : currentData.workingDays,
+            hoursPerDay: document.getElementById('hoursPerDay') ? parseFloat(document.getElementById('hoursPerDay').value) || currentData.hoursPerDay : currentData.hoursPerDay,
+            monthlyCharges: document.getElementById('monthlyCharges') ? parseFloat(document.getElementById('monthlyCharges').value) || currentData.monthlyCharges : currentData.monthlyCharges,
+            taxRate: document.getElementById('taxRate') ? parseFloat(document.getElementById('taxRate').value) || currentData.taxRate : currentData.taxRate,
+        };
+        Storage.set('sp_calculator_data', merged);
+        // Persist to Supabase (non-blocking)
+        Storage.saveCalculatorData(merged).catch(e => console.warn('[SCOPER] Sync error:', e));
+
         if (this.currentObjectiveStep < 5) {
             this.currentObjectiveStep++;
             Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
@@ -632,7 +645,14 @@ const Scoper = {
             return;
         }
 
-        await Storage.set('sp_calculator_data', finalData);
+        // Persist to Supabase (source of truth)
+        Storage.set('sp_calculator_data', finalData);
+        try {
+            await Storage.saveCalculatorData(finalData);
+            console.log('[SCOPER] TJM objective synced to Supabase:', finalData.dailyRate + '€/j');
+        } catch (e) {
+            console.warn('[SCOPER] Backend sync warning (data saved locally):', e);
+        }
 
         // Final Success View
         const formContainer = document.getElementById('step-form-container');
