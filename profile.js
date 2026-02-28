@@ -303,7 +303,7 @@ const Profile = {
         const errEl = document.getElementById('err-siret');
         const nameInput = document.querySelector('input[name="name"]');
         try {
-            const res = await fetch(`${Auth.apiBase}/api/validate/company?siret=${siret}`, {
+            const res = await fetch(`${Auth.apiBase}/api/data/validate/company?siret=${siret}`, {
                 headers: { 'Authorization': `Bearer ${Auth.token}` }
             });
             const data = await res.json();
