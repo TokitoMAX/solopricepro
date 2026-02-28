@@ -638,7 +638,7 @@ const Scoper = {
         const formContainer = document.getElementById('step-form-container');
         if (formContainer) {
             formContainer.innerHTML = `
-    < div style = "text-align: center; padding: 2rem; animation: scaleIn 0.5s ease;" >
+    <div style="text-align: center; padding: 2rem; animation: scaleIn 0.5s ease;">
                     <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
                         <i class="fas fa-check" style="font-size: 2.5rem; color: white;"></i>
                     </div>
@@ -653,8 +653,8 @@ const Scoper = {
                             Retour au Dashboard
                         </button>
                     </div>
-                </div >
-    `;
+                </div>
+`;
             // Hide the wizard tabs/steps and actions to focus on success
             const actions = document.querySelector('.wizard-actions');
             const steps = document.querySelector('.wizard-steps');

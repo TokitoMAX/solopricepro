@@ -5178,3 +5178,416 @@ body.public-view {
     width: auto;
     filter: contrast(1.2);
 }
+
+/* ============================================
+   JOURNAL DE BORD HP — High Performance Layout
+   ============================================ */
+
+.hp-journal {
+    display: grid;
+    grid-template-columns: 320px 1fr 300px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 1200px) {
+    .hp-journal {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mood grid */
+.hp-mood-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.hp-mood-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.hp-mood-btn:hover {
+    border-color: var(--primary);
+    background: var(--primary-glass);
+}
+
+.hp-mood-btn.active {
+    border-color: var(--primary);
+    background: var(--primary-glass);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+}
+
+.hp-mood-btn.active.fire {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.hp-mood-btn.active.focus {
+    border-color: var(--primary);
+    background: var(--primary-glass);
+}
+
+.hp-mood-btn.active.tired {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.hp-mood-btn.active.chaos {
+    border-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.hp-mood-emoji {
+    font-size: 1.5rem;
+}
+
+.hp-mood-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Energy slider */
+.hp-energy-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #ef4444, #f59e0b, var(--primary));
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.hp-energy-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.hp-energy-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.hp-energy-value {
+    font-weight: 800;
+    color: var(--primary);
+}
+
+/* Bar chart history */
+.hp-chart-bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    transition: height 0.3s ease;
+    min-height: 4px;
+}
+
+.hp-chart-bar.empty {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed var(--border);
+}
+
+/* Gauge layout */
+.readiness-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.gauge-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Habits list */
+.hp-habits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.hp-habit-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+}
+
+.hp-habit-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--primary-glass);
+}
+
+.hp-habit-item input[type="checkbox"] {
+    display: none;
+}
+
+.hp-habit-box {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.hp-habit-item input:checked~.hp-habit-box {
+    background: var(--primary-glass);
+    border-color: var(--primary);
+    color: var(--primary-light);
+}
+
+.hp-habit-item span {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Journal writing zone */
+.writing-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.hp-one-thing-input {
+    width: 100%;
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid var(--primary-glass);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    resize: none;
+    min-height: 60px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.hp-one-thing-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.hp-reflection-input {
+    width: 100%;
+    flex: 1;
+    min-height: 160px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    color: var(--text);
+    font-size: 0.9rem;
+    resize: none;
+    font-family: inherit;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+}
+
+.hp-reflection-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+.hp-ai-feedback {
+    background: rgba(99, 102, 241, 0.06);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* Timeline / Log column */
+.timeline-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.hp-log-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.hp-log-btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hp-log-btn.victory {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--primary-light);
+    border: 1px solid var(--primary-glass);
+}
+
+.hp-log-btn.victory:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.hp-log-btn.lesson {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.hp-log-btn.lesson:hover {
+    background: #f59e0b;
+    color: #000;
+}
+
+.hp-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow-y: auto;
+    max-height: 400px;
+    padding-right: 4px;
+}
+
+.hp-empty-timeline {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: 2rem;
+    opacity: 0.5;
+}
+
+.hp-timeline-entry {
+    display: flex;
+    gap: 0.75rem;
+    position: relative;
+    padding-left: 0.5rem;
+}
+
+.hp-timeline-entry.victory-type {
+    border-left: 3px solid var(--primary);
+    padding-left: 0.75rem;
+}
+
+.hp-timeline-entry.lesson-type {
+    border-left: 3px solid #f59e0b;
+    padding-left: 0.75rem;
+}
+
+.hp-timeline-dot {
+    display: none;
+}
+
+.hp-timeline-content {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    position: relative;
+}
+
+.hp-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.hp-timeline-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.victory-type .hp-timeline-badge {
+    color: var(--primary-light);
+}
+
+.lesson-type .hp-timeline-badge {
+    color: #f59e0b;
+}
+
+.hp-timeline-date {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.hp-timeline-text {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.4;
+}
+
+.hp-timeline-delete {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    padding: 2px 5px;
+}
+
+.hp-timeline-content:hover .hp-timeline-delete {
+    opacity: 1;
+}
+
+.hp-timeline-delete:hover {
+    color: var(--danger);
+}
+
+/* Scaler animations */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
