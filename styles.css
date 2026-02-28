@@ -1901,6 +1901,293 @@ section {
     white-space: pre-wrap;
 }
 
+/* --- HIGH PERFORMANCE JOURNAL --- */
+.hp-journal {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    gap: 1.5rem;
+    height: calc(100vh - 180px);
+    min-height: 700px;
+}
+
+.hp-journal .elite-card {
+    background: rgba(10, 10, 10, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 1.5rem;
+}
+
+.hp-journal .elite-card-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--primary-light);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Energy Gauge */
+.hp-energy-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    outline: none;
+}
+
+.hp-energy-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.hp-energy-value {
+    font-weight: 900;
+    color: var(--white);
+    font-size: 1.2rem;
+}
+
+/* Mood Grid */
+.hp-mood-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.hp-mood-btn {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.hp-mood-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hp-mood-btn.active.fire {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.hp-mood-btn.active.focus {
+    border-color: var(--primary);
+    background: var(--primary-glass);
+}
+
+.hp-mood-btn.active.low {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.hp-mood-btn.active.chaos {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.hp-mood-emoji {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.hp-mood-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+/* Writing Col */
+.writing-col .hp-one-thing-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    color: var(--white);
+    font-weight: 600;
+    font-size: 0.95rem;
+    resize: none;
+    height: 80px;
+}
+
+.writing-col .hp-reflection-input {
+    flex: 1;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-base);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    resize: none;
+    padding: 1rem 0;
+    font-family: inherit;
+}
+
+.writing-col .hp-reflection-input:focus {
+    outline: none;
+}
+
+/* Habits */
+.hp-habits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hp-habit-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: background 0.2s;
+}
+
+.hp-habit-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.hp-habit-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.hp-habit-item input:checked+.hp-habit-box {
+    background: var(--primary);
+    color: white;
+}
+
+.hp-habit-item span {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Timeline */
+.hp-timeline {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.hp-timeline-entry {
+    position: relative;
+    padding-left: 25px;
+    padding-bottom: 1.5rem;
+}
+
+.hp-timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+}
+
+.hp-timeline-entry::before {
+    content: '';
+    position: absolute;
+    left: 4.5px;
+    top: 15px;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+}
+
+.hp-timeline-entry:last-child::before {
+    display: none;
+}
+
+.victory-type .hp-timeline-dot {
+    background: var(--success);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+.lesson-type .hp-timeline-dot {
+    background: #6366f1;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+}
+
+.hp-timeline-content {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    padding: 12px;
+    position: relative;
+}
+
+.hp-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.hp-timeline-badge {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.hp-timeline-date {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.hp-timeline-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-base);
+}
+
+.hp-log-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+}
+
+.hp-log-btn.victory {
+    background: var(--success-glass);
+    color: var(--success);
+}
+
+.hp-log-btn.lesson {
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
+}
+
+.hp-ai-feedback {
+    background: var(--primary-glass);
+    border-radius: 16px;
+    padding: 1rem;
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--primary-light);
+    line-height: 1.5;
+}
+
 .feed-item-pricing {
     padding: 10px 15px;
     background: rgba(0, 0, 0, 0.2);

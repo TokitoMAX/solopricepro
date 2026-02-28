@@ -58,6 +58,7 @@ const Scoper = {
 
     renderObjectiveTab() {
         let storedStep = Storage.get('sp_scoper_current_step');
+        // Handle potential array/NaN from storage retrieval
         if (Array.isArray(storedStep) || isNaN(parseInt(storedStep))) {
             storedStep = 1;
             Storage.set('sp_scoper_current_step', 1);
@@ -339,6 +340,8 @@ const Scoper = {
         if (Array.isArray(storedStep) || isNaN(parseInt(storedStep))) storedStep = 1;
 
         if (!this.currentObjectiveStep) this.currentObjectiveStep = parseInt(storedStep);
+
+        // Ensure we advance to next step logic
         if (this.currentObjectiveStep < 5) {
             this.currentObjectiveStep++;
             Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
@@ -1225,18 +1228,14 @@ const Scoper = {
         }
 
         const calcData = Storage.get('sp_calculator_data') || {};
-        const targetTJM = calcData.dailyRate || 0;
-        const quotes = Storage.getInvoices() || [];
-        const avgActualTJM = quotes.length > 0 ? Math.round(quotes.reduce((acc, q) => acc + (parseFloat(q.total || 0) / 10), 0) / quotes.length) : 0;
-
-        const defaultJournal = { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: { prospection: false, deepwork: false, off: false } };
+        const defaultJournal = { mood: 'focus', energy: 7, entries: [], daily_focus: '', reflection: '', habits: { prospection: false, deepwork: false, off: false } };
         let journal = { ...defaultJournal, ...(Storage.get('sp_journal') || {}) };
         if (!Array.isArray(journal.entries)) journal.entries = [];
-        if (!journal.habits) journal.habits = { prospection: false, deepwork: false, off: false };
+        if (!journal.habits) journal.habits = { ...defaultJournal.habits, ...journal.habits };
 
         content.innerHTML = `
             <div class="elite-journal-container hp-journal">
-                <!-- Col 1: Météo & Execution Daily -->
+                <!-- Col 1: Météo & Execution -->
                 <div class="main-stats">
                     <div class="elite-card">
                         <div class="elite-card-title"><i class="fas fa-temperature-half"></i> Météo Interne</div>
@@ -1297,42 +1296,55 @@ const Scoper = {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Col 2: The ONE Thing & Micro Habits -->
-                <div class="execution-col">
-                    <div class="elite-card" style="margin-bottom: 1.5rem; position: relative; overflow: hidden;">
-                        <div class="hp-one-thing-bg"></div>
-                        <div class="elite-card-title"><i class="fas fa-bullseye"></i> The ONE Thing</div>
-                        <p class="text-xs text-muted" style="margin-bottom: 1rem;">Quelle est la SEULE action qui rendra tout le reste plus facile ou inutile aujourd'hui ?</p>
-                        <textarea class="hp-one-thing-input" 
-                                  placeholder="Ex: Closer l'entreprise Dupont SA..."
-                                  onchange="Scoper.updateDailyFocus(this.value)">${journal.daily_focus || ''}</textarea>
-                    </div>
-
-                    <div class="elite-card">
-                        <div class="elite-card-title"><i class="fas fa-check-double"></i> Exécution Discrète</div>
+                    <div class="elite-card" style="margin-top: 1.5rem;">
+                        <div class="elite-card-title"><i class="fas fa-check-double"></i> Exécution Silencieuse</div>
                         <div class="hp-habits-list">
                             <label class="hp-habit-item">
                                 <input type="checkbox" ${journal.habits.prospection ? 'checked' : ''} onchange="Scoper.toggleHabit('prospection', this.checked)">
                                 <div class="hp-habit-box"><i class="fas fa-phone"></i></div>
-                                <span>Prospection Réalisée (Min. 5 actes)</span>
+                                <span>Prospection Réalisée</span>
                             </label>
                             <label class="hp-habit-item">
                                 <input type="checkbox" ${journal.habits.deepwork ? 'checked' : ''} onchange="Scoper.toggleHabit('deepwork', this.checked)">
                                 <div class="hp-habit-box"><i class="fas fa-brain"></i></div>
-                                <span>Deep Work (90 min ininterrompues)</span>
+                                <span>Deep Work (90 min)</span>
                             </label>
                             <label class="hp-habit-item">
                                 <input type="checkbox" ${journal.habits.off ? 'checked' : ''} onchange="Scoper.toggleHabit('off', this.checked)">
                                 <div class="hp-habit-box"><i class="fas fa-power-off"></i></div>
-                                <span>Déconnexion Totale (< 20H)</span>
+                                <span>Déconnexion Digitale</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <!-- Col 3: Carnet de Route (Timeline) -->
+                <!-- Col 2: Carnet de Vie (The Real Journaling) -->
+                <div class="writing-col">
+                    <div class="elite-card" style="height: 100%; display: flex; flex-direction: column;">
+                        <div class="elite-card-title"><i class="fas fa-pen-fancy"></i> Carnet de Vie</div>
+                        <p class="text-xs text-muted" style="margin-bottom: 1rem;">Réflexions, doutes, clarté... Videz votre sac ici.</p>
+                        
+                        <div class="hp-one-thing-container" style="margin-bottom: 1.5rem;">
+                            <label style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;">THE ONE THING</label>
+                            <textarea class="hp-one-thing-input" 
+                                      placeholder="La SEULE action prioritaire..."
+                                      onchange="Scoper.updateDailyFocus(this.value)">${journal.daily_focus || ''}</textarea>
+                        </div>
+
+                        <textarea class="hp-reflection-input" 
+                                  placeholder="Écrivez votre récit du jour ici..."
+                                  onchange="Scoper.updateJournalReflection(this.value)">${journal.reflection || ''}</textarea>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <div class="hp-ai-feedback">
+                                <i class="fas fa-robot" style="margin-right: 8px;"></i> "${this.getEliteAdvice(journal)}"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Col 3: Timeline de Route -->
                 <div class="timeline-col">
                     <div class="elite-card" style="height: 100%; display: flex; flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -1344,25 +1356,20 @@ const Scoper = {
                         </div>
 
                         <div class="hp-timeline">
-                            ${journal.entries.length === 0 ? "<div class='hp-empty-timeline'>Carnet d'exécution vierge. Consignez vos victoires et apprentissages.</div>" : ""}
-                            ${journal.entries.slice(0, 15).map(entry => `
+                            ${journal.entries.length === 0 ? "<div class='hp-empty-timeline'>Aucun log d'exé.</div>" : ""}
+                            ${journal.entries.slice(0, 10).map(entry => `
                                 <div class="hp-timeline-entry ${entry.type === "victory" ? "victory-type" : "lesson-type"}">
                                     <div class="hp-timeline-dot"></div>
                                     <div class="hp-timeline-content">
                                         <div class="hp-timeline-header">
                                             <span class="hp-timeline-badge">${entry.type === "victory" ? "✅ Victoire" : "🧠 Leçon"}</span>
-                                            <span class="hp-timeline-date">${entry.date ? new Date(entry.date).toLocaleDateString() : "Aujourd'hui"}</span>
+                                            <span class="hp-timeline-date">${entry.date ? new Date(entry.date).toLocaleDateString() : ""}</span>
                                         </div>
                                         <div class="hp-timeline-text">${entry.text}</div>
                                         <div class="hp-timeline-delete" onclick="Scoper.removeJournalEntry('${entry.id}')"><i class="fas fa-times"></i></div>
                                     </div>
                                 </div>
                             `).join('')}
-                        </div>
-                        
-                        <!-- AI Feedback Footer -->
-                        <div class="hp-ai-feedback">
-                            "${this.getEliteAdvice(journal)}"
                         </div>
                     </div>
                 </div>
@@ -1371,14 +1378,15 @@ const Scoper = {
     },
 
     getEliteAdvice(journal) {
+        if (!journal.daily_focus && !journal.reflection) return "Commencez par définir votre 'ONE Thing' pour aujourd'hui.";
         if (journal.energy < 4) return "Readiness Critique. Priorisez la récupération avant toute négociation. Le repos est une arme offensive.";
-        if (journal.mood === 'fire') return "Momentum maximal. C'est l'heure d'attaquer vos cibles les plus difficiles et d'augmenter la vélocité.";
-        if (journal.mood === 'chaos') return "Friction détectée. Reprenez le contrôle en vous focalisant UNIQUEMENT sur 'The ONE Thing'. Coupez les distractions.";
-        return "Stabilité opérationnelle détectée. Exécutez le plan du jour avec précision tactique.";
+        if (journal.mood === 'fire') return "Momentum maximal. Augmentez la vélocité sur vos cibles les plus difficiles.";
+        if (journal.mood === 'chaos') return "Friction détectée. Reprenez le contrôle en vous focalisant UNIQUEMENT sur votre priorité.";
+        return "Stabilité opérationnelle détectée. Exécutez le plan avec précision tactique.";
     },
 
     updateJournalMood(mood) {
-        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: {} };
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', reflection: '', habits: {} };
         journal.mood = mood;
 
         if (!journal.daily_states) journal.daily_states = [];
@@ -1400,10 +1408,7 @@ const Scoper = {
         if (!journal.habits) journal.habits = {};
         journal.habits[habitKey] = checked;
         Storage.saveJournal(journal);
-
-        if (checked) {
-            App.showNotification("Micro-Habitude validée !", "success");
-        }
+        if (checked) App.showNotification("Habitude validée.", "success");
     },
 
     updateJournalEnergyOptimistic(val) {
@@ -1412,7 +1417,7 @@ const Scoper = {
     },
 
     updateJournalEnergy(val) {
-        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: {} };
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', reflection: '', habits: {} };
         journal.energy = parseInt(val);
 
         if (!journal.daily_states) journal.daily_states = [];
@@ -1425,11 +1430,7 @@ const Scoper = {
         }
         if (journal.daily_states.length > 30) journal.daily_states.shift();
 
-        clearTimeout(this._journalSaveTimeout);
-        this._journalSaveTimeout = setTimeout(() => {
-            Storage.saveJournal(journal);
-            this.renderJournalTab();
-        }, 800);
+        Storage.saveJournal(journal);
     },
 
     updateDailyFocus(text) {
@@ -1438,12 +1439,18 @@ const Scoper = {
         Storage.saveJournal(journal);
     },
 
+    updateJournalReflection(text) {
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', reflection: '', habits: {} };
+        journal.reflection = text.trim();
+        Storage.saveJournal(journal);
+    },
+
     addJournalEntry(type) {
         const label = type === 'victory' ? 'victoire' : 'leçon';
-        const text = prompt(`Quelle ${label} souhaitez-vous noter ?`);
+        const text = prompt(`Quelle ${label} ?`);
         if (!text || text.trim() === '') return;
 
-        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: {} };
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', reflection: '', habits: {} };
         if (!Array.isArray(journal.entries)) journal.entries = [];
 
         journal.entries.unshift({
@@ -1461,7 +1468,6 @@ const Scoper = {
     removeJournalEntry(id) {
         const journal = Storage.get('sp_journal');
         if (!journal || !journal.entries) return;
-
         journal.entries = journal.entries.filter(e => e.id !== id);
         Storage.saveJournal(journal);
         this.renderJournalTab();
