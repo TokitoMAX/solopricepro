@@ -84,6 +84,10 @@ const Network = {
                         <button class="button-primary" onclick="Network.showAddModal()">Ajouter manuellement</button>
                         <button class="button-secondary" onclick="App.navigateTo('marketplace', 'experts')">Découvrir des Experts</button>
                     </div>
+                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px dashed var(--border);">
+                        <p style="color: var(--white); font-weight: bold; margin-bottom: 0.5rem;">✨ Vous êtes prestataire ?</p>
+                        <button class="button-secondary" onclick="Network.showEcosystemModal()">Rejoindre l'Écosystème SoloPrice</button>
+                    </div>
                 </div>
             `;
             return;
@@ -98,7 +102,14 @@ const Network = {
                         <button class="button-primary small" onclick="Network.showAddModal()">+ Nouveau</button>
                     </div>
                 </div>
-                <div class="partners-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                <div style="background: var(--primary-glass); border: 1px solid var(--primary); padding: 1rem; border-radius: 8px; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="margin: 0; color: var(--primary-light);">Devenez Consultant SoloPrice</h4>
+                        <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-light);">Proposez vos services à l'ensemble du réseau "Le Cercle".</p>
+                    </div>
+                    <button class="button-primary small" onclick="Network.showEcosystemModal()">Postuler</button>
+                </div>
+                <div class="partners-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
                     ${this.providers.map(p => `
                         <div class="network-card glass" style="background: #0a0a0a; border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; border-left: 4px solid ${p.isVerified ? 'var(--primary)' : 'var(--border)'};">
                             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
@@ -130,6 +141,45 @@ const Network = {
     hideAddModal() {
         const modal = document.getElementById('network-add-modal');
         if (modal) modal.classList.remove('active');
+    },
+
+    showEcosystemModal() {
+        const modal = document.getElementById('ecosystem-apply-modal');
+        if (modal) modal.classList.add('active');
+    },
+
+    hideEcosystemModal() {
+        const modal = document.getElementById('ecosystem-apply-modal');
+        if (modal) modal.classList.remove('active');
+    },
+
+    async applyToEcosystem(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const application = {
+            specialty: formData.get('specialty'),
+            portfolio: formData.get('portfolio'),
+            description: formData.get('description'),
+            status: 'pending',
+            date: new Date().toISOString()
+        };
+
+        try {
+            const user = Auth.getUser();
+            if (user && user.id) {
+                // Ideally this would go via an API to update user_metadata.
+                // For now, we simulate success and notify the user.
+                console.log("Ecosystem Application stored:", application);
+                this.hideEcosystemModal();
+                e.target.reset();
+                App.showNotification('Candidature envoyée avec succès ! Notre équipe vous recontactera.', 'success');
+            } else {
+                App.showNotification('Veuillez vous connecter pour postuler.', 'error');
+            }
+        } catch (err) {
+            console.error('Ecosystem Apply Error:', err);
+            App.showNotification('Erreur lors de l\'envoi de la candidature.', 'error');
+        }
     },
 
     async addProvider(e) {

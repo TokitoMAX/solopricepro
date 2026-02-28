@@ -81,7 +81,8 @@
                 <span class="logo-text">SoloPrice</span>
                 <span class="logo-badge">Pro v4.1</span>
             </div>
-            <div class="landing-actions">
+            <div class="landing-actions" style="display: flex; align-items: center; gap: 1rem;">
+                <div id="google_translate_landing"></div>
                 <button class="button-link" onclick="showAuthModal('login')">Connexion</button>
                 <button class="button-primary landing-auth-btn" onclick="showAuthModal('register')">Essai
                     Gratuit</button>
@@ -481,7 +482,8 @@
                     </a>
                 </nav>
 
-                <div class="sidebar-footer">
+                <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem;">
+                    <div id="google_translate_sidebar" style="margin-bottom: 0.5rem;"></div>
                     <button class="logout-btn" onclick="Auth.logout()">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>Déconnexion</span>
@@ -712,6 +714,40 @@
         </div>
     </div>
 
+    <!-- ECOSYSTEM APPLY MODAL -->
+    <div id="ecosystem-apply-modal" class="modal-overlay" role="dialog">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <button type="button" class="modal-close" onclick="Network.hideEcosystemModal()">✕</button>
+            <div class="modal-header">
+                <h2>Rejoindre l'Écosystème</h2>
+                <p class="text-muted">Proposez vos services dans Le Cercle SoloPrice.</p>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="Network.applyToEcosystem(event)">
+                    <div class="form-group">
+                        <label class="form-label">Votre Spécialité *</label>
+                        <input type="text" name="specialty" class="form-input" required
+                            placeholder="Ex: Développeur Web, Coach Agile...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lien Portfolio / LinkedIn *</label>
+                        <input type="url" name="portfolio" class="form-input" required
+                            placeholder="https://votresite.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description Courte</label>
+                        <textarea name="description" class="form-input" rows="3"
+                            placeholder="Présentez brièvement ce que vous apportez au réseau..."></textarea>
+                    </div>
+                    <button type="submit" class="button-primary full-width" style="margin-top: 1rem;"><i
+                            class="fas fa-paper-plane"></i> Envoyer ma Candidature</button>
+                    <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">Votre
+                        profil sera examiné par nos équipes.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Script de démarrage -->
     <link rel="stylesheet" href="styles.css?v=20260228_1800">
     <script src="auth.js?v=20260228_1800"></script>
@@ -861,7 +897,44 @@
                 }, 2000);
             }
         });
+
+        // Initialize Google Translate
+        function googleTranslateElementInit() {
+            if (document.getElementById('google_translate_landing')) {
+                new google.translate.TranslateElement({ pageLanguage: 'fr', includedLanguages: 'fr,en,es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_landing');
+            }
+            if (document.getElementById('google_translate_sidebar')) {
+                new google.translate.TranslateElement({ pageLanguage: 'fr', includedLanguages: 'fr,en,es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_sidebar');
+            }
+        }
     </script>
+    <script type="text/javascript"
+        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <style>
+        /* Styliser le widget Google Translate pour un rendu plus premium */
+        .goog-te-gadget-simple {
+            background-color: var(--dark-glass) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            padding: 4px 8px !important;
+            color: var(--text-light) !important;
+        }
+
+        .goog-te-gadget-simple span {
+            color: var(--text-light) !important;
+        }
+
+        /* Cacher la barre du haut Google Translate si possible */
+        .skiptranslate iframe,
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        }
+
+        body {
+            top: 0px !important;
+        }
+    </style>
 </body>
 
 </html>
