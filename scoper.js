@@ -57,6 +57,13 @@ const Scoper = {
     },
 
     renderObjectiveTab() {
+        let storedStep = Storage.get('sp_scoper_current_step');
+        if (Array.isArray(storedStep) || isNaN(parseInt(storedStep))) {
+            storedStep = 1;
+            Storage.set('sp_scoper_current_step', 1);
+        }
+        this.currentObjectiveStep = parseInt(storedStep);
+
         const content = document.getElementById('scoper-tab-content');
         if (!content) return;
 
@@ -328,7 +335,10 @@ const Scoper = {
     },
 
     nextObjectiveStep() {
-        if (!this.currentObjectiveStep) this.currentObjectiveStep = Storage.get('sp_scoper_current_step') || 1;
+        let storedStep = Storage.get('sp_scoper_current_step');
+        if (Array.isArray(storedStep) || isNaN(parseInt(storedStep))) storedStep = 1;
+
+        if (!this.currentObjectiveStep) this.currentObjectiveStep = parseInt(storedStep);
         if (this.currentObjectiveStep < 5) {
             this.currentObjectiveStep++;
             Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
@@ -1206,8 +1216,8 @@ const Scoper = {
                     <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: var(--primary);">
                         <i class="fas fa-shield-alt" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Stratégie High-Performance</h2>
-                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Débloquez le module d'alignement stratégique pour piloter votre TJM avec une précision chirurgicale.</p>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Journal Haute Performance</h2>
+                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Débloquez votre carnet de bord stratégique pour l'introspection et la maximisation de votre exécution (The ONE Thing).</p>
                     <button class="cta-button" onclick="App.showUpgradeModal('premium_feature')">Passer en Mode EXPERT</button>
                 </div>
             `;
@@ -1217,125 +1227,143 @@ const Scoper = {
         const calcData = Storage.get('sp_calculator_data') || {};
         const targetTJM = calcData.dailyRate || 0;
         const quotes = Storage.getInvoices() || [];
-        const avgActualTJM = quotes.length > 0 ? Math.round(quotes.reduce((acc, q) => acc + (parseFloat(q.total || 0) / 10), 0) / quotes.length) : 0; // Simulation
+        const avgActualTJM = quotes.length > 0 ? Math.round(quotes.reduce((acc, q) => acc + (parseFloat(q.total || 0) / 10), 0) / quotes.length) : 0;
 
-        const defaultJournal = { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
+        const defaultJournal = { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: { prospection: false, deepwork: false, off: false } };
         let journal = { ...defaultJournal, ...(Storage.get('sp_journal') || {}) };
         if (!Array.isArray(journal.entries)) journal.entries = [];
+        if (!journal.habits) journal.habits = { prospection: false, deepwork: false, off: false };
 
         content.innerHTML = `
-            <div class="elite-journal-container">
-                <!-- Col 1: Readiness -->
+            <div class="elite-journal-container hp-journal">
+                <!-- Col 1: Météo & Execution Daily -->
                 <div class="main-stats">
                     <div class="elite-card">
-                        <div class="elite-card-title"><i class="fas fa-bolt"></i> État de Force</div>
+                        <div class="elite-card-title"><i class="fas fa-temperature-half"></i> Météo Interne</div>
                         <div class="readiness-grid">
                             <div class="gauge-item">
-                                <div class="gauge-label">Capital Énergie</div>
-                                <div class="gauge-value" id="energy-value-display">${journal.energy}/10</div>
-                                <input type="range" min="1" max="10" value="${journal.energy}" class="input-range" style="width: 100%; margin-top: 1rem;" 
+                                <div class="gauge-label">
+                                    <span>Niveau d'Énergie</span>
+                                    <span class="hp-energy-value" id="energy-value-display">${journal.energy}/10</span>
+                                </div>
+                                <input type="range" min="1" max="10" value="${journal.energy}" class="hp-energy-slider" 
                                        oninput="Scoper.updateJournalEnergyOptimistic(this.value)"
                                        onchange="Scoper.updateJournalEnergy(this.value)">
                             </div>
+                            
                             <div class="gauge-item" style="margin-top: 1.5rem;">
                                 <div class="gauge-label" style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                                    <span>Historique Énergie (7j)</span>
+                                    <span>Historique (7j)</span>
                                 </div>
-                                <div style="display: flex; gap: 4px; height: 35px; align-items: flex-end; padding-top: 5px;">
+                                <div style="display: flex; gap: 6px; height: 35px; align-items: flex-end; padding-top: 5px;">
                                     ${(() => {
                 let states = journal.daily_states || [];
                 if (states.length === 0) states = [{ date: new Date().toLocaleDateString('fr-FR'), energy: journal.energy }];
                 const last7 = states.slice(-7);
-                // Pad with empty bars if < 7 days recorded
                 const bars = [];
                 for (let i = 0; i < 7 - last7.length; i++) bars.push(null);
                 last7.forEach(s => bars.push(s));
 
                 return bars.map(state => {
-                    if (!state) return `<div style="flex:1; background: rgba(255,255,255,0.05); height: 100%; border-radius:4px; border: 1px dashed rgba(255,255,255,0.1);"></div>`;
+                    if (!state) return "<div class='hp-chart-bar empty'></div>";
                     const ht = Math.max(10, (state.energy / 10) * 100);
-                    const color = state.energy >= 8 ? '#10b981' : (state.energy >= 5 ? '#f59e0b' : '#ef4444');
-                    return `<div style="flex:1; background: ${color}; height: ${ht}%; border-radius:4px; opacity: 0.85; transition: height 0.3s; box-shadow: 0 0 8px ${color}40;" title="${state.date}: ${state.energy}/10"></div>`;
+                    const color = state.energy >= 8 ? 'var(--primary-light)' : (state.energy >= 5 ? '#f59e0b' : '#ef4444');
+                    return `<div class="hp-chart-bar" style="height: ${ht}%; background: ${color};" title="${state.date}: ${state.energy}/10"></div>`;
                 }).join('');
             })()}
                                 </div>
                             </div>
-                            <div class="gauge-item" style="margin-top: 1.5rem;">
-                                <div class="gauge-label">Focus Stratégique</div>
-                                <div class="mood-selector" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
-                                    <button class="mood-btn ${journal.mood === 'confiant' ? 'active' : ''}" onclick="Scoper.updateJournalMood('confiant')">TOP</button>
-                                    <button class="mood-btn ${journal.mood === 'motivated' ? 'active' : ''}" onclick="Scoper.updateJournalMood('motivated')">OK</button>
-                                    <button class="mood-btn ${journal.mood === 'stresse' ? 'active' : ''}" onclick="Scoper.updateJournalMood('stresse')">LOW</button>
+                            
+                            <div class="gauge-item" style="margin-top: 2rem;">
+                                <div class="gauge-label">Humeur & Focus</div>
+                                <div class="hp-mood-grid">
+                                    <button class="hp-mood-btn ${journal.mood === 'fire' ? 'active fire' : ''}" onclick="Scoper.updateJournalMood('fire')">
+                                        <div class="hp-mood-emoji">🔥</div>
+                                        <div class="hp-mood-label">On Fire</div>
+                                    </button>
+                                    <button class="hp-mood-btn ${journal.mood === 'focus' ? 'active focus' : ''}" onclick="Scoper.updateJournalMood('focus')">
+                                        <div class="hp-mood-emoji">🎯</div>
+                                        <div class="hp-mood-label">Focus</div>
+                                    </button>
+                                    <button class="hp-mood-btn ${journal.mood === 'low' ? 'active low' : ''}" onclick="Scoper.updateJournalMood('low')">
+                                        <div class="hp-mood-emoji">🔋</div>
+                                        <div class="hp-mood-label">Low Res</div>
+                                    </button>
+                                    <button class="hp-mood-btn ${journal.mood === 'chaos' ? 'active chaos' : ''}" onclick="Scoper.updateJournalMood('chaos')">
+                                        <div class="hp-mood-emoji">🌪️</div>
+                                        <div class="hp-mood-label">Chaos</div>
+                                    </button>
                                 </div>
-                            </div>
-                            <div class="gauge-item" style="margin-top: 1.5rem;">
-                                <div class="gauge-label">Focus Quotidien</div>
-                                <textarea class="form-input" style="width: 100%; margin-top: 0.5rem; height: 60px; font-size: 0.85rem; background: var(--border-glass);" 
-                                          placeholder="Votre priorité aujourd'hui..."
-                                          onchange="Scoper.updateDailyFocus(this.value)">${journal.daily_focus || ''}</textarea>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Col 2: Strategic Log -->
-                <div class="strategic-log">
+                <!-- Col 2: The ONE Thing & Micro Habits -->
+                <div class="execution-col">
+                    <div class="elite-card" style="margin-bottom: 1.5rem; position: relative; overflow: hidden;">
+                        <div class="hp-one-thing-bg"></div>
+                        <div class="elite-card-title"><i class="fas fa-bullseye"></i> The ONE Thing</div>
+                        <p class="text-xs text-muted" style="margin-bottom: 1rem;">Quelle est la SEULE action qui rendra tout le reste plus facile ou inutile aujourd'hui ?</p>
+                        <textarea class="hp-one-thing-input" 
+                                  placeholder="Ex: Closer l'entreprise Dupont SA..."
+                                  onchange="Scoper.updateDailyFocus(this.value)">${journal.daily_focus || ''}</textarea>
+                    </div>
+
                     <div class="elite-card">
+                        <div class="elite-card-title"><i class="fas fa-check-double"></i> Exécution Discrète</div>
+                        <div class="hp-habits-list">
+                            <label class="hp-habit-item">
+                                <input type="checkbox" ${journal.habits.prospection ? 'checked' : ''} onchange="Scoper.toggleHabit('prospection', this.checked)">
+                                <div class="hp-habit-box"><i class="fas fa-phone"></i></div>
+                                <span>Prospection Réalisée (Min. 5 actes)</span>
+                            </label>
+                            <label class="hp-habit-item">
+                                <input type="checkbox" ${journal.habits.deepwork ? 'checked' : ''} onchange="Scoper.toggleHabit('deepwork', this.checked)">
+                                <div class="hp-habit-box"><i class="fas fa-brain"></i></div>
+                                <span>Deep Work (90 min ininterrompues)</span>
+                            </label>
+                            <label class="hp-habit-item">
+                                <input type="checkbox" ${journal.habits.off ? 'checked' : ''} onchange="Scoper.toggleHabit('off', this.checked)">
+                                <div class="hp-habit-box"><i class="fas fa-power-off"></i></div>
+                                <span>Déconnexion Totale (< 20H)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Col 3: Carnet de Route (Timeline) -->
+                <div class="timeline-col">
+                    <div class="elite-card" style="height: 100%; display: flex; flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <div class="elite-card-title"><i class="fas fa-list-ul"></i> Log de Performance</div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button class="calculate-button" style="padding: 0.4rem 1rem; font-size: 0.8rem; margin:0;" onclick="Scoper.addJournalEntry('victory')">+ Effet de Levier</button>
-                                <button class="calculate-button" style="padding: 0.4rem 1rem; font-size: 0.8rem; margin:0; background: #374151;" onclick="Scoper.addJournalEntry('blockage')">+ Friction</button>
+                            <div class="elite-card-title"><i class="fas fa-book-journal-whills"></i> Carnet de Route</div>
+                            <div class="hp-log-actions">
+                                <button class="hp-log-btn victory" onclick="Scoper.addJournalEntry('victory')">+ Victoire</button>
+                                <button class="hp-log-btn lesson" onclick="Scoper.addJournalEntry('lesson')">+ Leçon</button>
                             </div>
                         </div>
 
-                        <div class="pillar-list">
-                            ${journal.entries.length === 0 ? '<p class="text-muted" style="text-align: center; padding: 2rem;">Aucun log stratégique à ce jour.</p>' : ''}
-                            ${journal.entries.slice(0, 10).map(entry => `
-                                <div class="pillar-item">
-                                    <div class="pillar-type ${entry.type === 'victory' ? 'leverage' : 'roadblock'}">
-                                        ${entry.type === 'victory' ? 'Levier' : 'Friction'}
-                                    </div>
-                                    <div class="pillar-text">${entry.text}</div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; justify-content: space-between;">
-                                        <span>${entry.date ? new Date(entry.date).toLocaleDateString() : 'N/A'}</span>
-                                        <span style="cursor: pointer; color: var(--danger);" onclick="Scoper.removeJournalEntry('${entry.id}')">Archiver</span>
+                        <div class="hp-timeline">
+                            ${journal.entries.length === 0 ? "<div class='hp-empty-timeline'>Carnet d'exécution vierge. Consignez vos victoires et apprentissages.</div>" : ""}
+                            ${journal.entries.slice(0, 15).map(entry => `
+                                <div class="hp-timeline-entry ${entry.type === "victory" ? "victory-type" : "lesson-type"}">
+                                    <div class="hp-timeline-dot"></div>
+                                    <div class="hp-timeline-content">
+                                        <div class="hp-timeline-header">
+                                            <span class="hp-timeline-badge">${entry.type === "victory" ? "✅ Victoire" : "🧠 Leçon"}</span>
+                                            <span class="hp-timeline-date">${entry.date ? new Date(entry.date).toLocaleDateString() : "Aujourd'hui"}</span>
+                                        </div>
+                                        <div class="hp-timeline-text">${entry.text}</div>
+                                        <div class="hp-timeline-delete" onclick="Scoper.removeJournalEntry('${entry.id}')"><i class="fas fa-times"></i></div>
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
-                    </div>
-                </div>
-
-                <!-- Col 3: Compass & Advisor -->
-                <div class="advisor-column">
-                    <div class="elite-card" style="margin-bottom: 1.5rem;">
-                        <div class="elite-card-title"><i class="fas fa-compass"></i> Boussole Patrimoniale</div>
-                        <div class="compass-stats">
-                            <div class="stat-row">
-                                <span class="stat-label">TJM Objectif</span>
-                                <span class="stat-value">${App.formatCurrency(targetTJM)}</span>
-                            </div>
-                            <div class="stat-row">
-                                <span class="stat-label">TJM Réel (Moy)</span>
-                                <span class="stat-value" style="color: ${avgActualTJM < targetTJM ? 'var(--warning)' : 'var(--primary-light)'}">
-                                    ${App.formatCurrency(avgActualTJM)}
-                                </span>
-                            </div>
-                            <div class="stat-row" style="border:none;">
-                                <span class="stat-label">Écart de Valeur</span>
-                                <span class="stat-value" style="color: ${avgActualTJM < targetTJM ? 'var(--danger)' : 'var(--primary-light)'}">
-                                    ${avgActualTJM > 0 ? (avgActualTJM - targetTJM > 0 ? '+' : '') + Math.round((avgActualTJM - targetTJM) / targetTJM * 100) + '%' : '0%'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="elite-card" id="mentor-box" style="background: var(--primary-glass); border-color: var(--primary-glass);">
-                        <div class="elite-card-title" style="color: var(--primary-light);"><i class="fas fa-user-tie"></i> Strategic Advisor</div>
-                        <p id="mentor-text" style="font-size: 0.95rem; font-style: italic; color: var(--text); line-height: 1.6; transition: 0.3s;">
+                        
+                        <!-- AI Feedback Footer -->
+                        <div class="hp-ai-feedback">
                             "${this.getEliteAdvice(journal)}"
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1343,19 +1371,16 @@ const Scoper = {
     },
 
     getEliteAdvice(journal) {
-        if (journal.energy < 4) return "Readiness Critique. Priorisez la récupération de capital énergie avant toute négociation de haut vol. Déléguez les tâches à faible valeur ajoutée.";
-        if (journal.mood === 'confiant') return "Votre alignement psychologique est optimal. C'est le moment d'attaquer vos prospects 'Grands Comptes' ou d'augmenter vos tarifs de 15%.";
-        return "Stabilité opérationnelle détectée. Concentrez vos efforts sur la réduction des frictions listées dans votre log de performance.";
+        if (journal.energy < 4) return "Readiness Critique. Priorisez la récupération avant toute négociation. Le repos est une arme offensive.";
+        if (journal.mood === 'fire') return "Momentum maximal. C'est l'heure d'attaquer vos cibles les plus difficiles et d'augmenter la vélocité.";
+        if (journal.mood === 'chaos') return "Friction détectée. Reprenez le contrôle en vous focalisant UNIQUEMENT sur 'The ONE Thing'. Coupez les distractions.";
+        return "Stabilité opérationnelle détectée. Exécutez le plan du jour avec précision tactique.";
     },
 
-    /**
-     * Logique de mise à jour du mood (Interactivité)
-     */
     updateJournalMood(mood) {
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: {} };
         journal.mood = mood;
 
-        // Track history
         if (!journal.daily_states) journal.daily_states = [];
         const today = new Date().toLocaleDateString('fr-FR');
         let state = journal.daily_states.find(s => s.date === today);
@@ -1367,27 +1392,17 @@ const Scoper = {
         if (journal.daily_states.length > 30) journal.daily_states.shift();
 
         Storage.saveJournal(journal);
+        this.renderJournalTab();
+    },
 
-        const mentorWords = {
-            confiant: "Votre confiance est votre meilleur argument. C'est le moment d'oser le TJM Elite. Le marché achète votre certitude avant votre savoir-faire.",
-            stresse: "Le stress vient souvent d'un manque de clarté. Reprenez votre module de chiffrage, blindez vos marges PITA, et rappelez-vous que dire 'NON' est une victoire.",
-            motivated: "L'énergie est contagieuse. Utilisez ce momentum pour relancer vos chiffrages avec une posture d'Expert. Votre valeur n'a jamais été aussi haute."
-        };
+    toggleHabit(habitKey, checked) {
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: {} };
+        if (!journal.habits) journal.habits = {};
+        journal.habits[habitKey] = checked;
+        Storage.saveJournal(journal);
 
-        const text = mentorWords[mood];
-        const mentorText = document.getElementById('mentor-text');
-        if (mentorText) {
-            mentorText.style.opacity = '0';
-            setTimeout(() => {
-                mentorText.innerText = `"${text}"`;
-                mentorText.style.opacity = '1';
-                // Move mood button active state update to BEFORE the transition to avoid flicker
-                document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-                const btns = document.querySelectorAll('.mood-btn');
-                if (mood === 'confiant') btns[0].classList.add('active');
-                if (mood === 'motivated') btns[1].classList.add('active');
-                if (mood === 'stresse') btns[2].classList.add('active');
-            }, 200);
+        if (checked) {
+            App.showNotification("Micro-Habitude validée !", "success");
         }
     },
 
@@ -1397,10 +1412,9 @@ const Scoper = {
     },
 
     updateJournalEnergy(val) {
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: {} };
         journal.energy = parseInt(val);
 
-        // Track history
         if (!journal.daily_states) journal.daily_states = [];
         const today = new Date().toLocaleDateString('fr-FR');
         let state = journal.daily_states.find(s => s.date === today);
@@ -1411,26 +1425,25 @@ const Scoper = {
         }
         if (journal.daily_states.length > 30) journal.daily_states.shift();
 
-        // Debounce save to avoid network flooding
         clearTimeout(this._journalSaveTimeout);
         this._journalSaveTimeout = setTimeout(() => {
             Storage.saveJournal(journal);
-            this.renderJournalTab(); // Rerender to update the histogram
+            this.renderJournalTab();
         }, 800);
     },
 
     updateDailyFocus(text) {
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: {} };
         journal.daily_focus = text.trim();
         Storage.saveJournal(journal);
     },
 
     addJournalEntry(type) {
-        const label = type === 'victory' ? 'victoire' : 'blocage';
+        const label = type === 'victory' ? 'victoire' : 'leçon';
         const text = prompt(`Quelle ${label} souhaitez-vous noter ?`);
         if (!text || text.trim() === '') return;
 
-        const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
+        const journal = Storage.get('sp_journal') || { mood: 'focus', energy: 7, entries: [], daily_focus: '', habits: {} };
         if (!Array.isArray(journal.entries)) journal.entries = [];
 
         journal.entries.unshift({
@@ -1442,7 +1455,7 @@ const Scoper = {
 
         Storage.saveJournal(journal);
         this.renderJournalTab();
-        App.showNotification(`${label} enregistrée.`, 'success');
+        App.showNotification(`${label.charAt(0).toUpperCase() + label.slice(1)} enregistrée.`, 'success');
     },
 
     removeJournalEntry(id) {
