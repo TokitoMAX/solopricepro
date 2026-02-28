@@ -276,10 +276,9 @@ const PDFGenerator = {
                     .total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
                     .total-row.grand { border-top: 2px solid var(--primary); margin-top: 15px; padding-top: 15px; font-size: 20px; font-weight: 800; color: var(--primary); }
                     
-                    .signature-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 50px; page-break-inside: avoid; }
-                    .signature-box { border: 2px dashed var(--border); border-radius: 16px; padding: 30px; position: relative; min-height: 200px; background: var(--bg-light); transition: all 0.3s; }
-                    .signature-label { font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 90px; display: block; }
-                    .signature-mention { font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; }
+                    .signature-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 50px; margin-top: 40px; page-break-inside: avoid; align-items: stretch; }
+                    .legal-section { padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light); }
+                    .signature-box { border: 2px dashed var(--border); border-radius: 12px; padding: 25px; position: relative; min-height: 200px; background: transparent; transition: all 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
                     
                     .footer { font-size: 11px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 30px; text-align: center; margin-top: 60px; line-height: 1.6; }
 
@@ -422,46 +421,50 @@ const PDFGenerator = {
                 </div>
 
                 <div class="signature-area">
-                <div class="legal-section" style="margin-top: 40px; padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light);">
-                    <h4 style="font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px;">Instructions de Règlement (Paiement Direct)</h4>
-                    <p style="margin-bottom: 15px; color: var(--text-light); font-size: 11px;">Ce document comporte deux instructions de règlement distinctes : l'une pour le prestataire et l'autre pour les frais de service de la plateforme.</p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
-                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">1. PART PRESTATAIRE (85% HT + Taxe)</strong>
-                            <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 10px;">
-                                ${App.formatCurrency((quote.itemsSubtotal || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
-                            </span>
-                            <p style="font-size: 11px; margin: 0;">
-                                Destinataire : <strong>${providerName}</strong><br>
-                                Règlement sécurisé en ligne (Carte / PayPal) via le bouton de validation.
-                            </p>
+                    <div class="legal-section">
+                        <h4 style="font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px;">Instructions de Règlement (Paiement Direct)</h4>
+                        <p style="margin-bottom: 15px; color: var(--text-light); font-size: 11px;">Ce document comporte deux instructions de règlement distinctes : l'une pour le prestataire et l'autre pour les frais de service de la plateforme.</p>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                                <strong style="color: var(--primary); display: block; margin-bottom: 5px;">1. PART PRESTATAIRE (85% HT + Taxe)</strong>
+                                <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 5px;">
+                                    ${App.formatCurrency((quote.itemsSubtotal || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
+                                </span>
+                                <p style="font-size: 11px; margin: 0;">
+                                    Destinataire : <strong>${providerName}</strong><br>
+                                    Règlement sécurisé via le bouton de validation.
+                                </p>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                                <strong style="color: var(--primary); display: block; margin-bottom: 5px;">2. PROTECTION SOLOPRICE (Obligatoire)</strong>
+                                <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 5px;">
+                                    ${App.formatCurrency((quote.margin || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
+                                </span>
+                                <p style="font-size: 11px; margin: 0;">
+                                    Destinataire : <strong>SoloPrice Pro</strong><br>
+                                    Active la garantie de protection des fonds.
+                                </p>
+                            </div>
                         </div>
-                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
-                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">2. PROTECTION SOLOPRICE (Obligatoire)</strong>
-                            <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 10px;">
-                                ${App.formatCurrency((quote.margin || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
-                            </span>
-                            <p style="font-size: 11px; margin: 0;">
-                                Destinataire : <strong>SoloPrice Pro</strong><br>
-                                Active la garantie de protection des fonds et le support juridique de la mission.
-                            </p>
+
+                        <div style="margin-top: 20px; font-size: 11px;">
+                            <p style="margin-bottom: 5px;">Ce devis est valable jusqu'au ${validUntil}.</p>
+                            <p style="color: var(--primary); font-weight: 600; margin-top: 10px;"><i class="fas fa-shield-alt"></i> La Protection SoloPrice est une clause contractuelle obligatoire pour la validation juridique de cette mission.</p>
+                            ${quote.tax === 0 ? '<p style="font-weight: 700; color: var(--text); margin-top: 5px;">TVA non applicable, art. 293 B du CGI</p>' : ''}
+                            ${user.company?.footer_mentions ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
                         </div>
                     </div>
 
-                    <div style="margin-top: 20px; font-size: 11px;">
-                        <p style="margin-bottom: 5px;">Ce devis est valable jusqu'au ${validUntil}.</p>
-                        <p style="color: var(--primary); font-weight: 600; margin-top: 10px;"><i class="fas fa-shield-alt"></i> La Protection SoloPrice est une clause contractuelle obligatoire pour la validation juridique de cette mission.</p>
-                        ${quote.tax === 0 ? '<p style="font-weight: 700; color: var(--text);">TVA non applicable, art. 293 B du CGI</p>' : ''}
-                        ${user.company?.footer_mentions ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
-                    </div>
-                </div>
-                    <div class="signature-box" style="position: relative;">
-                        <span class="signature-label">Bon pour accord</span>
+                    <div class="signature-box">
+                        <span class="signature-label" style="font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1.5px; display: block; text-align: center;">Bon pour accord</span>
                         ${quote.signature ? `
-                            <img src="${quote.signature.image}" style="max-width: 150px; position: absolute; top: 20px; left: 10px; mix-blend-mode: multiply;" />
-                            <div class="signature-mention" style="margin-top: 60px;">Signé le ${new Date(quote.signature.date).toLocaleDateString()}</div>
+                            <div style="flex-grow: 1; position: relative; display: flex; align-items: center; justify-content: center; min-height: 100px;">
+                                <img src="${quote.signature.image}" style="max-width: 100%; max-height: 120px; object-fit: contain; mix-blend-mode: multiply;" />
+                            </div>
+                            <div class="signature-mention" style="font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; margin-top: 15px;">Signé le ${quote.signature.date ? new Date(quote.signature.date).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR')}</div>
                         ` : `
-                            <div class="signature-mention">Date, signature et cachet</div>
+                            <div style="flex-grow: 1; min-height: 100px;"></div>
+                            <div class="signature-mention" style="font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; margin-top: 15px;">Date, signature et cachet</div>
                         `}
                     </div>
                 </div>
