@@ -951,7 +951,7 @@ const Quotes = {
                 // Mode expert interne
                 const quote = Storage.getQuote(id);
                 if (quote) {
-                    quote.client_signature = dataUrl;
+                    quote.signature = dataUrl;
                     quote.accepted_at = new Date().toISOString();
                     quote.status = 'accepted';
 

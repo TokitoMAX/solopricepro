@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const nodemailer = require('nodemailer');
 
 /**
  * @route   GET /api/public/quote/:id
@@ -85,6 +86,71 @@ router.post('/quote/:id/sign', async (req, res) => {
         }
 
         console.log(`✅ [PUBLIC-SIGN] Quote ${id} signed successfully`);
+
+        // --- ENVOI DE L'EMAIL DE NOTIFICATION AU PRESTATAIRE ---
+        try {
+            // Créer un client admin pour outrepasser les RLS et lire l'email de l'user
+            const { createClient } = require('@supabase/supabase-js');
+            const supabaseAdmin = createClient(
+                process.env.SUPABASE_URL,
+                process.env.SUPABASE_SERVICE_ROLE_KEY
+            );
+
+            // 1. Trouver à qui appartient le devis et récupérer quelques infos
+            const { data: quoteData } = await supabaseAdmin
+                .from('sp_quotes')
+                .select('user_id, number, total, clientId')
+                .eq('id', id)
+                .single();
+
+            if (quoteData) {
+                // 2. Récupérer l'email du prestataire
+                const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(quoteData.user_id);
+
+                // 3. Récupérer le nom du client (optionnel)
+                const { data: clientData } = await supabaseAdmin
+                    .from('sp_clients')
+                    .select('name')
+                    .eq('id', quoteData.clientId)
+                    .single();
+
+                if (userData && userData.user && userData.user.email) {
+                    const providerEmail = userData.user.email;
+                    const clientName = clientData ? clientData.name : 'Un client';
+
+                    const smtpHost = process.env.SMTP_HOST;
+                    if (smtpHost) {
+                        const transporter = nodemailer.createTransport({
+                            host: smtpHost,
+                            port: process.env.SMTP_PORT || 587,
+                            secure: process.env.SMTP_PORT == 465,
+                            auth: {
+                                user: process.env.SMTP_USER,
+                                pass: process.env.SMTP_PASS,
+                            },
+                        });
+
+                        const mailOptions = {
+                            from: `"SoloPrice Pro" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+                            to: providerEmail,
+                            subject: `🎉 Devis signé : ${quoteData.number}`,
+                            html: `
+                                <h2>Bonne nouvelle !</h2>
+                                <p>Le devis <strong>N° ${quoteData.number}</strong> d'un montant de <strong>${quoteData.total.toLocaleString()} €</strong> vient d'être signé numériquement par votre client <strong>${clientName}</strong>.</p>
+                                <p>Connectez-vous à <a href="${process.env.APP_URL || 'https://solopricepro.vercel.app'}">SoloPrice Pro</a> pour consulter la signature PDF et vérifier la réception du paiement.</p>
+                            `
+                        };
+
+                        await transporter.sendMail(mailOptions);
+                        console.log(`[PUBLIC-SIGN] 📧 Email notification sent to ${providerEmail}`);
+                    }
+                }
+            }
+        } catch (mailErr) {
+            console.error('[PUBLIC-SIGN] ⚠️ Failed to send notification email:', mailErr);
+            // On ne bloque pas la réponse client même si l'email échoue.
+        }
+
         res.json({
             success: true,
             message: "Devis signé avec succès !",

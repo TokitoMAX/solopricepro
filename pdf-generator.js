@@ -459,9 +459,9 @@ const PDFGenerator = {
                         <span class="signature-label" style="font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1.5px; display: block; text-align: center;">Bon pour accord</span>
                         ${quote.signature ? `
                             <div style="flex-grow: 1; position: relative; display: flex; align-items: center; justify-content: center; min-height: 100px;">
-                                <img src="${quote.signature.image}" style="max-width: 100%; max-height: 120px; object-fit: contain; mix-blend-mode: multiply;" />
+                                <img src="${quote.signature}" style="max-width: 100%; max-height: 120px; object-fit: contain; mix-blend-mode: multiply;" />
                             </div>
-                            <div class="signature-mention" style="font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; margin-top: 15px;">Signé le ${quote.signature.date ? new Date(quote.signature.date).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR')}</div>
+                            <div class="signature-mention" style="font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; margin-top: 15px;">Signé le ${quote.accepted_at ? new Date(quote.accepted_at).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR')}</div>
                         ` : `
                             <div style="flex-grow: 1; min-height: 100px;"></div>
                             <div class="signature-mention" style="font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; margin-top: 15px;">Date, signature et cachet</div>
