@@ -113,26 +113,21 @@ const Auth = {
     },
 
     async register(data) {
-        if (!data.email || !data.password || !data.company_name) {
-            this.showError('Veuillez remplir tous les champs obligatoires');
+        if (!data.email || !data.password) {
+            this.showError('Veuillez remplir votre email et mot de passe');
             throw new Error('Champs manquants');
         }
 
-        // Strict Validation
-        if (data.company_name.length < 3) {
-            this.showError('Le nom de l\'entreprise doit contenir au moins 3 caractères.');
-            throw new Error('Validation: Nom d\'entreprise trop court');
-        }
-
-        // Anti-spam / dummy data simple (ex: aaa, 111)
-        if (/^([a-zA-Z0-9])\1{2,}$/.test(data.company_name.trim())) {
-            this.showError('Veuillez entrer un vrai nom pour votre entreprise.');
-            throw new Error('Validation: Nom d\'entreprise invalide');
+        // Le nom d'entreprise est désormais optionnel au démarrage.
+        // Anti-spam de base sur l'email.
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+            this.showError("Format d'email invalide.");
+            throw new Error('Validation: Email invalide');
         }
 
         try {
             console.log('[AUTH] Sending register request to:', `${this.apiBase}/api/auth/register`);
-            console.log('[AUTH] Data payload:', { email: data.email, company_name: data.company_name });
+            console.log('[AUTH] Data payload:', { email: data.email, first_name: data.first_name, last_name: data.last_name, company_name: data.company_name });
             const response = await fetch(`${this.apiBase}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

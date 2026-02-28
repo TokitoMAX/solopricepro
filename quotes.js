@@ -1237,7 +1237,7 @@ const Quotes = {
                                             <button class="button-success big-action ${!provider.paypal_email ? 'disabled' : ''}" 
                                                 onclick="${provider.paypal_email ? `Quotes.payExpert('${quote.id}')` : 'App.showNotification(\'Le prestataire n\\\'a pas encore configuré son compte de réception PayPal.\', \'warning\')'}"
                                                 style="${!provider.paypal_email ? 'opacity: 0.5; cursor: not-allowed; filter: grayscale(1);' : ''}">
-                                                <i class="fab fa-paypal"></i> ${quote.signature ? '2. Payer le Prestataire' : 'Payer le Prestataire'}
+                                                <i class="fab fa-paypal"></i> ${quote.signature ? "2. Payer l'Acompte / Prestation" : "Payer l'Acompte / Prestation"}
                                             </button>
                                             ${!provider.paypal_email ? `
                                                 <p class="text-xs text-muted" style="text-align: center; margin-top: -0.25rem; color: #f59e0b;">
@@ -1266,7 +1266,8 @@ const Quotes = {
                             
                             ${!quote.signature || quote.status !== 'paid' ? `
                                 <p class="action-caption">
-                                    <i class="fas fa-lock"></i> Paiement sécurisé via SoloPrice Pro.
+                                    <i class="fas fa-lock"></i> Paiement sécurisé via SoloPrice Pro.<br>
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 5px;">*Une facture acquittée vous sera délivrée par le prestataire à l'issue de ce paiement.</span>
                                 </p>
                             ` : ''}
                         </div>

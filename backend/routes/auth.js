@@ -11,7 +11,7 @@ router.use((req, res, next) => {
 // @desc    Register a new user via Supabase
 // @access  Public
 router.post('/register', async (req, res) => {
-    const { email, password, company } = req.body;
+    const { email, password, company_name, first_name, last_name } = req.body;
     const supabase = req.app.get('supabase');
 
     try {
@@ -31,8 +31,10 @@ router.post('/register', async (req, res) => {
             password,
             options: {
                 data: {
-                    company_name: company,
-                    full_name: '', // Optional
+                    company_name: company_name || '', // optional
+                    first_name: first_name || '',
+                    last_name: last_name || '',
+                    full_name: `${first_name || ''} ${last_name || ''}`.trim()
                 }
             }
         });
@@ -213,14 +215,22 @@ router.get('/me', async (req, res) => {
 router.put('/profile', async (req, res) => {
     const supabase = req.app.get('supabase');
     const token = req.headers.authorization?.split(' ')[1];
-    const { company } = req.body;
+    const { first_name, last_name, company } = req.body;
 
     if (!token) return res.status(401).json({ message: 'Non autorisé' });
 
     try {
         console.log('🔄 Updating user profile meta...');
+
+        const metadataUpdate = { company: company };
+        if (first_name !== undefined) metadataUpdate.first_name = first_name;
+        if (last_name !== undefined) metadataUpdate.last_name = last_name;
+        if (first_name !== undefined || last_name !== undefined) {
+            metadataUpdate.full_name = `${first_name || ''} ${last_name || ''}`.trim();
+        }
+
         const { data, error } = await supabase.auth.updateUser({
-            data: { company: company }
+            data: metadataUpdate
         }, {
             headers: { Authorization: `Bearer ${token}` } // Pass token explicitly just in case using server client
         });
@@ -237,7 +247,7 @@ router.put('/profile', async (req, res) => {
         if (userError || !user) throw new Error('User not found');
 
         const { data: updateData, error: updateError } = await supabase.auth.updateUser({
-            data: { company }
+            data: metadataUpdate
         }); // This might fail if the server client isn't scoped to the user.
 
         // RETRY with Admin Client if the above fails or determines best practice:
@@ -249,7 +259,7 @@ router.put('/profile', async (req, res) => {
 
         const { data: finalData, error: finalError } = await serviceReplica.auth.admin.updateUserById(
             user.id,
-            { user_metadata: { company: company } }
+            { user_metadata: metadataUpdate }
         );
 
         if (finalError) throw finalError;

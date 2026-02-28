@@ -24,9 +24,17 @@ const Profile = {
                         <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Identité Entreprise</h2>
                         <form id="company-form" onsubmit="Profile.save(event)">
                             <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Prénom *</label>
+                                    <input type="text" name="first_name" class="form-input" value="${user.user_metadata?.first_name || ''}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Nom *</label>
+                                    <input type="text" name="last_name" class="form-input" value="${user.user_metadata?.last_name || ''}" required>
+                                </div>
                                 <div class="form-group full-width">
-                                    <label class="form-label">Nom Commercial / Entreprise *</label>
-                                    <input type="text" name="name" class="form-input" value="${company.name || ''}" required>
+                                    <label class="form-label">Nom Commercial / Entreprise (Optionnel)</label>
+                                    <input type="text" name="name" class="form-input" value="${company.name || user.user_metadata?.company_name || ''}">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Email Professionnel *</label>
@@ -157,23 +165,8 @@ const Profile = {
             paypal_email: formData.get('paypal_email') || ''
         };
 
-        // Strict Validation
-        if (!companyData.name || companyData.name.trim().length < 3) {
-            App.showNotification('Le nom de l\'entreprise doit contenir au moins 3 caractères.', 'error');
-            return;
-        }
-        if (/^([a-zA-Z0-9])\1{2,}$/.test(companyData.name.trim())) {
-            App.showNotification('Veuillez entrer un vrai nom pour votre entreprise.', 'error');
-            return;
-        }
-        if (!companyData.address || companyData.address.trim().length < 5) {
-            App.showNotification('Veuillez renseigner une adresse physique complète et valide.', 'error');
-            return;
-        }
-        if (/^([a-zA-Z0-9])\1{3,}$/.test(companyData.address.trim())) {
-            App.showNotification('Veuillez entrer une vraie adresse valide.', 'error');
-            return;
-        }
+        // Validation allégée : on ne force plus le nom d'entreprise ni l'adresse stricte
+        // (pour les auto-entrepreneurs qui débutent)
         if (companyData.phone && companyData.phone.replace(/[^0-9]/g, '').length < 9) {
             App.showNotification('Le numéro de téléphone semble invalide (trop court).', 'error');
             return;
@@ -197,8 +190,11 @@ const Profile = {
                 }
             }
 
+            const firstName = formData.get('first_name') || '';
+            const lastName = formData.get('last_name') || '';
+
             // On met à jour via Storage qui gère maintenant la normalisation
-            await Storage.updateUser({ company: companyData });
+            await Storage.updateUser({ first_name: firstName, last_name: lastName, company: companyData });
 
             App.renderUserInfo();
             App.showNotification('Profil mis à jour avec succès !', 'success');

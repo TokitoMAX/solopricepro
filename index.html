@@ -125,10 +125,23 @@
                     <!-- Register Form -->
                     <form id="auth-form-register" class="auth-form" onsubmit="handleAuthRegister(event)">
                         <h2 class="auth-form-title">Créez votre compte</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <label class="form-group">
+                                <span class="form-label">Prénom</span>
+                                <input type="text" id="auth-register-firstname" class="form-input"
+                                    placeholder="Ex: Jean" required>
+                            </label>
+                            <label class="form-group">
+                                <span class="form-label">Nom</span>
+                                <input type="text" id="auth-register-lastname" class="form-input"
+                                    placeholder="Ex: Dupont" required>
+                            </label>
+                        </div>
                         <label class="form-group">
-                            <span class="form-label">Nom de votre entreprise</span>
+                            <span class="form-label">Nom de votre entreprise <span
+                                    style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Optionnel)</span></span>
                             <input type="text" id="auth-register-company" class="form-input"
-                                placeholder="Ex: Studio Design" required>
+                                placeholder="Ex: Studio Design">
                         </label>
                         <label class="form-group">
                             <span class="form-label">Email professionnel</span>
@@ -751,11 +764,13 @@
             e.preventDefault();
             var errEl = document.getElementById('auth-register-error');
             errEl.textContent = '';
+            var firstName = document.getElementById('auth-register-firstname').value.trim();
+            var lastName = document.getElementById('auth-register-lastname').value.trim();
             var email = document.getElementById('auth-register-email').value.trim();
             var password = document.getElementById('auth-register-password').value;
             var company = document.getElementById('auth-register-company').value.trim();
-            if (!email || !password || !company) { errEl.textContent = 'Veuillez remplir tous les champs.'; return; }
-            Auth.register({ email: email, password: password, company_name: company }).then(function () {
+            if (!email || !password || !firstName || !lastName) { errEl.textContent = 'Veuillez remplir votre nom, prénom, email et mot de passe.'; return; }
+            Auth.register({ email: email, password: password, first_name: firstName, last_name: lastName, company_name: company }).then(function () {
                 App.showNotification('Inscription réussie ! Connexion...', 'success');
             }).catch(function (err) {
                 errEl.textContent = err && err.message ? err.message : 'Erreur d\'inscription.';
