@@ -60,7 +60,16 @@ const Scoper = {
         const content = document.getElementById('scoper-tab-content');
         if (!content) return;
 
-        const data = Storage.get('sp_calculator_data') || {};
+        let data = Storage.get('sp_calculator_data');
+        // Ensure default values are populated if missing to avoid `undefined` calculations
+        const defaultData = { monthlyRevenue: 3000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech', target: 'tpe' };
+        data = { ...defaultData, ...(data && typeof data === 'object' ? data : {}) };
+
+        // Auto-save the defaults silently so calculations work natively everywhere
+        if (!Storage.get('sp_calculator_data')) {
+            Storage.set('sp_calculator_data', data);
+        }
+
         const currentStep = this.currentObjectiveStep || 1;
 
         content.innerHTML = `
@@ -127,7 +136,6 @@ const Scoper = {
     },
 
     renderCurrentStepForm(step, data) {
-        if (!data) data = Storage.get('sp_calculator_data') || { monthlyRevenue: 3000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech' };
 
         switch (step) {
             case 1: // PROFIL
@@ -1230,6 +1238,29 @@ const Scoper = {
                                        onchange="Scoper.updateJournalEnergy(this.value)">
                             </div>
                             <div class="gauge-item" style="margin-top: 1.5rem;">
+                                <div class="gauge-label" style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                                    <span>Historique Énergie (7j)</span>
+                                </div>
+                                <div style="display: flex; gap: 4px; height: 35px; align-items: flex-end; padding-top: 5px;">
+                                    ${(() => {
+                let states = journal.daily_states || [];
+                if (states.length === 0) states = [{ date: new Date().toLocaleDateString('fr-FR'), energy: journal.energy }];
+                const last7 = states.slice(-7);
+                // Pad with empty bars if < 7 days recorded
+                const bars = [];
+                for (let i = 0; i < 7 - last7.length; i++) bars.push(null);
+                last7.forEach(s => bars.push(s));
+
+                return bars.map(state => {
+                    if (!state) return `<div style="flex:1; background: rgba(255,255,255,0.05); height: 100%; border-radius:4px; border: 1px dashed rgba(255,255,255,0.1);"></div>`;
+                    const ht = Math.max(10, (state.energy / 10) * 100);
+                    const color = state.energy >= 8 ? '#10b981' : (state.energy >= 5 ? '#f59e0b' : '#ef4444');
+                    return `<div style="flex:1; background: ${color}; height: ${ht}%; border-radius:4px; opacity: 0.85; transition: height 0.3s; box-shadow: 0 0 8px ${color}40;" title="${state.date}: ${state.energy}/10"></div>`;
+                }).join('');
+            })()}
+                                </div>
+                            </div>
+                            <div class="gauge-item" style="margin-top: 1.5rem;">
                                 <div class="gauge-label">Focus Stratégique</div>
                                 <div class="mood-selector" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
                                     <button class="mood-btn ${journal.mood === 'confiant' ? 'active' : ''}" onclick="Scoper.updateJournalMood('confiant')">TOP</button>
@@ -1323,6 +1354,18 @@ const Scoper = {
     updateJournalMood(mood) {
         const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], dailyFocus: '' };
         journal.mood = mood;
+
+        // Track history
+        if (!journal.daily_states) journal.daily_states = [];
+        const today = new Date().toLocaleDateString('fr-FR');
+        let state = journal.daily_states.find(s => s.date === today);
+        if (!state) {
+            journal.daily_states.push({ date: today, energy: journal.energy, mood });
+        } else {
+            state.mood = mood;
+        }
+        if (journal.daily_states.length > 30) journal.daily_states.shift();
+
         Storage.saveJournal(journal);
 
         const mentorWords = {
@@ -1357,11 +1400,23 @@ const Scoper = {
         const journal = Storage.get('sp_journal') || { mood: 'motivated', energy: 7, entries: [], daily_focus: '' };
         journal.energy = parseInt(val);
 
+        // Track history
+        if (!journal.daily_states) journal.daily_states = [];
+        const today = new Date().toLocaleDateString('fr-FR');
+        let state = journal.daily_states.find(s => s.date === today);
+        if (!state) {
+            journal.daily_states.push({ date: today, energy: journal.energy, mood: journal.mood });
+        } else {
+            state.energy = journal.energy;
+        }
+        if (journal.daily_states.length > 30) journal.daily_states.shift();
+
         // Debounce save to avoid network flooding
         clearTimeout(this._journalSaveTimeout);
         this._journalSaveTimeout = setTimeout(() => {
             Storage.saveJournal(journal);
-        }, 1000);
+            this.renderJournalTab(); // Rerender to update the histogram
+        }, 800);
     },
 
     updateDailyFocus(text) {

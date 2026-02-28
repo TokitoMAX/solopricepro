@@ -165,8 +165,21 @@ const Profile = {
             paypal_email: formData.get('paypal_email') || ''
         };
 
-        // Validation allégée : on ne force plus le nom d'entreprise ni l'adresse stricte
-        // (pour les auto-entrepreneurs qui débutent)
+        const firstName = formData.get('first_name') || '';
+        const lastName = formData.get('last_name') || '';
+
+        // Strict Validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!companyData.email || !emailRegex.test(companyData.email)) {
+            App.showNotification("Format d'email invalide. Veuillez renseigner un email correct.", 'error');
+            return;
+        }
+
+        if (firstName.trim().length === 0 || lastName.trim().length === 0) {
+            App.showNotification("Le Prénom et le Nom sont obligatoires.", 'error');
+            return;
+        }
+
         if (companyData.phone && companyData.phone.replace(/[^0-9]/g, '').length < 9) {
             App.showNotification('Le numéro de téléphone semble invalide (trop court).', 'error');
             return;
@@ -190,8 +203,6 @@ const Profile = {
                 }
             }
 
-            const firstName = formData.get('first_name') || '';
-            const lastName = formData.get('last_name') || '';
 
             // On met à jour via Storage qui gère maintenant la normalisation
             await Storage.updateUser({ first_name: firstName, last_name: lastName, company: companyData });

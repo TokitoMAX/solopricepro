@@ -26,49 +26,64 @@ const Clients = {
             <div id="client-form-container"></div>
 
             ${clients.length > 0 ? `
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Nom</th>
-                                <th>Email</th>
-                                <th>Téléphone</th>
-                                <th>Ville</th>
-                                <th>Ajouté le</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${clients.map(client => `
-                                <tr>
-                                    <td><strong>${this.escapeHtml(client.name)}</strong></td>
-                                    <td>${this.escapeHtml(client.email || '-')}</td>
-                                    <td>${this.escapeHtml(client.phone || '-')}</td>
-                                    <td>${this.escapeHtml(client.city || '-')}</td>
-                                    <td>${App.formatDate(client.createdAt)}</td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-icon" onclick="Clients.showDetail('${client.id}')" title="Voir détails et historique">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                            </button>
-                                            <button class="btn-icon" onclick="Clients.createQuoteFor('${client.id}')" title="Créer un devis">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                            </button>
-                                            <button class="btn-icon" onclick="Clients.createInvoiceFor('${client.id}')" title="Créer une facture">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                                            </button>
-                                            <button class="btn-icon" onclick="Clients.edit('${client.id}')" title="Modifier le client">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                            </button>
-                                            <button class="btn-icon btn-danger" onclick="Clients.delete('${client.id}')" title="Supprimer">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                <style>
+                    .client-card:hover { border-color: var(--primary-glass); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+                </style>
+                <div class="clients-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                    ${clients.map(client => `
+                        <div class="glass-card client-card" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all 0.3s ease; background: var(--bg-card);">
+                            <!-- Top Accent Line -->
+                            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-light));"></div>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem; font-weight: 700; color: var(--white);">${this.escapeHtml(client.name)}</h3>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        ${(() => {
+                const daysOld = (new Date() - new Date(client.createdAt)) / (1000 * 60 * 60 * 24);
+                if (daysOld < 7) return '<span class="status-badge" style="font-size: 0.65rem; padding: 3px 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;">NOUVEAU</span>';
+                return '<span class="status-badge" style="font-size: 0.65rem; padding: 3px 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px;">PROSPECT</span>';
+            })()}
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="far fa-calendar-alt" style="margin-right: 4px;"></i>${App.formatDate(client.createdAt)}</span>
+                                    </div>
+                                </div>
+                                <button class="btn-icon" onclick="Clients.showDetail('${client.id}')" title="Ouvrir le dossier" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; width: 36px; height: 36px;">
+                                    <i class="fas fa-folder-open" style="font-size: 0.9rem;"></i>
+                                </button>
+                            </div>
+
+                            <div style="flex: 1; margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.2rem; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.02);">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px; color: var(--text-muted);">
+                                    <i class="fas fa-envelope" style="width: 16px; text-align: center; color: var(--primary-light);"></i> 
+                                    <span style="color: var(--white); font-weight: 500;">${this.escapeHtml(client.email || 'Non renseigné')}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px; color: var(--text-muted);">
+                                    <i class="fas fa-phone-alt" style="width: 16px; text-align: center; color: var(--primary-light);"></i> 
+                                    <span style="color: var(--white); font-weight: 500;">${this.escapeHtml(client.phone || '-')}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted);">
+                                    <i class="fas fa-map-marker-alt" style="width: 16px; text-align: center; color: var(--primary-light);"></i> 
+                                    <span style="color: var(--white); font-weight: 500;">${this.escapeHtml(client.city || '-')}</span>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.2rem; margin-top: auto;">
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="button-primary small" onclick="Clients.createQuoteFor('${client.id}')" title="Créer un Devis" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px;">
+                                        <i class="fas fa-file-invoice" style="margin-right: 6px;"></i> Devis
+                                    </button>
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button class="btn-icon" onclick="Clients.edit('${client.id}')" title="Modifier" style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.05);">
+                                        <i class="fas fa-pen" style="font-size: 0.8rem;"></i>
+                                    </button>
+                                    <button class="btn-icon btn-danger" onclick="Clients.delete('${client.id}')" title="Supprimer" style="width: 32px; height: 32px; border-radius: 8px;">
+                                        <i class="fas fa-trash" style="font-size: 0.8rem;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
             ` : `
                 <div class="empty-state">
