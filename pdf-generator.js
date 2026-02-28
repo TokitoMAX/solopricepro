@@ -276,7 +276,7 @@ const PDFGenerator = {
                     .total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
                     .total-row.grand { border-top: 2px solid var(--primary); margin-top: 15px; padding-top: 15px; font-size: 20px; font-weight: 800; color: var(--primary); }
                     
-                    .signature-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 50px; page-break-inside: avoid; }
+                    .signature-area { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; page-break-inside: avoid; }
                     .signature-box { border: 2px dashed var(--border); border-radius: 16px; padding: 30px; position: relative; min-height: 200px; background: var(--bg-light); transition: all 0.3s; }
                     .signature-label { font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 90px; display: block; }
                     .signature-mention { font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; }
@@ -421,8 +421,7 @@ const PDFGenerator = {
                     </div>
                 </div>
 
-                <div class="signature-area">
-                <div class="legal-section" style="margin-top: 40px; padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light);">
+                <div class="legal-section" style="margin-top: 40px; margin-bottom: 40px; padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light);">
                     <h4 style="font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px;">Instructions de Règlement (Paiement Direct)</h4>
                     <p style="margin-bottom: 15px; color: var(--text-light); font-size: 11px;">Ce document comporte deux instructions de règlement distinctes : l'une pour le prestataire et l'autre pour les frais de service de la plateforme.</p>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -455,8 +454,20 @@ const PDFGenerator = {
                         ${user.company?.footer_mentions ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
                     </div>
                 </div>
+
+                <div class="signature-area">
+                    <div class="signature-box" style="position: relative; border-color: transparent; background: transparent; padding: 10px;">
+                        <span class="signature-label" style="margin-bottom: 40px; color: var(--primary);">Le Prestataire</span>
+                        <div style="font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; color: var(--text); border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px;">
+                            Signé numériquement par<br>
+                            ${providerName}
+                        </div>
+                        <div class="signature-mention" style="margin-top: 10px; text-align: left;">
+                            Date d'émission : ${date}
+                        </div>
+                    </div>
                     <div class="signature-box" style="position: relative;">
-                        <span class="signature-label">Bon pour accord</span>
+                        <span class="signature-label">Bon pour accord Client</span>
                         ${quote.signature ? `
                             <img src="${quote.signature.image}" style="max-width: 150px; position: absolute; top: 20px; left: 10px; mix-blend-mode: multiply;" />
                             <div class="signature-mention" style="margin-top: 60px;">Signé le ${new Date(quote.signature.date).toLocaleDateString()}</div>

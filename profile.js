@@ -157,6 +157,28 @@ const Profile = {
             paypal_email: formData.get('paypal_email') || ''
         };
 
+        // Strict Validation
+        if (!companyData.name || companyData.name.trim().length < 3) {
+            App.showNotification('Le nom de l\'entreprise doit contenir au moins 3 caractères.', 'error');
+            return;
+        }
+        if (/^([a-zA-Z0-9])\1{2,}$/.test(companyData.name.trim())) {
+            App.showNotification('Veuillez entrer un vrai nom pour votre entreprise.', 'error');
+            return;
+        }
+        if (!companyData.address || companyData.address.trim().length < 5) {
+            App.showNotification('Veuillez renseigner une adresse physique complète et valide.', 'error');
+            return;
+        }
+        if (/^([a-zA-Z0-9])\1{3,}$/.test(companyData.address.trim())) {
+            App.showNotification('Veuillez entrer une vraie adresse valide.', 'error');
+            return;
+        }
+        if (companyData.phone && companyData.phone.replace(/[^0-9]/g, '').length < 9) {
+            App.showNotification('Le numéro de téléphone semble invalide (trop court).', 'error');
+            return;
+        }
+
         try {
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.textContent;

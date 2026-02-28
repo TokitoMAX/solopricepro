@@ -97,7 +97,12 @@ const Dashboard = {
             <div class="stats-grid dashboard-stats">
                 <!-- Goal Card -->
                 <div class="stat-card goal-card">
-                    <span class="stat-label">Objectif Mensuel</span>
+                    <span class="stat-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        Objectif Mensuel 
+                        <button class="button-link small" onclick="Dashboard.editGoal()" style="padding: 0; font-size: 0.8rem; color: var(--primary);" title="Modifier mon objectif">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </span>
                     <div class="stat-value">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(stats.monthlyRevenue) : stats.monthlyRevenue}</div>
                     <div class="stat-description" style="color: var(--text-muted); font-size: 0.85rem;">
                         Progrès: <strong>${progress}%</strong> sur ${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(monthlyGoal) : monthlyGoal}
@@ -292,6 +297,38 @@ const Dashboard = {
                         <button class="button-primary" style="margin-top: 1.5rem;" onclick="window.location.reload()">Rafraîchir la page</button>
                     </div>
                 `;
+            }
+        }
+    },
+
+    editGoal() {
+        if (typeof Storage === 'undefined') return;
+
+        const calculatorData = Storage.get('sp_calculator_data') || { monthlyRevenue: 5000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech' };
+        const currentGoal = calculatorData.monthlyRevenue || 5000;
+
+        const newGoal = prompt("Définissez votre nouvel objectif de Chiffre d'Affaires(CA) mensuel(€) : ", currentGoal);
+        if (newGoal !== null && newGoal.trim() !== '') {
+            const parsedGoal = parseFloat(newGoal.replace(/[^0-9.,]/g, '').replace(',', '.'));
+
+            if (!isNaN(parsedGoal) && parsedGoal > 0) {
+                calculatorData.monthlyRevenue = parsedGoal;
+                Storage.set('sp_calculator_data', calculatorData);
+
+                if (typeof App !== 'undefined' && App.showNotification) {
+                    App.showNotification("Objectif mis à jour avec succès !", 'success');
+                }
+
+                this.render(); // Re-render the dashboard immediately
+
+                // Trigger background sync if the user is PRO and DB sync is available
+                if (Storage.savePricingConfig) {
+                    Storage.savePricingConfig().catch(e => console.log('Background sync skipped', e));
+                }
+            } else {
+                if (typeof App !== 'undefined' && App.showNotification) {
+                    App.showNotification("Montant invalide. L'objectif doit être un nombre supérieur à 0.", 'error');
+                }
             }
         }
     },
