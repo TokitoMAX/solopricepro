@@ -600,7 +600,12 @@ const Storage = {
 
         if (typeof Auth === 'undefined' || !Auth.user) return;
 
-        const payload = updates.company || updates;
+        const rawPayload = updates.company || updates;
+
+        // Strip fields that don't exist as columns in sp_user_profile
+        // (e.g. 'country' is stored in user_metadata instead)
+        const { country: _country, ...payload } = rawPayload;
+        const country = _country || '';
 
         // 1. Sync company/profile data to sp_user_profile table
         try {
@@ -624,10 +629,10 @@ const Storage = {
             throw e;
         }
 
-        // 2. Also update first_name/last_name in Supabase Auth user_metadata
+        // 2. Also update first_name/last_name + country in Supabase Auth user_metadata
         const firstName = updates.first_name || '';
         const lastName = updates.last_name || '';
-        if (firstName || lastName) {
+        if (firstName || lastName || country) {
             try {
                 await fetch(`${Auth.apiBase}/api/auth/update-metadata`, {
                     method: 'PUT',
@@ -635,18 +640,19 @@ const Storage = {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${Auth.token}`
                     },
-                    body: JSON.stringify({ first_name: firstName, last_name: lastName })
+                    body: JSON.stringify({ first_name: firstName, last_name: lastName, country })
                 });
                 // Update local auth cache so profile re-renders correctly
                 if (Auth.user.user_metadata) {
                     Auth.user.user_metadata.first_name = firstName;
                     Auth.user.user_metadata.last_name = lastName;
                     Auth.user.user_metadata.full_name = `${firstName} ${lastName}`.trim();
+                    Auth.user.user_metadata.country = country;
                 } else {
-                    Auth.user.user_metadata = { first_name: firstName, last_name: lastName };
+                    Auth.user.user_metadata = { first_name: firstName, last_name: lastName, country };
                 }
                 localStorage.setItem('sp_user', JSON.stringify(Auth.user));
-                console.log('✅ Auth metadata updated.');
+                console.log('✅ Auth metadata + country updated.');
             } catch (e) {
                 console.warn('⚠️ Metadata update failed (non-blocking):', e.message);
             }

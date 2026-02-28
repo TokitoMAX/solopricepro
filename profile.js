@@ -39,7 +39,7 @@ const Profile = {
         const user = Storage.getUser() || {};
         const isPro = Storage.isPro();
         const company = user.company || user.user_metadata?.company || {};
-        const savedCountry = company.country || '';
+        const savedCountry = user.user_metadata?.country || company.country || '';
 
         container.innerHTML = `
             <div class="page-header">

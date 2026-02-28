@@ -418,10 +418,10 @@ router.post('/update-password', async (req, res) => {
 });
 
 // @route   PUT /api/auth/update-metadata
-// @desc    Update user_metadata (first_name, last_name, full_name) in Supabase Auth
+// @desc    Update user_metadata (first_name, last_name, full_name, country) in Supabase Auth
 // @access  Private
 router.put('/update-metadata', async (req, res) => {
-    const { first_name, last_name } = req.body || {};
+    const { first_name, last_name, country } = req.body || {};
     const token = (req.headers.authorization || '').replace('Bearer ', '');
     if (!token) return res.status(401).json({ message: 'Non autorisé' });
 
@@ -440,16 +440,17 @@ router.put('/update-metadata', async (req, res) => {
         const { error: updateErr } = await admin.auth.admin.updateUserById(user.id, {
             user_metadata: {
                 ...user.user_metadata,
-                first_name: first_name || user.user_metadata?.first_name || '',
-                last_name: last_name || user.user_metadata?.last_name || '',
-                full_name: `${first_name || ''} ${last_name || ''}`.trim()
+                first_name: first_name !== undefined ? first_name : (user.user_metadata?.first_name || ''),
+                last_name: last_name !== undefined ? last_name : (user.user_metadata?.last_name || ''),
+                full_name: `${first_name || user.user_metadata?.first_name || ''} ${last_name || user.user_metadata?.last_name || ''}`.trim(),
+                country: country !== undefined ? country : (user.user_metadata?.country || '')
             }
         });
 
         if (updateErr) throw new Error(updateErr.message);
 
-        console.log(`✅ Metadata updated for user ${user.id}: ${first_name} ${last_name}`);
-        res.json({ message: 'Profil mis à jour', first_name, last_name });
+        console.log(`✅ Metadata updated for user ${user.id}: ${first_name} ${last_name} [${country}]`);
+        res.json({ message: 'Profil mis à jour', first_name, last_name, country });
     } catch (err) {
         console.error('❌ update-metadata error:', err.message);
         res.status(400).json({ message: err.message });
