@@ -266,22 +266,21 @@ const Profile = {
         // Reset
         status.textContent = '';
         if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+        clearTimeout(this._siretTimer);
 
         if (clean.length === 0) return;
 
-        // Luhn check for 14-digit SIRET
+        // Only act once we have exactly 14 digits
         if (clean.length === 14 && /^[0-9]{14}$/.test(clean)) {
             if (this.luhn(clean)) {
                 status.textContent = '⏳';
-                clearTimeout(this._siretTimer);
-                this._siretTimer = setTimeout(() => this.verifySiretApi(clean), 800);
+                this._siretTimer = setTimeout(() => this.verifySiretApi(clean), 500);
             } else {
                 status.textContent = '❌';
                 if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Numéro SIRET invalide (clé de contrôle incorrecte).'; }
             }
-        } else if (clean.length > 0 && clean.length < 14) {
-            status.textContent = '⌛';
         }
+        // No indicator while still typing — avoids confusion
     },
 
     // Luhn algorithm for SIRET validation
