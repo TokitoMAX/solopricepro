@@ -36,63 +36,64 @@ const Leads = {
     },
 
     renderLeadCard(lead) {
-        const statusColors = {
-            cold: '#60a5fa', // Blue
-            warm: '#fbbf24', // Amber
-            won: '#10b981'   // Emerald
+        const statusConfig = {
+            cold: { color: '#60a5fa', bg: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.3)', label: 'Contact Initial', icon: 'fa-seedling' },
+            warm: { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)', label: 'En Négociation', icon: 'fa-fire' },
+            won: { color: '#10b981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)', label: 'Client Confirmé', icon: 'fa-trophy' }
         };
+        const s = statusConfig[lead.status] || statusConfig.cold;
 
-        const statusLabels = {
-            cold: 'Contact initial',
-            warm: 'En négociation',
-            won: 'Client confirmé'
-        };
+        const nameParts = (lead.name || '?').trim().split(' ');
+        const initials = nameParts.length >= 2
+            ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+            : (lead.name || '?')[0].toUpperCase();
 
         return `
-            <div class="lead-card glass" style="padding: 1.8rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between;">
-                <div class="lead-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem;">
-                    <div style="flex: 1;">
-                        <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--white); letter-spacing: -0.01em;">${this.escapeHtml(lead.name)}</h3>
-                        <p style="margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--primary-light); opacity: 0.8; font-weight: 500;">${this.escapeHtml(lead.activity || 'Activité non spécifiée')}</p>
-                    </div>
-                    <span class="status-tag" style="background: ${statusColors[lead.status]}15; color: ${statusColors[lead.status]}; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid ${statusColors[lead.status]}30;">
-                        ${statusLabels[lead.status]}
-                    </span>
-                </div>
-                
-                <div class="lead-info" style="margin-bottom: 1.8rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; display: grid; gap: 0.4rem;">
-                    <div style="display: flex; align-items: center; gap: 10px;"><i class="far fa-envelope" style="width: 14px; opacity: 0.5;"></i> ${this.escapeHtml(lead.email || '-')}</div>
-                    <div style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-phone-alt" style="width: 14px; opacity: 0.5;"></i> ${this.escapeHtml(lead.phone || '-')}</div>
-                </div>
+        <div style="
+            border-radius: 20px; border: 1px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.02); overflow: hidden;
+            transition: all 0.25s ease; display: flex; flex-direction: column;
+            border-left: 4px solid ${s.color};
+        " onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 40px rgba(0,0,0,0.3)'"
+           onmouseout="this.style.transform='';this.style.boxShadow=''">
 
-                <div class="lead-actions" style="display: flex; gap: 0.6rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.2rem;">
-                    <div style="display: flex; gap: 0.4rem; flex: 1;">
-                        ${lead.status === 'cold' ?
-                `<button class="button-secondary small" onclick="Leads.updateStatus('${lead.id}', 'warm')" style="padding: 6px 10px; font-size: 0.75rem;">Négociation</button>` :
-                `<button class="button-secondary small" onclick="Leads.updateStatus('${lead.id}', 'cold')" style="padding: 6px 10px; font-size: 0.75rem;">Contact</button>`
-            }
-                        
-                        <button class="button-primary small" onclick="Leads.convertToQuote('${lead.id}')" title="Générer un devis" style="padding: 6px 10px; font-size: 0.75rem; background: var(--primary-glass); color: var(--primary-light); border: 1px solid var(--primary-glass);">
-                            <i class="fas fa-file-invoice"></i> Devis
-                        </button>
-                        
-                        <button class="button-primary small" onclick="Leads.convertToClient('${lead.id}')" style="padding: 6px 10px; font-size: 0.75rem;">
-                            <i class="fas fa-user-check"></i> Convertir
-                        </button>
-                    </div>
-                    
-                    <button class="btn-icon" onclick="Leads.delete('${lead.id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s;" title="Supprimer">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
+            <div style="padding: 1.4rem 1.4rem 1rem; display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="width:46px;height:46px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,${s.color}33,${s.color}11);border:1px solid ${s.border};display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:900;color:${s.color};">${initials}</div>
+                <div style="flex:1;min-width:0;">
+                    <h3 style="margin:0;font-size:1rem;font-weight:700;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.escapeHtml(lead.name)}</h3>
+                    <p style="margin:3px 0 0;font-size:0.77rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.escapeHtml(lead.activity || 'Activité non précisée')}</p>
                 </div>
+                <span style="background:${s.bg};color:${s.color};border:1px solid ${s.border};padding:4px 9px;border-radius:20px;font-size:0.63rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px;">
+                    <i class="fas ${s.icon}" style="font-size:0.55rem;"></i>${s.label}
+                </span>
             </div>
-        `;
+
+            <div style="padding:0 1.4rem 1.1rem;display:flex;flex-direction:column;gap:5px;">
+                ${lead.email ? `<div style="display:flex;align-items:center;gap:8px;font-size:0.81rem;color:var(--text-muted);"><i class="far fa-envelope" style="width:13px;color:${s.color};opacity:0.7;"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${this.escapeHtml(lead.email)}</span></div>` : ''}
+                ${lead.phone ? `<div style="display:flex;align-items:center;gap:8px;font-size:0.81rem;color:var(--text-muted);"><i class="fas fa-phone-alt" style="width:13px;color:${s.color};opacity:0.7;"></i><span>${this.escapeHtml(lead.phone)}</span></div>` : ''}
+            </div>
+
+            <div style="display:flex;gap:0.5rem;padding:0.9rem 1.4rem;border-top:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.1);align-items:center;">
+                <div style="display:flex;gap:0.4rem;flex:1;flex-wrap:wrap;">
+                    ${lead.status === 'cold'
+                ? `<button onclick="Leads.updateStatus('${lead.id}','warm')" style="padding:5px 11px;border-radius:20px;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.1);color:#f59e0b;font-size:0.7rem;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#f59e0b';this.style.color='#000'" onmouseout="this.style.background='rgba(245,158,11,0.1)';this.style.color='#f59e0b'"><i class="fas fa-fire" style="margin-right:4px;"></i>Négociation</button>`
+                : `<button onclick="Leads.updateStatus('${lead.id}','cold')" style="padding:5px 11px;border-radius:20px;border:1px solid rgba(96,165,250,0.3);background:rgba(96,165,250,0.1);color:#60a5fa;font-size:0.7rem;font-weight:700;cursor:pointer;transition:all 0.2s;"><i class="fas fa-seedling" style="margin-right:4px;"></i>Contact</button>`
+            }
+                    <button onclick="Leads.convertToQuote('${lead.id}')" style="padding:5px 11px;border-radius:20px;border:1px solid var(--primary-glass);background:var(--primary-glass);color:var(--primary-light);font-size:0.7rem;font-weight:700;cursor:pointer;transition:all 0.2s;"><i class="fas fa-file-invoice" style="margin-right:4px;"></i>Devis</button>
+                    <button onclick="Leads.convertToClient('${lead.id}')" style="padding:5px 11px;border-radius:20px;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.1);color:#10b981;font-size:0.7rem;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#10b981';this.style.color='white'" onmouseout="this.style.background='rgba(16,185,129,0.1)';this.style.color='#10b981'"><i class="fas fa-user-check" style="margin-right:4px;"></i>Convertir</button>
+                </div>
+                <button onclick="Leads.delete('${lead.id}')" style="width:30px;height:30px;border-radius:9px;border:none;background:rgba(239,68,68,0.1);color:#ef4444;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;" onmouseover="this.style.background='#ef4444';this.style.color='white'" onmouseout="this.style.background='rgba(239,68,68,0.1)';this.style.color='#ef4444'">
+                    <i class="fas fa-trash-alt" style="font-size:0.7rem;"></i>
+                </button>
+            </div>
+        </div>`;
     },
+
 
     showAddForm() {
         const container = document.getElementById('lead-form-container');
         container.innerHTML = `
-            <div class="form-card glass" style="margin-bottom: 2rem; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--primary-glass); box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+    < div class="form-card glass" style = "margin-bottom: 2rem; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--primary-glass); box-shadow: 0 20px 50px rgba(0,0,0,0.3);" >
                 <div class="form-header" style="border-bottom: 1px solid var(--primary-glass); padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--primary-light);"><i class="fas fa-user-plus" style="margin-right: 10px;"></i> Nouveau Prospect</h3>
                     <button class="btn-close" onclick="Leads.hideForm()" style="background: none; border: none; color: white; cursor: pointer; opacity: 0.6; transition: opacity 0.2s;">✕</button>
@@ -121,8 +122,8 @@ const Leads = {
                         <button type="submit" class="button-primary" style="min-width: 200px; box-shadow: var(--primary-shadow);">🚀 Suivre ce prospect</button>
                     </div>
                 </form>
-            </div>
-        `;
+            </div >
+    `;
         container.scrollIntoView({ behavior: 'smooth' });
     },
 
@@ -152,7 +153,7 @@ const Leads = {
             const lead = (Storage.getLeads() || []).find(l => l.id === id);
             if (lead) {
                 setTimeout(() => {
-                    if (confirm(`Le prospect ${lead.name} est maintenant un "Client confirmé". Voulez-vous le transférer définitivement dans votre base Clients ?`)) {
+                    if (confirm(`Le prospect ${lead.name} est maintenant un "Client confirmé".Voulez - vous le transférer définitivement dans votre base Clients ? `)) {
                         this.convertToClient(id);
                     }
                 }, 500);
@@ -172,7 +173,7 @@ const Leads = {
                 name: lead.name,
                 email: lead.email,
                 phone: lead.phone,
-                notes: lead.activity ? `Activité : ${lead.activity}` : ''
+                notes: lead.activity ? `Activité: ${lead.activity} ` : ''
             });
 
             // Delete from leads
@@ -217,7 +218,7 @@ const Leads = {
                     name: lead.name,
                     email: lead.email,
                     phone: lead.phone,
-                    notes: lead.activity ? `Activité : ${lead.activity}` : ''
+                    notes: lead.activity ? `Activité: ${lead.activity} ` : ''
                 });
             }
 
@@ -238,7 +239,7 @@ const Leads = {
                     // On déclenche le formulaire d'ajout avec le client pré-sélectionné
                     // Cela évite de créer un "document vide" comme reproché par l'utilisateur
                     Quotes.showAddForm(client.id);
-                    App.showNotification(`Nouveau devis pour ${client.name}`, 'success');
+                    App.showNotification(`Nouveau devis pour ${client.name} `, 'success');
                 } else {
                     console.warn('[LEADS] Quotes module not loaded.');
                 }

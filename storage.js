@@ -598,28 +598,57 @@ const Storage = {
         // Apply locally first
         this.setUser(profile);
 
-        // Persist to Supabase
-        if (typeof Auth !== 'undefined' && Auth.user) {
-            const payload = updates.company || updates;
+        if (typeof Auth === 'undefined' || !Auth.user) return;
+
+        const payload = updates.company || updates;
+
+        // 1. Sync company/profile data to sp_user_profile table
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/data/${this.KEYS.USER_PROFILE}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Auth.token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || 'Erreur lors de la synchronisation avec le serveur.');
+            }
+
+            console.log('✅ Profile synced with server.');
+        } catch (e) {
+            console.error('❌ Backend sync failed:', e);
+            throw e;
+        }
+
+        // 2. Also update first_name/last_name in Supabase Auth user_metadata
+        const firstName = updates.first_name || '';
+        const lastName = updates.last_name || '';
+        if (firstName || lastName) {
             try {
-                const res = await fetch(`${Auth.apiBase}/api/data/${this.KEYS.USER_PROFILE}`, {
-                    method: 'POST',
+                await fetch(`${Auth.apiBase}/api/auth/update-metadata`, {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${Auth.token}`
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ first_name: firstName, last_name: lastName })
                 });
-
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    throw new Error(errorData.message || 'Erreur lors de la synchronisation avec le serveur.');
+                // Update local auth cache so profile re-renders correctly
+                if (Auth.user.user_metadata) {
+                    Auth.user.user_metadata.first_name = firstName;
+                    Auth.user.user_metadata.last_name = lastName;
+                    Auth.user.user_metadata.full_name = `${firstName} ${lastName}`.trim();
+                } else {
+                    Auth.user.user_metadata = { first_name: firstName, last_name: lastName };
                 }
-
-                console.log('✅ Profile synced with server.');
+                localStorage.setItem('sp_user', JSON.stringify(Auth.user));
+                console.log('✅ Auth metadata updated.');
             } catch (e) {
-                console.error('❌ Backend sync failed:', e);
-                throw e; // Propagate to caller (profile.js) so it shows the error
+                console.warn('⚠️ Metadata update failed (non-blocking):', e.message);
             }
         }
     },

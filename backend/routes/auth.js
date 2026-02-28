@@ -417,4 +417,43 @@ router.post('/update-password', async (req, res) => {
     }
 });
 
+// @route   PUT /api/auth/update-metadata
+// @desc    Update user_metadata (first_name, last_name, full_name) in Supabase Auth
+// @access  Private
+router.put('/update-metadata', async (req, res) => {
+    const { first_name, last_name } = req.body || {};
+    const token = (req.headers.authorization || '').replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Non autorisé' });
+
+    try {
+        const { createClient } = require('@supabase/supabase-js');
+        const admin = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        // Get user ID from token
+        const { data: { user }, error: userErr } = await admin.auth.getUser(token);
+        if (userErr || !user) throw new Error('Utilisateur introuvable');
+
+        // Update user_metadata via admin API
+        const { error: updateErr } = await admin.auth.admin.updateUserById(user.id, {
+            user_metadata: {
+                ...user.user_metadata,
+                first_name: first_name || user.user_metadata?.first_name || '',
+                last_name: last_name || user.user_metadata?.last_name || '',
+                full_name: `${first_name || ''} ${last_name || ''}`.trim()
+            }
+        });
+
+        if (updateErr) throw new Error(updateErr.message);
+
+        console.log(`✅ Metadata updated for user ${user.id}: ${first_name} ${last_name}`);
+        res.json({ message: 'Profil mis à jour', first_name, last_name });
+    } catch (err) {
+        console.error('❌ update-metadata error:', err.message);
+        res.status(400).json({ message: err.message });
+    }
+});
+
 module.exports = router;
