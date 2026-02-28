@@ -419,7 +419,7 @@ const App = {
         // Plus précis : filter les devis qui viennent du marketplace
         const marketplaceQuotesCount = quotes.filter(q => {
             const d = new Date(q.createdAt);
-            const isMarketplace = q.notes && q.notes.includes('Radar DomTomConnect');
+            const isMarketplace = q.notes && (q.notes.includes('Radar DomTomConnect') || q.notes.includes('Radar Réseau SoloPrice'));
             return isMarketplace && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         }).length;
 

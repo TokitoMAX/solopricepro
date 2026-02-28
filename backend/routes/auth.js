@@ -11,7 +11,7 @@ router.use((req, res, next) => {
 // @desc    Register a new user via Supabase
 // @access  Public
 router.post('/register', async (req, res) => {
-    const { email, password, company_name, first_name, last_name } = req.body;
+    const { email, password, company_name, first_name, last_name, country } = req.body;
     const supabase = req.app.get('supabase');
 
     try {
@@ -40,6 +40,7 @@ router.post('/register', async (req, res) => {
                 company_name: company_name || '', // optional
                 first_name: first_name || '',
                 last_name: last_name || '',
+                country: country || 'FR', // Default to France if missing
                 full_name: `${first_name || ''} ${last_name || ''}`.trim()
             }
         });

@@ -70,7 +70,8 @@ const Scoper = {
 
         let data = Storage.get('sp_calculator_data');
         // Ensure default values are populated if missing to avoid `undefined` calculations
-        const defaultData = { monthlyRevenue: 3000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech', target: 'tpe' };
+        const defaultRev = (typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 3000;
+        const defaultData = { monthlyRevenue: defaultRev, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech', target: 'tpe' };
         data = { ...defaultData, ...(data && typeof data === 'object' ? data : {}) };
 
         // Auto-save the defaults silently so calculations work natively everywhere
@@ -194,7 +195,7 @@ const Scoper = {
                         <p class="text-muted">Combien voulez-vous réellement toucher par mois, après avoir tout payé ?</p>
                     </div>
                     <div class="input-group">
-                        <label class="form-label" style="font-size: 1.1rem;">Revenu Net Mensuel souhaité (€)</label>
+                        <label class="form-label" style="font-size: 1.1rem;">Revenu Net Mensuel souhaité (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
                         <input type="number" id="monthlyRevenue" class="form-input large" value="${data.monthlyRevenue || ''}" placeholder="ex: 3000" oninput="Scoper.autoSaveObjective()" style="font-size: 1.5rem; padding: 1.2rem;">
                         <p class="text-xs text-muted" style="margin-top: 10px;">💡 C'est votre "salaire" cible. Soyez ambitieux mais réaliste pour votre marché.</p>
                     </div>
@@ -225,7 +226,7 @@ const Scoper = {
                         <p class="text-muted">Le CA n'est pas votre revenu. Il faut payer l'État et vos outils.</p>
                     </div>
                     <div class="input-group">
-                        <label class="form-label">Charges Fixes Mensuelles (€)</label>
+                        <label class="form-label">Charges Fixes Mensuelles (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
                         <input type="number" id="monthlyCharges" class="form-input" value="${data.monthlyCharges ?? 500}" oninput="Scoper.autoSaveObjective()">
                         <p class="text-xs text-muted">Abonnements SaaS, loyer, mutuelle, assurance...</p>
                     </div>
@@ -291,15 +292,15 @@ const Scoper = {
                 ${Object.entries(scenarios).map(([key, s]) => `
                                     <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1rem; border-radius: 12px; border: 2px solid ${activeScenario === key ? 'var(--primary)' : 'var(--border)'}; background: ${activeScenario === key ? 'var(--primary-glass)' : 'transparent'}; text-align: center; transition: all 0.2s;">
                                         <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: ${activeScenario === key ? 'var(--primary-light)' : 'var(--text-muted)'};">${s.label}</div>
-                                        <div style="font-size: 1.1rem; font-weight: 900; margin: 4px 0;">${s.tjm}€</div>
-                                        <div style="font-size: 0.6rem; opacity: 0.7;">${s.annual.toLocaleString()}€/an</div>
+                                        <div style="font-size: 1.1rem; font-weight: 900; margin: 4px 0;">${typeof App !== 'undefined' ? App.formatCurrency(s.tjm) : s.tjm + '€'}</div>
+                                        <div style="font-size: 0.6rem; opacity: 0.7;">${typeof App !== 'undefined' ? App.formatCurrency(s.annual) : s.annual.toLocaleString() + '€'}/an</div>
                                     </div>
                                 `).join('')}
             </div>
 
             <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; text-align: center; border-radius: 20px;">
                 <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">PROJECTION REVENU ANNUEL</div>
-                <div style="font-size: 2.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${currentAnnual.toLocaleString()}€<span style="font-size: 0.9rem; font-weight: 400; opacity: 0.7; display: block;">Projection basée sur ${data.workingDays}j facturés / mois</span></div>
+                <div style="font-size: 2.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${typeof App !== 'undefined' ? App.formatCurrency(currentAnnual) : currentAnnual.toLocaleString() + '€'}<span style="font-size: 0.9rem; font-weight: 400; opacity: 0.7; display: block;">Projection basée sur ${data.workingDays}j facturés / mois</span></div>
             </div>
         </div>
 
@@ -308,7 +309,7 @@ const Scoper = {
             <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary-glass);">
                 <h3 style="font-size: 1rem; color: var(--primary-light); margin-bottom: 10px;"><i class="fas fa-rocket"></i> Suite Logique : Chiffrage Projet</h3>
                 <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">
-                    Maintenant que vous avez votre <strong>TJM stratégique (${currentTJM}€)</strong>, il est crucial de vérifier s'il passe sur un contrat réel.
+                    Maintenant que vous avez votre <strong>TJM stratégique (${typeof App !== 'undefined' ? App.formatCurrency(currentTJM) : currentTJM + '€'})</strong>, il est crucial de vérifier s'il passe sur un contrat réel.
                 </p>
                 <ul style="padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
                     <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Vos prix couvrent-ils vos dépenses réelles ?</li>
@@ -519,8 +520,9 @@ const Scoper = {
 
             <div class="result-cards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                 <div class="result-card primary" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary); padding: 1.2rem; border-radius: 12px; grid-column: span 2;">
-                    <div class="result-label" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total à Facturer (TTC)</div>
-                    <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">0€</div>
+                    <div class="result-label" style="font-size: 0.8rem; color: var(--text-muted);">Total à Facturer (TTC)</div>
+                    <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</div>
+                    <p class="text-xs text-muted">Budget estimé pour ce périmètre</p>
                     <div id="scoper-tax-info" style="font-size: 0.75rem; opacity: 0.7;">TVA: France (20.0%)</div>
                 </div>
 
@@ -529,9 +531,9 @@ const Scoper = {
                     <div class="result-value" id="scoper-total-time" style="font-size: 1.2rem; font-weight: 700;">0h</div>
                 </div>
 
-                <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
-                    <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">TJM Réel</div>
-                    <div class="result-value" id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-light);">0€/j</div>
+                <div class="stat-card" style="flex: 1; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);">
+                    <div class="result-label" style="font-size: 0.8rem;">TJM Réel Dégagé</div>
+                    <div class="result-value" id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-light);">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}/j</div>
                 </div>
             </div>
 
@@ -539,7 +541,7 @@ const Scoper = {
                 <h4 class="breakdown-title" style="margin-bottom: 1.5rem; font-weight: 600;">Stratégie & Rentabilité</h4>
 
                 <div class="input-group">
-                    <label class="form-label">TJM Stratégique de Référence (€)</label>
+                    <label class="form-label">TJM Stratégique de Référence (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
                     <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="border-color: var(--primary-light);">
                         <p class="text-xs text-muted" style="margin-top: 4px;">Utilisez votre boussole définit à l'étape "Objectif".</p>
                 </div>
@@ -622,7 +624,7 @@ const Scoper = {
     loadObjectiveInputs() {
         const data = Storage.get('sp_calculator_data');
         if (data) {
-            if (document.getElementById('monthlyRevenue')) document.getElementById('monthlyRevenue').value = data.monthlyRevenue || 3000;
+            if (document.getElementById('monthlyRevenue')) document.getElementById('monthlyRevenue').value = data.monthlyRevenue || (typeof App !== 'undefined' && App.getCurrencyConfig ? App.getCurrencyConfig().defaultRevenue : 3000);
             if (document.getElementById('workingDays')) document.getElementById('workingDays').value = data.workingDays || 15;
             if (document.getElementById('hoursPerDay')) document.getElementById('hoursPerDay').value = data.hoursPerDay || 7;
             if (document.getElementById('monthlyCharges')) document.getElementById('monthlyCharges').value = data.monthlyCharges || 500;
@@ -660,10 +662,10 @@ const Scoper = {
             formContainer.innerHTML = `
     <div style="text-align: center; padding: 2rem; animation: scaleIn 0.5s ease;">
                     <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
-                        <i class="fas fa-check" style="font-size: 2.5rem; color: white;"></i>
+                        <i class="fas fa-flag-checkered" style="font-size: 2.5rem; color: white;"></i>
                     </div>
                     <h2 style="font-size: 2rem; margin-bottom: 1rem;">Objectif Adopté !</h2>
-                    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 2rem;">Votre stratégie est maintenant scellée. Votre TJM de <strong>${finalData.dailyRate}€/j</strong> servira de boussole pour tous vos chiffrages.</p>
+                    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 2rem;">Votre stratégie est maintenant scellée. Votre TJM de <strong>${typeof App !== 'undefined' ? App.formatCurrency(finalData.dailyRate) : finalData.dailyRate + '€'}/j</strong> servira de boussole pour tous vos chiffrages.</p>
                     
                     <div style="display: flex; gap: 1rem; justify-content: center;">
                         <button class="button-primary" onclick="Scoper.render('project')" style="padding: 1rem 2rem; font-size: 1rem;">
@@ -885,8 +887,12 @@ const Scoper = {
         }
 
         const actualTjm = totalHoursInternal > 0 ? (totalFinalHT / (totalHoursInternal / 7)) : 0;
+        const totalPriceEl = document.getElementById('scoper-total-price');
         const actualTjmEl = document.getElementById('scoper-actual-tjm');
-        if (actualTjmEl) actualTjmEl.textContent = `${Math.round(actualTjm)}€/j`;
+        const sym = typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€';
+
+        if (totalPriceEl) totalPriceEl.textContent = `${App.formatCurrency(totalTTC)}`;
+        if (actualTjmEl) actualTjmEl.textContent = `${Math.round(actualTjm)}${sym}/j`;
 
         this.renderProfitability(actualTjm, tjm);
 
@@ -1184,19 +1190,19 @@ const Scoper = {
                     ` : `
                         <div class="tjm-stats-row">
                             <div class="tjm-stat-pill primary">
-                                <div class="tjm-stat-value">${tjm}€</div>
+                                <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}</div>
                                 <div class="tjm-stat-label">TJM Objectif</div>
                             </div>
                             <div class="tjm-stat-pill">
-                                <div class="tjm-stat-value">${monthlyNet.toLocaleString('fr-FR')}€</div>
+                                <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(monthlyNet) : monthlyNet.toLocaleString('fr-FR') + '€'}</div>
                                 <div class="tjm-stat-label">Salaire Net / mois</div>
                             </div>
                             <div class="tjm-stat-pill">
-                                <div class="tjm-stat-value">${revenueNeeded.toLocaleString('fr-FR')}€</div>
+                                <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(revenueNeeded) : revenueNeeded.toLocaleString('fr-FR') + '€'}</div>
                                 <div class="tjm-stat-label">CA à Facturer</div>
                             </div>
                             <div class="tjm-stat-pill">
-                                <div class="tjm-stat-value">${taxAmount.toLocaleString('fr-FR')}€</div>
+                                <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(taxAmount) : taxAmount.toLocaleString('fr-FR') + '€'}</div>
                                 <div class="tjm-stat-label">Charges / mois</div>
                             </div>
                             <div class="tjm-stat-pill">
@@ -1236,11 +1242,11 @@ const Scoper = {
                         <div style="background: rgba(0,0,0,0.3); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255,255,255,0.05);">
                             <div style="opacity: 0.3; transform: scale(0.9); margin-bottom: 1.5rem;">
                                 <div style="font-size: 0.75rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 5px;"><i class="fas fa-crown"></i> OPTION ELITE (Ancre)</div>
-                                <div style="font-size: 2.2rem; font-weight: 900; color: white;">${scenarios.elite.tjm}€ <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
+                                <div style="font-size: 2.2rem; font-weight: 900; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(scenarios.elite.tjm) : scenarios.elite.tjm + '€'} <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
                             </div>
                             <div style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; border-radius: 18px; position: relative;">
                                 <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase;">Votre Prix de Closing</div>
-                                <div style="font-size: 2.5rem; font-weight: 900; color: white;">${scenarios.security.tjm}€ <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
+                                <div style="font-size: 2.5rem; font-weight: 900; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(scenarios.security.tjm) : scenarios.security.tjm + '€'} <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
                                 <div style="position: absolute; top: -12px; right: -12px; background: #10b981; color: white; font-size: 0.65rem; padding: 5px 12px; border-radius: 20px; font-weight: 900;">PRIX ACCEPTE</div>
                             </div>
                         </div>

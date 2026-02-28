@@ -160,7 +160,7 @@ const PDFGenerator = {
                             <span style="font-weight: 600;">${App.formatCurrency(invoice.subtotal)}</span>
                         </div>
                         <div class="total-row">
-                            <span class="text-light">TVA (${(invoice.taxContext?.vat !== undefined) ? invoice.taxContext.vat : settings.taxRate}%)</span>
+                            <span class="text-light">${invoice.taxContext?.taxName || 'TVA'} (${(invoice.taxContext?.vat !== undefined) ? invoice.taxContext.vat : settings.taxRate}%)</span>
                             <span style="font-weight: 600;">${App.formatCurrency(invoice.tax)}</span>
                         </div>
                         <div class="total-row grand">
@@ -192,8 +192,8 @@ const PDFGenerator = {
 
                     <p style="margin-top: 20px;">
                         <strong>Échéance :</strong> ${dueDate}<br>
-                        ${invoice.tax === 0 ? '<strong>TVA non applicable, art. 293 B du CGI</strong><br>' : ''}
-                        <em>Pénalités de retard : 3 fois le taux d'intérêt légal + 40€ d'indemnité forfaitaire (Art. L441-6).</em>
+                        ${invoice.tax === 0 ? `<strong>${invoice.taxContext?.taxName || 'TVA'} non applicable, art. 293 B du CGI</strong><br>` : ''}
+                        <em>Pénalités de retard : 3 fois le taux d'intérêt légal + 40 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'} d'indemnité forfaitaire (Art. L441-6).</em>
                     </p>
                     ${user.company.footer_mentions ? `<div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">${user.company.footer_mentions}</div>` : ''}
                 </div>
@@ -410,7 +410,7 @@ const PDFGenerator = {
                             <span style="font-weight: 600;">${App.formatCurrency(quote.subtotal)}</span>
                         </div>
                         <div class="total-row">
-                            <span style="color: var(--text-light);">TVA (${(quote.taxContext?.vat !== undefined) ? quote.taxContext.vat : settings.taxRate}%)</span>
+                            <span style="color: var(--text-light);">${quote.taxContext?.taxName || 'TVA'} (${(quote.taxContext?.vat !== undefined) ? quote.taxContext.vat : settings.taxRate}%)</span>
                             <span style="font-weight: 600;">${App.formatCurrency(quote.tax)}</span>
                         </div>
                         <div class="total-row grand">
@@ -729,22 +729,22 @@ const PDFGenerator = {
                     <div class="main-stats">
                         <div class="tjm-box">
                             <div class="tjm-label">TJM de Sécurité</div>
-                            <div class="tjm-value">${results.dailyRate}€</div>
+                            <div class="tjm-value">${typeof App !== 'undefined' ? App.formatCurrency(results.dailyRate) : results.dailyRate + '€'}</div>
                             <div class="tjm-sub">Tarif Journalier Minimum (H.T)</div>
                         </div>
 
                         <div class="finance-box">
                             <div class="finance-row">
                                 <span class="finance-label">CA Requis / mois</span>
-                                <span class="finance-val">${results.revenueNeeded}€</span>
+                                <span class="finance-val">${typeof App !== 'undefined' ? App.formatCurrency(results.revenueNeeded) : results.revenueNeeded + '€'}</span>
                             </div>
                             <div class="finance-row">
                                 <span class="finance-label">Réserve Cotisations</span>
-                                <span class="finance-val" style="color:#ef4444;">-${results.taxAmount}€</span>
+                                <span class="finance-val" style="color:#ef4444;">-${typeof App !== 'undefined' ? App.formatCurrency(results.taxAmount) : results.taxAmount + '€'}</span>
                             </div>
                             <div class="finance-row">
                                 <span class="finance-label">Revenu Net Cible</span>
-                                <span class="finance-val" style="color:var(--primary-dark);">${data.monthlyRevenue}€</span>
+                                <span class="finance-val" style="color:var(--primary-dark);">${typeof App !== 'undefined' ? App.formatCurrency(data.monthlyRevenue || 0) : data.monthlyRevenue + '€'}</span>
                             </div>
                             <div class="finance-row" style="border: none;">
                                 <span class="finance-label">Rythme Facturé</span>

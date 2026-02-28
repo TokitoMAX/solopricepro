@@ -14,7 +14,8 @@ const Dashboard = {
             const expenses = (typeof Storage !== 'undefined' && Storage.getExpenses) ? Storage.getExpenses() || [] : [];
 
             // --- CALCULATIONS ---
-            const monthlyGoal = (calculatorData && calculatorData.monthlyRevenue) ? parseFloat(calculatorData.monthlyRevenue) : 5000;
+            const defaultRev = (typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 5000;
+            const monthlyGoal = (calculatorData && calculatorData.monthlyRevenue) ? parseFloat(calculatorData.monthlyRevenue) : defaultRev;
             const progress = monthlyGoal > 0 ? Math.min(100, Math.round((stats.monthlyRevenue / monthlyGoal) * 100)) : 0;
             const pipelineValue = quotes
                 .filter(q => q.status === 'sent')
@@ -304,10 +305,11 @@ const Dashboard = {
     editGoal() {
         if (typeof Storage === 'undefined') return;
 
-        const calculatorData = Storage.get('sp_calculator_data') || { monthlyRevenue: 5000, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech' };
-        const currentGoal = calculatorData.monthlyRevenue || 5000;
+        const defaultRev = (typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 5000;
+        const calculatorData = Storage.get('sp_calculator_data') || { monthlyRevenue: defaultRev, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech' };
+        const currentGoal = calculatorData.monthlyRevenue || defaultRev;
 
-        const newGoal = prompt("Définissez votre nouvel objectif de Chiffre d'Affaires(CA) mensuel(€) : ", currentGoal);
+        const newGoal = prompt("Définissez votre nouvel objectif de Chiffre d'Affaires(CA) mensuel (" + (typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€') + ") : ", currentGoal);
         if (newGoal !== null && newGoal.trim() !== '') {
             const parsedGoal = parseFloat(newGoal.replace(/[^0-9.,]/g, '').replace(',', '.'));
 

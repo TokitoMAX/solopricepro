@@ -528,7 +528,7 @@ const App = {
         // Plus précis : filter les devis qui viennent du marketplace
         const marketplaceQuotesCount = quotes.filter(q => {
             const d = new Date(q.createdAt);
-            const isMarketplace = q.notes && q.notes.includes('Radar DomTomConnect');
+            const isMarketplace = q.notes && (q.notes.includes('Radar DomTomConnect') || q.notes.includes('Radar Réseau SoloPrice'));
             return isMarketplace && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         }).length;
 
@@ -1143,12 +1143,59 @@ const App = {
         }, 3000);
     },
 
-    // Formatage de devises
-    formatCurrency(amount) {
+    // Advanced Currency Configuration based on user country
+    getCurrencyConfig() {
+        // Fallbacks: default to France/EUR
+        let countryCode = 'FR';
+        let currency = 'EUR';
+        let symbol = '€';
+        let locale = 'fr-FR';
+        let defaultRevenue = 5000;
+
+        const user = (typeof Storage !== 'undefined') ? Storage.getUser() : null;
+        if (user) {
+            const country = user.user_metadata?.country || user.company?.country || 'FR';
+
+            // Map countries to currencies (matches Profile.COUNTRIES)
+            switch (country) {
+                case 'CA': currency = 'CAD'; symbol = 'CAD$'; locale = 'en-CA'; defaultRevenue = 6000; break;
+                case 'CH': currency = 'CHF'; symbol = 'CHF'; locale = 'fr-CH'; defaultRevenue = 8000; break;
+                case 'US': currency = 'USD'; symbol = '$'; locale = 'en-US'; defaultRevenue = 6000; break;
+                case 'GB': currency = 'GBP'; symbol = '£'; locale = 'en-GB'; defaultRevenue = 5000; break;
+                case 'MA': currency = 'MAD'; symbol = 'MAD'; locale = 'fr-MA'; defaultRevenue = 20000; break; // ~2k EUR
+                case 'SN': case 'CI': currency = 'XOF'; symbol = 'FCFA'; locale = 'fr-FR'; defaultRevenue = 1500000; break; // ~2k EUR
+                case 'MG': currency = 'MGA'; symbol = 'Ar'; locale = 'fr-FR'; defaultRevenue = 5000000; break;
+                case 'MU': currency = 'MUR'; symbol = 'Rs'; locale = 'en-MU'; defaultRevenue = 100000; break;
+                // Euro countries + DOMTOM
+                case 'FR': case 'BE': case 'LU': case 'DE': case 'ES': case 'IT':
+                case 'RE': case 'GP': case 'MQ': case 'GF':
+                default:
+                    currency = 'EUR'; symbol = '€'; locale = 'fr-FR'; defaultRevenue = 5000; break;
+            }
+        }
+
+        return { currency, symbol, locale, defaultRevenue };
+    },
+
+    // Formatage de devises internationalisé
+    formatCurrency(amount, skipSymbol = false) {
         if (amount === undefined || amount === null || isNaN(amount)) amount = 0;
-        const settings = Storage.get(Storage.KEYS.SETTINGS) || {};
-        const currency = settings.currency || '€';
-        return `${Math.round(amount).toLocaleString('fr-FR')} ${currency}`;
+
+        // Convert string to number if needed
+        const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+
+        const config = this.getCurrencyConfig();
+
+        // Format the number consistently
+        let formatted = Math.round(numAmount).toLocaleString(config.locale);
+
+        if (skipSymbol) return formatted;
+
+        // Some locales put the symbol before (en-US), some after (fr-FR). 
+        // For consistency in our UI which often expects a specific layout, we'll manually append for now,
+        // or let Intl.NumberFormat do it fully if we prefer. 
+        // For now, retaining the old look but with dynamic symbol:
+        return `${formatted} ${config.symbol}`;
     },
 
     // Formatage de dates

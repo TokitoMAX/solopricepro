@@ -144,6 +144,33 @@
                                 placeholder="Ex: Studio Design">
                         </label>
                         <label class="form-group">
+                            <span class="form-label">Pays d'activité *</span>
+                            <select id="auth-register-country" class="form-input" required onchange="
+                                const val = this.value;
+                                const msg = document.getElementById('auth-country-message');
+                                if(['SN','CI','MG','MA','RE','GP','MQ','GF','MU'].includes(val)) {
+                                    msg.innerHTML = '<i class=\'fas fa-globe-africa\'></i> Connectons la diaspora et propulsons l\'entrepreneuriat local !';
+                                    msg.style.color = 'var(--primary)';
+                                } else {
+                                    msg.innerHTML = '<i class=\'fas fa-rocket\'></i> Concentrez-vous sur l\'ultra-croissance et l\'optimisation de votre cash-flow.';
+                                    msg.style.color = 'var(--text-muted)';
+                                }
+                                msg.style.display = 'block';
+                            ">
+                                <option value="FR">France (Métropole)</option>
+                                <option value="FR-DOM">France (DOM-TOM)</option>
+                                <option value="BE">Belgique</option>
+                                <option value="CH">Suisse</option>
+                                <option value="CA">Canada</option>
+                                <option value="MA">Maroc</option>
+                                <option value="SN">Sénégal</option>
+                                <option value="CI">Côte d'Ivoire</option>
+                                <option value="OTHER">Autre</option>
+                            </select>
+                            <p id="auth-country-message" style="margin-top: 0.5rem; font-size: 0.8rem; display: none;">
+                            </p>
+                        </label>
+                        <label class="form-group">
                             <span class="form-label">Email professionnel</span>
                             <input type="email" id="auth-register-email" class="form-input"
                                 placeholder="vous@exemple.fr" required>
@@ -359,13 +386,15 @@
             <div class="container footer-content">
                 <div class="footer-logo">
                     SoloPrice <span style="color:var(--primary)">Pro</span>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Solution de gestion
-                        par DomTomConnect</div>
+                    <div style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7; margin-bottom: 5px;">PROPULSÉ
+                        par Le Réseau SoloPrice</div>
                 </div>
 
             </div>
             <div class="footer-bottom container">
-                <p>&copy; 2026 SoloPrice Pro by DomTomConnect. Facilitons la collaboration dans les DOM-TOM.</p>
+                <p>&copy; 2026 SoloPrice Pro. Le copilote des indépendants, partout dans le monde.</p>
+                <div class="social-links" style="margin-top: 15px;">
+                </div>
             </div>
         </footer>
     </div>
@@ -769,8 +798,10 @@
             var email = document.getElementById('auth-register-email').value.trim();
             var password = document.getElementById('auth-register-password').value;
             var company = document.getElementById('auth-register-company').value.trim();
-            if (!email || !password || !firstName || !lastName) { errEl.textContent = 'Veuillez remplir votre nom, prénom, email et mot de passe.'; return; }
-            Auth.register({ email: email, password: password, first_name: firstName, last_name: lastName, company_name: company }).then(function () {
+            var country = document.getElementById('auth-register-country').value;
+
+            if (!email || !password || !firstName || !lastName || !country) { errEl.textContent = 'Veuillez remplir votre nom, prénom, email, mot de passe et pays.'; return; }
+            Auth.register({ email: email, password: password, first_name: firstName, last_name: lastName, company_name: company, country: country }).then(function () {
                 App.showNotification('Inscription réussie ! Connexion...', 'success');
             }).catch(function (err) {
                 errEl.textContent = err && err.message ? err.message : 'Erreur d\'inscription.';

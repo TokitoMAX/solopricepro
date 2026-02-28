@@ -144,7 +144,7 @@ const Marketplace = {
             container.innerHTML = `
                 <div class="empty-feed glass">
                     <h3>C'est bien calme ici...</h3>
-                    <p>Soyez le premier à dynamiser le réseau DomTomConnect !</p>
+                    <p>Soyez le premier à dynamiser le réseau SoloPrice !</p>
                     <button class="button-primary" onclick="Marketplace.showPostForm()">Diffuser la 1ère offre</button>
                 </div>`;
             return;
@@ -181,11 +181,11 @@ const Marketplace = {
                     <div class="feed-item-pricing">
                         <div class="price-pill">
                             <span class="label">Budget Net Expert</span>
-                            <span class="value">${m.budget}€</span>
+                            <span class="value">${typeof App !== 'undefined' ? App.formatCurrency(m.budget) : m.budget + '€'}</span>
                         </div>
                         <div class="price-pill">
                             <span class="label">Coût Client (Total)</span>
-                            <span class="value">${(parseFloat(m.budget) * (1 + this.COMMISSION_RATE)).toFixed(0)}€</span>
+                            <span class="value">${typeof App !== 'undefined' ? App.formatCurrency((parseFloat(m.budget) * (1 + this.COMMISSION_RATE)).toFixed(0)) : (parseFloat(m.budget) * (1 + this.COMMISSION_RATE)).toFixed(0) + '€'}</span>
                         </div>
                     </div>
 
@@ -238,7 +238,7 @@ const Marketplace = {
                     <p>${this.escape(m.description)}</p>
                 </div>
                 <div class="job-footer managed">
-                    <span class="budget-info">Budget: ${m.budget}€</span>
+                    <span class="budget-info">Budget: ${typeof App !== 'undefined' ? App.formatCurrency(m.budget) : m.budget + '€'}</span>
                      <button onclick="Marketplace.deleteMission('${m.id}')" class="button-danger small">
                          Supprimer l'offre
                      </button>
@@ -284,7 +284,7 @@ const Marketplace = {
                                                     <span style="font-size: 0.8rem; opacity: 0.6;">Invitation reçue le ${new Date(inv.created_at).toLocaleDateString()}</span>
                                                 </div>
                                                 <div class="price-tag" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold;">
-                                                    ${inv.application?.proposed_price || app?.proposed_price || '?'}€
+                                                    ${typeof App !== 'undefined' ? App.formatCurrency(inv.application?.proposed_price || app?.proposed_price || 0) : (inv.application?.proposed_price || app?.proposed_price || '?') + '€'}
                                                 </div>
                                             </div>
                                             
@@ -382,7 +382,7 @@ const Marketplace = {
                                     <span class="status-pill ${statusClass}" style="font-size: 0.8rem; margin-top: 5px; display: inline-block;">${statusLabel}</span>
                                 </div>
                                 <div style="text-align: right;">
-                                    <strong style="color: var(--primary); font-size: 1.2rem;">${app.proposed_price || '?'}€</strong>
+                                    <strong style="color: var(--primary); font-size: 1.2rem;">${typeof App !== 'undefined' ? App.formatCurrency(app.proposed_price || 0) : (app.proposed_price || '?') + '€'}</strong>
                                     <small style="display: block; opacity: 0.6; font-size: 0.7rem;">Ma proposition</small>
                                 </div>
                             </div>
@@ -559,7 +559,7 @@ const Marketplace = {
                         <div class="candidate-avatar"><i class="fas fa-user-circle"></i></div>
                         <div class="candidate-meta">
                             <strong>Candidat sur le réseau</strong>
-                            <div class="price-bubble" style="color: var(--primary); font-weight: bold;">${price}€</div>
+                            <div class="price-bubble" style="color: var(--primary); font-weight: bold;">${typeof App !== 'undefined' ? App.formatCurrency(price) : price + '€'}</div>
                         </div>
                     </div>
  
@@ -658,10 +658,11 @@ const Marketplace = {
         const feeEl = document.getElementById('post-fee-display');
         const budgetEl = document.getElementById('post-budget-display');
         const totalEl = document.getElementById('post-total-display');
+        const sym = typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€';
 
-        if (feeEl) feeEl.textContent = fees.toFixed(2) + ' €';
-        if (budgetEl) budgetEl.textContent = net.toFixed(2) + ' €';
-        if (totalEl) totalEl.textContent = total.toFixed(2) + ' €';
+        if (feeEl) feeEl.textContent = fees.toFixed(2) + ' ' + sym;
+        if (budgetEl) budgetEl.textContent = net.toFixed(2) + ' ' + sym;
+        if (totalEl) totalEl.textContent = total.toFixed(2) + ' ' + sym;
     },
 
     async submitMission(e) {
@@ -788,10 +789,10 @@ const Marketplace = {
                 const netExpert = Math.round(parseFloat(m.budget));
                 budgetDisplay.innerHTML = `
                     <div style="font-size: 1.1rem; color: var(--success); margin-bottom: 5px;">
-                        <strong>Rémunération : ${netExpert}€ Net</strong>
+                        <strong>Rémunération : ${typeof App !== 'undefined' ? App.formatCurrency(netExpert) : netExpert + '€ Net'}</strong>
                     </div>
                     <div style="font-size: 0.85rem; opacity: 0.7;">
-                        (Budget Client : ${totalCost}€ TTC)
+                        (Budget Client : ${typeof App !== 'undefined' ? App.formatCurrency(totalCost) : totalCost + '€ TTC'})
                     </div>
                 `;
             }
@@ -823,7 +824,7 @@ const Marketplace = {
         const netEarnings = totalPrice * 0.85; // 15% platform fee
 
         const display = document.getElementById('apply-net');
-        if (display) display.textContent = Math.round(netEarnings) + ' €';
+        if (display) display.textContent = Math.round(netEarnings) + ' ' + (typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€');
     },
 
     closeApplyForm() { document.getElementById('apply-modal').style.display = 'none'; },
@@ -894,7 +895,7 @@ const Marketplace = {
         document.getElementById('interview-candidate-id').value = targetCandidateId;
         document.getElementById('interview-candidate-name').textContent = candidateInfo.name || 'Candidat';
         document.getElementById('interview-mission-title').textContent = app.mission_title || 'Mission';
-        document.getElementById('interview-price').textContent = app.proposed_price + '€';
+        document.getElementById('interview-price').textContent = (typeof App !== 'undefined' ? App.formatCurrency(app.proposed_price || 0) : app.proposed_price + '€');
         document.getElementById('interview-pitch').textContent = candidateInfo.pitch || app.message;
 
         // Pre-fill message template
@@ -1040,7 +1041,7 @@ const Marketplace = {
         const totalPrice = parseFloat(input.value) || 0;
         const netEarnings = totalPrice * 0.85; // 15% platform fee
 
-        document.getElementById('apply-net').textContent = netEarnings.toFixed(2) + ' €';
+        document.getElementById('apply-net').textContent = netEarnings.toFixed(2) + ' ' + (typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€');
     },
 
     // --- MODALES (Job Board Style) ---

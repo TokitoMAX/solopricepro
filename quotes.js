@@ -271,7 +271,7 @@ const Quotes = {
                     </strong>
                     <div class="checklist-details" style="display: none; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
                         <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> SIRET obligatoire</div>
-                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Mention TVA (art. 293B)</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Mention Fiscale (art. 293B ou équivalent)</div>
                         <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Coordonnées complètes</div>
                         <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Validité & Mentions CGV</div>
                     </div>
@@ -302,7 +302,7 @@ const Quotes = {
 
                         <div class="form-group full-width">
                             <button type="button" class="button-outline small" onclick="document.getElementById('advanced-quote-options').style.display = document.getElementById('advanced-quote-options').style.display === 'none' ? 'grid' : 'none'" style="width: 100%; justify-content: center; gap: 8px;">
-                                <i class="fas fa-cog"></i> Options Avancées (Statut, TVA...)
+                                <i class="fas fa-cog"></i> Options Avancées (Statut, Taxes...)
                             </button>
                         </div>
 
@@ -339,23 +339,23 @@ const Quotes = {
                         <div class="invoice-totals" style="border-top: 2px solid var(--border); padding-top: 1.5rem;">
                             <div class="total-row">
                                 <span style="opacity: 0.8;">Prestations HT :</span>
-                                <span id="subtotal-display">0€</span>
+                                <span id="subtotal-display">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row" style="color: var(--primary-light);">
                                 <span style="font-weight: 600;">Frais de Service (15%) :</span>
-                                <span id="margin-display">0€</span>
+                                <span id="margin-display">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem;">
                                 <span style="font-weight: 700;">Total Hors Taxes :</span>
-                                <span id="final-subtotal-display" style="font-weight: 700;">0€</span>
+                                <span id="final-subtotal-display" style="font-weight: 700;">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row">
-                                <span id="tax-label-display">TVA (${settings.taxRate}%) :</span>
-                                <span id="tax-display">0€</span>
+                                <span id="tax-label-display">${typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().taxName : 'TVA'} (${settings.taxRate}%) :</span>
+                                <span id="tax-display">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row total" style="background: var(--primary-glass); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
                                 <span style="font-size: 1.2rem; font-weight: 800;">TOTAL TTC :</span>
-                                <span id="total-display" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-light);">0€</span>
+                                <span id="total-display" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-light);">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row tax-context-info">
                                 <span id="tax-info-display" class="text-xs text-muted"></span>
@@ -480,13 +480,13 @@ const Quotes = {
 
         let tax = finalSubtotal * (settings.taxRate / 100);
         let total = finalSubtotal + tax;
-        let taxLabel = `TVA (${settings.taxRate}%) :`;
+        let taxLabel = `${typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().taxName : 'TVA'} (${settings.taxRate}%) :`;
 
         if (typeof TaxEngine !== 'undefined') {
             const taxResult = TaxEngine.calculate(finalSubtotal);
             tax = taxResult.vat;
             total = taxResult.ttc;
-            taxLabel = `TVA (${TaxEngine.getCurrent().vat}%) :`;
+            taxLabel = `${TaxEngine.getCurrent().taxName} (${TaxEngine.getCurrent().vat}%) :`;
             const taxInfo = document.getElementById('tax-info-display');
             if (taxInfo) taxInfo.textContent = TaxEngine.getCurrent().description;
         }
@@ -1197,7 +1197,7 @@ const Quotes = {
                                 <span>Frais de Service & Protection SoloPrice <small style="display:block; font-size: 0.7rem; color: var(--text-muted);">(Contrat à Activation Obligatoire)</small></span> 
                                 <span>${App.formatCurrency(quote.margin || 0)}</span>
                             </div>
-                            ${quote.tax > 0 ? `<div class="total-row"><span>TVA</span> <span>${App.formatCurrency(quote.tax)}</span></div>` : ''}
+                            ${quote.tax > 0 ? `<div class="total-row"><span>${typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().taxName : 'TVA'}</span> <span>${App.formatCurrency(quote.tax)}</span></div>` : ''}
                             <div class="total-row large"><span>Total TTC</span> <span>${App.formatCurrency(quote.total)}</span></div>
                         </div>
 

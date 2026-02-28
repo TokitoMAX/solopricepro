@@ -78,14 +78,16 @@ async function calculatePrice() {
     }
 
     // Update UI
+    const sym = typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€';
+
     const hourlyEl = document.getElementById('hourlyRate');
-    if (hourlyEl) hourlyEl.textContent = `${Math.ceil(hourlyRate)} €/h`;
+    if (hourlyEl) hourlyEl.textContent = `${Math.ceil(hourlyRate)} ${sym}/h`;
 
     const dailyEl = document.getElementById('dailyRate');
-    if (dailyEl) dailyEl.textContent = `${Math.ceil(dailyRate)} €/j`;
+    if (dailyEl) dailyEl.textContent = `${Math.ceil(dailyRate)} ${sym}/j`;
 
     const annualEl = document.getElementById('annualRevenue');
-    if (annualEl) annualEl.textContent = `${Math.ceil(annualRevenue).toLocaleString('fr-FR')} €`;
+    if (annualEl) annualEl.textContent = typeof App !== 'undefined' ? App.formatCurrency(Math.ceil(annualRevenue)) : `${Math.ceil(annualRevenue).toLocaleString('fr-FR')} €`;
 
     // Update breakdown
     const taxAmount = revenueNeeded * rate;
@@ -105,7 +107,7 @@ async function calculatePrice() {
 
 function updateElement(id, value) {
     const el = document.getElementById(id);
-    if (el) el.textContent = `${value.toLocaleString('fr-FR')} €`;
+    if (el) el.textContent = typeof App !== 'undefined' ? App.formatCurrency(value) : `${value.toLocaleString('fr-FR')} €`;
 }
 
 function saveCalculatorInputs(data) {
@@ -145,7 +147,8 @@ function updateComparisonMarker(hourlyRate) {
     marker.style.left = `${position}%`;
 
     const label = marker.querySelector('.marker-label');
-    if (label) label.textContent = `Vous: ${Math.ceil(hourlyRate)}€`;
+    const sym = typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€';
+    if (label) label.textContent = `Vous: ${Math.ceil(hourlyRate)}${sym}`;
 }
 
 // Integration with Quotes
@@ -182,6 +185,8 @@ function renderCalculatorUI(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    const sym = typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€';
+
     container.innerHTML = `
         <div class="calculator-container" style="grid-template-columns: 1fr; gap: 2rem;">
             <div class="calculator-inputs" style="padding: 1.5rem; background: var(--bg-sidebar);">
@@ -190,7 +195,7 @@ function renderCalculatorUI(containerId) {
                         <span class="label-text">Objectif Revenu Net Mensuel</span>
                         <span class="label-hint">Ce que vous voulez "dans votre poche" après charges et impôts.</span>
                     </label>
-                    <input type="number" id="monthlyRevenue" class="input-field" placeholder="ex: 3000" value="3000">
+                    <input type="number" id="monthlyRevenue" class="input-field" placeholder="ex: ${(typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 5000}" value="${(typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 5000}">
                 </div>
 
                 <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -225,11 +230,11 @@ function renderCalculatorUI(containerId) {
                 <div class="result-cards" style="grid-template-columns: 1fr 1fr; display: grid; gap: 1rem;">
                     <div class="result-card primary">
                         <div class="result-label">Taux Journalier (TJM)</div>
-                        <div class="result-value" id="dailyRate" style="font-size: 1.8rem;">0 €/j</div>
+                        <div class="result-value" id="dailyRate" style="font-size: 1.8rem;">0 ${sym}/j</div>
                     </div>
                     <div class="result-card">
                         <div class="result-label">Taux Horaire</div>
-                        <div class="result-value" id="hourlyRate" style="font-size: 1.8rem;">0 €/h</div>
+                        <div class="result-value" id="hourlyRate" style="font-size: 1.8rem;">0 ${sym}/h</div>
                     </div>
                 </div>
                 
@@ -237,19 +242,19 @@ function renderCalculatorUI(containerId) {
                     <div class="breakdown-items">
                         <div class="breakdown-item">
                             <span class="breakdown-label">Net souhaité</span>
-                            <span class="breakdown-value" id="breakdownNet">0 €</span>
+                            <span class="breakdown-value" id="breakdownNet">0 ${sym}</span>
                         </div>
                         <div class="breakdown-item">
                             <span class="breakdown-label">Charges</span>
-                            <span class="breakdown-value" id="breakdownCharges">0 €</span>
+                            <span class="breakdown-value" id="breakdownCharges">0 ${sym}</span>
                         </div>
                         <div class="breakdown-item">
                             <span class="breakdown-label">Cotisations</span>
-                            <span class="breakdown-value" id="breakdownTax">0 €</span>
+                            <span class="breakdown-value" id="breakdownTax">0 ${sym}</span>
                         </div>
                         <div class="breakdown-item total">
                             <span class="breakdown-label">CA Mensuel Requis</span>
-                            <span class="breakdown-value" id="breakdownTotal">0 €</span>
+                            <span class="breakdown-value" id="breakdownTotal">0 ${sym}</span>
                         </div>
                     </div>
                 </div>

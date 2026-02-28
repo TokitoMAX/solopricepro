@@ -7,6 +7,7 @@ const TaxEngine = {
         'FR-METRO': {
             name: 'France (Métropole)',
             vat: 20,
+            taxName: 'TVA',
             socialRate: 21.1, // Taux AE Libéral standard 2024/2025
             description: 'TVA standard 20% | Charges Sociales ~21.1%',
             code: 'FR'
@@ -14,6 +15,7 @@ const TaxEngine = {
         'FR-MICRO': {
             name: 'France (Auto-Entrepreneur)',
             vat: 0,
+            taxName: 'TVA',
             socialRate: 21.1,
             description: 'TVA non applicable, art. 293 B du CGI | Charges ~21.1%',
             code: 'FR-AE'
@@ -21,6 +23,7 @@ const TaxEngine = {
         'FR-REUNION': {
             name: 'La Réunion',
             vat: 8.5,
+            taxName: 'TVA',
             socialRate: 21.1,
             description: 'TVA 8.5% | Charges Sociales ~21.1%',
             code: 'REU'
@@ -28,6 +31,7 @@ const TaxEngine = {
         'AE-REUNION': {
             name: 'La Réunion (Auto-Entrepreneur)',
             vat: 0,
+            taxName: 'TVA',
             socialRate: 21.1,
             description: 'TVA non applicable, art. 293 B du CGI | Charges ~21.1%',
             code: 'REU-AE'
@@ -35,6 +39,7 @@ const TaxEngine = {
         'FR-GUADELOUPE': {
             name: 'Guadeloupe',
             vat: 8.5,
+            taxName: 'TVA',
             socialRate: 21.1,
             description: 'TVA 8.5% | Charges Sociales ~21.1%',
             code: 'GUA'
@@ -42,6 +47,7 @@ const TaxEngine = {
         'AE-GUADELOUPE': {
             name: 'Guadeloupe (Auto-Entrepreneur)',
             vat: 0,
+            taxName: 'TVA',
             socialRate: 21.1,
             description: 'TVA non applicable, art. 293 B du CGI | Charges ~21.1%',
             code: 'GUA-AE'
@@ -49,6 +55,7 @@ const TaxEngine = {
         'FR-MARTINIQUE': {
             name: 'Martinique',
             vat: 8.5,
+            taxName: 'TVA',
             socialRate: 21.1,
             description: 'TVA 8.5% | Charges Sociales ~21.1%',
             code: 'MAR'
@@ -56,6 +63,7 @@ const TaxEngine = {
         'AE-MARTINIQUE': {
             name: 'Martinique (Auto-Entrepreneur)',
             vat: 0,
+            taxName: 'TVA',
             socialRate: 21.1,
             description: 'TVA non applicable, art. 293 B du CGI | Charges ~21.1%',
             code: 'MAR-AE'
@@ -63,13 +71,39 @@ const TaxEngine = {
         'FR-GUYANE': {
             name: 'Guyane',
             vat: 0,
+            taxName: 'TVA',
             socialRate: 21.1,
             description: 'Exonéré de TVA | Charges Sociales ~21.1%',
             code: 'GUY'
         },
+        'CA-QC': {
+            name: 'Canada (Québec)',
+            vat: 14.975, // TPS 5% + TVQ 9.975%
+            taxName: 'TPS/TVQ',
+            socialRate: 15.0, // Estimation générique
+            description: 'TPS/TVQ 14.975% | Charges ~15%',
+            code: 'CA-QC'
+        },
+        'CH': {
+            name: 'Suisse',
+            vat: 8.1,
+            taxName: 'TVA Suisse',
+            socialRate: 10.0, // Estimation générique AVS/AI etc
+            description: 'TVA 8.1% | Charges ~10%',
+            code: 'CH'
+        },
+        'SN': {
+            name: 'Sénégal',
+            vat: 18,
+            taxName: 'TVA',
+            socialRate: 5.0, // TRJS simplifié ou équivalent
+            description: 'TVA 18% | Charges locales applicables',
+            code: 'SN'
+        },
         'AFRICA-GENERAL': {
             name: 'Afrique (H. TVA)',
             vat: 0,
+            taxName: 'Taxe Locale',
             socialRate: 0,
             description: 'Export de services - HT | Charges locales à définir',
             code: 'AFR'
@@ -125,6 +159,7 @@ const TaxEngine = {
         return {
             ht: amountHT,
             vat: taxAmount,
+            taxName: ctx.taxName || 'TVA',
             ttc: amountHT + taxAmount,
             socialCharges: socialCharges,
             socialRate: socialRate,
