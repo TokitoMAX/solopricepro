@@ -1,15 +1,45 @@
 // SoloPrice Pro - Profile Module
-// Handles user identity and license management
+// Handles user identity and license management (International-Aware)
 
 const Profile = {
+
+    // Country list with registration number labels
+    COUNTRIES: [
+        { code: '', label: '🌍 Sélectionner un pays', regLabel: null },
+        { code: 'FR', label: '🇫🇷 France', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
+        { code: 'BE', label: '🇧🇪 Belgique', regLabel: 'Numéro BCE (10 chiffres)', pattern: '^[0-9]{10}$', verify: false },
+        { code: 'CH', label: '🇨🇭 Suisse', regLabel: 'UID (CHE-xxx.xxx.xxx)', pattern: null, verify: false },
+        { code: 'LU', label: '🇱🇺 Luxembourg', regLabel: 'RCS Luxembourg', pattern: null, verify: false },
+        { code: 'CA', label: '🇨🇦 Canada', regLabel: 'Numéro d\'entreprise (BN)', pattern: '^[0-9]{9}$', verify: false },
+        { code: 'US', label: '🇺🇸 États-Unis', regLabel: 'EIN (xx-xxxxxxx)', pattern: null, verify: false },
+        { code: 'GB', label: '🇬🇧 Royaume-Uni', regLabel: 'Companies House Number', pattern: null, verify: false },
+        { code: 'DE', label: '🇩🇪 Allemagne', regLabel: 'Handelsregisternummer', pattern: null, verify: false },
+        { code: 'ES', label: '🇪🇸 Espagne', regLabel: 'NIF/CIF', pattern: null, verify: false },
+        { code: 'IT', label: '🇮🇹 Italie', regLabel: 'Codice Fiscale / P.IVA', pattern: null, verify: false },
+        { code: 'MA', label: '🇲🇦 Maroc', regLabel: 'ICE / RC', pattern: null, verify: false },
+        { code: 'SN', label: '🇸🇳 Sénégal', regLabel: 'NINEA', pattern: null, verify: false },
+        { code: 'CI', label: '🇨🇮 Côte d\'Ivoire', regLabel: 'DGI Numéro contribuable', pattern: null, verify: false },
+        { code: 'MG', label: '🇲🇬 Madagascar', regLabel: 'NIF', pattern: null, verify: false },
+        { code: 'MU', label: '🇲🇺 Maurice', regLabel: 'BRN', pattern: null, verify: false },
+        { code: 'RE', label: '🇷🇪 La Réunion', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
+        { code: 'GP', label: '🇬🇵 Guadeloupe', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
+        { code: 'MQ', label: '🇲🇶 Martinique', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
+        { code: 'GF', label: '🇬🇫 Guyane Française', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
+        { code: 'OTHER', label: '🌐 Autre pays', regLabel: 'Numéro d\'enregistrement entreprise', pattern: null, verify: false },
+    ],
+
+    getCountry(code) {
+        return this.COUNTRIES.find(c => c.code === code) || this.COUNTRIES[this.COUNTRIES.length - 1];
+    },
+
     render() {
         const container = document.getElementById('profile-content');
         if (!container) return;
 
         const user = Storage.getUser() || {};
         const isPro = Storage.isPro();
-
         const company = user.company || user.user_metadata?.company || {};
+        const savedCountry = company.country || '';
 
         container.innerHTML = `
             <div class="page-header">
@@ -18,49 +48,94 @@ const Profile = {
             </div>
 
             <div class="profile-layout">
-                
                 <div class="profile-section">
                     <div class="glass-card" style="padding: 2rem; border-radius: 20px; border: 1px solid var(--border);">
-                        <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Identité Entreprise</h2>
+                        <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Identité Professionnelle</h2>
                         <form id="company-form" onsubmit="Profile.save(event)">
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label class="form-label">Prénom *</label>
-                                    <input type="text" name="first_name" class="form-input" value="${user.user_metadata?.first_name || ''}" required>
+                                    <input type="text" name="first_name" id="prof-first-name" class="form-input"
+                                        value="${user.user_metadata?.first_name || ''}"
+                                        placeholder="Jean" required autocomplete="given-name">
+                                    <span class="field-error" id="err-first-name" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Nom *</label>
-                                    <input type="text" name="last_name" class="form-input" value="${user.user_metadata?.last_name || ''}" required>
+                                    <input type="text" name="last_name" id="prof-last-name" class="form-input"
+                                        value="${user.user_metadata?.last_name || ''}"
+                                        placeholder="Dupont" required autocomplete="family-name">
+                                    <span class="field-error" id="err-last-name" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
+
+                                <!-- Country selector (drives company ID label) -->
                                 <div class="form-group full-width">
-                                    <label class="form-label">Nom Commercial / Entreprise (Optionnel)</label>
-                                    <input type="text" name="name" class="form-input" value="${company.name || user.user_metadata?.company_name || ''}">
+                                    <label class="form-label">Pays / Région *</label>
+                                    <select name="country" id="prof-country" class="form-input"
+                                        onchange="Profile.onCountryChange(this.value)"
+                                        style="cursor:pointer;">
+                                        ${this.COUNTRIES.map(c =>
+            `<option value="${c.code}" ${c.code === savedCountry ? 'selected' : ''}>${c.label}</option>`
+        ).join('')}
+                                    </select>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label class="form-label">Nom Commercial / Entreprise</label>
+                                    <input type="text" name="name" class="form-input"
+                                        value="${company.name || user.user_metadata?.company_name || ''}"
+                                        placeholder="Ex: Mon Agence, Jean Dupont Consulting…">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Email Professionnel *</label>
-                                    <input type="email" name="email" class="form-input" value="${company.email || user.email || ''}" required>
+                                    <input type="email" name="email" id="prof-email" class="form-input"
+                                        value="${company.email || user.email || ''}"
+                                        placeholder="pro@email.com" required autocomplete="email">
+                                    <span class="field-error" id="err-email" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Téléphone</label>
-                                    <input type="tel" name="phone" class="form-input" value="${company.phone || ''}">
+                                    <label class="form-label">Téléphone <span style="font-size:0.72rem;color:var(--text-muted);">(format international recommandé : +33…)</span></label>
+                                    <input type="tel" name="phone" id="prof-phone" class="form-input"
+                                        value="${company.phone || ''}"
+                                        placeholder="+33 6 00 00 00 00" autocomplete="tel">
+                                    <span class="field-error" id="err-phone" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
                                 <div class="form-group full-width">
                                     <label class="form-label">Adresse Siège Social *</label>
-                                    <input type="text" name="address" class="form-input" value="${company.address || ''}" required>
+                                    <input type="text" name="address" class="form-input"
+                                        value="${company.address || ''}"
+                                        placeholder="12 rue de la Paix, 75001 Paris" required autocomplete="street-address">
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label">SIRET</label>
-                                    <input type="text" name="siret" class="form-input" value="${company.siret || ''}">
+
+                                <!-- Company registration number (label changes by country) -->
+                                <div class="form-group" id="reg-number-group">
+                                    <label class="form-label" id="reg-number-label">Numéro d'enregistrement</label>
+                                    <div style="position:relative;">
+                                        <input type="text" name="siret" id="prof-siret" class="form-input"
+                                            value="${company.siret || ''}"
+                                            placeholder="—"
+                                            oninput="Profile.onSiretInput(this.value)"
+                                            style="padding-right: 2.5rem;">
+                                        <span id="siret-status" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:1rem;"></span>
+                                    </div>
+                                    <span id="reg-number-hint" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;display:block;"></span>
+                                    <span class="field-error" id="err-siret" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
+
                                 <div class="form-group">
                                     <label class="form-label">Mentions Légales (Pied de page)</label>
-                                    <input type="text" name="footer_mentions" class="form-input" value="${company.footer_mentions || ''}" placeholder="Ex: TVA Intracom FR...">
+                                    <input type="text" name="footer_mentions" class="form-input"
+                                        value="${company.footer_mentions || ''}"
+                                        placeholder="Ex: TVA Intracom FR…">
                                 </div>
                                 <div class="form-group full-width">
                                     <label class="form-label">Portfolio / Site Web</label>
-                                    <input type="url" name="portfolio" class="form-input" value="${company.portfolio || ''}" placeholder="https://votre-portfolio.com">
+                                    <input type="url" name="portfolio" id="prof-portfolio" class="form-input"
+                                        value="${company.portfolio || ''}"
+                                        placeholder="https://votre-portfolio.com" autocomplete="url">
+                                    <span class="field-error" id="err-portfolio" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
-                                
+
                                 <div class="form-group full-width">
                                     <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
                                         Logo de l'entreprise
@@ -104,7 +179,7 @@ const Profile = {
                                     </label>
                                     <input type="email" name="paypal_email" class="form-input" value="${company.paypal_email || ''}" placeholder="votre-email@paypal.com" style="background: rgba(255,255,255,0.05); border-color: rgba(59, 130, 246, 0.3); font-size: 1.1rem;">
                                     <p class="text-xs" style="margin-top: 0.75rem; color: #60a5fa; line-height: 1.4;">
-                                        <i class="fas fa-info-circle"></i> Cette adresse est utilisée pour recevoir vos acomptes directement. Assurez-vous qu'elle est correcte.
+                                        <i class="fas fa-info-circle"></i> Cette adresse est utilisée pour recevoir vos acomptes directement.
                                     </p>
                                 </div>
                             </div>
@@ -144,67 +219,240 @@ const Profile = {
                          </div>
                     </div>
                 </div>
-
             </div>
         `;
+
+        // Initialize country-dependent UI
+        this.onCountryChange(savedCountry);
+    },
+
+    // Called when country dropdown changes
+    onCountryChange(code) {
+        const country = this.getCountry(code);
+        const label = document.getElementById('reg-number-label');
+        const hint = document.getElementById('reg-number-hint');
+        const group = document.getElementById('reg-number-group');
+        const input = document.getElementById('prof-siret');
+        if (!label || !group) return;
+
+        if (!country.regLabel) {
+            group.style.display = 'none';
+        } else {
+            group.style.display = '';
+            label.textContent = country.regLabel + (country.verify ? ' *' : ' (optionnel)');
+            if (country.pattern) {
+                hint.textContent = country.verify
+                    ? `Format exigé : ${country.pattern.replace(/[\^$]/g, '')}`
+                    : `Format attendu : ${country.pattern.replace(/[\^$]/g, '')}`;
+            } else {
+                hint.textContent = 'Format libre selon votre pays.';
+            }
+            if (input) input.placeholder = country.regLabel || '';
+            document.getElementById('siret-status').textContent = '';
+        }
+    },
+
+    // Real-time SIRET Luhn check + debounce INSEE API
+    _siretTimer: null,
+    onSiretInput(val) {
+        const code = document.getElementById('prof-country')?.value || '';
+        const country = this.getCountry(code);
+        if (!country.verify) return;
+
+        const status = document.getElementById('siret-status');
+        const errEl = document.getElementById('err-siret');
+        const clean = val.replace(/\s/g, '');
+
+        // Reset
+        status.textContent = '';
+        if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+
+        if (clean.length === 0) return;
+
+        // Luhn check for 14-digit SIRET
+        if (clean.length === 14 && /^[0-9]{14}$/.test(clean)) {
+            if (this.luhn(clean)) {
+                status.textContent = '⏳';
+                clearTimeout(this._siretTimer);
+                this._siretTimer = setTimeout(() => this.verifySiretApi(clean), 800);
+            } else {
+                status.textContent = '❌';
+                if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Numéro SIRET invalide (clé de contrôle incorrecte).'; }
+            }
+        } else if (clean.length > 0 && clean.length < 14) {
+            status.textContent = '⌛';
+        }
+    },
+
+    // Luhn algorithm for SIRET validation
+    luhn(num) {
+        let sum = 0;
+        for (let i = 0; i < num.length; i++) {
+            let d = parseInt(num[i]);
+            if ((num.length - i) % 2 === 0) {
+                d *= 2;
+                if (d > 9) d -= 9;
+            }
+            sum += d;
+        }
+        return sum % 10 === 0;
+    },
+
+    // INSEE API verification via our backend proxy
+    async verifySiretApi(siret) {
+        const status = document.getElementById('siret-status');
+        const errEl = document.getElementById('err-siret');
+        const nameInput = document.querySelector('input[name="name"]');
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/validate/company?siret=${siret}`, {
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data.valid) {
+                status.textContent = '✅';
+                // Auto-fill company name if empty
+                if (nameInput && !nameInput.value.trim() && data.name) {
+                    nameInput.value = data.name;
+                    App.showNotification(`Entreprise trouvée : ${data.name}`, 'success');
+                }
+            } else {
+                status.textContent = '❌';
+                if (errEl) { errEl.style.display = 'block'; errEl.textContent = data.message || 'SIRET introuvable dans la base INSEE.'; }
+            }
+        } catch {
+            status.textContent = '⚠️';
+        }
+    },
+
+    // International validations
+    validateName(val) {
+        if (!val || val.trim().length < 2) return 'Minimum 2 caractères.';
+        // Allow: letters (any script), spaces, hyphens, apostrophes
+        if (/[0-9<>{}[\]\\|]/.test(val)) return 'Le nom ne doit pas contenir de chiffres ou caractères spéciaux.';
+        return null;
+    },
+
+    validatePhone(val) {
+        if (!val) return null; // Optional
+        const clean = val.replace(/[\s\-().]/g, '');
+        // Accept +countrycode... or local 7-15 digits
+        if (!/^(\+[1-9][0-9]{6,14}|[0-9]{7,15})$/.test(clean)) {
+            return 'Téléphone invalide. Format recommandé : +33 6 xx xx xx xx';
+        }
+        return null;
+    },
+
+    validateUrl(val) {
+        if (!val) return null; // Optional
+        try { new URL(val); return null; } catch { return 'URL invalide. Ex : https://votre-site.com'; }
+    },
+
+    showFieldError(id, msg) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (msg) { el.style.display = 'block'; el.textContent = msg; }
+        else { el.style.display = 'none'; el.textContent = ''; }
     },
 
     async save(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
 
+        const firstName = (formData.get('first_name') || '').trim();
+        const lastName = (formData.get('last_name') || '').trim();
+        const country = formData.get('country') || '';
+        const phone = (formData.get('phone') || '').trim();
+        const portfolio = (formData.get('portfolio') || '').trim();
+        const siret = (formData.get('siret') || '').replace(/\s/g, '');
+        const email = (formData.get('email') || '').trim();
+
+        // Clear all errors
+        ['err-first-name', 'err-last-name', 'err-email', 'err-phone', 'err-portfolio', 'err-siret'].forEach(id => this.showFieldError(id, null));
+
+        let hasError = false;
+
+        // Name validation
+        const firstErr = this.validateName(firstName);
+        if (firstErr) { this.showFieldError('err-first-name', firstErr); hasError = true; }
+        const lastErr = this.validateName(lastName);
+        if (lastErr) { this.showFieldError('err-last-name', lastErr); hasError = true; }
+
+        // Email validation (RFC-compliant)
+        const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+        if (!email || !emailRegex.test(email)) {
+            this.showFieldError('err-email', "Format d'email invalide.");
+            hasError = true;
+        }
+
+        // Phone validation
+        const phoneErr = this.validatePhone(phone);
+        if (phoneErr) { this.showFieldError('err-phone', phoneErr); hasError = true; }
+
+        // URL validation
+        const urlErr = this.validateUrl(portfolio);
+        if (urlErr) { this.showFieldError('err-portfolio', urlErr); hasError = true; }
+
+        // Company registration number validation (format check)
+        const countryObj = this.getCountry(country);
+        if (countryObj.verify && siret) {
+            if (!this.luhn(siret) || !/^[0-9]{14}$/.test(siret)) {
+                this.showFieldError('err-siret', 'Numéro SIRET invalide (14 chiffres, clé de contrôle).');
+                hasError = true;
+            }
+            const statusEl = document.getElementById('siret-status');
+            if (statusEl && statusEl.textContent === '❌') {
+                this.showFieldError('err-siret', 'Ce SIRET n\'est pas reconnu par la base INSEE.');
+                hasError = true;
+            }
+        } else if (countryObj.pattern && siret) {
+            const re = new RegExp(countryObj.pattern);
+            if (!re.test(siret)) {
+                this.showFieldError('err-siret', `Format incorrect : ${countryObj.regLabel}`);
+                hasError = true;
+            }
+        }
+
+        if (hasError) {
+            App.showNotification('Veuillez corriger les champs en erreur.', 'error');
+            return;
+        }
+
+        // Country required
+        if (!country) {
+            App.showNotification('Veuillez sélectionner votre pays.', 'error');
+            return;
+        }
+
         const companyData = {
-            name: formData.get('name'),
-            siret: formData.get('siret') || '',
-            email: formData.get('email') || '',
-            phone: formData.get('phone') || '',
+            name: formData.get('name') || '',
+            siret,
+            country,
+            email,
+            phone,
             address: formData.get('address') || '',
             footer_mentions: formData.get('footer_mentions') || '',
             logo: formData.get('logo') || '',
-            portfolio: formData.get('portfolio') || '',
+            portfolio,
             paypal_email: formData.get('paypal_email') || ''
         };
-
-        const firstName = formData.get('first_name') || '';
-        const lastName = formData.get('last_name') || '';
-
-        // Strict Validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!companyData.email || !emailRegex.test(companyData.email)) {
-            App.showNotification("Format d'email invalide. Veuillez renseigner un email correct.", 'error');
-            return;
-        }
-
-        if (firstName.trim().length === 0 || lastName.trim().length === 0) {
-            App.showNotification("Le Prénom et le Nom sont obligatoires.", 'error');
-            return;
-        }
-
-        if (companyData.phone && companyData.phone.replace(/[^0-9]/g, '').length < 9) {
-            App.showNotification('Le numéro de téléphone semble invalide (trop court).', 'error');
-            return;
-        }
 
         try {
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
-            btn.textContent = 'Enregistrement...';
+            btn.textContent = 'Enregistrement…';
             btn.disabled = true;
 
-            // Handle Logo Upload if pending
             if (window.pendingLogoFile) {
                 try {
                     const publicUrl = await Storage.uploadLogo(window.pendingLogoFile);
                     companyData.logo = publicUrl;
                     window.pendingLogoFile = null;
                 } catch (uploadErr) {
-                    console.error("Logo upload failed, continuing with previous logo:", uploadErr);
-                    App.showNotification("Échec de l'upload du logo, mais le reste a été enregistré.", 'warning');
+                    console.error('Logo upload failed:', uploadErr);
+                    App.showNotification("Échec de l'upload du logo, le reste a été enregistré.", 'warning');
                 }
             }
 
-
-            // On met à jour via Storage qui gère maintenant la normalisation
             await Storage.updateUser({ first_name: firstName, last_name: lastName, company: companyData });
 
             App.renderUserInfo();
@@ -223,20 +471,12 @@ const Profile = {
     handleLogoUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
-
-        if (file.size > 500 * 1024) {
-            App.showNotification('Image trop lourde (500KB max)', 'error');
-            return;
-        }
-
-        // Store for upload on save
+        if (file.size > 500 * 1024) { App.showNotification('Image trop lourde (500KB max)', 'error'); return; }
         window.pendingLogoFile = file;
-
         const reader = new FileReader();
         reader.onload = (event) => {
-            const previewBase64 = event.target.result;
-            document.getElementById('logo-preview').innerHTML = `<img src="${previewBase64}" style="width:100%; height:100%; object-fit:contain;">`;
-            App.showNotification('Logo sélectionné. N\'oubliez pas d\'enregistrer.', 'info');
+            document.getElementById('logo-preview').innerHTML = `<img src="${event.target.result}" style="width:100%; height:100%; object-fit:contain;">`;
+            App.showNotification("Logo sélectionné. N'oubliez pas d'enregistrer.", 'info');
         };
         reader.readAsDataURL(file);
     },
@@ -246,7 +486,7 @@ const Profile = {
         const logoInput = document.getElementById('logo-base64');
         if (logoInput) logoInput.value = '';
         document.getElementById('logo-preview').innerHTML = '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>';
-        App.showNotification('Logo supprimé dans la prévisualisation. Enregistrez pour confirmer.', 'info');
+        App.showNotification('Logo supprimé. Enregistrez pour confirmer.', 'info');
     }
 };
 

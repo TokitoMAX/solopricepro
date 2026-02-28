@@ -210,4 +210,49 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
     }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/validate/company?siret=XXXXXXXXXXXXXX
+// Proxies to the French government's free annuaire-entreprises API (no key needed)
+// Returns { valid: bool, name: string, message: string }
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/validate/company', async (req, res) => {
+    const { siret } = req.query;
+    if (!siret || !/^[0-9]{14}$/.test(siret)) {
+        return res.status(400).json({ valid: false, message: 'Format SIRET invalide (14 chiffres requis).' });
+    }
+
+    try {
+        const response = await fetch(`https://annuaire-entreprises.data.gouv.fr/api/v3/etablissement/${siret}`, {
+            headers: { 'Accept': 'application/json', 'User-Agent': 'SoloPrice-Pro/1.0' },
+            signal: AbortSignal.timeout(5000)
+        });
+
+        if (response.status === 404) {
+            return res.json({ valid: false, message: 'SIRET introuvable dans la base INSEE.' });
+        }
+
+        if (!response.ok) {
+            // API temporarily unavailable — warn but don't block
+            return res.json({ valid: true, message: 'Vérification INSEE indisponible momentanément (SIRET accepté).' });
+        }
+
+        const data = await response.json();
+        const name = data.unite_legale?.denomination
+            || data.unite_legale?.nom_complet
+            || [data.unite_legale?.prenom_usuel, data.unite_legale?.nom].filter(Boolean).join(' ')
+            || '';
+
+        return res.json({
+            valid: true,
+            name: name.trim(),
+            activity: data.activite_principale?.libelle || '',
+            address: [data.numero_voie, data.type_voie, data.libelle_voie, data.code_postal, data.libelle_commune].filter(Boolean).join(' ')
+        });
+    } catch (err) {
+        console.warn('[VALIDATE] INSEE check error (non-blocking):', err.message);
+        // Timeout or network error — don't block the user
+        return res.json({ valid: true, message: 'Vérification INSEE indisponible (SIRET provisoirement accepté).', warning: true });
+    }
+});
+
 module.exports = router;
