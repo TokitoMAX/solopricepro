@@ -156,9 +156,15 @@ const Auth = {
                 throw new Error(errorMsg);
             }
 
-            if (result.requiresConfirmation || (result.user && !result.session)) {
+            if (result.requiresConfirmation) {
                 this.showSuccess(result.message || 'Inscription réussie ! Veuillez confirmer votre email (vérifiez vos spams).');
                 if (typeof closeAllModals === 'function') closeAllModals();
+                return result;
+            }
+
+            // If it doesn't require confirmation but there is no session (e.g. backend admin creation)
+            if (result.user && !result.session && !result.requiresConfirmation) {
+                // UI will handle auto-login
                 return result;
             }
 

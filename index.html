@@ -873,8 +873,12 @@
             var country = document.getElementById('auth-register-country').value;
 
             if (!email || !password || !firstName || !lastName || !country) { errEl.textContent = 'Veuillez remplir votre nom, prénom, email, mot de passe et pays.'; return; }
-            Auth.register({ email: email, password: password, first_name: firstName, last_name: lastName, company_name: company, country: country }).then(function () {
+            Auth.register({ email: email, password: password, first_name: firstName, last_name: lastName, company_name: company, country: country }).then(function (res) {
                 App.showNotification('Inscription réussie ! Connexion...', 'success');
+                // Automatically log in if no session was returned (admin creation bypasses session)
+                if (res && res.user && !res.session && !res.requiresConfirmation) {
+                    return Auth.login(email, password);
+                }
             }).catch(function (err) {
                 errEl.textContent = err && err.message ? err.message : 'Erreur d\'inscription.';
             });
@@ -949,7 +953,7 @@
             const select = document.querySelector('.goog-te-combo');
             if (select) {
                 select.value = langCode;
-                select.dispatchEvent(new Event('change'));
+                select.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
             } else {
                 console.warn('Google Translate not fully loaded yet');
             }
