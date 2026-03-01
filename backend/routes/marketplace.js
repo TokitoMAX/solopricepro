@@ -186,6 +186,70 @@ router.post('/apply', async (req, res) => {
 });
 
 /**
+ * @route   POST /api/marketplace/apply-ecosystem
+ * @desc    Submit an ecosystem partner application
+ * @access  Private
+ */
+router.post('/apply-ecosystem', async (req, res) => {
+    const { specialty, portfolio, description, user_email, user_name } = req.body;
+
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = process.env.SMTP_PORT || 587;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    const smtpFrom = process.env.SMTP_FROM || smtpUser;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+        return res.status(503).json({ success: false, message: "Le service d'email n'est pas configuré." });
+    }
+
+    try {
+        const transporter = nodemailer.createTransport({
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpPort == 465,
+            auth: { user: smtpUser, pass: smtpPass },
+            tls: { rejectUnauthorized: false }
+        });
+
+        // The application email goes to the admin
+        const adminEmail = 'domtomconnect@gmail.com';
+
+        const subject = `🔥 Nouvelle Candidature Écosystème : ${user_name}`;
+        const bodyContent = `
+Une nouvelle candidature pour rejoindre l'Écosystème SoloPrice a été soumise.
+
+🧑‍💻 Candidat : ${user_name}
+✉️ Email de contact : ${user_email}
+⭐ Spécialité : ${specialty}
+🔗 Lien Portfolio/LinkedIn : ${portfolio}
+
+📝 Description / Motivations :
+${description || 'Non renseignée.'}
+
+------------------------------------------------
+(Ceci est un mail automatique généré par SoloPrice Pro)
+        `.trim();
+
+        const mailOptions = {
+            from: `"SoloPrice Pro" <${smtpFrom}>`,
+            to: adminEmail,
+            replyTo: user_email,
+            subject: subject,
+            text: bodyContent
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('[MAILER] ✅ Ecosystem Application sent: %s', info.messageId);
+
+        res.json({ success: true, message: "Candidature envoyée avec succès !" });
+    } catch (error) {
+        console.error('[MAILER] ❌ Error sending ecosystem application:', error);
+        res.status(500).json({ success: false, message: "Erreur lors de l'envoi." });
+    }
+});
+
+/**
  * @route   GET /api/marketplace/invitations
  * @desc    Get all invitations for current user (as recruiter or candidate)
  * @access  Private

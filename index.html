@@ -82,7 +82,17 @@
                 <span class="logo-badge">Pro v4.1</span>
             </div>
             <div class="landing-actions" style="display: flex; align-items: center; gap: 1rem;">
-                <div id="google_translate_landing"></div>
+                <div class="custom-lang-selector">
+                    <i class="fas fa-globe" style="color: var(--text-muted); margin-right: 5px;"></i>
+                    <select onchange="changeLanguageCustom(this.value)" class="form-input"
+                        style="padding: 0.3rem 1.5rem 0.3rem 0.5rem; height: auto; font-size: 0.85rem; background-color: transparent; border-color: var(--border);">
+                        <option value="fr">Français</option>
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                    </select>
+                </div>
+                <!-- Hidden Google Translate Element -->
+                <div id="google_translate_landing" style="display: none;"></div>
                 <button class="button-link" onclick="showAuthModal('login')">Connexion</button>
                 <button class="button-primary landing-auth-btn" onclick="showAuthModal('register')">Essai
                     Gratuit</button>
@@ -483,7 +493,18 @@
                 </nav>
 
                 <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem;">
-                    <div id="google_translate_sidebar" style="margin-bottom: 0.5rem;"></div>
+                    <div class="custom-lang-selector"
+                        style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <i class="fas fa-globe" style="color: var(--text-muted); margin-right: 8px;"></i>
+                        <select onchange="changeLanguageCustom(this.value)" class="form-input"
+                            style="padding: 0.4rem; height: auto; font-size: 0.85rem; width: 100%;">
+                            <option value="fr">Français</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
+                    <!-- Hidden Google Translate Element -->
+                    <div id="google_translate_sidebar" style="display: none;"></div>
                     <button class="logout-btn" onclick="Auth.logout()">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>Déconnexion</span>
@@ -900,39 +921,62 @@
 
         // Initialize Google Translate
         function googleTranslateElementInit() {
-            if (document.getElementById('google_translate_landing')) {
-                new google.translate.TranslateElement({ pageLanguage: 'fr', includedLanguages: 'fr,en,es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_landing');
+            new google.translate.TranslateElement({
+                pageLanguage: 'fr',
+                includedLanguages: 'fr,en,es',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_landing');
+        }
+
+        // Custom function to trigger Google Translate
+        function changeLanguageCustom(langCode) {
+            const select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.value = langCode;
+                select.dispatchEvent(new Event('change'));
+            } else {
+                console.warn('Google Translate not fully loaded yet');
             }
-            if (document.getElementById('google_translate_sidebar')) {
-                new google.translate.TranslateElement({ pageLanguage: 'fr', includedLanguages: 'fr,en,es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false }, 'google_translate_sidebar');
-            }
+
+            // Sync all custom selectors on the page
+            document.querySelectorAll('.custom-lang-selector select').forEach(s => {
+                if (s.value !== langCode) s.value = langCode;
+            });
         }
     </script>
     <script type="text/javascript"
         src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <style>
-        /* Styliser le widget Google Translate pour un rendu plus premium */
-        .goog-te-gadget-simple {
-            background-color: var(--dark-glass) !important;
-            border: 1px solid var(--border) !important;
-            border-radius: 8px !important;
-            padding: 4px 8px !important;
-            color: var(--text-light) !important;
-        }
-
-        .goog-te-gadget-simple span {
-            color: var(--text-light) !important;
-        }
-
-        /* Cacher la barre du haut Google Translate si possible */
-        .skiptranslate iframe,
-        .goog-te-banner-frame.skiptranslate {
+        /* HIDE GOOGLE TRANSLATE UGLY UI COMPLETELY */
+        .goog-te-banner-frame.skiptranslate,
+        .goog-te-gadget-icon,
+        .goog-te-gadget-simple,
+        #goog-gt-tt,
+        .goog-tooltip,
+        .goog-tooltip:hover {
             display: none !important;
         }
 
         body {
             top: 0px !important;
+        }
+
+        /* Ensure our custom selector looks good */
+        .custom-lang-selector select {
+            cursor: pointer;
+            color: var(--text-light);
+            outline: none;
+        }
+
+        .custom-lang-selector select option {
+            background-color: var(--dark);
+            color: var(--white);
+        }
+
+        .custom-lang-selector select:focus {
+            border-color: var(--primary);
         }
     </style>
 </body>

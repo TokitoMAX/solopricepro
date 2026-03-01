@@ -167,9 +167,30 @@ const Network = {
         try {
             const user = Auth.getUser();
             if (user && user.id) {
-                // Ideally this would go via an API to update user_metadata.
-                // For now, we simulate success and notify the user.
-                console.log("Ecosystem Application stored:", application);
+                const token = Storage.getToken();
+
+                const response = await fetch(`${Auth.apiBase}/marketplace/apply-ecosystem`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // Important for the API
+                    },
+                    body: JSON.stringify({
+                        specialty: application.specialty,
+                        portfolio: application.portfolio,
+                        description: application.description,
+                        user_email: user.email,
+                        user_name: (user.user_metadata?.first_name || '') + ' ' + (user.user_metadata?.last_name || '')
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erreur API');
+                }
+
+                console.log("Ecosystem Application stored:", data);
                 this.hideEcosystemModal();
                 e.target.reset();
                 App.showNotification('Candidature envoyée avec succès ! Notre équipe vous recontactera.', 'success');
