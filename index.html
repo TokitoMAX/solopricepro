@@ -338,7 +338,7 @@
                 const valEl = document.getElementById('sim-tjm-value');
                 const resultBox = document.getElementById('sim-result');
 
-                valEl.textContent = tjm + '€';
+                valEl.textContent = (typeof App !== 'undefined') ? App.formatCurrency(tjm) : tjm + '€';
                 resultBox.style.borderColor = 'var(--primary)';
                 resultBox.classList.add('pulse-glow');
             }
@@ -960,25 +960,18 @@
 
         // Custom function to trigger Google Translate
         function changeLanguageCustom(langCode) {
+            const select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.value = langCode;
+                select.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+            } else {
+                console.warn('Google Translate not fully loaded yet');
+            }
+
             // Sync all custom selectors on the page
             document.querySelectorAll('.custom-lang-selector select').forEach(s => {
                 if (s.value !== langCode) s.value = langCode;
             });
-
-            // Set cookie for Google Translate (default is /pageLanguage/targetLanguage)
-            const domain = window.location.hostname;
-            if (langCode === 'fr') {
-                // Clear cookies to restore original
-                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                if (domain) document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
-            } else {
-                // Set translation cookie
-                document.cookie = `googtrans=/fr/${langCode}; path=/;`;
-                if (domain) document.cookie = `googtrans=/fr/${langCode}; path=/; domain=${domain};`;
-            }
-
-            // Reload to apply translation flawlessly
-            window.location.reload();
         }
     </script>
     <script type="text/javascript"
@@ -991,12 +984,20 @@
         .goog-te-gadget-simple,
         #goog-gt-tt,
         .goog-tooltip,
-        .goog-tooltip:hover {
+        .goog-tooltip:hover,
+        .VIpgJd-ZVi9od-ORHb-OEVmcd,
+        iframe.skiptranslate {
             display: none !important;
+            visibility: hidden !important;
         }
 
         body {
             top: 0px !important;
+            position: static !important;
+        }
+
+        html {
+            height: 100%;
         }
 
         /* Ensure our custom selector looks good */

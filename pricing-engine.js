@@ -235,8 +235,8 @@ const PricingEngine = {
             anchoring: {
                 title: "L'Ancrage de Puissance",
                 description: "Présentez toujours la valeur avant le prix. Utilisez l'effet de contraste.",
-                strategy: `Ancrez sur le Pack ELITE à ${eliteTJM}€ pour faire passer le Pack CONFORT (${securityTJM}€) pour un investissement 'Évident'.`,
-                logic: `Expliquez que l'Elite (${eliteTJM}€) est pour une 'Domination Totale' alors que le Sécurité ($${securityTJM}€) est pour une 'Croissance Sereine'.`
+                strategy: `Ancrez sur le Pack ELITE à ${typeof App !== 'undefined' ? App.formatCurrency(eliteTJM) : eliteTJM + '€'} pour faire passer le Pack CONFORT (${typeof App !== 'undefined' ? App.formatCurrency(securityTJM) : securityTJM + '€'}) pour un investissement 'Évident'.`,
+                logic: `Expliquez que l'Elite (${typeof App !== 'undefined' ? App.formatCurrency(eliteTJM) : eliteTJM + '€'}) est pour une 'Domination Totale' alors que le Sécurité (${typeof App !== 'undefined' ? App.formatCurrency(securityTJM) : securityTJM + '€'}) est pour une 'Croissance Sereine'.`
             },
             roi: {
                 title: "L'Argument Choc (ROI)",
@@ -246,15 +246,15 @@ const PricingEngine = {
             objections: [
                 {
                     hook: "C'est trop cher.",
-                    rebuttal: `Recadrez sur l'inaction : 'Je comprends que ${securityTJM}€ soit un budget. Mais si on ne fait rien, combien vous coûtera la ${currentSector.focus} dans 6 mois ?'`
+                    rebuttal: `Recadrez sur l'inaction : 'Je comprends que ${typeof App !== 'undefined' ? App.formatCurrency(securityTJM) : securityTJM + '€'} soit un budget. Mais si on ne fait rien, combien vous coûtera la ${currentSector.focus} dans 6 mois ?'`
                 },
                 {
                     hook: "On doit réfléchir.",
-                    rebuttal: `Questionnez le risque : 'Bien sûr. Quelle est l'information manquante aujourd'hui pour être certain qu'investir ${securityTJM}€ dans ce projet soit un succès total ?'`
+                    rebuttal: `Questionnez le risque : 'Bien sûr. Quelle est l'information manquante aujourd'hui pour être certain qu'investir ${typeof App !== 'undefined' ? App.formatCurrency(securityTJM) : securityTJM + '€'} dans ce projet soit un succès total ?'`
                 },
                 {
                     hook: "Un concurrent est moins cher.",
-                    rebuttal: `Misez sur l'expertise : 'Exact, on trouve toujours moins cher que ${securityTJM}€. Mais quel est le prix d'un projet qui doit être refait dans un an parce qu'il n'était pas assez robuste ?'`
+                    rebuttal: `Misez sur l'expertise : 'Exact, on trouve toujours moins cher que ${typeof App !== 'undefined' ? App.formatCurrency(securityTJM) : securityTJM + '€'}. Mais quel est le prix d'un projet qui doit être refait dans un an parce qu'il n'était pas assez robuste ?'`
                 }
             ]
         };
