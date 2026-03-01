@@ -426,8 +426,7 @@ router.get('/ecosystem-experts', async (req, res) => {
         const { data, error } = await supabase
             .from('sp_network_providers')
             .select('*')
-            .eq('is_ecosystem', true)
-            .order('created_at', { ascending: false });
+            .eq('is_ecosystem', true);
 
         if (error) throw error;
         res.json(data || []);
