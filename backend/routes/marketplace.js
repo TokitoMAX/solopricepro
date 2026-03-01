@@ -187,67 +187,77 @@ router.post('/apply', async (req, res) => {
 
 /**
  * @route   POST /api/marketplace/apply-ecosystem
- * @desc    Submit an ecosystem partner application
+ * @desc    Submit an ecosystem partner application (saves to DB + sends email)
  * @access  Private
  */
 router.post('/apply-ecosystem', async (req, res) => {
-    const { specialty, portfolio, description, user_email, user_name } = req.body;
+    const supabase = req.app.get('supabase');
+    const { specialty, portfolio, city, description, user_email, user_name } = req.body;
 
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPort = process.env.SMTP_PORT || 587;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
-    const smtpFrom = process.env.SMTP_FROM || smtpUser;
-
-    if (!smtpHost || !smtpUser || !smtpPass) {
-        return res.status(503).json({ success: false, message: "Le service d'email n'est pas configuré." });
+    if (!specialty || !user_email || !user_name) {
+        return res.status(400).json({ success: false, message: 'Champs requis manquants.' });
     }
 
     try {
-        const transporter = nodemailer.createTransport({
-            host: smtpHost,
-            port: smtpPort,
-            secure: smtpPort == 465,
-            auth: { user: smtpUser, pass: smtpPass },
-            tls: { rejectUnauthorized: false }
-        });
+        // 1. Store in Supabase
+        const { error: dbError } = await supabase
+            .from('sp_ecosystem_applications')
+            .insert([{
+                user_id: req.user.id,
+                user_name,
+                user_email,
+                specialty,
+                portfolio: portfolio || null,
+                city: city || null,
+                description: description || null,
+                status: 'pending'
+            }]);
 
-        // The application email goes to the admin
-        const adminEmail = 'domtomconnect@gmail.com';
+        if (dbError) {
+            console.error('[ECOSYSTEM-APPLY] DB error:', dbError);
+            // Don't block – still try to send email
+        }
 
-        const subject = `🔥 Nouvelle Candidature Écosystème : ${user_name}`;
-        const bodyContent = `
-Une nouvelle candidature pour rejoindre l'Écosystème SoloPrice a été soumise.
+        // 2. Send notification email to admin (optional – if SMTP is configured)
+        const smtpHost = process.env.SMTP_HOST;
+        const smtpUser = process.env.SMTP_USER;
+        const smtpPass = process.env.SMTP_PASS;
 
-🧑‍💻 Candidat : ${user_name}
-✉️ Email de contact : ${user_email}
-⭐ Spécialité : ${specialty}
-🔗 Lien Portfolio/LinkedIn : ${portfolio}
+        if (smtpHost && smtpUser && smtpPass) {
+            try {
+                const transporter = nodemailer.createTransport({
+                    host: smtpHost,
+                    port: process.env.SMTP_PORT || 587,
+                    secure: (process.env.SMTP_PORT || 587) == 465,
+                    auth: { user: smtpUser, pass: smtpPass },
+                    tls: { rejectUnauthorized: false }
+                });
 
-📝 Description / Motivations :
-${description || 'Non renseignée.'}
+                await transporter.sendMail({
+                    from: `"SoloPrice Pro" <${process.env.SMTP_FROM || smtpUser}>`,
+                    to: ADMIN_EMAIL,
+                    replyTo: user_email,
+                    subject: `🔥 Candidature Écosystème : ${user_name}`,
+                    text: `Nouvelle candidature pour rejoindre l'Écosystème SoloPrice.\n\n` +
+                        `👤 ${user_name} (${user_email})\n` +
+                        `⭐ Spécialité : ${specialty}\n` +
+                        `📍 Ville : ${city || 'Non renseignée'}\n` +
+                        `🔗 Portfolio : ${portfolio || 'Non renseigné'}\n\n` +
+                        `📝 ${description || 'Aucune description.'}\n\n` +
+                        `Vous pouvez examiner cette candidature dans l'onglet "Candidatures" de SoloPrice Pro.`
+                });
+            } catch (mailErr) {
+                console.warn('[ECOSYSTEM-APPLY] Email notification failed (non-blocking):', mailErr.message);
+            }
+        }
 
-------------------------------------------------
-(Ceci est un mail automatique généré par SoloPrice Pro)
-        `.trim();
-
-        const mailOptions = {
-            from: `"SoloPrice Pro" <${smtpFrom}>`,
-            to: adminEmail,
-            replyTo: user_email,
-            subject: subject,
-            text: bodyContent
-        };
-
-        const info = await transporter.sendMail(mailOptions);
-        console.log('[MAILER] ✅ Ecosystem Application sent: %s', info.messageId);
-
-        res.json({ success: true, message: "Candidature envoyée avec succès !" });
+        res.json({ success: true, message: 'Candidature envoyée avec succès !' });
     } catch (error) {
-        console.error('[MAILER] ❌ Error sending ecosystem application:', error);
+        console.error('[ECOSYSTEM-APPLY] Error:', error);
         res.status(500).json({ success: false, message: "Erreur lors de l'envoi." });
     }
 });
+
 
 /**
  * @route   GET /api/marketplace/invitations
@@ -403,4 +413,180 @@ router.patch('/applications/:id', async (req, res) => {
     }
 });
 
+const ADMIN_EMAIL = 'domtomconnect@gmail.com';
+
+/**
+ * @route   GET /api/marketplace/ecosystem-experts
+ * @desc    Get all admin-curated ecosystem experts (visible to all)
+ * @access  Private
+ */
+router.get('/ecosystem-experts', async (req, res) => {
+    const supabase = req.app.get('supabase');
+    try {
+        const { data, error } = await supabase
+            .from('sp_network_providers')
+            .select('*')
+            .eq('is_ecosystem', true)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err) {
+        console.error('[ECOSYSTEM-EXPERTS] Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+/**
+ * @route   POST /api/marketplace/ecosystem-experts
+ * @desc    Add an expert to the ecosystem (admin only)
+ * @access  Private (Admin)
+ */
+router.post('/ecosystem-experts', async (req, res) => {
+    const supabase = req.app.get('supabase');
+
+    if (req.user.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: 'Accès réservé à l\'administrateur.' });
+    }
+
+    const { name, specialty, email, city, portfolio, description } = req.body;
+
+    if (!name || !specialty) {
+        return res.status(400).json({ message: 'Nom et spécialité requis.' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('sp_network_providers')
+            .insert([{
+                user_id: req.user.id,
+                name,
+                specialty,
+                email: email || null,
+                city: city || null,
+                portfolio: portfolio || null,
+                description: description || null,
+                is_ecosystem: true,
+                is_verified: true
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        res.status(201).json({ success: true, data });
+    } catch (err) {
+        console.error('[ECOSYSTEM-EXPERTS] Add error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+/**
+ * @route   DELETE /api/marketplace/ecosystem-experts/:id
+ * @desc    Remove an expert from the ecosystem (admin only)
+ * @access  Private (Admin)
+ */
+router.delete('/ecosystem-experts/:id', async (req, res) => {
+    const supabase = req.app.get('supabase');
+
+    if (req.user.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: 'Accès réservé à l\'administrateur.' });
+    }
+
+    try {
+        const { error } = await supabase
+            .from('sp_network_providers')
+            .delete()
+            .eq('id', req.params.id)
+            .eq('is_ecosystem', true);
+
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[ECOSYSTEM-EXPERTS] Delete error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+/**
+ * @route   GET /api/marketplace/ecosystem-applications
+ * @desc    Get all ecosystem applications (admin only)
+ * @access  Private (Admin)
+ */
+router.get('/ecosystem-applications', async (req, res) => {
+    const supabase = req.app.get('supabase');
+
+    if (req.user.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: 'Accès réservé à l\'administrateur.' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('sp_ecosystem_applications')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err) {
+        console.error('[ECOSYSTEM-APPS] Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+/**
+ * @route   PATCH /api/marketplace/ecosystem-applications/:id
+ * @desc    Accept or reject an ecosystem application (admin only)
+ *          If accepted, auto-creates an ecosystem expert entry
+ * @access  Private (Admin)
+ */
+router.patch('/ecosystem-applications/:id', async (req, res) => {
+    const supabase = req.app.get('supabase');
+
+    if (req.user.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: 'Accès réservé à l\'administrateur.' });
+    }
+
+    const { status, applicant } = req.body;
+    const { id } = req.params;
+
+    if (!['accepted', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Status invalide.' });
+    }
+
+    try {
+        // Update the application status
+        const { error: updateError } = await supabase
+            .from('sp_ecosystem_applications')
+            .update({ status, reviewed_at: new Date().toISOString() })
+            .eq('id', id);
+
+        if (updateError) throw updateError;
+
+        // If accepted, auto-add to the ecosystem experts table
+        if (status === 'accepted' && applicant) {
+            const { error: insertError } = await supabase
+                .from('sp_network_providers')
+                .insert([{
+                    user_id: req.user.id,
+                    name: applicant.user_name,
+                    specialty: applicant.specialty,
+                    email: applicant.user_email,
+                    city: applicant.city || null,
+                    portfolio: applicant.portfolio || null,
+                    description: applicant.description || null,
+                    is_ecosystem: true,
+                    is_verified: true
+                }]);
+
+            if (insertError) throw insertError;
+        }
+
+        res.json({ success: true, status });
+    } catch (err) {
+        console.error('[ECOSYSTEM-APPS] Review error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
+

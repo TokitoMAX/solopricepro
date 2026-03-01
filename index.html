@@ -958,20 +958,42 @@
             }, 'google_translate_landing');
         }
 
-        // Custom function to trigger Google Translate
+        // Custom function to trigger Google Translate with retry logic
         function changeLanguageCustom(langCode) {
-            const select = document.querySelector('.goog-te-combo');
-            if (select) {
-                select.value = langCode;
-                select.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-            } else {
-                console.warn('Google Translate not fully loaded yet');
-            }
-
-            // Sync all custom selectors on the page
+            // Sync all custom selectors immediately
             document.querySelectorAll('.custom-lang-selector select').forEach(s => {
                 if (s.value !== langCode) s.value = langCode;
             });
+
+            // If user switches back to French, reload the page cleanly (GT can't "un-translate")
+            if (langCode === 'fr') {
+                // Remove the googtrans cookie and reload
+                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname;
+                location.reload();
+                return;
+            }
+
+            // Set cookie so it persists on reload
+            const expires = new Date(Date.now() + 365 * 86400 * 1000).toUTCString();
+            document.cookie = `googtrans=/fr/${langCode}; expires=${expires}; path=/`;
+
+            // Try to trigger Google Translate (retry up to 15 times, 200ms apart = 3s)
+            let attempts = 0;
+            function tryTranslate() {
+                const select = document.querySelector('.goog-te-combo');
+                if (select) {
+                    select.value = langCode;
+                    select.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+                } else if (attempts < 15) {
+                    attempts++;
+                    setTimeout(tryTranslate, 200);
+                } else {
+                    // All retries exhausted — reload the page with the cookie set
+                    location.reload();
+                }
+            }
+            tryTranslate();
         }
     </script>
     <script type="text/javascript"
