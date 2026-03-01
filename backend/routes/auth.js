@@ -48,7 +48,7 @@ router.post('/register', async (req, res) => {
         // Supabase Admin API returns the user object directly, not inside data.user sometimes depending on version.
         const user = data?.user || data;
 
-        if (error && error.message !== 'User already registered') {
+        if (error) {
             console.error('❌ Supabase Auth Admin Error:', {
                 message: error.message,
                 status: error.status,
@@ -56,8 +56,13 @@ router.post('/register', async (req, res) => {
             });
 
             // Return user-friendly error
+            let errorMsg = error.message || "Erreur lors de l'inscription";
+            if (errorMsg.includes('already registered')) {
+                errorMsg = "Cet email est déjà utilisé. Veuillez vous connecter.";
+            }
+
             return res.status(400).json({
-                message: error.message || "Erreur lors de l'inscription",
+                message: errorMsg,
                 code: error.status
             });
         }
