@@ -1153,25 +1153,39 @@ const App = {
         let defaultRevenue = 5000;
 
         const user = (typeof Storage !== 'undefined') ? Storage.getUser() : null;
-        if (user) {
-            const country = user.user_metadata?.country || user.company?.country || 'FR';
+        let country = 'FR';
 
-            // Map countries to currencies (matches Profile.COUNTRIES)
-            switch (country) {
-                case 'CA': currency = 'CAD'; symbol = 'CAD$'; locale = 'en-CA'; defaultRevenue = 6000; break;
-                case 'CH': currency = 'CHF'; symbol = 'CHF'; locale = 'fr-CH'; defaultRevenue = 8000; break;
-                case 'US': currency = 'USD'; symbol = '$'; locale = 'en-US'; defaultRevenue = 6000; break;
-                case 'GB': currency = 'GBP'; symbol = '£'; locale = 'en-GB'; defaultRevenue = 5000; break;
-                case 'MA': currency = 'MAD'; symbol = 'MAD'; locale = 'fr-MA'; defaultRevenue = 20000; break; // ~2k EUR
-                case 'SN': case 'CI': currency = 'XOF'; symbol = 'FCFA'; locale = 'fr-FR'; defaultRevenue = 1500000; break; // ~2k EUR
-                case 'MG': currency = 'MGA'; symbol = 'Ar'; locale = 'fr-FR'; defaultRevenue = 5000000; break;
-                case 'MU': currency = 'MUR'; symbol = 'Rs'; locale = 'en-MU'; defaultRevenue = 100000; break;
-                // Euro countries + DOMTOM
-                case 'FR': case 'BE': case 'LU': case 'DE': case 'ES': case 'IT':
-                case 'RE': case 'GP': case 'MQ': case 'GF':
-                default:
-                    currency = 'EUR'; symbol = '€'; locale = 'fr-FR'; defaultRevenue = 5000; break;
+        if (user && (user.user_metadata?.country || user.company?.country)) {
+            country = user.user_metadata?.country || user.company?.country;
+        } else if (typeof document !== 'undefined') {
+            // Fallback to language for guests (Mini-Simulator on landing page)
+            let lang = 'fr';
+            const match = document.cookie.match(/googtrans=\/[^\/]+\/([a-z]{2})/);
+            if (match && match[1]) {
+                lang = match[1];
+            } else if (typeof navigator !== 'undefined' && navigator.language) {
+                lang = navigator.language.split('-')[0];
             }
+
+            if (lang === 'en') country = 'US';
+            else if (lang === 'es') country = 'ES';
+        }
+
+        // Map countries to currencies (matches Profile.COUNTRIES)
+        switch (country) {
+            case 'CA': currency = 'CAD'; symbol = 'CAD$'; locale = 'en-CA'; defaultRevenue = 6000; break;
+            case 'CH': currency = 'CHF'; symbol = 'CHF'; locale = 'fr-CH'; defaultRevenue = 8000; break;
+            case 'US': currency = 'USD'; symbol = '$'; locale = 'en-US'; defaultRevenue = 6000; break;
+            case 'GB': currency = 'GBP'; symbol = '£'; locale = 'en-GB'; defaultRevenue = 5000; break;
+            case 'MA': currency = 'MAD'; symbol = 'MAD'; locale = 'fr-MA'; defaultRevenue = 20000; break; // ~2k EUR
+            case 'SN': case 'CI': currency = 'XOF'; symbol = 'FCFA'; locale = 'fr-FR'; defaultRevenue = 1500000; break; // ~2k EUR
+            case 'MG': currency = 'MGA'; symbol = 'Ar'; locale = 'fr-FR'; defaultRevenue = 5000000; break;
+            case 'MU': currency = 'MUR'; symbol = 'Rs'; locale = 'en-MU'; defaultRevenue = 100000; break;
+            // Euro countries + DOMTOM
+            case 'FR': case 'BE': case 'LU': case 'DE': case 'ES': case 'IT':
+            case 'RE': case 'GP': case 'MQ': case 'GF':
+            default:
+                currency = 'EUR'; symbol = '€'; locale = 'fr-FR'; defaultRevenue = 5000; break;
         }
 
         return { currency, symbol, locale, defaultRevenue };
