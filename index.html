@@ -163,20 +163,35 @@
                                     msg.innerHTML = '<i class=\'fas fa-globe-africa\'></i> Connectons la diaspora et propulsons l\'entrepreneuriat local !';
                                     msg.style.color = 'var(--primary)';
                                 } else {
-                                    msg.innerHTML = '<i class=\'fas fa-rocket\'></i> Concentrez-vous sur l\'ultra-croissance et l\'optimisation de votre cash-flow.';
+                                    msg.innerHTML = '<i class=\'fas fa-star\'></i> Concentrez-vous sur l\'ultra-croissance et l\'optimisation de votre cash-flow.';
                                     msg.style.color = 'var(--text-muted)';
                                 }
                                 msg.style.display = 'block';
                             ">
-                                <option value="FR">France (Métropole)</option>
-                                <option value="FR-DOM">France (DOM-TOM)</option>
-                                <option value="BE">Belgique</option>
-                                <option value="CH">Suisse</option>
-                                <option value="CA">Canada</option>
-                                <option value="MA">Maroc</option>
-                                <option value="SN">Sénégal</option>
-                                <option value="CI">Côte d'Ivoire</option>
-                                <option value="OTHER">Autre</option>
+                                <option value="" disabled selected>Sélectionnez votre zone d'activité...</option>
+                                <optgroup label="Europe & Francophonie">
+                                    <option value="FR">France (Métropole)</option>
+                                    <option value="BE">Belgique</option>
+                                    <option value="CH">Suisse</option>
+                                    <option value="CA">Canada</option>
+                                </optgroup>
+                                <optgroup label="Antilles & Outre-Mer">
+                                    <option value="GP">Guadeloupe</option>
+                                    <option value="MQ">Martinique</option>
+                                    <option value="GF">Guyane</option>
+                                    <option value="RE">La Réunion</option>
+                                    <option value="YT">Mayotte</option>
+                                </optgroup>
+                                <optgroup label="Afrique & Océan Indien">
+                                    <option value="SN">Sénégal</option>
+                                    <option value="CI">Côte d'Ivoire</option>
+                                    <option value="MA">Maroc</option>
+                                    <option value="MU">Île Maurice</option>
+                                    <option value="MG">Madagascar</option>
+                                </optgroup>
+                                <optgroup label="International">
+                                    <option value="OTHER">Autre pays (Reste du monde)</option>
+                                </optgroup>
                             </select>
                             <p id="auth-country-message" style="margin-top: 0.5rem; font-size: 0.8rem; display: none;">
                             </p>

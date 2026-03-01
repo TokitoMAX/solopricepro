@@ -142,10 +142,11 @@ const Marketplace = {
 
         if (!missions || missions.length === 0) {
             container.innerHTML = `
-                <div class="empty-feed glass">
-                    <h3>C'est bien calme ici...</h3>
-                    <p>Soyez le premier à dynamiser le réseau SoloPrice !</p>
-                    <button class="button-primary" onclick="Marketplace.showPostForm()">Diffuser la 1ère offre</button>
+                <div class="empty-feed glass" style="text-align: center; padding: 3rem 1rem;">
+                    <div class="icon" style="margin-bottom: 1rem;"><i class="fas fa-satellite-dish" style="font-size: 3rem; color: var(--primary-light); opacity: 0.8;"></i></div>
+                    <h3>Le radar est silencieux.</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Soyez la première entreprise à partager une opportunité avec le réseau SoloPrice.</p>
+                    <button class="button-primary" onclick="Marketplace.showPostForm()"><i class="fas fa-plus"></i> Diffuser la première offre</button>
                 </div>`;
             return;
         }
@@ -163,43 +164,49 @@ const Marketplace = {
             const companyName = m.poster_company || m.poster_name || 'Entreprise';
 
             return `
-                <article class="feed-item glass" id="mission-${m.id}">
-                    <div class="feed-item-header">
-                        <div class="author-avatar">${this.escape(companyName[0]) || 'M'}</div>
-                        <div class="author-meta">
-                            <strong>${this.escape(companyName)}</strong>
-                            <span>Mission diffusée le ${dateStr}</span>
+                <article class="feed-item glass premium-card" id="mission-${m.id}" style="padding: 1.5rem; border-radius: 16px; margin-bottom: 1rem; transition: transform 0.2s; background: rgba(15, 23, 42, 0.6);">
+                    <div class="feed-item-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <div class="author-avatar" style="width: 50px; height: 50px; border-radius: 12px; background: var(--dark-light); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; border: 1px solid var(--border);">
+                                ${this.escape(companyName[0]) || 'M'}
+                            </div>
+                            <div class="author-meta">
+                                <strong style="font-size: 1.1rem; color: var(--white); display: block;">${this.escape(companyName)}</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="far fa-clock"></i> Publié le ${dateStr}</span>
+                            </div>
                         </div>
-                        <div class="item-badge">${m.zone || 'Remote'}</div>
+                        <div class="item-badge" style="background: var(--dark); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; border: 1px solid var(--primary-light); color: var(--primary-light);">
+                            <i class="fas fa-map-marker-alt"></i> ${this.escape(m.zone) || 'Remote'}
+                        </div>
                     </div>
                     
-                    <div class="feed-item-content">
-                        <h2 class="feed-title">${this.escape(m.title)}</h2>
-                        <p class="feed-description">${this.escape(m.description)}</p>
+                    <div class="feed-item-content" style="margin-bottom: 1.5rem;">
+                        <h2 class="feed-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">${this.escape(m.title)}</h2>
+                        <p class="feed-description" style="color: var(--text-light); line-height: 1.6; font-size: 0.95rem;">${this.escape(m.description)}</p>
                     </div>
 
-                    <div class="feed-item-pricing">
-                        <div class="price-pill">
-                            <span class="label">Budget Net Expert</span>
-                            <span class="value">${typeof App !== 'undefined' ? App.formatCurrency(m.budget) : m.budget + '€'}</span>
+                    <div class="feed-item-pricing" style="display: flex; gap: 1rem; background: var(--dark); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                        <div class="price-pill" style="flex: 1;">
+                            <span class="label" style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Budget Net Expert</span>
+                            <span class="value" style="display: block; font-size: 1.3rem; font-weight: 800; color: var(--white);">${typeof App !== 'undefined' ? App.formatCurrency(m.budget) : m.budget + '€'}</span>
                         </div>
-                        <div class="price-pill">
-                            <span class="label">Coût Client (Total)</span>
-                            <span class="value">${typeof App !== 'undefined' ? App.formatCurrency((parseFloat(m.budget) * (1 + this.COMMISSION_RATE)).toFixed(0)) : (parseFloat(m.budget) * (1 + this.COMMISSION_RATE)).toFixed(0) + '€'}</span>
+                        <div class="price-pill" style="flex: 1; border-left: 1px solid var(--border); padding-left: 1rem;">
+                            <span class="label" style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Coût Client (Total)</span>
+                            <span class="value" style="display: block; font-size: 1.1rem; font-weight: 600; color: var(--text-muted);">${typeof App !== 'undefined' ? App.formatCurrency((parseFloat(m.budget) * (1 + this.COMMISSION_RATE)).toFixed(0)) : (parseFloat(m.budget) * (1 + this.COMMISSION_RATE)).toFixed(0) + '€'}</span>
                         </div>
                     </div>
 
-                    <div class="feed-item-actions">
+                    <div class="feed-item-actions" style="display: flex; gap: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
                         ${isOwner ? `
-                            <button onclick="Marketplace.deleteMission('${m.id}')" class="action-btn danger">
+                            <button onclick="Marketplace.deleteMission('${m.id}')" class="button-outline danger" style="flex: 1; border-color: var(--danger); color: var(--danger);">
                                 <i class="fas fa-trash"></i> Supprimer
                             </button>
-                            <button class="action-btn" onclick="App.showNotification('Édition bientôt disponible', 'info')">
+                            <button class="button-secondary" onclick="App.showNotification('Édition bientôt disponible', 'info')" style="flex: 1;">
                                 <i class="fas fa-edit"></i> Modifier
                             </button>
                         ` : `
-                            <button onclick="Marketplace.openApplyForm('${m.id}', '${this.escape(m.title)}')" class="action-btn primary">
-                                <i class="fas fa-paper-plane"></i> Postuler / Contacter
+                            <button onclick="Marketplace.openApplyForm('${m.id}', '${this.escape(m.title)}')" class="button-primary full-width" style="font-weight: 600; font-size: 1rem; padding: 0.8rem;">
+                                <i class="fas fa-paper-plane"></i> Proposer mes services
                             </button>
                         `}
                     </div>

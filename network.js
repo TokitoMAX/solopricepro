@@ -78,16 +78,19 @@ const Network = {
     renderPartners(container) {
         if (this.providers.length === 0) {
             container.innerHTML = `
-                <div class="empty-state">
-                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Vous n'avez pas encore de prestataires dans votre réseau.</p>
+                <div class="empty-state glass" style="padding: 3rem; border-radius: 16px; margin-bottom: 2rem;">
+                    <i class="fas fa-handshake" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem; color: var(--white);">Mon Cercle d'Experts</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Vous n'avez pas encore ajouté de prestataires privés à votre réseau personnel.</p>
                     <div style="display: flex; gap: 1rem; justify-content: center;">
-                        <button class="button-primary" onclick="Network.showAddModal()">Ajouter manuellement</button>
-                        <button class="button-secondary" onclick="App.navigateTo('marketplace', 'experts')">Découvrir des Experts</button>
+                        <button class="button-primary" onclick="Network.showAddModal()"><i class="fas fa-plus"></i> Ajouter un contact manuellement</button>
                     </div>
-                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px dashed var(--border);">
-                        <p style="color: var(--white); font-weight: bold; margin-bottom: 0.5rem;">✨ Vous êtes prestataire ?</p>
-                        <button class="button-secondary" onclick="Network.showEcosystemModal()">Rejoindre l'Écosystème SoloPrice</button>
-                    </div>
+                </div>
+                
+                <div class="glass" style="padding: 2rem; border-radius: 16px; border: 1px dashed var(--primary-light); text-align: center; background: rgba(99, 102, 241, 0.05);">
+                    <h4 style="color: var(--primary-light); margin-bottom: 0.5rem; font-size: 1.1rem;"><i class="fas fa-rocket"></i> Vous êtes vous-même un expert ?</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Devenez Consultant SoloPrice et recevez des propositions de mission directement sur la plateforme.</p>
+                    <button class="button-secondary" onclick="Network.showEcosystemModal()"><i class="fas fa-paper-plane"></i> Rejoindre l'Écosystème SoloPrice</button>
                 </div>
             `;
             return;
@@ -130,8 +133,8 @@ const Network = {
                     `).join('')}
                 </div>
 
-            </div>
-        `;
+            </div >
+    `;
     },
     showAddModal() {
         const modal = document.getElementById('network-add-modal');
@@ -169,11 +172,11 @@ const Network = {
             if (user && user.id) {
                 const token = Storage.getToken();
 
-                const response = await fetch(`${Auth.apiBase}/marketplace/apply-ecosystem`, {
+                const response = await fetch(`${Auth.apiBase} /marketplace/apply - ecosystem`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // Important for the API
+                        'Authorization': `Bearer ${token} ` // Important for the API
                     },
                     body: JSON.stringify({
                         specialty: application.specialty,

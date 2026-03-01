@@ -1351,19 +1351,19 @@ const Scoper = {
                                 <div class="gauge-label">Humeur & Focus</div>
                                 <div class="hp-mood-grid">
                                     <button class="hp-mood-btn ${journal.mood === 'fire' ? 'active fire' : ''}" onclick="Scoper.updateJournalMood('fire')">
-                                        <div class="hp-mood-emoji">🔥</div>
+                                        <div class="hp-mood-emoji"><i class="fas fa-fire"></i></div>
                                         <div class="hp-mood-label">On Fire</div>
                                     </button>
                                     <button class="hp-mood-btn ${journal.mood === 'focus' ? 'active focus' : ''}" onclick="Scoper.updateJournalMood('focus')">
-                                        <div class="hp-mood-emoji">🎯</div>
+                                        <div class="hp-mood-emoji"><i class="fas fa-crosshairs"></i></div>
                                         <div class="hp-mood-label">Focus</div>
                                     </button>
                                     <button class="hp-mood-btn ${journal.mood === 'low' ? 'active low' : ''}" onclick="Scoper.updateJournalMood('low')">
-                                        <div class="hp-mood-emoji">🔋</div>
+                                        <div class="hp-mood-emoji"><i class="fas fa-battery-quarter"></i></div>
                                         <div class="hp-mood-label">Low Res</div>
                                     </button>
                                     <button class="hp-mood-btn ${journal.mood === 'chaos' ? 'active chaos' : ''}" onclick="Scoper.updateJournalMood('chaos')">
-                                        <div class="hp-mood-emoji">🌪️</div>
+                                        <div class="hp-mood-emoji"><i class="fas fa-bolt"></i></div>
                                         <div class="hp-mood-label">Chaos</div>
                                     </button>
                                 </div>
