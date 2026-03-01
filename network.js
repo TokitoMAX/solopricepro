@@ -166,7 +166,7 @@ const Network = {
 
         let experts = [];
         try {
-            const token = Storage.getToken();
+            const token = Auth.token;
             const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-experts`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -297,7 +297,7 @@ const Network = {
         };
 
         try {
-            const token = Storage.getToken();
+            const token = Auth.token;
             const response = await fetch(`${Auth.apiBase}/api/marketplace/apply-ecosystem`, {
                 method: 'POST',
                 headers: {
@@ -349,7 +349,7 @@ const Network = {
 
         let apps = [];
         try {
-            const token = Storage.getToken();
+            const token = Auth.token;
             const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-applications`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -434,7 +434,7 @@ const Network = {
     },
 
     async reviewApplication(id, status, applicantData) {
-        const token = Storage.getToken();
+        const token = Auth.token;
         try {
             const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-applications/${id}`, {
                 method: 'PATCH',
@@ -529,7 +529,7 @@ const Network = {
         };
 
         try {
-            const token = Storage.getToken();
+            const token = Auth.token;
             const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-experts`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -548,7 +548,7 @@ const Network = {
     async deleteEcosystemExpert(id) {
         if (!confirm('Retirer cet expert de l\'écosystème ?')) return;
         try {
-            const token = Storage.getToken();
+            const token = Auth.token;
             await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-experts/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
