@@ -88,7 +88,7 @@ app.use((req, res, next) => {
 // [LOG] Diagnostic final avant les routes
 app.use('/api', (req, res, next) => {
     if (req.method === 'POST') {
-        const hasBody = (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0);
+        const hasBody = (req.body && typeof req.body === 'object' && req.body !== null && Object.keys(req.body).length > 0);
         console.log(`🏁 [DISPATCH] ${req.path} | Body: ${hasBody ? 'OK' : 'VIDE'} | CT: ${req.get('Content-Type')}`);
     }
     next();
@@ -161,10 +161,12 @@ app.use((req, res, next) => {
 
 // Global Error Handler to prevent empty responses
 app.use((err, req, res, next) => {
-    console.error('💥 Server Error:', err);
-    res.status(500).json({
+    console.error(`💥 Server Error on ${req.method} ${req.path}:`, err);
+    res.status(err.status || 500).json({
         message: 'Une erreur interne est survenue sur le serveur.',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        error: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+        code: err.code || err.type
     });
 });
 

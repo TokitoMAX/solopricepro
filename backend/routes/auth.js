@@ -108,6 +108,9 @@ router.post('/register', async (req, res) => {
 // @desc    Auth user & get token via Supabase
 // @access  Public
 router.post('/login', async (req, res) => {
+    if (!req.body) {
+        return res.status(400).json({ message: "Requête malformée : body manquant." });
+    }
     const { email, password } = req.body;
     const supabase = req.app.get('supabase');
 
