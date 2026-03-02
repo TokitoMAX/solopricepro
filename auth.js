@@ -162,10 +162,15 @@ const Auth = {
                 return result;
             }
 
-            // If it doesn't require confirmation but there is no session (e.g. backend admin creation)
-            if (result.user && !result.session && !result.requiresConfirmation) {
-                // UI will handle auto-login
+            // If standard signup returned a session (Confirm Email is OFF in Supabase)
+            if (result.session) {
+                this.handleAuthSuccess(result);
                 return result;
+            }
+
+            // Fallback for older admin creation or if no session returned unexpectedly
+            if (result.user && !result.session && !result.requiresConfirmation) {
+                return result; // UI will handle auto-login as a fallback
             }
 
             this.handleAuthSuccess(result);

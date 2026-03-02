@@ -13,6 +13,7 @@ router.use((req, res, next) => {
 router.post('/register', async (req, res) => {
     const { email, password, company_name, first_name, last_name, country } = req.body;
     const supabase = req.app.get('supabase');
+    const { injectWelcomeData } = require('../services/onboarding');
 
     try {
         console.log(`📝 Inscription demandée pour: ${email}`);
@@ -26,30 +27,27 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // Utilize the Admin API to BYPASS email rate limitations on Supabase.
-        const serviceReplica = require('@supabase/supabase-js').createClient(
-            process.env.SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-        );
-
-        const { data, error } = await serviceReplica.auth.admin.createUser({
+        // Use the STANDARD signUp method.
+        // IMPORTANT: In your Supabase Dashboard -> Authentication -> Providers -> Email,
+        // you MUST disable "Confirm email" for this to work frictionlessly without an email roundtrip.
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
-            email_confirm: true, // Auto-confirm to skip the email limitation entirely
-            user_metadata: {
-                company_name: company_name || '', // optional
-                first_name: first_name || '',
-                last_name: last_name || '',
-                country: country || 'FR', // Default to France if missing
-                full_name: `${first_name || ''} ${last_name || ''}`.trim()
+            options: {
+                data: {
+                    company_name: company_name || '', // optional
+                    first_name: first_name || '',
+                    last_name: last_name || '',
+                    country: country || 'FR', // Default to France if missing
+                    full_name: `${first_name || ''} ${last_name || ''}`.trim()
+                }
             }
         });
 
-        // Supabase Admin API returns the user object directly, not inside data.user sometimes depending on version.
         const user = data?.user || data;
 
         if (error) {
-            console.error('❌ Supabase Auth Admin Error:', {
+            console.error('❌ Supabase Auth SignUp Error:', {
                 message: error.message,
                 status: error.status,
                 name: error.name
@@ -67,29 +65,46 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        // Since we explicitly confirmed the email above, the user can log in immediately.
-        // The frontend will automatically attempt a login when we return success.
-        console.log('✅ Supabase signup (Admin bypass) successful:', {
+        console.log('✅ Supabase signup (Standard) successful:', {
             userId: user?.id,
             email: user?.email
         });
 
+        // ==========================================
+        // ONBOARDING: Inject Welcome Data (Aha Moment)
+        // ==========================================
+        if (user && user.id) {
+            // We use the admin replica because the new user doesn't have an active 
+            // session token yet in the backend to pass RLS natively via headers.
+            const serviceReplica = require('@supabase/supabase-js').createClient(
+                process.env.SUPABASE_URL,
+                process.env.SUPABASE_SERVICE_ROLE_KEY
+            );
+
+            // Call asynchronously to avoid slowing down the API response to the user
+            injectWelcomeData(serviceReplica, user.id).catch(err => {
+                console.error('[ONBOARDING] Background injection failed:', err);
+            });
+        }
+        // ==========================================
+
         if (!user) {
             return res.status(200).json({
-                message: "Inscription réussie !",
-                requiresConfirmation: false
+                message: "Inscription en attente. Veuillez vérifier vos emails si la confirmation est requise.",
+                requiresConfirmation: true
             });
         }
 
+        // Standard signup returns a session if "Confirm Email" is disabled
         res.status(201).json({
             user: {
                 id: user.id,
                 email: user.email,
                 user_metadata: user.user_metadata
             },
-            session: null, // Admin creation does not start a session
-            requiresConfirmation: false,
-            message: "Inscription réussie !"
+            session: data.session || null,
+            requiresConfirmation: !data.session, // If no session, email confirmation is likely enabled
+            message: data.session ? "Inscription réussie !" : "Veuillez vérifier votre email."
         });
     } catch (error) {
         console.error('💥 Catch Error /register:', {
