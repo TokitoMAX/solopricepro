@@ -503,56 +503,25 @@ const App = {
         const tier = Storage.getTier();
         const isExpert = tier === 'expert';
 
-        const quotes = Storage.getQuotes();
-        const invoices = Storage.getInvoices();
-        const clients = Storage.getClients();
-
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        const monthlyQuotesCount = quotes.filter(q => {
-            const d = new Date(q.createdAt);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        }).length;
-
-        const monthlyInvoicesCount = invoices.filter(i => {
-            const d = new Date(i.createdAt);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        }).length;
-
-        const marketplaceMissions = Storage.getPublicMissions() || [];
-        const myUserId = user?.id;
-        const monthlyMarketplaceCount = marketplaceMissions.filter(m => {
-            const d = new Date(m.createdAt);
-            // On compte les devis générés depuis le marketplace (ou missions répondues)
-            // Pour l'instant, on va vérifier dans les devis si la note mentionne "Marketplace"
-            return m.user_id === myUserId; // Mais ici on veut les réponses, pas les posts.
-        }).length;
-
-        // Plus précis : filter les devis qui viennent du marketplace
-        const marketplaceQuotesCount = quotes.filter(q => {
-            const d = new Date(q.createdAt);
-            const isMarketplace = q.notes && (q.notes.includes('Radar DomTomConnect') || q.notes.includes('Radar Réseau SoloPrice'));
-            return isMarketplace && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        }).length;
-
         // Banner visibility
         const banner = document.getElementById('freemium-banner');
         if (banner) banner.style.display = isPro ? 'none' : 'flex';
 
+        // COMPLICATION REMOVED: All local quota counting logic (clients < x, quotes < y) is gone.
+        // The freemium model is now frictionless: everything is open to let users experience value,
+        // but high-value actions (like PDF Export) are gated.
         return {
             tier: tier,
-            canAddClient: isPro || clients.length < 1,
-            canAddQuote: isPro || monthlyQuotesCount < 2,
-            canAddInvoice: isPro || monthlyInvoicesCount < 2,
-            canAddMarketplaceResponse: isPro || marketplaceQuotesCount < 1,
+            canAddClient: true,
+            canAddQuote: true,
+            canAddInvoice: true,
+            canAddMarketplaceResponse: true,
             canExportPDF: isPro,
             canAutomateMarketplace: isPro,
             isExpert: isExpert,
-            maxClients: isPro ? Infinity : 1,
-            maxQuotes: isPro ? Infinity : 2,
-            maxInvoices: isPro ? Infinity : 2
+            maxClients: Infinity,
+            maxQuotes: Infinity,
+            maxInvoices: Infinity
         };
     },
 

@@ -471,12 +471,11 @@ const Storage = {
     },
 
     checkUserTier() {
-        const clients = this.getClients().length;
-        // Simple logic for now
+        // Left for backward compatibility, but always allowed now via app_v5.js checkFreemiumLimits
         return {
-            plan: 'standard',
-            canAddClient: clients < 1, // Limit for free tier
-            limitReached: clients >= 1
+            plan: this.getTier(),
+            canAddClient: true,
+            limitReached: false
         };
     },
 
@@ -487,27 +486,21 @@ const Storage = {
         return tier;
     },
     _calculateTier() {
-        // 1. Priorité à l'admin (email spécifique ou rôle admin)
-        if (typeof Auth !== 'undefined' && Auth.user) {
-            const user = Auth.user;
-            const isAdminEmail = user.email && user.email.toLowerCase() === 'domtomconnect@gmail.com';
-            const isAdminRole = user.role === 'admin' || user.user_metadata?.role === 'admin';
+        if (typeof Auth === 'undefined' || !Auth.user) return 'free';
 
-            if (isAdminEmail || isAdminRole) {
-                return 'expert';
-            }
+        const user = Auth.user;
+        const isAdminEmail = user.email && user.email.toLowerCase() === 'domtomconnect@gmail.com';
+        const isAdminRole = user.role === 'admin' || user.user_metadata?.role === 'admin';
+
+        if (isAdminEmail || isAdminRole) return 'expert';
+
+        // Single Source of Truth: The JWT Auth Metadata
+        if (user.user_metadata) {
+            if (user.user_metadata.tier) return user.user_metadata.tier;
+            if (user.user_metadata.is_pro === true || user.user_metadata.is_pro === 'true') return 'pro';
         }
 
-        // 2. Vérifier les métadonnées auth (source de vérité du backend)
-        if (typeof Auth !== 'undefined' && Auth.user && Auth.user.user_metadata) {
-            const meta = Auth.user.user_metadata;
-            if (meta.tier) return meta.tier;
-            if (meta.is_pro === true || meta.is_pro === 'true') return 'pro';
-        }
-
-        // 3. Fallback sur les settings
-        const settings = this.getSettings();
-        return settings.plan || 'free';
+        return 'free';
     },
 
     isPro() {
