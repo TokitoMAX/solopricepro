@@ -12,4 +12,4 @@ router.get('/debug-env', (req, res) => {
     });
 });
 
-// ⚠️ IMPORTANT: Supprimez cette route après avoir vérifié !
+// ️ IMPORTANT: Supprimez cette route après avoir vérifié !

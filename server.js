@@ -1,6 +1,6 @@
 // SoloPrice Pro - Backend Server
 console.log("\n\n*****************************************");
-console.log("      🚀  SOLOPRICE PRO  v1.2           ");
+console.log("        SOLOPRICE PRO  v1.2           ");
 console.log("       BACKEND IS STARTING...          ");
 console.log("*****************************************\n\n");
 const express = require('express');
@@ -18,10 +18,10 @@ const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'STRIPE_WEBHOOK_SE
 const missingVars = requiredEnvVars.filter(v => !process.env[v]);
 
 if (missingVars.length > 0) {
-    console.warn('⚠️ ATTENTION : Variables d\'environnement manquantes :', missingVars.join(', '));
+    console.warn('️ ATTENTION : Variables d\'environnement manquantes :', missingVars.join(', '));
     console.warn('Le backend risque de ne pas fonctionner correctement.');
 } else {
-    console.log('✅ Configuration environnement : OK');
+    console.log(' Configuration environnement : OK');
 }
 
 const app = express();
@@ -34,14 +34,14 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABAS
 let supabase;
 try {
     if (!supabaseUrl || !supabaseKey) {
-        console.warn('⚠️ Attention: SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant.');
+        console.warn('️ Attention: SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant.');
     } else {
-        console.log('📡 Initialisation de Supabase (Mode Service Role)...');
+        console.log(' Initialisation de Supabase (Mode Service Role)...');
         supabase = createClient(supabaseUrl, supabaseKey);
-        console.log('✅ Supabase client créé.');
+        console.log(' Supabase client créé.');
     }
 } catch (err) {
-    console.error('❌ Erreur initialisation Supabase:', err.message);
+    console.error(' Erreur initialisation Supabase:', err.message);
 }
 
 // Injecter supabase (peut être null si échec init)
@@ -49,7 +49,7 @@ app.set('supabase', supabase);
 
 // 1. Logs & CORS
 app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] 📡 ${req.method} ${req.path}`);
+    console.log(`[${new Date().toISOString()}]  ${req.method} ${req.path}`);
     next();
 });
 
@@ -74,7 +74,7 @@ app.use((req, res, next) => {
     // Cas 2 : Body déjà analysé par Vercel (Objet présent)
     // On est plus souple : s'il y a un objet body, on le garde
     if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
-        console.log(`📦 [BODY-PARSER] Body déjà présent (Vercel/Middleware prioritaire)`);
+        console.log(` [BODY-PARSER] Body déjà présent (Vercel/Middleware prioritaire)`);
         return next();
     }
 
@@ -89,7 +89,7 @@ app.use((req, res, next) => {
 app.use('/api', (req, res, next) => {
     if (req.method === 'POST') {
         const hasBody = (req.body && typeof req.body === 'object' && req.body !== null && Object.keys(req.body).length > 0);
-        console.log(`🏁 [DISPATCH] ${req.path} | Body: ${hasBody ? 'OK' : 'VIDE'} | CT: ${req.get('Content-Type')}`);
+        console.log(` [DISPATCH] ${req.path} | Body: ${hasBody ? 'OK' : 'VIDE'} | CT: ${req.get('Content-Type')}`);
     }
     next();
 });
@@ -129,7 +129,7 @@ const publicRoutes = require('./backend/routes/public'); // [NEW] Public Routes 
 // Supabase Guard Middleware for Auth & Data Routes
 app.use(['/api/auth', '/api/data', '/api/admin', '/api/marketplace'], (req, res, next) => {
     if (!req.app.get('supabase')) {
-        console.error(`[BACKEND-GUARD] ❌ Supabase client is MISSING for ${req.path}`);
+        console.error(`[BACKEND-GUARD]  Supabase client is MISSING for ${req.path}`);
         return res.status(503).json({
             message: "Service indisponible.",
             debug: "Supabase client not initialized."
@@ -161,7 +161,7 @@ app.use((req, res, next) => {
 
 // Global Error Handler to prevent empty responses
 app.use((err, req, res, next) => {
-    console.error(`💥 Server Error on ${req.method} ${req.path}:`, err);
+    console.error(` Server Error on ${req.method} ${req.path}:`, err);
     res.status(err.status || 500).json({
         message: 'Une erreur interne est survenue sur le serveur.',
         error: err.message,
@@ -172,7 +172,7 @@ app.use((err, req, res, next) => {
 
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, '0.0.0.0', () => {
-        console.log(`\n🚀  SoloPrice Pro [V-SCHEMA-FIX-1.5] est prêt sur http://localhost:${PORT}`);
+        console.log(`\n  SoloPrice Pro [V-SCHEMA-FIX-1.5] est prêt sur http://localhost:${PORT}`);
         console.log(`Mode: Professional Backend (Supabase Auth - Cache Clear)\n`);
     });
 }

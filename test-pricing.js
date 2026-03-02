@@ -6,7 +6,7 @@
 const PricingEngine = require('./pricing-engine.js');
 
 function test() {
-    console.log('🧪 Démarrage des tests du PricingEngine...\n');
+    console.log(' Démarrage des tests du PricingEngine...\n');
 
     const testCases = [
         {
@@ -35,7 +35,7 @@ function test() {
         console.log(`   - Diagnostic: ${diagnostic.title} (${diagnostic.color})\n`);
     });
 
-    console.log('✅ Fin des tests.');
+    console.log(' Fin des tests.');
 }
 
 test();

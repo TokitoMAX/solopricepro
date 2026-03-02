@@ -5,7 +5,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 
 async function checkQuote() {
     const quoteId = 'mm1e608vl3fw2gcolof';
-    console.log(`--- 🔍 QUOTE ${quoteId} CHECK ---`);
+    console.log(`---  QUOTE ${quoteId} CHECK ---`);
     const { data: quote, error } = await supabase
         .from('sp_quotes')
         .select('*')
@@ -13,7 +13,7 @@ async function checkQuote() {
         .single();
 
     if (error) {
-        console.error('❌ Error fetching quote:', error.message);
+        console.error(' Error fetching quote:', error.message);
         return;
     }
 

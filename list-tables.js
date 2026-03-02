@@ -17,8 +17,8 @@ async function listTables() {
         // But with supabase-js we can try a raw SQL via another way or just guess common names.
         // Let's try to query 'sp_settings' to see if it exists as a baseline.
         const { data: settings, error: sErr } = await supabase.from('sp_settings').select('*').limit(1);
-        if (!sErr) console.log("✅ sp_settings exists.");
-        else console.log("❌ sp_settings missing: " + sErr.message);
+        if (!sErr) console.log(" sp_settings exists.");
+        else console.log(" sp_settings missing: " + sErr.message);
 
         // Try a raw fetch to /rest/v1/ and see if it lists
         console.log("Checking schema via generic discovery...");

@@ -16,10 +16,10 @@ async function updateBucket() {
     });
 
     if (error) {
-        console.error("❌ updateBucket ERROR:", error.message);
+        console.error(" updateBucket ERROR:", error.message);
         console.log("Trying via raw SQL if possible (requires proper permissions)...");
     } else {
-        console.log("✅ Bucket 'logos' updated successfully!");
+        console.log(" Bucket 'logos' updated successfully!");
     }
 }
 

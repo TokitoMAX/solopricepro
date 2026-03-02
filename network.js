@@ -210,7 +210,7 @@ const Network = {
                                     <p style="margin: 2px 0 0; color: var(--primary-light); font-size: 0.82rem; font-weight: 600;">${e.specialty || ''}</p>
                                 </div>
                                 ${isAdmin ? `
-                                <button onclick="Network.deleteEcosystemExpert('${e.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;" title="Supprimer">✕</button>
+                                <button onclick="Network.deleteEcosystemExpert('${e.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;" title="Supprimer"></button>
                                 ` : ''}
                             </div>
                             ${e.city ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;"><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>${e.city}</div>` : ''}
@@ -387,9 +387,9 @@ const Network = {
                                             <span style="font-size: 0.75rem; color: var(--primary-light); background: var(--primary-glass); padding: 2px 8px; border-radius: 20px;">${a.specialty}</span>
                                         </div>
                                         <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-                                            ✉️ ${a.user_email}  ${a.city ? `· 📍 ${a.city}` : ''}
+                                            ️ ${a.user_email}  ${a.city ? `·  ${a.city}` : ''}
                                         </div>
-                                        ${a.portfolio ? `<a href="${a.portfolio}" target="_blank" style="font-size: 0.8rem; color: var(--primary-light);">🔗 ${a.portfolio}</a>` : ''}
+                                        ${a.portfolio ? `<a href="${a.portfolio}" target="_blank" style="font-size: 0.8rem; color: var(--primary-light);"> ${a.portfolio}</a>` : ''}
                                         ${a.description ? `<p style="font-size: 0.82rem; color: var(--text-light); margin: 0.75rem 0 0; line-height: 1.5;">${a.description}</p>` : ''}
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 0.5rem; min-width: 140px;">
@@ -422,7 +422,7 @@ const Network = {
                                         <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">${a.specialty}</span>
                                     </div>
                                     <span style="font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; background: ${a.status === 'accepted' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; color: ${a.status === 'accepted' ? 'var(--success)' : 'var(--danger-light)'};">
-                                        ${a.status === 'accepted' ? '✓ Accepté' : '✕ Refusé'}
+                                        ${a.status === 'accepted' ? ' Accepté' : ' Refusé'}
                                     </span>
                                 </div>
                             `).join('')}
@@ -474,7 +474,7 @@ const Network = {
             modal.className = 'modal-overlay';
             modal.innerHTML = `
                 <div class="modal-content glass" style="max-width: 500px;">
-                    <button type="button" class="modal-close" onclick="document.getElementById('ecosystem-add-expert-modal').classList.remove('active')">✕</button>
+                    <button type="button" class="modal-close" onclick="document.getElementById('ecosystem-add-expert-modal').classList.remove('active')"></button>
                     <div class="modal-header">
                         <h2>Ajouter un Expert</h2>
                         <p class="text-muted">Cet expert sera visible par tous les utilisateurs de l'app.</p>

@@ -4,7 +4,7 @@ console.log('[APP] Version v20260225_0100 LOADED');
 // --- ANALYTICS HELPER ---
 const Analytics = {
     trackEvent(name, properties = {}) {
-        console.log(`📊 [TRACK] ${name}`, properties);
+        console.log(` [TRACK] ${name}`, properties);
         if (window.clarity) {
             window.clarity("set", name, JSON.stringify(properties));
         }
@@ -36,43 +36,43 @@ const App = {
 
     // Initialisation de l'application
     async init() {
-        console.log('🚀 [APP] Init started');
+        console.log(' [APP] Init started');
 
         // Safety timeout to hide loader if init hangs (e.g. slow network)
         const safetyTimer = setTimeout(() => {
             const loader = document.getElementById('app-loader');
             if (loader && loader.style.display !== 'none') {
-                console.warn('⚠️ [APP] Init took too long (>10s). Forcing loader hide.');
+                console.warn('️ [APP] Init took too long (>10s). Forcing loader hide.');
                 this.hideLoader();
             }
         }, 10000);
 
         try {
-            console.log('📡 [APP] Step 1: Core components');
+            console.log(' [APP] Step 1: Core components');
             this.setupNavigation();
             this.migrateData();
             this.setupMobileOverlay();
 
-            console.log('📡 [APP] Step 2: Session check');
+            console.log(' [APP] Step 2: Session check');
             const isLoggedIn = (typeof Auth !== 'undefined') ? Auth.isLoggedIn() : false;
             const inApp = sessionStorage.getItem('sp_in_app') === 'true';
             const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
 
-            console.log('🔍 [APP] Current state:', { isLoggedIn, inApp, savedPage });
+            console.log(' [APP] Current state:', { isLoggedIn, inApp, savedPage });
 
             if (isLoggedIn || inApp) {
                 if (isLoggedIn) {
-                    console.log('📡 [APP] Step 3: Syncing data...');
+                    console.log(' [APP] Step 3: Syncing data...');
                     if (typeof Auth !== 'undefined' && Auth.refreshUser) {
                         try { await Auth.refreshUser(); } catch (e) { console.error('Refresh user failed', e); }
                     }
                     if (typeof Storage !== 'undefined' && Storage.init) {
                         await Storage.init();
                     }
-                    console.log('✅ [APP] Data sync complete');
+                    console.log(' [APP] Data sync complete');
                 }
 
-                console.log('📡 [APP] Step 4: Entering app');
+                console.log(' [APP] Step 4: Entering app');
                 this.enterApp(false, false);
 
                 // Reset currentPage to null so the deduplication guard in navigateTo
@@ -87,7 +87,7 @@ const App = {
                     this.navigateTo(savedPage, lastTab);
                 }
             } else {
-                console.log('📡 [APP] Step 3: Showing landing');
+                console.log(' [APP] Step 3: Showing landing');
                 const landing = document.getElementById('landing-page');
                 const appWrapper = document.getElementById('app-wrapper');
                 if (landing) landing.style.display = 'block';
@@ -95,7 +95,7 @@ const App = {
                 this.updateLandingStats();
             }
 
-            console.log('📡 [APP] Step 5: Post-init tasks');
+            console.log(' [APP] Step 5: Post-init tasks');
             this.checkFreemiumLimits();
             this.renderUserInfo();
             this.loadPayPalSDK();
@@ -103,16 +103,16 @@ const App = {
             if (window.Network && Network.init) Network.init();
 
             if (this.handleUrlHash()) {
-                console.log('📡 [APP] Hash handled, stopping init.');
+                console.log(' [APP] Hash handled, stopping init.');
                 clearTimeout(safetyTimer);
                 this.hideLoader();
                 return;
             }
 
         } catch (e) {
-            console.error('❌ [APP] Critical Init Error:', e);
+            console.error(' [APP] Critical Init Error:', e);
         } finally {
-            console.log('🏁 [APP] Init finished');
+            console.log(' [APP] Init finished');
             clearTimeout(safetyTimer);
             this.hideLoader();
         }
@@ -155,7 +155,7 @@ const App = {
     },
 
     enterPublicMode() {
-        console.log("🛡️ Entering Public Mode (No Sidebar)");
+        console.log("️ Entering Public Mode (No Sidebar)");
         const sidebar = document.querySelector('.sidebar');
         const header = document.querySelector('.mobile-header');
         const banner = document.getElementById('freemium-banner');
@@ -332,15 +332,15 @@ const App = {
     },
 
     renderPageContent(page, ...args) {
-        console.log(`📡 [APP] Rendering page: ${page}`, args);
+        console.log(` [APP] Rendering page: ${page}`, args);
         try {
             if (page === 'dashboard') {
                 if (typeof Dashboard !== 'undefined' && Dashboard.render) Dashboard.render();
-                else console.warn('⚠️ Dashboard module not ready');
+                else console.warn('️ Dashboard module not ready');
             }
             if (page === 'quotes') {
                 if (typeof Quotes !== 'undefined' && Quotes.render) Quotes.render('quotes-content', ...args);
-                else console.warn('⚠️ Quotes module not ready');
+                else console.warn('️ Quotes module not ready');
             }
             if (page === 'invoices') {
                 if (typeof Invoices !== 'undefined') {
@@ -350,7 +350,7 @@ const App = {
             }
             if (page === 'network') {
                 if (typeof Network !== 'undefined' && Network.render) Network.render(...args);
-                else console.warn('⚠️ Network module not ready');
+                else console.warn('️ Network module not ready');
             }
             if (page === 'clients') {
                 this.navigateTo('network', 'clients');
@@ -362,28 +362,28 @@ const App = {
                 if (typeof Marketplace !== 'undefined' && Marketplace.render) {
                     this.checkFreemiumLimits(); // Refresh limits before rendering
                     try {
-                        console.log('📡 [MARKETPLACE-ROOT] Rendering v4.0 (Lite)...');
+                        console.log(' [MARKETPLACE-ROOT] Rendering v4.0 (Lite)...');
                         Marketplace.render('marketplace-root', ...args);
                     } catch (err) {
                         console.error('Marketplace Render Error:', err);
                     }
-                } else console.warn('⚠️ Marketplace module not ready');
+                } else console.warn('️ Marketplace module not ready');
             }
             if (page === 'kanban') {
                 if (typeof Kanban !== 'undefined' && Kanban.render) Kanban.render();
-                else console.warn('⚠️ Kanban module not ready');
+                else console.warn('️ Kanban module not ready');
             }
             if (page === 'scoper') {
                 if (typeof Scoper !== 'undefined' && Scoper.render) Scoper.render();
-                else console.warn('⚠️ Scoper module not ready');
+                else console.warn('️ Scoper module not ready');
             }
             if (page === 'profile') {
                 if (typeof Profile !== 'undefined' && Profile.render) Profile.render();
-                else console.warn('⚠️ Profile module not ready');
+                else console.warn('️ Profile module not ready');
             }
             if (page === 'settings') {
                 if (typeof Settings !== 'undefined' && Settings.render) Settings.render();
-                else console.warn('⚠️ Settings module not ready');
+                else console.warn('️ Settings module not ready');
             }
             if (page === 'services') {
                 this.navigateTo('settings', 'billing'); // Redirect to Settings with billing tab
@@ -398,7 +398,7 @@ const App = {
                 }
             }
         } catch (e) {
-            console.error(`❌ [APP] Error rendering page ${page}:`, e);
+            console.error(` [APP] Error rendering page ${page}:`, e);
             if (this.showNotification) this.showNotification('Erreur d\'affichage', 'error');
         }
     },
@@ -443,7 +443,7 @@ const App = {
         });
 
         if (migrated) {
-            console.log("🚀 Migration SoloPrice Pro terminée avec succès !");
+            console.log(" Migration SoloPrice Pro terminée avec succès !");
         }
     },
 
@@ -457,7 +457,7 @@ const App = {
                 // Si les missions contiennent les IDs factices, on vide tout pour repartir sur du propre
                 if (parsed.some(m => ['m1', 'm2', 'm3'].includes(m.id))) {
                     localStorage.setItem('sp_marketplace_missions', '[]');
-                    console.log('🧹 Dummy missions cleared.');
+                    console.log(' Dummy missions cleared.');
                 }
             } catch (e) { console.error("Error clearing dummy missions:", e); }
         }
@@ -484,7 +484,7 @@ const App = {
                 } catch (e) { console.error("Migration error (sp_my_providers):", e); }
             }
             localStorage.setItem(unifiedKey, JSON.stringify(unified));
-            console.log('🔗 Network providers unified.');
+            console.log(' Network providers unified.');
             // Clean up old keys
             localStorage.removeItem('sp_providers');
             localStorage.removeItem('sp_my_providers');
@@ -746,7 +746,7 @@ const App = {
                         </div>
                         <div style="margin-top: 4px; font-size: 0.75rem;">
                              <a href="#" onclick="App.showUpgradeModal('limit'); return false;" style="color: var(--primary); text-decoration: none;">
-                                ${isPro ? 'Gérer mon offre' : '👑 Passer PRO'}
+                                ${isPro ? 'Gérer mon offre' : ' Passer PRO'}
                              </a>
                         </div>
                     </div>
@@ -920,7 +920,7 @@ const App = {
                 const isLive = PAYPAL_CONFIG.isLiveMode;
                 const config = isLive ? PAYPAL_CONFIG.live : PAYPAL_CONFIG.sandbox;
 
-                console.log(`📡 [PAYPAL] Mode: ${isLive ? 'LIVE' : 'SANDBOX'}`);
+                console.log(` [PAYPAL] Mode: ${isLive ? 'LIVE' : 'SANDBOX'}`);
 
                 // Afficher le badge Live si on est en prod
                 setTimeout(() => {
@@ -937,19 +937,19 @@ const App = {
 
                     if (!window.paypal) {
                         if (retryCount < 5) {
-                            console.log(`⏳ [PAYPAL] SDK not ready, retrying (${retryCount + 1}/5)...`);
+                            console.log(` [PAYPAL] SDK not ready, retrying (${retryCount + 1}/5)...`);
                             container.innerHTML = '<div style="text-align:center; padding:1rem;"><i class="fas fa-spinner fa-spin"></i> Initialisation PayPal...</div>';
                             setTimeout(() => renderButtons(retryCount + 1), 1000);
                             return;
                         }
-                        console.error('❌ [PAYPAL] SDK NOT LOADED after 5s!');
+                        console.error(' [PAYPAL] SDK NOT LOADED after 5s!');
                         container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">Erreur: Le service PayPal ne répond pas.<br><small>Désactivez votre bloqueur de pub.</small></p>';
                         return;
                     }
 
                     const planId = tier === 'expert' ? config.plans.expert : config.plans.pro;
 
-                    console.log(`📡 [PAYPAL] Rendering buttons for Plan: ${planId} (${isLive ? 'LIVE' : 'SANDBOX'})`);
+                    console.log(` [PAYPAL] Rendering buttons for Plan: ${planId} (${isLive ? 'LIVE' : 'SANDBOX'})`);
                     container.innerHTML = '';
 
                     paypal.Buttons({
@@ -960,7 +960,7 @@ const App = {
                             });
                         },
                         onApprove: async (data, actions) => {
-                            App.showNotification(`👑 Activation de votre accès ${tier.toUpperCase()} ${isLive ? '' : '(Sandbox)'}...`, 'success');
+                            App.showNotification(` Activation de votre accès ${tier.toUpperCase()} ${isLive ? '' : '(Sandbox)'}...`, 'success');
                             const user = Auth.getUser();
 
                             if (user) {
@@ -997,7 +997,7 @@ const App = {
             titleEl.textContent = 'Félicitations !';
             container.innerHTML = `
                 <div class="upgrade-success" style="text-align: center; padding: 2rem; width: 100%;">
-                    <div class="success-icon" style="font-size: 4rem; margin-bottom: 1.5rem;">🎉</div>
+                    <div class="success-icon" style="font-size: 4rem; margin-bottom: 1.5rem;"></div>
                     <h3 style="margin-bottom: 1rem; color: var(--primary-light);">Paiement Confirmé !</h3>
                     <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem; line-height: 1.5;">
                         Nous activons vos privilèges SoloPrice PRO.<br>
@@ -1306,7 +1306,7 @@ const App = {
         const hash = window.location.hash.substring(1);
         if (!hash) return false;
 
-        console.log("🔗 Hash detected:", hash.substring(0, 20) + "...");
+        console.log(" Hash detected:", hash.substring(0, 20) + "...");
 
         // 1. Écouter les changements de hash pour la navigation SPA (si pas déjà fait)
         if (!this.hashListenerSetup) {
@@ -1358,7 +1358,7 @@ const App = {
         }
 
         if ((type === 'recovery' || hash.includes('type=recovery')) && accessToken) {
-            console.log('🔐 Mode Recovery détecté - Ouverture de la modale');
+            console.log(' Mode Recovery détecté - Ouverture de la modale');
             sessionStorage.setItem('sp_recovery_token', accessToken);
 
             // Nettoyage de l'URL pour éviter les boucles
@@ -1493,7 +1493,7 @@ const App = {
             if (listBody) listBody.innerHTML = `
                 <tr>
                     <td colspan="4" style="text-align:center; color:#ef4444; padding: 2rem;">
-                        <div style="font-weight:bold; margin-bottom:0.5rem;">❌ Erreur de connexion au serveur</div>
+                        <div style="font-weight:bold; margin-bottom:0.5rem;"> Erreur de connexion au serveur</div>
                         <div style="font-size:0.9rem;">${e.message}</div>
                         <div style="font-size:0.8rem; margin-top:1rem; color:#888;">Le backend doit avoir la SUPABASE_SERVICE_ROLE_KEY</div>
                     </td>
@@ -1557,18 +1557,18 @@ const App = {
 
         // Éviter les doublons
         if (document.querySelector(`script[src*="paypal.com/sdk/js"]`)) {
-            console.log('📡 [PAYPAL] SDK already present.');
+            console.log(' [PAYPAL] SDK already present.');
             return;
         }
 
-        console.log(`📡 [PAYPAL] Loading SDK (${PAYPAL_CONFIG.isLiveMode ? 'LIVE' : 'SANDBOX'})...`);
+        console.log(` [PAYPAL] Loading SDK (${PAYPAL_CONFIG.isLiveMode ? 'LIVE' : 'SANDBOX'})...`);
         const script = document.createElement('script');
         script.src = `https://www.paypal.com/sdk/js?client-id=${config.clientId}&components=buttons&vault=true&intent=subscription&currency=EUR`;
         script.async = true;
 
-        script.onload = () => console.log('✅ [PAYPAL] SDK Loaded dynamically.');
+        script.onload = () => console.log(' [PAYPAL] SDK Loaded dynamically.');
         script.onerror = () => {
-            console.error('❌ [PAYPAL] SDK Load failed!');
+            console.error(' [PAYPAL] SDK Load failed!');
             alert('Erreur critique: Le service PayPal ne peut pas charger. Vérifiez votre connexion ou désactivez votre bloqueur de pub.');
         };
 

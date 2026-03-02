@@ -7,7 +7,7 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function testUpsert() {
-    console.log("🧪 Testing UPSERT with new columns...");
+    console.log(" Testing UPSERT with new columns...");
 
     const { data, error } = await supabase
         .from('sp_user_profile')
@@ -18,9 +18,9 @@ async function testUpsert() {
         });
 
     if (error) {
-        console.error("❌ UPSERT FAILED as expected:", error);
+        console.error(" UPSERT FAILED as expected:", error);
     } else {
-        console.log("✅ UPSERT SUCCEEDED? (That's unexpected if columns are missing)");
+        console.log(" UPSERT SUCCEEDED? (That's unexpected if columns are missing)");
     }
 }
 

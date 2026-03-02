@@ -92,7 +92,7 @@ const Settings = {
                                     <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Toutes vos factures et avoirs de l'année en cours.</p>
                                 </div>
                                 <button class="button-primary" onclick="Settings.exportAccounting()" ${Storage.getTier() === 'expert' ? '' : 'disabled style="opacity:0.6; cursor:not-allowed;"'}>
-                                    ${Storage.getTier() === 'expert' ? '📥 Télécharger l\'export' : '🔒 Réservé Expert'}
+                                    ${Storage.getTier() === 'expert' ? ' Télécharger l\'export' : ' Réservé Expert'}
                                 </button>
                             </div>
                         </div>
@@ -226,7 +226,7 @@ const Settings = {
         if (tier === 'standard') {
             container.innerHTML = `
                 <div class="glass" style="padding: 2rem; border-radius: 16px; border: 1px dashed var(--border); text-align: center;">
-                    <div style="font-size: 2rem; margin-bottom: 1rem;">🌱</div>
+                    <div style="font-size: 2rem; margin-bottom: 1rem;"></div>
                     <h3 style="margin-bottom: 0.5rem;">Vous utilisez la version Standard (Gratuite)</h3>
                     <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Passez à PRO ou EXPERT pour débloquer l'illimité et le coaching IA.</p>
                     <button class="button-primary" onclick="App.showUpgradeModal()">Voir les offres</button>

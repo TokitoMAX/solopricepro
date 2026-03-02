@@ -7,7 +7,7 @@ const App = {
     // Initialisation de l'application
     async init() {
         try {
-            console.log('🚀 SoloPrice Pro Initializing...');
+            console.log(' SoloPrice Pro Initializing...');
             this.setupNavigation();
             this.migrateData();
             this.setupMobileOverlay();
@@ -25,15 +25,15 @@ const App = {
             const inApp = sessionStorage.getItem('sp_in_app') === 'true';
             const savedPage = localStorage.getItem('sp_last_page') || 'dashboard';
 
-            console.log('🔍 Session Check:', { isLoggedIn, inApp, savedPage });
+            console.log(' Session Check:', { isLoggedIn, inApp, savedPage });
 
             if (isLoggedIn || inApp) {
                 // Ensure data is synced BEFORE showing app content
                 if (isLoggedIn) {
-                    console.log('📡 Waiting for data sync...');
+                    console.log(' Waiting for data sync...');
                     if (Auth.refreshUser) await Auth.refreshUser(); // Get latest tier/metadata
                     await Storage.init();
-                    console.log('✅ Data sync complete. Tier:', Storage.getTier());
+                    console.log(' Data sync complete. Tier:', Storage.getTier());
                 }
 
                 this.enterApp(false, false); // Pass avoidNavigate=true
@@ -55,7 +55,7 @@ const App = {
                 this.updateLandingStats();
             }
         } catch (e) {
-            console.error('❌ Critical Init Error:', e);
+            console.error(' Critical Init Error:', e);
         } finally {
             this.hideLoader();
         }
@@ -98,7 +98,7 @@ const App = {
     },
 
     enterPublicMode() {
-        console.log("🛡️ Entering Public Mode (No Sidebar)");
+        console.log("️ Entering Public Mode (No Sidebar)");
         const sidebar = document.querySelector('.sidebar');
         const header = document.querySelector('.mobile-header');
         const banner = document.getElementById('freemium-banner');
@@ -277,7 +277,7 @@ const App = {
         if (page === 'marketplace' && typeof Marketplace !== 'undefined') {
             this.checkFreemiumLimits(); // Refresh limits before rendering
             try {
-                console.log('📡 [MARKETPLACE-ROOT] Rendering v4.0 (Lite)...');
+                console.log(' [MARKETPLACE-ROOT] Rendering v4.0 (Lite)...');
                 Marketplace.render('marketplace-root', ...args);
             } catch (err) {
                 alert('Marketplace Render Error: ' + err.message);
@@ -334,7 +334,7 @@ const App = {
         });
 
         if (migrated) {
-            console.log("🚀 Migration SoloPrice Pro terminée avec succès !");
+            console.log(" Migration SoloPrice Pro terminée avec succès !");
         }
     },
 
@@ -348,7 +348,7 @@ const App = {
                 // Si les missions contiennent les IDs factices, on vide tout pour repartir sur du propre
                 if (parsed.some(m => ['m1', 'm2', 'm3'].includes(m.id))) {
                     localStorage.setItem('sp_marketplace_missions', '[]');
-                    console.log('🧹 Dummy missions cleared.');
+                    console.log(' Dummy missions cleared.');
                 }
             } catch (e) { console.error("Error clearing dummy missions:", e); }
         }
@@ -375,7 +375,7 @@ const App = {
                 } catch (e) { console.error("Migration error (sp_my_providers):", e); }
             }
             localStorage.setItem(unifiedKey, JSON.stringify(unified));
-            console.log('🔗 Network providers unified.');
+            console.log(' Network providers unified.');
             // Clean up old keys
             localStorage.removeItem('sp_providers');
             localStorage.removeItem('sp_my_providers');
@@ -467,7 +467,7 @@ const App = {
             const totalDormant = dormantQuotes.reduce((sum, q) => sum + q.total, 0);
             items.push({
                 id: 'relance',
-                icon: '💰',
+                icon: '',
                 title: 'Relance Prioritaire',
                 description: `${dormantQuotes.length} devis (${this.formatCurrency(totalDormant)}) attendent une relance.`,
                 action: 'Relancer',
@@ -487,7 +487,7 @@ const App = {
         if (freshMissions.length > 0) {
             items.push({
                 id: 'market',
-                icon: '⚡',
+                icon: '',
                 title: 'Opportunités Fraîches',
                 description: `${freshMissions.length} nouvelles missions publiées sur le réseau.`,
                 action: 'Voir le Radar',
@@ -502,7 +502,7 @@ const App = {
         if (overdue.length > 0) {
             items.push({
                 id: 'overdue',
-                icon: '🚨',
+                icon: '',
                 title: 'Impayé Détecté',
                 description: `${overdue.length} facture(s) sont en retard. Récupérez votre cash.`,
                 action: 'Voir Factures',
@@ -515,7 +515,7 @@ const App = {
         if (items.length === 0) {
             items.push({
                 id: 'prospect',
-                icon: '🎯',
+                icon: '',
                 title: 'Expansion Business',
                 description: 'Tout est à jour. Et si vous ajoutiez 2 nouveaux prospects aujourd\'hui ?',
                 action: 'Ajouter Prospect',
@@ -637,7 +637,7 @@ const App = {
                         </div>
                         <div style="margin-top: 4px; font-size: 0.75rem;">
                              <a href="#" onclick="App.showUpgradeModal('limit'); return false;" style="color: var(--primary); text-decoration: none;">
-                                ${isPro ? 'Gérer mon offre' : '👑 Passer PRO'}
+                                ${isPro ? 'Gérer mon offre' : ' Passer PRO'}
                              </a>
                         </div>
                     </div>
@@ -728,7 +728,7 @@ const App = {
             container.innerHTML = `
             <!-- ROI Calculator Prompt -->
             <div style="grid-column: 1 / -1; background: rgba(var(--primary-rgb), 0.05); border: 1px solid var(--primary-glass); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
-                <div style="font-size: 1.5rem;">💡</div>
+                <div style="font-size: 1.5rem;"></div>
                 <div style="font-size: 0.85rem; line-height: 1.4; color: var(--text-secondary);">
                     <strong>L'abonnement qui se paie seul :</strong> Sur un projet à 1500€, une simple "Prime de Risque" (Facteur PITA) de 10% ajoute <strong>150€</strong> à votre facture. Votre pack PRO est rentabilisé 10 fois sur une seule vente.
                 </div>
@@ -821,7 +821,7 @@ const App = {
                 // MODE TEST FORCÉ pour vérification
                 const isLive = false;
 
-                console.log(`📡 [PAYPAL] SDK Detected. ClientID: ${clientId.substring(0, 10)}..., Mode: TEST (Forcé)`);
+                console.log(` [PAYPAL] SDK Detected. ClientID: ${clientId.substring(0, 10)}..., Mode: TEST (Forcé)`);
 
                 // Afficher le badge Live si on est en prod
                 setTimeout(() => {
@@ -838,12 +838,12 @@ const App = {
 
                     if (!window.paypal) {
                         if (retryCount < 5) {
-                            console.log(`⏳ [PAYPAL] SDK not ready, retrying (${retryCount + 1}/5)...`);
+                            console.log(` [PAYPAL] SDK not ready, retrying (${retryCount + 1}/5)...`);
                             container.innerHTML = '<div style="text-align:center; padding:1rem;"><i class="fas fa-spinner fa-spin"></i> Initialisation PayPal...</div>';
                             setTimeout(() => renderButtons(retryCount + 1), 1000);
                             return;
                         }
-                        console.error('❌ [PAYPAL] SDK NOT LOADED after 5s!');
+                        console.error(' [PAYPAL] SDK NOT LOADED after 5s!');
                         container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">Erreur: Le service PayPal ne répond pas.<br><small>Vérifiez votre connexion ou désactivez votre bloqueur de pub.</small></p>';
                         return;
                     }
@@ -855,7 +855,7 @@ const App = {
                         planId = tier === 'expert' ? 'P-19X023126K248324VNGNDKOQ' : 'P-13N38598NB647223XNGNDJMY';
                     }
 
-                    console.log(`📡 [PAYPAL] Rendering buttons for Plan: ${planId} (${isLive ? 'LIVE' : 'SANDBOX'})`);
+                    console.log(` [PAYPAL] Rendering buttons for Plan: ${planId} (${isLive ? 'LIVE' : 'SANDBOX'})`);
                     container.innerHTML = '';
 
                     paypal.Buttons({
@@ -866,7 +866,7 @@ const App = {
                             });
                         },
                         onApprove: async (data, actions) => {
-                            App.showNotification(`👑 Activation de votre accès ${tier.toUpperCase()} ${isLive ? '' : '(Sandbox)'}...`, 'success');
+                            App.showNotification(` Activation de votre accès ${tier.toUpperCase()} ${isLive ? '' : '(Sandbox)'}...`, 'success');
                             const user = Auth.getUser();
 
                             if (user) {
@@ -903,7 +903,7 @@ const App = {
             titleEl.textContent = 'Félicitations !';
             container.innerHTML = `
                 <div class="upgrade-success" style="text-align: center; padding: 2rem; width: 100%;">
-                    <div class="success-icon" style="font-size: 4rem; margin-bottom: 1.5rem;">🎉</div>
+                    <div class="success-icon" style="font-size: 4rem; margin-bottom: 1.5rem;"></div>
                     <h3 style="margin-bottom: 1rem; color: var(--primary-light);">Paiement Confirmé !</h3>
                     <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem; line-height: 1.5;">
                         Nous activons vos privilèges SoloPrice PRO.<br>
@@ -1151,7 +1151,7 @@ const App = {
         const hash = window.location.hash.substring(1);
         if (!hash) return false;
 
-        console.log("🔗 Hash detected:", hash.substring(0, 20) + "...");
+        console.log(" Hash detected:", hash.substring(0, 20) + "...");
 
         // 1. Écouter les changements de hash pour la navigation SPA (si pas déjà fait)
         if (!this.hashListenerSetup) {
@@ -1196,7 +1196,7 @@ const App = {
         }
 
         if ((type === 'recovery' || hash.includes('type=recovery')) && accessToken) {
-            console.log('🔐 Mode Recovery détecté - Ouverture de la modale');
+            console.log(' Mode Recovery détecté - Ouverture de la modale');
             sessionStorage.setItem('sp_recovery_token', accessToken);
 
             // Nettoyage de l'URL pour éviter les boucles
@@ -1331,7 +1331,7 @@ const App = {
             if (listBody) listBody.innerHTML = `
                 <tr>
                     <td colspan="4" style="text-align:center; color:#ef4444; padding: 2rem;">
-                        <div style="font-weight:bold; margin-bottom:0.5rem;">❌ Erreur de connexion au serveur</div>
+                        <div style="font-weight:bold; margin-bottom:0.5rem;"> Erreur de connexion au serveur</div>
                         <div style="font-size:0.9rem;">${e.message}</div>
                         <div style="font-size:0.8rem; margin-top:1rem; color:#888;">Le backend doit avoir la SUPABASE_SERVICE_ROLE_KEY</div>
                     </td>

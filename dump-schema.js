@@ -26,9 +26,9 @@ async function dumpSchema() {
         process.stdout.write(`Testing ${table}... `);
         const { data, error } = await supabase.from(table).select('*').limit(1);
         if (error) {
-            console.log(`❌ ERROR: ${error.code} - ${error.message}`);
+            console.log(` ERROR: ${error.code} - ${error.message}`);
         } else {
-            console.log(`✅ FOUND! Columns: ${Object.keys(data[0] || {}).join(', ')}`);
+            console.log(` FOUND! Columns: ${Object.keys(data[0] || {}).join(', ')}`);
         }
     }
 }

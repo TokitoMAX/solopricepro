@@ -12,9 +12,9 @@ async function checkProfiles() {
     for (const table of tables) {
         const { data, error } = await supabase.from(table).select('*').limit(1);
         if (error) {
-            console.log(`❌ ${table}: ${error.code} - ${error.message}`);
+            console.log(` ${table}: ${error.code} - ${error.message}`);
         } else {
-            console.log(`✅ ${table} exists! Rows: ${data.length}`);
+            console.log(` ${table} exists! Rows: ${data.length}`);
             if (data.length > 0) {
                 console.log(`   Columns: ${Object.keys(data[0]).join(', ')}`);
             } else {

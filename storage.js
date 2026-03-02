@@ -113,27 +113,27 @@ const Storage = {
                     }
 
                     this._cache[table] = data;
-                    console.log(`📡 Table [${table}] synced: ${Array.isArray(data) ? data.length : '1'} item(s)`);
+                    console.log(` Table [${table}] synced: ${Array.isArray(data) ? data.length : '1'} item(s)`);
                 } else if (res.status === 401 || res.status === 403) {
-                    console.error(`🔒 Unauthorized access to [${table}]. Session might be expired.`);
+                    console.error(` Unauthorized access to [${table}]. Session might be expired.`);
                     // We only want to trigger this once per batch
                     if (!this._handlingAuthError) {
                         this._handlingAuthError = true;
                         Auth.handleExpiredSession();
                     }
                 } else {
-                    console.warn(`⚠️ Failed to sync [${table}]: ${res.status}`);
+                    console.warn(`️ Failed to sync [${table}]: ${res.status}`);
                     this._cache[table] = [];
                 }
             } catch (err) {
-                console.error(`❌ Network error fetching [${table}]`, err);
+                console.error(` Network error fetching [${table}]`, err);
                 this._cache[table] = []; // Fallback to empty
             }
         }));
 
         this._handlingAuthError = false;
 
-        console.log('☁️ All data fetched from Supabase');
+        console.log('️ All data fetched from Supabase');
         EventBus.emit('storage:ready');
     },
 
@@ -483,7 +483,7 @@ const Storage = {
     // Restoration of missing methods for app.js compatibility
     getTier() {
         const tier = this._calculateTier();
-        console.log(`🏷️ [STORAGE] Current Tier calculated: ${tier}`);
+        console.log(`️ [STORAGE] Current Tier calculated: ${tier}`);
         return tier;
     },
     _calculateTier() {
@@ -516,7 +516,7 @@ const Storage = {
     },
 
     async activatePro(licenseKey, tier = 'pro') {
-        console.log(`🚀 Activating [${tier.toUpperCase()}] via ${licenseKey}...`);
+        console.log(` Activating [${tier.toUpperCase()}] via ${licenseKey}...`);
 
         // 1. Update settings local cache
         const settings = this.getSettings();
@@ -538,7 +538,7 @@ const Storage = {
         // 3. Emit event for UI update
         EventBus.emit('data:updated', { key: this.KEYS.SETTINGS, action: 'update' });
 
-        console.log('✅ Activation complete.');
+        console.log(' Activation complete.');
     },
 
     isExpert() {
@@ -549,7 +549,7 @@ const Storage = {
         if (typeof Auth === 'undefined' || !Auth.user) return false;
 
         try {
-            console.log('📡 Requesting subscription cancellation...');
+            console.log(' Requesting subscription cancellation...');
 
             // 1. Sync with Backend
             const res = await fetch(`${Auth.apiBase}/api/payments/paypal-cancel`, {
@@ -623,9 +623,9 @@ const Storage = {
                 throw new Error(errorData.message || 'Erreur lors de la synchronisation avec le serveur.');
             }
 
-            console.log('✅ Profile synced with server.');
+            console.log(' Profile synced with server.');
         } catch (e) {
-            console.error('❌ Backend sync failed:', e);
+            console.error(' Backend sync failed:', e);
             throw e;
         }
 
@@ -652,9 +652,9 @@ const Storage = {
                     Auth.user.user_metadata = { first_name: firstName, last_name: lastName, country };
                 }
                 localStorage.setItem('sp_user', JSON.stringify(Auth.user));
-                console.log('✅ Auth metadata + country updated.');
+                console.log(' Auth metadata + country updated.');
             } catch (e) {
-                console.warn('⚠️ Metadata update failed (non-blocking):', e.message);
+                console.warn('️ Metadata update failed (non-blocking):', e.message);
             }
         }
     },

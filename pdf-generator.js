@@ -774,7 +774,7 @@ const PDFGenerator = {
                     </div>
 
                     <div class="next-step">
-                        <h2>🚀 Prêt à passer à l'action ?</h2>
+                        <h2> Prêt à passer à l'action ?</h2>
                         <p>Votre TJM de sécurité est maintenant défini. La prochaine étape est de l'appliquer sur une mission réelle pour vérifier sa validité terrain.</p>
                         <div class="btn-fake">Utiliser le Chiffrage Projet</div>
                     </div>

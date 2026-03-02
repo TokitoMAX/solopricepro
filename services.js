@@ -79,7 +79,7 @@ const Services = {
             <div class="form-card" style="margin-top: 1rem; margin-bottom: 2rem;">
                 <div class="form-header">
                     <h3>Nouvelle Prestation</h3>
-                    <button class="btn-close" onclick="Services.hideForm()">✕</button>
+                    <button class="btn-close" onclick="Services.hideForm()"></button>
                 </div>
                 <form id="service-form" onsubmit="Services.save(event)">
                     <div class="form-grid">

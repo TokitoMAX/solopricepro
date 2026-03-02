@@ -21,7 +21,7 @@
     <script>
         // Global Error Handler to catch SyntaxErrors
         window.onerror = function (msg, url, lineNo, columnNo, error) {
-            console.error('❌ GLOBAL ERROR:', msg, 'at', url, ':', lineNo);
+            console.error(' GLOBAL ERROR:', msg, 'at', url, ':', lineNo);
             if (msg.includes('SyntaxError') || msg.includes('declared')) {
                 alert('CRITICAL SCRIPT ERROR: ' + msg + '\nFile: ' + url + '\nLine: ' + lineNo);
             }
@@ -102,7 +102,7 @@
         <!-- AUTH MODAL -->
         <div id="auth-modal" class="modal-overlay auth-modal" role="dialog" aria-modal="true" aria-hidden="true">
             <div class="modal-content glass">
-                <button type="button" class="modal-close" onclick="App.closeModal()" aria-label="Fermer">✕</button>
+                <button type="button" class="modal-close" onclick="App.closeModal()" aria-label="Fermer"></button>
 
                 <div class="auth-modal-tabs">
                     <button class="auth-tab active" data-auth-tab="login"
@@ -655,7 +655,7 @@
     <!-- UPGRADE MODAL -->
     <div id="upgrade-modal" class="modal-overlay" role="dialog" aria-labelledby="upgrade-title">
         <div class="modal-content glass" style="max-width: 800px;">
-            <button type="button" class="modal-close" onclick="App.closeModal()" aria-label="Fermer">✕</button>
+            <button type="button" class="modal-close" onclick="App.closeModal()" aria-label="Fermer"></button>
             <div class="modal-header" style="border: none; text-align: center; padding-bottom: 0;">
                 <h2 id="upgrade-title" class="upgrade-title"
                     style="font-size: 2rem; background: linear-gradient(135deg, var(--white), var(--primary-light)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
@@ -672,7 +672,7 @@
     <!-- NETWORK ADD MODAL -->
     <div id="network-add-modal" class="modal-overlay" role="dialog">
         <div class="modal-content glass" style="max-width: 500px;">
-            <button type="button" class="modal-close" onclick="Network.hideAddModal()">✕</button>
+            <button type="button" class="modal-close" onclick="Network.hideAddModal()"></button>
             <div class="modal-header">
                 <h2>Ajouter un Partenaire</h2>
                 <p class="text-muted">Enrichissez votre réseau local.</p>
@@ -710,7 +710,7 @@
     <!-- CLIENT DETAIL MODAL -->
     <div id="client-detail-modal" class="modal-overlay" role="dialog">
         <div class="modal-content glass" style="max-width: 900px;">
-            <button type="button" class="modal-close" onclick="Clients.closeDetail()">✕</button>
+            <button type="button" class="modal-close" onclick="Clients.closeDetail()"></button>
             <div class="modal-header">
                 <h2 id="detail-client-name">Détails Client</h2>
                 <div class="badge badge-primary">Fiche CRM</div>
@@ -724,7 +724,7 @@
     <!-- QUICK CLIENT MODAL -->
     <div id="quick-client-modal" class="modal-overlay" role="dialog">
         <div class="modal-content glass" style="max-width: 450px;">
-            <button type="button" class="modal-close" onclick="Clients.closeQuickAdd()">✕</button>
+            <button type="button" class="modal-close" onclick="Clients.closeQuickAdd()"></button>
             <div class="modal-header">
                 <h2>Ajout Express</h2>
                 <p class="text-muted">Créez un prospect en 2 secondes.</p>
@@ -753,7 +753,7 @@
     <!-- ECOSYSTEM APPLY MODAL -->
     <div id="ecosystem-apply-modal" class="modal-overlay" role="dialog">
         <div class="modal-content glass" style="max-width: 500px;">
-            <button type="button" class="modal-close" onclick="Network.hideEcosystemModal()">✕</button>
+            <button type="button" class="modal-close" onclick="Network.hideEcosystemModal()"></button>
             <div class="modal-header">
                 <h2>Rejoindre l'Écosystème</h2>
                 <p class="text-muted">Proposez vos services dans Le Cercle SoloPrice.</p>
@@ -922,7 +922,7 @@
 
         // Start application after all modules have loaded
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("📡 [DOM] Content Loaded - Starting App");
+            console.log(" [DOM] Content Loaded - Starting App");
 
             // Init language selector from cookie
             const match = document.cookie.match(/googtrans=\/fr\/([a-z]{2})/);
@@ -936,7 +936,7 @@
             if (typeof App !== 'undefined' && App.init) {
                 App.init();
             } else {
-                console.error("❌ [DOM] CRITICAL: App module not found!");
+                console.error(" [DOM] CRITICAL: App module not found!");
                 // Emergency loader hide if scripts failed to load
                 setTimeout(() => {
                     const l = document.getElementById('app-loader');

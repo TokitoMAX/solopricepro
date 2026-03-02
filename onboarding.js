@@ -55,7 +55,7 @@ const Onboarding = {
         return `
             <div class="onboarding-widget glass-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary);">
                 <div class="section-header-inline" style="margin-bottom: 1rem;">
-                    <h3 class="section-title-small" style="color: var(--primary-light);">🚀 Ma Checklist de Lancement</h3>
+                    <h3 class="section-title-small" style="color: var(--primary-light);"> Ma Checklist de Lancement</h3>
                     <span class="badge" style="background: var(--primary-glass);">${progress}%</span>
                 </div>
                 <div class="progress-bar-container" style="height: 6px; margin-bottom: 1.5rem;">

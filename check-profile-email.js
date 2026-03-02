@@ -4,14 +4,14 @@ require('dotenv').config();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 async function checkProfile() {
-    console.log('--- 🔍 SP_USER_PROFILE CHECK ---');
+    console.log('---  SP_USER_PROFILE CHECK ---');
     const { data: profiles, error } = await supabase
         .from('sp_user_profile')
         .select('*')
         .limit(5);
 
     if (error) {
-        console.error('❌ Error fetching profiles:', error.message);
+        console.error(' Error fetching profiles:', error.message);
         return;
     }
 

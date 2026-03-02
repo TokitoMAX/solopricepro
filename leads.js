@@ -96,7 +96,7 @@ const Leads = {
     < div class="form-card glass" style = "margin-bottom: 2rem; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--primary-glass); box-shadow: 0 20px 50px rgba(0,0,0,0.3);" >
                 <div class="form-header" style="border-bottom: 1px solid var(--primary-glass); padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--primary-light);"><i class="fas fa-user-plus" style="margin-right: 10px;"></i> Nouveau Prospect</h3>
-                    <button class="btn-close" onclick="Leads.hideForm()" style="background: none; border: none; color: white; cursor: pointer; opacity: 0.6; transition: opacity 0.2s;">✕</button>
+                    <button class="btn-close" onclick="Leads.hideForm()" style="background: none; border: none; color: white; cursor: pointer; opacity: 0.6; transition: opacity 0.2s;"></button>
                 </div>
                 <form onsubmit="Leads.save(event)" style="padding: 2rem;">
                     <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
@@ -119,7 +119,7 @@ const Leads = {
                     </div>
                     <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem;">
                         <button type="button" class="button-outline" onclick="Leads.hideForm()" style="min-width: 120px;">Annuler</button>
-                        <button type="submit" class="button-primary" style="min-width: 200px; box-shadow: var(--primary-shadow);">🚀 Suivre ce prospect</button>
+                        <button type="submit" class="button-primary" style="min-width: 200px; box-shadow: var(--primary-shadow);"> Suivre ce prospect</button>
                     </div>
                 </form>
             </div >

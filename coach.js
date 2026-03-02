@@ -26,7 +26,7 @@ const Coach = {
         if (dormantAmount > 0) {
             truths.push({
                 type: 'opportunity',
-                title: '💰 Cash Dormant',
+                title: ' Cash Dormant',
                 message: `Vous avez **${App.formatCurrency(dormantAmount)}** qui dorment dans ${dormantQuotes.length} devis non relancés. Une relance aujourd'hui augmente vos chances de closing de 30%.`,
                 action: 'Relancer maintenant',
                 nav: 'quotes'
@@ -39,7 +39,7 @@ const Coach = {
         if (overdueAmount > 0) {
             truths.push({
                 type: 'danger',
-                title: '⚠️ Alerte Trésorerie',
+                title: '️ Alerte Trésorerie',
                 message: `**${App.formatCurrency(overdueAmount)}** de factures sont en retard de paiement. Votre priorité n'est pas de prospecter, mais de récupérer cet argent.`,
                 action: 'Voir les factures',
                 nav: 'invoices'
@@ -50,7 +50,7 @@ const Coach = {
         if (App.isFeatureExpertGated('expert_coaching')) {
             truths.push({
                 type: 'info',
-                title: '💎 Analyse Avancée Verrouillée',
+                title: ' Analyse Avancée Verrouillée',
                 message: `Le calcul prédictif de votre salaire net réel et l'analyse de risque sont réservés aux membres EXPERT.`,
                 action: 'Débloquer le Pack Expert',
                 nav: 'settings' // Redirige vers l'upgrade
@@ -67,7 +67,7 @@ const Coach = {
                 if (currentNet + probaPipe < targetMonthlyNet) {
                     truths.push({
                         type: 'warning',
-                        title: '📉 Risque de Salaire',
+                        title: ' Risque de Salaire',
                         message: `À ce rythme, vous allez manquer votre objectif net de **${App.formatCurrency(gap)}**. Votre pipeline actuel ne suffit pas à couvrir l'écart.`,
                         action: 'Calculer un nouveau projet',
                         nav: 'scoper'
@@ -76,7 +76,7 @@ const Coach = {
             } else if (stats.monthlyRevenue > 0) {
                 truths.push({
                     type: 'success',
-                    title: '🚀 Objectif Atteint',
+                    title: ' Objectif Atteint',
                     message: `Félicitations. Votre salaire net cible est sécurisé. C'est le moment idéal pour investir dans vos outils ou prendre du repos.`,
                     action: 'Voir les réglages',
                     nav: 'settings'
@@ -88,7 +88,7 @@ const Coach = {
         if (truths.length === 0) {
             truths.push({
                 type: 'info',
-                title: '🎯 Focus du Jour',
+                title: ' Focus du Jour',
                 message: "Tout est sous contrôle. Profitez de ce calme pour ajouter 2 nouveaux prospects à votre pipeline et sécuriser les mois suivants.",
                 action: 'Ajouter un prospect',
                 nav: 'leads'
@@ -106,7 +106,7 @@ const Coach = {
             <div class="coach-widget" style="margin-bottom: 2rem;">
                 <div class="section-header-inline" style="margin-bottom: 1rem;">
                     <h2 class="section-title-small" style="font-size: 0.9rem; color: var(--primary-light);">CONSEILS DU COACH BUSINESS</h2>
-                    ${streak > 0 ? `<span class="streak-tag">🔥 Série : ${streak} jours</span>` : ''}
+                    ${streak > 0 ? `<span class="streak-tag"> Série : ${streak} jours</span>` : ''}
                 </div>
                 
                 <div class="coach-cards-container" style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
@@ -160,11 +160,11 @@ const Coach = {
 
     getTypeIcon(type) {
         switch (type) {
-            case 'opportunity': return '📈';
-            case 'danger': return '🚨';
-            case 'warning': return '⚠️';
-            case 'success': return '🏆';
-            default: return '💡';
+            case 'opportunity': return '';
+            case 'danger': return '';
+            case 'warning': return '️';
+            case 'success': return '';
+            default: return '';
         }
     }
 };

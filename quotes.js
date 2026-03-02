@@ -261,7 +261,7 @@ const Quotes = {
 
                 <div class="form-header">
                     <h3>${quote ? 'Modifier le Devis' : 'Nouveau Devis'}</h3>
-                    <button class="btn-close" onclick="Quotes.hideForm()">✕</button>
+                    <button class="btn-close" onclick="Quotes.hideForm()"></button>
                 </div>
 
                 <div class="compliance-checklist info-box" style="background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.8rem; cursor: pointer;" onclick="this.querySelector('.checklist-details').style.display = this.querySelector('.checklist-details').style.display === 'none' ? 'grid' : 'none'">
@@ -818,7 +818,7 @@ const Quotes = {
             <div class="modal-content glass" style="max-width: 500px; text-align: center;">
                 <div class="modal-header">
                     <h3>${isPublic ? 'Signer votre devis' : 'Signature Client'}</h3>
-                    <button class="modal-close" onclick="Quotes.closeSignatureModal()">✕</button>
+                    <button class="modal-close" onclick="Quotes.closeSignatureModal()"></button>
                 </div>
                 <div class="modal-body" style="padding: 1rem 0;">
                     <p style="margin-bottom: 1rem;">${isPublic ? 'Veuillez apposer votre signature ci-dessous :' : 'Faites signer le client ci-dessous :'}</p>
@@ -1371,7 +1371,7 @@ const Quotes = {
             <div class="modal-content glass" style="max-width: 600px;">
                 <div class="modal-header">
                     <h3>Félicitations ! Devis Signé.</h3>
-                    <button class="modal-close" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">✕</button>
+                    <button class="modal-close" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();"></button>
                 </div>
                 <div class="modal-body" style="padding: 1.5rem 0;">
                     <p style="margin-bottom: 1.5rem; text-align: center;">Veuillez procéder au règlement pour valider la mission.</p>

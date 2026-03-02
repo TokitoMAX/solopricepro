@@ -31,26 +31,26 @@ async function testLogin() {
         });
 
         if (error) {
-            console.log('❌ Login Error (Expected 401):', error.message);
+            console.log(' Login Error (Expected 401):', error.message);
             return;
         }
 
-        console.log('✅ Login Response Data:', JSON.stringify(data, null, 2));
+        console.log(' Login Response Data:', JSON.stringify(data, null, 2));
 
         if (!data.user) {
-            console.error('💥 ERROR: data.user is NULL');
+            console.error(' ERROR: data.user is NULL');
         } else {
             console.log('User ID:', data.user.id);
         }
 
         if (!data.session) {
-            console.error('💥 ERROR: data.session is NULL');
+            console.error(' ERROR: data.session is NULL');
         } else {
             console.log('Access Token:', data.session.access_token ? 'PRESENT' : 'MISSING');
         }
 
     } catch (err) {
-        console.error('💥 CATCH ERROR:', err.message);
+        console.error(' CATCH ERROR:', err.message);
         console.error(err.stack);
     }
 }

@@ -14,9 +14,9 @@ async function diagnose() {
             .limit(1);
 
         if (error) {
-            console.error(`❌ Column '${col}' error:`, error.message);
+            console.error(` Column '${col}' error:`, error.message);
         } else {
-            console.log(`✅ Column '${col}' exists.`);
+            console.log(` Column '${col}' exists.`);
         }
     }
 }

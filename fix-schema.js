@@ -5,14 +5,14 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-    console.error("❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env");
+    console.error(" Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env");
     process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function fixSchema() {
-    console.log("🛠️ Checking 'sp_marketplace_missions' schema...");
+    console.log("️ Checking 'sp_marketplace_missions' schema...");
 
     // 1. Try to fetch a row to see if it fails
     const { data, error } = await supabase
@@ -21,12 +21,12 @@ async function fixSchema() {
         .limit(1);
 
     if (error) {
-        console.error("⚠️ Error fetching created_at (confirming issue):", error.message);
+        console.error("️ Error fetching created_at (confirming issue):", error.message);
     } else {
-        console.log("✅ 'created_at' column seems accessible via API.");
+        console.log(" 'created_at' column seems accessible via API.");
     }
 
-    console.log("🔄 Attempting to reload schema handling...");
+    console.log(" Attempting to reload schema handling...");
 
     // We can't really "alter table" via JS client without a stored procedure or raw SQL execution enabled.
     // But we can check if the table exists and maybe try to re-init it if possible, 
@@ -45,7 +45,7 @@ async function fixSchema() {
         // OR just restart the project from the dashboard is the only real way if we don't have DDL access.
         // BUT, since we have the SERVICE_ROLE_KEY, maybe we can just insert a row and delete it to "wake" it up?
 
-        console.log("📝 Inserting a test row to force table interaction...");
+        console.log(" Inserting a test row to force table interaction...");
         const { error: insertError } = await supabase
             .from('sp_marketplace_missions')
             .insert([{
@@ -58,15 +58,15 @@ async function fixSchema() {
             }]);
 
         if (insertError) {
-            console.error("❌ Insert failed:", insertError.message);
+            console.error(" Insert failed:", insertError.message);
         } else {
-            console.log("✅ Insert successful. deleting...");
+            console.log(" Insert successful. deleting...");
             await supabase.from('sp_marketplace_missions').delete().eq('title', 'Schema Fix');
-            console.log("✅ Test row deleted. Schema should be active.");
+            console.log(" Test row deleted. Schema should be active.");
         }
 
     } catch (e) {
-        console.error("❌ Unexpected error:", e);
+        console.error(" Unexpected error:", e);
     }
 }
 

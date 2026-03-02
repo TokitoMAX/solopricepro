@@ -5,7 +5,7 @@ const Profile = {
 
     // Country list with registration number labels
     COUNTRIES: [
-        { code: '', label: '🌍 Sélectionner un pays', regLabel: null },
+        { code: '', label: ' Sélectionner un pays', regLabel: null },
         { code: 'FR', label: '🇫🇷 France', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
         { code: 'BE', label: '🇧🇪 Belgique', regLabel: 'Numéro BCE (10 chiffres)', pattern: '^[0-9]{10}$', verify: false },
         { code: 'CH', label: '🇨🇭 Suisse', regLabel: 'UID (CHE-xxx.xxx.xxx)', pattern: null, verify: false },
@@ -25,7 +25,7 @@ const Profile = {
         { code: 'GP', label: '🇬🇵 Guadeloupe', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
         { code: 'MQ', label: '🇲🇶 Martinique', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
         { code: 'GF', label: '🇬🇫 Guyane Française', regLabel: 'SIRET (14 chiffres)', pattern: '^[0-9]{14}$', verify: true },
-        { code: 'OTHER', label: '🌐 Autre pays', regLabel: 'Numéro d\'enregistrement entreprise', pattern: null, verify: false },
+        { code: 'OTHER', label: ' Autre pays', regLabel: 'Numéro d\'enregistrement entreprise', pattern: null, verify: false },
     ],
 
     getCountry(code) {
@@ -273,10 +273,10 @@ const Profile = {
         // Only act once we have exactly 14 digits
         if (clean.length === 14 && /^[0-9]{14}$/.test(clean)) {
             if (this.luhn(clean)) {
-                status.textContent = '⏳';
+                status.textContent = '';
                 this._siretTimer = setTimeout(() => this.verifySiretApi(clean), 500);
             } else {
-                status.textContent = '❌';
+                status.textContent = '';
                 if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Numéro SIRET invalide (clé de contrôle incorrecte).'; }
             }
         }
@@ -308,18 +308,18 @@ const Profile = {
             });
             const data = await res.json();
             if (res.ok && data.valid) {
-                status.textContent = '✅';
+                status.textContent = '';
                 // Auto-fill company name if empty
                 if (nameInput && !nameInput.value.trim() && data.name) {
                     nameInput.value = data.name;
                     App.showNotification(`Entreprise trouvée : ${data.name}`, 'success');
                 }
             } else {
-                status.textContent = '❌';
+                status.textContent = '';
                 if (errEl) { errEl.style.display = 'block'; errEl.textContent = data.message || 'SIRET introuvable dans la base INSEE.'; }
             }
         } catch {
-            status.textContent = '⚠️';
+            status.textContent = '️';
         }
     },
 
@@ -399,7 +399,7 @@ const Profile = {
                 hasError = true;
             }
             const statusEl = document.getElementById('siret-status');
-            if (statusEl && statusEl.textContent === '❌') {
+            if (statusEl && statusEl.textContent === '') {
                 this.showFieldError('err-siret', 'Ce SIRET n\'est pas reconnu par la base INSEE.');
                 hasError = true;
             }

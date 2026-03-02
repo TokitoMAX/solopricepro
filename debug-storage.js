@@ -12,24 +12,24 @@ async function debugStorage() {
     console.log("Listing buckets...");
     const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
     if (bucketError) {
-        console.error("❌ listBuckets ERROR:", bucketError.message);
+        console.error(" listBuckets ERROR:", bucketError.message);
         return;
     }
     console.log("Buckets found:", buckets.map(b => b.id).join(', '));
 
     const logoBucket = buckets.find(b => b.id === 'logos');
     if (!logoBucket) {
-        console.log("🏗️ Creating 'logos' bucket...");
+        console.log("️ Creating 'logos' bucket...");
         const { error: createError } = await supabase.storage.createBucket('logos', {
             public: true
         });
         if (createError) {
-            console.error("❌ createBucket ERROR:", createError.message);
+            console.error(" createBucket ERROR:", createError.message);
             return;
         }
-        console.log("✅ Bucket 'logos' created.");
+        console.log(" Bucket 'logos' created.");
     } else {
-        console.log("✅ Bucket 'logos' already exists.");
+        console.log(" Bucket 'logos' already exists.");
     }
 
     // 2. Test Upload
@@ -45,12 +45,12 @@ async function debugStorage() {
         });
 
     if (uploadError) {
-        console.error("❌ upload ERROR:", uploadError.message);
+        console.error(" upload ERROR:", uploadError.message);
     } else {
-        console.log("✅ Upload successful:", uploadData.path);
+        console.log(" Upload successful:", uploadData.path);
 
         const { data: { publicUrl } } = supabase.storage.from('logos').getPublicUrl(testPath);
-        console.log("🔗 Public URL:", publicUrl);
+        console.log(" Public URL:", publicUrl);
 
         // Cleanup
         await supabase.storage.from('logos').remove([testPath]);

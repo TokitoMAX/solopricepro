@@ -12,9 +12,9 @@ async function testInsert() {
     }]).select();
 
     if (error) {
-        console.error("❌ Insert Failed:", error.message);
+        console.error(" Insert Failed:", error.message);
     } else {
-        console.log("✅ Insert Success! ID:", data[0].id);
+        console.log(" Insert Success! ID:", data[0].id);
         await supabase.from('sp_marketplace_applications').delete().eq('id', data[0].id);
     }
 }

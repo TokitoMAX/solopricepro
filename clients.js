@@ -117,7 +117,7 @@ const Clients = {
             <div class="form-card">
                 <div class="form-header">
                     <h3>Nouveau Client</h3>
-                    <button class="btn-close" onclick="Clients.hideForm()">✕</button>
+                    <button class="btn-close" onclick="Clients.hideForm()"></button>
                 </div>
                 <form id="client-form" onsubmit="Clients.save(event)">
                     <div class="form-grid">

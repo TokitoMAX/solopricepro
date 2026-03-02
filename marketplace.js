@@ -353,14 +353,14 @@ const Marketplace = {
                         'pending': 'En attente',
                         'accepted': 'Retenue',
                         'rejected': 'Refusée',
-                        'hired': '🎉 RECRUTÉ !'
+                        'hired': ' RECRUTÉ !'
                     }[statusClass] || statusClass;
 
                     let invStatusDisplay = '';
                     if (statusClass === 'hired') {
                         invStatusDisplay = `
                             <div class="hired-announcement glass" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1)); border: 2px solid var(--primary); padding: 20px; border-radius: 12px; margin-top: 15px; text-align: center; animation: pulse-glow 2s infinite;">
-                                <h3 style="color: var(--primary-light); margin: 0 0 10px 0; font-size: 1.3rem;">🎊 Félicitations ! 🎊</h3>
+                                <h3 style="color: var(--primary-light); margin: 0 0 10px 0; font-size: 1.3rem;"> Félicitations ! </h3>
                                 <p style="font-weight: bold; margin: 0;">Votre candidature a été retenue par le recruteur.</p>
                                 <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Le client va vous contacter prochainement pour les modalités opérationnelles.</p>
                             </div>
@@ -489,7 +489,7 @@ const Marketplace = {
                 'pending': 'En attente',
                 'accepted': 'Retenue',
                 'rejected': 'Refusée',
-                'hired': '✅ Recruté !'
+                'hired': ' Recruté !'
             }[statusClass] || statusClass;
 
             const price = app.proposed_price || app.total_price || 0;
@@ -607,7 +607,7 @@ const Marketplace = {
             // 2. Close the mission (using generic storage since mission is owned by user)
             await Storage.update(Storage.KEYS.MARKETPLACE_MISSIONS, missionId, { status: 'closed' });
 
-            App.showNotification('🎊 Recrutement validé avec succès !', 'success');
+            App.showNotification(' Recrutement validé avec succès !', 'success');
 
             // 3. Trigger UI Refresh for recruiter
             await Storage.fetchAllData();
@@ -714,7 +714,7 @@ const Marketplace = {
             // Intelligent error handling for expired tokens
             if (err.message && err.message.includes('Invalid or expired token')) {
                 if (typeof App !== 'undefined') {
-                    App.showNotification('⚠️ Session expirée. Reconnexion nécessaire.', 'error');
+                    App.showNotification('️ Session expirée. Reconnexion nécessaire.', 'error');
                 }
 
                 // Auto-logout and redirect
@@ -1002,7 +1002,7 @@ const Marketplace = {
                 body: JSON.stringify({ status: 'accepted' })
             });
 
-            App.showNotification('✅ Invitation envoyée avec succès !', 'success');
+            App.showNotification(' Invitation envoyée avec succès !', 'success');
             this.closeInterviewModal();
 
             await Storage.fetchAllData();
@@ -1058,7 +1058,7 @@ const Marketplace = {
             <!-- POST FORM -->
             <div id="post-mission-modal" class="modal-overlay">
                 <div class="modal-content glass" style="max-width: 600px;">
-                    <button class="modal-close" onclick="Marketplace.closePostForm()">✕</button>
+                    <button class="modal-close" onclick="Marketplace.closePostForm()"></button>
                     <h2>Diffuser une Offre</h2>
                     
                     <form onsubmit="Marketplace.submitMission(event)">
@@ -1096,7 +1096,7 @@ const Marketplace = {
                                 <span id="post-fee-display">0.00 €</span>
                             </div>
                             <div class="line total" style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
-                                <span style="font-size: 1.1em; color: var(--text);">💰 Coût Total de l'Opération :</span>
+                                <span style="font-size: 1.1em; color: var(--text);"> Coût Total de l'Opération :</span>
                                 <strong id="post-total-display" style="font-size: 1.4em; color: var(--primary);">0.00 €</strong>
                             </div>
                         </div>
@@ -1115,7 +1115,7 @@ const Marketplace = {
             <!-- APPLY FORM -->
             <div id="apply-modal" class="modal-overlay">
                 <div class="modal-content glass">
-                    <button class="modal-close" onclick="Marketplace.closeApplyForm()">✕</button>
+                    <button class="modal-close" onclick="Marketplace.closeApplyForm()"></button>
                     <h2>Postuler à l'offre</h2>
                     <div class="mission-reminder" id="apply-mission-title" style="margin-bottom: 1rem; font-weight: bold; color: var(--primary);"></div>
                     
@@ -1156,7 +1156,7 @@ const Marketplace = {
             <!-- INTERVIEW INVITATION MODAL -->
             <div id="interview-modal" class="modal-overlay">
                 <div class="modal-content glass" style="max-width: 700px;">
-                    <button class="modal-close" onclick="Marketplace.closeInterviewModal()">✕</button>
+                    <button class="modal-close" onclick="Marketplace.closeInterviewModal()"></button>
                     <h2>Inviter à un Entretien</h2>
                     
                     <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -1203,7 +1203,7 @@ const Marketplace = {
                             </div>
                         </div>
 
-                        <button type="submit" class="button-primary full-width" style="margin-top: 20px;">📩 Envoyer l'Invitation</button>
+                        <button type="submit" class="button-primary full-width" style="margin-top: 20px;"> Envoyer l'Invitation</button>
                     </form>
                 </div>
             </div>

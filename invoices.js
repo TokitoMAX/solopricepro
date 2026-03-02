@@ -170,7 +170,7 @@ const Invoices = {
 
                 <div class="form-header">
                     <h3>${invoice ? 'Modifier la Facture' : 'Nouvelle Facture'}</h3>
-                    <button class="btn-close" onclick="Invoices.hideForm()">✕</button>
+                    <button class="btn-close" onclick="Invoices.hideForm()"></button>
                 </div>
 
                 <div class="compliance-checklist info-box" style="background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem;">
@@ -620,7 +620,7 @@ const Invoices = {
             <div class="modal-content glass" style="max-width: 600px;">
                 <div class="modal-header">
                     <h3>Assistant Relance Recouvrement</h3>
-                    <button class="modal-close" onclick="Invoices.closeRelanceModal()">✕</button>
+                    <button class="modal-close" onclick="Invoices.closeRelanceModal()"></button>
                 </div>
                 <div class="modal-body" style="padding: 1rem;">
                     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">

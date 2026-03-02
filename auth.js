@@ -235,7 +235,7 @@ const Auth = {
     async refreshUser() {
         if (!this.token) return null;
         try {
-            console.log("📡 Refreshing user session...");
+            console.log(" Refreshing user session...");
             const response = await fetch(`${this.apiBase}/api/auth/me`, {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
@@ -258,7 +258,7 @@ const Auth = {
                         Storage.setUser(updatedUser);
                     }
 
-                    console.log("✅ User session refreshed. Email:", updatedUser.email, "Tier:", updatedUser.user_metadata?.tier || 'standard');
+                    console.log(" User session refreshed. Email:", updatedUser.email, "Tier:", updatedUser.user_metadata?.tier || 'standard');
                     return updatedUser;
                 }
             }
@@ -331,7 +331,7 @@ const Auth = {
     },
 
     handleExpiredSession() {
-        console.warn('🔐 Session expired or invalid. Clearing tokens...');
+        console.warn(' Session expired or invalid. Clearing tokens...');
         localStorage.removeItem('sp_token');
         localStorage.removeItem('sp_user');
         sessionStorage.removeItem('sp_in_app'); // CRITICAL: Stop reload loop

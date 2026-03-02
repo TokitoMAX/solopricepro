@@ -14,7 +14,7 @@ const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 const TEST_USER_ID = '73a494c2-941c-459b-b848-85b7448bfcb4';
 
 async function simulateWebhook() {
-    console.log('📡 Simulating Stripe Webhook...');
+    console.log(' Simulating Stripe Webhook...');
 
     const payload = JSON.stringify({
         id: 'evt_test_123',
@@ -54,12 +54,12 @@ async function simulateWebhook() {
         console.log('Response Body:', result);
 
         if (res.ok) {
-            console.log('✅ Webhook processed successfully (Simulation).');
+            console.log(' Webhook processed successfully (Simulation).');
         } else {
-            console.error('❌ Webhook processing failed.');
+            console.error(' Webhook processing failed.');
         }
     } catch (err) {
-        console.error('💥 Fetch Error:', err.message);
+        console.error(' Fetch Error:', err.message);
     }
 }
 

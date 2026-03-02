@@ -66,7 +66,7 @@ const Dashboard = {
             ${(!calculatorData || !calculatorData.dailyRate) ? `
                 <div class="glass-card" style="padding: 1.5rem; border-radius: 16px; background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), transparent); border-left: 4px solid var(--primary); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h4 style="margin: 0; font-size: 1rem; color: var(--primary-light);">🎯 Étape manquante : Scellez votre TJM</h4>
+                        <h4 style="margin: 0; font-size: 1rem; color: var(--primary-light);"> Étape manquante : Scellez votre TJM</h4>
                         <p style="margin: 5px 0 0; font-size: 0.85rem; color: var(--text-muted);">Définissez votre objectif pour activer l'analyse de rentabilité de vos devis.</p>
                     </div>
                     <button class="button-primary small" onclick="App.navigateTo('scoper')">Accéder au Scoper</button>
@@ -288,7 +288,7 @@ const Dashboard = {
             </div>
         `;
         } catch (error) {
-            console.error('❌ [DASHBOARD] Critical Render Error:', error);
+            console.error(' [DASHBOARD] Critical Render Error:', error);
             const container = document.getElementById('dashboard-content');
             if (container) {
                 container.innerHTML = `

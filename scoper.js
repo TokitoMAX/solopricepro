@@ -136,7 +136,7 @@ const Scoper = {
                 </div>
 
                 <div id="objective-next-step" style="display: none; margin-top: 2rem; padding: 1.5rem; background: var(--primary-glass); border: 1px solid var(--primary); border-radius: 12px; text-align: center; animation: fadeInUp 0.5s ease;">
-                    <h4 style="color: var(--primary-light); margin-bottom: 10px;">🚀 Stratégie validée !</h4>
+                    <h4 style="color: var(--primary-light); margin-bottom: 10px;"> Stratégie validée !</h4>
                     <p style="font-size: 0.9rem; margin-bottom: 1.5rem;">Votre TJM est maintenant enregistré. Utilisez-le pour chiffrer vos futurs projets avec l'onglet <strong>Chiffrage Projet</strong>.</p>
                     <button class="button-primary" onclick="Scoper.render('project')">Commencer un chiffrage</button>
                 </div>
@@ -197,7 +197,7 @@ const Scoper = {
                     <div class="input-group">
                         <label class="form-label" style="font-size: 1.1rem;">Revenu Net Mensuel souhaité (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
                         <input type="number" id="monthlyRevenue" class="form-input large" value="${data.monthlyRevenue || ''}" placeholder="ex: 3000" oninput="Scoper.autoSaveObjective()" style="font-size: 1.5rem; padding: 1.2rem;">
-                        <p class="text-xs text-muted" style="margin-top: 10px;">💡 C'est votre "salaire" cible. Soyez ambitieux mais réaliste pour votre marché.</p>
+                        <p class="text-xs text-muted" style="margin-top: 10px;"> C'est votre "salaire" cible. Soyez ambitieux mais réaliste pour votre marché.</p>
                     </div>
                 `;
             case 3: // RYTHME (Ancien 2)
@@ -785,7 +785,7 @@ const Scoper = {
                                    onchange="Scoper.updateTask(${index}, 'manualPrice', this.value)">
                         </div>
 
-                        <button class="btn-icon btn-danger" onclick="Scoper.removeTask(${index})" title="Supprimer">✕</button>
+                        <button class="btn-icon btn-danger" onclick="Scoper.removeTask(${index})" title="Supprimer"></button>
                     </div>
                 </div >
     `;
@@ -1027,7 +1027,7 @@ const Scoper = {
             <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header">
                     <h3>Importer du Catalogue</h3>
-                    <button class="modal-close" onclick="document.getElementById('catalog-selector-overlay').remove()">✕</button>
+                    <button class="modal-close" onclick="document.getElementById('catalog-selector-overlay').remove()"></button>
                 </div>
                 <div class="modal-body" style="padding: 1rem 0;">
                     <p class="text-sm text-muted" style="margin-bottom: 1.5rem;">Sélectionnez les prestations à ajouter à votre estimation.</p>
@@ -1124,7 +1124,7 @@ const Scoper = {
                     <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Arsenal de Closing Expert</h2>
                     <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.</p>
                     <button class="button-primary large" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none;" onclick="App.showUpgradeModal('premium_feature')">
-                        🚀 Passer au Pack EXPERT
+                         Passer au Pack EXPERT
                     </button>
                 </div>
             `;
@@ -1436,7 +1436,7 @@ const Scoper = {
                                     <div class="hp-timeline-dot"></div>
                                     <div class="hp-timeline-content">
                                         <div class="hp-timeline-header">
-                                            <span class="hp-timeline-badge">${entry.type === "victory" ? "✅ Victoire" : "🧠 Leçon"}</span>
+                                            <span class="hp-timeline-badge">${entry.type === "victory" ? " Victoire" : " Leçon"}</span>
                                             <span class="hp-timeline-date">${entry.date ? new Date(entry.date).toLocaleDateString() : ""}</span>
                                         </div>
                                         <div class="hp-timeline-text">${entry.text}</div>

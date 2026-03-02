@@ -5,11 +5,11 @@
 
 const Gamification = {
     missions: [
-        { id: 'add_lead', label: 'Ajouter un nouveau prospect au pipeline', icon: '🎯' },
-        { id: 'send_quote', label: 'Envoyer un devis en attente', icon: '📧' },
-        { id: 'check_stats', label: 'Analyser votre rentabilité nette sur le dashboard', icon: '📊' },
-        { id: 'update_scoper', label: 'Préciser le chiffrage d\'un projet en cours', icon: '📐' },
-        { id: 'follow_up', label: 'Relancer un client dont le devis date de + de 3 jours', icon: '📞' }
+        { id: 'add_lead', label: 'Ajouter un nouveau prospect au pipeline', icon: '' },
+        { id: 'send_quote', label: 'Envoyer un devis en attente', icon: '' },
+        { id: 'check_stats', label: 'Analyser votre rentabilité nette sur le dashboard', icon: '' },
+        { id: 'update_scoper', label: 'Préciser le chiffrage d\'un projet en cours', icon: '' },
+        { id: 'follow_up', label: 'Relancer un client dont le devis date de + de 3 jours', icon: '' }
     ],
 
     quotes: [
@@ -41,10 +41,10 @@ const Gamification = {
 
         return `
             <div class="mission-card glass" style="margin-bottom: 2rem; padding: 1.5rem; border-radius: 15px; border-left: 5px solid var(--primary); display: flex; align-items: center; gap: 1.5rem; position: relative; overflow: hidden;">
-                <div style="position: absolute; right: -10px; top: -10px; font-size: 5rem; opacity: 0.05; pointer-events: none;">🎯</div>
+                <div style="position: absolute; right: -10px; top: -10px; font-size: 5rem; opacity: 0.05; pointer-events: none;"></div>
                 
                 <div class="streak-badge" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 70px; height: 70px; background: rgba(255, 107, 107, 0.1); border-radius: 50%; border: 2px solid rgba(255, 107, 107, 0.3);">
-                    <span style="font-size: 1.5rem;">🔥</span>
+                    <span style="font-size: 1.5rem;"></span>
                     <span style="font-weight: 800; font-size: 1rem; color: #ff6b6b;">${streak}</span>
                 </div>
 
