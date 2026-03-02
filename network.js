@@ -9,14 +9,35 @@ const Network = {
     providers: [],
     ecosystemExperts: [],
 
-    init() {
+    async init() {
         console.log('Network module initialized');
-        this.loadProviders();
+        await this.loadProviders();
         this.render();
     },
 
-    loadProviders() {
-        this.providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
+    async loadProviders() {
+        // Use cache if already populated by Storage.fetchAllData()
+        const cached = Storage._cache[Storage.KEYS.PROVIDERS];
+        if (cached && cached.length > 0) {
+            this.providers = cached;
+            return;
+        }
+        // Cache not ready yet — fetch directly from API
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/data/${Storage.KEYS.PROVIDERS}`, {
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                this.providers = Array.isArray(data) ? data : [];
+                Storage._cache[Storage.KEYS.PROVIDERS] = this.providers;
+            } else {
+                this.providers = [];
+            }
+        } catch (e) {
+            console.warn('[NETWORK] loadProviders fallback error:', e.message);
+            this.providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
+        }
     },
 
     isAdmin() {
@@ -664,8 +685,9 @@ const Network = {
         };
 
         try {
-            await Storage.add(Storage.KEYS.PROVIDERS, newProvider);
-            this.loadProviders();
+            const saved = await Storage.add(Storage.KEYS.PROVIDERS, newProvider);
+            // Update local list from cache
+            this.providers = Storage._cache[Storage.KEYS.PROVIDERS] || [...this.providers, saved || newProvider];
             this.hideAddModal();
             e.target.reset();
             App.showNotification('Partenaire ajouté au réseau.', 'success');
