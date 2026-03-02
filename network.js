@@ -568,12 +568,12 @@ const Network = {
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'provider-add-modal';
-            modal.className = 'modal glass';
+            modal.className = 'modal-overlay';
             modal.innerHTML = `
-                <div class="modal-content glass-card" style="max-width: 500px;">
+                <div class="modal-content" style="max-width: 500px; overflow-y: auto;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h2 style="margin: 0;"><i class="fas fa-handshake"></i> Partenaire Privé</h2>
-                        <button class="btn-icon" onclick="Network.hideAddModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);"><i class="fas fa-times"></i></button>
+                        <h2 style="margin: 0; font-size: 1.2rem;"><i class="fas fa-handshake"></i> Partenaire Privé</h2>
+                        <button class="modal-close" onclick="Network.hideAddModal()"><i class="fas fa-times"></i></button>
                     </div>
                     <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Ce contact restera strictement privé et ne sera visible que par vous.</p>
                     <form onsubmit="Network.addProvider(event)">
