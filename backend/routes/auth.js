@@ -466,4 +466,102 @@ router.put('/update-metadata', async (req, res) => {
     }
 });
 
+// @route   DELETE /api/auth/delete-account
+// @desc    Permanently delete the authenticated user account + all data
+// @access  Private
+router.delete('/delete-account', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: 'Non authentifié.' });
+
+    const token = authHeader.split(' ')[1];
+    const supabase = req.app.get('supabase');
+
+    try {
+        // Verify the token to get the user
+        const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+        if (authErr || !user) return res.status(401).json({ message: 'Session invalide.' });
+
+        const userId = user.id;
+        console.log(`🗑️ Delete account requested for user: ${userId}`);
+
+        // Use Service Role to delete all user data from tables
+        const { createClient } = require('@supabase/supabase-js');
+        const adminClient = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        const tables = [
+            'sp_clients', 'sp_quotes', 'sp_invoices', 'sp_leads',
+            'sp_expenses', 'sp_revenues', 'sp_journal', 'sp_settings',
+            'sp_calculator_data', 'sp_network_providers', 'sp_user_profile',
+            'sp_marketplace_applications'
+        ];
+
+        // Delete all user data
+        await Promise.allSettled(
+            tables.map(t => adminClient.from(t).delete().eq('user_id', userId))
+        );
+
+        // Delete the auth account itself
+        const { error: deleteErr } = await adminClient.auth.admin.deleteUser(userId);
+        if (deleteErr) throw new Error(deleteErr.message);
+
+        console.log(`✅ Account ${userId} deleted successfully.`);
+        res.json({ success: true, message: 'Compte supprimé définitivement.' });
+    } catch (err) {
+        console.error('❌ delete-account error:', err.message);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// @route   POST /api/auth/restore-subscription
+// @desc    Force-sync subscription status from PayPal / manually restore tier
+// @access  Private
+router.post('/restore-subscription', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: 'Non authentifié.' });
+
+    const token = authHeader.split(' ')[1];
+    const supabase = req.app.get('supabase');
+
+    try {
+        const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+        if (authErr || !user) return res.status(401).json({ message: 'Session invalide.' });
+
+        const { createClient } = require('@supabase/supabase-js');
+        const adminClient = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        // Read the current metadata
+        const meta = user.user_metadata || {};
+        const tier = meta.tier || (meta.is_pro ? 'pro' : 'free');
+
+        if (tier === 'free' || tier === 'standard') {
+            return res.status(400).json({ message: 'Aucun abonnement actif trouvé pour ce compte.' });
+        }
+
+        // Re-apply the subscription (remove canceled flag, reset expiry to +30 days)
+        const newExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { error: updateErr } = await adminClient.auth.admin.updateUserById(user.id, {
+            user_metadata: {
+                ...meta,
+                is_pro: true,
+                subscriptionCanceled: false,
+                subscriptionExpiry: newExpiry
+            }
+        });
+
+        if (updateErr) throw new Error(updateErr.message);
+
+        console.log(`✅ Subscription restored for user ${user.id} (tier: ${tier})`);
+        res.json({ success: true, message: `Abonnement ${tier.toUpperCase()} restauré.`, tier, expiry: newExpiry });
+    } catch (err) {
+        console.error('❌ restore-subscription error:', err.message);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

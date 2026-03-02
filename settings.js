@@ -69,12 +69,17 @@ const Settings = {
                     </div>
                 </div>
 
-                <!-- Tab: Subscription -->
                 <div id="settings-tab-subscription" class="settings-tab-content ${activeTabId === 'subscription' ? 'active' : ''}">
                     <div class="settings-section">
                         <h2 class="section-title-small">Votre Offre SoloPrice Pro</h2>
                         <div id="subscription-info-container" style="margin-top: 1.5rem;">
                             <!-- Dynamically filled -->
+                        </div>
+                        <div style="margin-top: 1.5rem; padding: 1.25rem; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border);">
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.75rem;">Si votre abonnement n'est pas correctement reflété (après un paiement PayPal), synchronisez-le manuellement.</p>
+                            <button class="button-secondary small" onclick="Settings.restoreSubscription()">
+                                <i class="fas fa-sync-alt"></i> Restaurer / Synchroniser mon abonnement
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -97,8 +102,26 @@ const Settings = {
                             </div>
                         </div>
 
-                        <h2 class="section-title-small" style="margin-top: 2.5rem;">Sauvegarde & Sécurité</h2>
+                        <h2 class="section-title-small" style="margin-top: 2.5rem;">Sauvegarde &amp; Sécurité</h2>
                         <p class="section-subtitle">Vos données sont stockées localement. Exportez-les régulièrement pour ne pas les perdre.</p>
+                    </div>
+
+                    <!-- DANGER ZONE -->
+                    <div class="settings-section" style="border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 1.5rem; margin-top: 2rem; background: rgba(239,68,68,0.03);">
+                        <h2 class="section-title-small" style="color: #ef4444;"><i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>Zone Danger</h2>
+                        <p class="section-subtitle">Ces actions sont irréversibles. Procédez avec précaution.</p>
+
+                        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--border);">
+                                <div>
+                                    <strong style="font-size: 0.9rem;">Supprimer mon compte</strong>
+                                    <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-muted);">Supprime définitivement votre compte et toutes vos données (clients, devis, factures...).</p>
+                                </div>
+                                <button class="button-outline small" onclick="Settings.deleteAccount()" style="border-color: #ef4444; color: #ef4444; flex-shrink: 0; margin-left: 1rem;">
+                                    <i class="fas fa-trash-alt"></i> Supprimer mon compte
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -273,6 +296,58 @@ const Settings = {
                 App.showNotification('Abonnement résilié avec succès.', 'success');
                 this.updateSubscriptionUI();
             }
+        }
+    },
+
+    async restoreSubscription() {
+        App.showNotification('Synchronisation en cours...', 'info');
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/auth/restore-subscription`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                App.showNotification(data.message || 'Aucun abonnement payant trouvé.', 'error');
+                return;
+            }
+            App.showNotification(`✅ ${data.message}`, 'success');
+            // Refresh session to get updated metadata
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (err) {
+            App.showNotification('Erreur de connexion au serveur.', 'error');
+        }
+    },
+
+    async deleteAccount() {
+        // First confirmation
+        if (!confirm('⚠️ ATTENTION : Cette action est IRRÉVERSIBLE.\n\nToutes vos données (clients, devis, factures, partenaires...) seront définitivement supprimées.\n\nÊtes-vous absolument certain(e) ?')) return;
+
+        // Second confirmation with email input
+        const user = Auth.getUser();
+        const userEmail = user?.email || '';
+        const typed = prompt(`Pour confirmer, saisissez votre adresse email :\n${userEmail}`);
+        if (!typed || typed.trim().toLowerCase() !== userEmail.toLowerCase()) {
+            App.showNotification('Email incorrect. Suppression annulée.', 'error');
+            return;
+        }
+
+        App.showNotification('Suppression en cours...', 'info');
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/auth/delete-account`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                App.showNotification(data.message || 'Erreur lors de la suppression.', 'error');
+                return;
+            }
+            App.showNotification('Compte supprimé. Redirection...', 'success');
+            // Clear local session and redirect
+            Auth.logout();
+        } catch (err) {
+            App.showNotification('Erreur de connexion au serveur.', 'error');
         }
     },
 
