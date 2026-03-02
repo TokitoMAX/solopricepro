@@ -60,9 +60,9 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// 3. GESTION DU BODY (Version Ultra-Robuste pour Vercel)
+// 3. GESTION DU BODY - Toujours parser, sans court-circuits
 app.use((req, res, next) => {
-    // Cas 1 : Webhook (Besoin du buffer brut) - On passe AVANT tout autre parser
+    // Webhooks: buffer brut uniquement
     if (req.originalUrl && req.originalUrl.includes('/webhook')) {
         return express.raw({ type: '*/*' })(req, res, (err) => {
             if (err) return next(err);
@@ -70,15 +70,7 @@ app.use((req, res, next) => {
             next();
         });
     }
-
-    // Cas 2 : Body déjà analysé par Vercel (Objet présent)
-    // On est plus souple : s'il y a un objet body, on le garde
-    if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
-        console.log(` [BODY-PARSER] Body déjà présent (Vercel/Middleware prioritaire)`);
-        return next();
-    }
-
-    // Cas 3 : Analyse standard Express (pour local et déploiements classiques)
+    // Toutes les autres routes: JSON puis URL-encoded
     express.json({ limit: '10mb' })(req, res, (err) => {
         if (err) return next(err);
         express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
