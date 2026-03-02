@@ -16,6 +16,11 @@ const Network = {
     },
 
     async loadProviders() {
+        // Ne rien faire si l'utilisateur n'est pas connecté
+        if (!Auth.user || !Auth.token) {
+            this.providers = [];
+            return;
+        }
         // Use cache if already populated by Storage.fetchAllData()
         const cached = Storage._cache[Storage.KEYS.PROVIDERS];
         if (cached && cached.length > 0) {
