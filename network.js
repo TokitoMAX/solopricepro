@@ -563,6 +563,58 @@ const Network = {
     // =============================================
     // PERSONAL PARTNER ACTIONS
     // =============================================
+    showAddModal() {
+        let modal = document.getElementById('provider-add-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'provider-add-modal';
+            modal.className = 'modal glass';
+            modal.innerHTML = `
+                <div class="modal-content glass-card" style="max-width: 500px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2 style="margin: 0;"><i class="fas fa-handshake"></i> Partenaire Privé</h2>
+                        <button class="btn-icon" onclick="Network.hideAddModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);"><i class="fas fa-times"></i></button>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Ce contact restera strictement privé et ne sera visible que par vous.</p>
+                    <form onsubmit="Network.addProvider(event)">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label class="form-label">Nom / Entreprise *</label>
+                            <input type="text" name="name" class="form-input" required placeholder="Ex: Jean Dupont...">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label class="form-label">Spécialité *</label>
+                            <input type="text" name="specialty" class="form-input" required placeholder="Ex: Developpeur, SEO...">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label class="form-label">Email de Contact</label>
+                            <input type="email" name="email" class="form-input" placeholder="vous@exemple.com">
+                        </div>
+                        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Téléphone</label>
+                                <input type="tel" name="phone" class="form-input" placeholder="+33 6...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ville</label>
+                                <input type="text" name="city" class="form-input" placeholder="Paris...">
+                            </div>
+                        </div>
+                        <button type="submit" class="button-primary full-width" style="margin-top: 1rem; padding: 1rem;">
+                            <i class="fas fa-save"></i> Enregistrer le partenaire
+                        </button>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        modal.classList.add('active');
+    },
+
+    hideAddModal() {
+        const modal = document.getElementById('provider-add-modal');
+        if (modal) modal.classList.remove('active');
+    },
+
     async addProvider(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
