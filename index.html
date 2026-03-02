@@ -105,109 +105,163 @@
                 <button type="button" class="modal-close" onclick="App.closeModal()" aria-label="Fermer"></button>
 
                 <div class="auth-modal-tabs">
-                    <button class="auth-tab active" data-auth-tab="login"
-                        onclick="switchAuthTab('login')">Connexion</button>
-                    <button class="auth-tab" data-auth-tab="register"
-                        onclick="switchAuthTab('register')">Inscription</button>
+                    <button class="auth-tab active" data-auth-tab="login" onclick="switchAuthTab('login')"
+                        data-i18n="auth.tab.login">Connexion</button>
+                    <button class="auth-tab" data-auth-tab="register" onclick="switchAuthTab('register')"
+                        data-i18n="auth.tab.register">Inscription</button>
                 </div>
 
                 <div class="modal-body auth-modal-body">
                     <!-- Login Form -->
                     <form id="auth-form-login" class="auth-form active" onsubmit="handleAuthLogin(event)">
-                        <h2 class="auth-form-title">Bon de retour !</h2>
+                        <h2 class="auth-form-title" data-i18n="auth.login.title">Bon de retour !</h2>
                         <label class="form-group">
-                            <span class="form-label">Email professionnel</span>
+                            <span class="form-label" data-i18n="auth.login.email">Email professionnel</span>
                             <input type="email" id="auth-login-email" class="form-input" placeholder="vous@exemple.fr"
-                                required>
+                                data-i18n="auth.login.email" data-i18n-attr="placeholder" required>
                         </label>
                         <label class="form-group">
-                            <span class="form-label">Mot de passe</span>
+                            <span class="form-label" data-i18n="auth.login.password">Mot de passe</span>
                             <input type="password" id="auth-login-password" class="form-input" placeholder="••••••••"
                                 required>
                         </label>
                         <div style="text-align: right; margin-bottom: 1rem;">
                             <button type="button" class="button-link" style="font-size: 0.8rem;"
-                                onclick="switchAuthTab('forgot')">Mot de passe oublié ?</button>
+                                onclick="switchAuthTab('forgot')" data-i18n="auth.login.forgot">Mot de passe oublié
+                                ?</button>
                         </div>
                         <p id="auth-login-error" class="auth-error" aria-live="polite"></p>
-                        <button type="submit" class="button-primary full-width">Se Connecter</button>
+                        <button type="submit" class="button-primary full-width" data-i18n="auth.login.submit">Se
+                            Connecter</button>
                     </form>
 
                     <!-- Register Form -->
                     <form id="auth-form-register" class="auth-form" onsubmit="handleAuthRegister(event)">
-                        <h2 class="auth-form-title">Créez votre compte</h2>
+                        <h2 class="auth-form-title" data-i18n="auth.register.title">Créez votre compte</h2>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <label class="form-group">
-                                <span class="form-label">Prénom</span>
+                                <span class="form-label" data-i18n="auth.register.firstname">Prénom</span>
                                 <input type="text" id="auth-register-firstname" class="form-input"
                                     placeholder="Ex: Jean" required>
                             </label>
                             <label class="form-group">
-                                <span class="form-label">Nom</span>
+                                <span class="form-label" data-i18n="auth.register.lastname">Nom</span>
                                 <input type="text" id="auth-register-lastname" class="form-input"
                                     placeholder="Ex: Dupont" required>
                             </label>
                         </div>
                         <label class="form-group">
-                            <span class="form-label">Nom de votre entreprise <span
-                                    style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Optionnel)</span></span>
+                            <span class="form-label" data-i18n="auth.register.company">Nom de votre entreprise <span
+                                    style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);"
+                                    data-i18n="auth.register.company.optional">(Optionnel)</span></span>
                             <input type="text" id="auth-register-company" class="form-input"
                                 placeholder="Ex: Studio Design">
                         </label>
                         <label class="form-group">
-                            <span class="form-label">Pays d'activité *</span>
-                            <select id="auth-register-country" class="form-input" required onchange="
-                                const val = this.value;
-                                const msg = document.getElementById('auth-country-message');
-                                if(['SN','CI','MG','MA','RE','GP','MQ','GF','MU'].includes(val)) {
-                                    msg.innerHTML = '<i class=\'fas fa-globe-africa\'></i> Connectons la diaspora et propulsons l\'entrepreneuriat local !';
-                                    msg.style.color = 'var(--primary)';
-                                } else {
-                                    msg.innerHTML = '<i class=\'fas fa-star\'></i> Concentrez-vous sur l\'ultra-croissance et l\'optimisation de votre cash-flow.';
-                                    msg.style.color = 'var(--text-muted)';
-                                }
-                                msg.style.display = 'block';
-                            ">
+                            <span class="form-label" data-i18n="auth.register.country">Pays d'activité *</span>
+                            <!-- Country dropdown populated dynamically by i18n.buildRegisterCountryDropdown() -->
+                            <select id="auth-register-country" class="form-input" required>
                                 <option value="" disabled selected>Sélectionnez votre zone d'activité...</option>
-                                <optgroup label="Europe & Francophonie">
-                                    <option value="FR">France (Métropole)</option>
-                                    <option value="BE">Belgique</option>
-                                    <option value="CH">Suisse</option>
-                                    <option value="CA">Canada</option>
+                                <optgroup label="France & Europe">
+                                    <option value="FR">🇫🇷 France</option>
+                                    <option value="BE">🇧🇪 Belgique</option>
+                                    <option value="CH">🇨🇭 Suisse</option>
+                                    <option value="LU">🇱🇺 Luxembourg</option>
+                                    <option value="CA">🇨🇦 Canada</option>
+                                    <option value="GB">🇬🇧 Royaume-Uni</option>
+                                    <option value="DE">🇩🇪 Allemagne</option>
+                                    <option value="ES">🇪🇸 Espagne</option>
+                                    <option value="IT">🇮🇹 Italie</option>
+                                    <option value="NL">🇳🇱 Pays-Bas</option>
+                                    <option value="PT">🇵🇹 Portugal</option>
+                                    <option value="IE">🇮🇪 Irlande</option>
                                 </optgroup>
                                 <optgroup label="Antilles & Outre-Mer">
-                                    <option value="GP">Guadeloupe</option>
-                                    <option value="MQ">Martinique</option>
-                                    <option value="GF">Guyane</option>
-                                    <option value="RE">La Réunion</option>
-                                    <option value="YT">Mayotte</option>
+                                    <option value="GP">🇬🇵 Guadeloupe</option>
+                                    <option value="MQ">🇲🇶 Martinique</option>
+                                    <option value="GF">🇬🇫 Guyane Française</option>
+                                    <option value="RE">🇷🇪 La Réunion</option>
+                                    <option value="YT">🇾🇹 Mayotte</option>
+                                    <option value="PM">🇵🇲 Saint-Pierre-et-Miquelon</option>
+                                    <option value="MF">🇲🇫 Saint-Martin</option>
+                                    <option value="BL">🇧🇱 Saint-Barthélemy</option>
+                                    <option value="WF">🇼🇫 Wallis-et-Futuna</option>
+                                    <option value="NC">🇳🇨 Nouvelle-Calédonie</option>
+                                    <option value="PF">🇵🇫 Polynésie Française</option>
                                 </optgroup>
                                 <optgroup label="Afrique & Océan Indien">
-                                    <option value="SN">Sénégal</option>
-                                    <option value="CI">Côte d'Ivoire</option>
-                                    <option value="MA">Maroc</option>
-                                    <option value="MU">Île Maurice</option>
-                                    <option value="MG">Madagascar</option>
+                                    <option value="MA">🇲🇦 Maroc</option>
+                                    <option value="DZ">🇩🇿 Algérie</option>
+                                    <option value="TN">🇹🇳 Tunisie</option>
+                                    <option value="SN">🇸🇳 Sénégal</option>
+                                    <option value="CI">🇨🇮 Côte d'Ivoire</option>
+                                    <option value="CM">🇨🇲 Cameroun</option>
+                                    <option value="CD">🇨🇩 Congo (RDC)</option>
+                                    <option value="GA">🇬🇦 Gabon</option>
+                                    <option value="MG">🇲🇬 Madagascar</option>
+                                    <option value="MU">🇲🇺 Île Maurice</option>
+                                    <option value="KM">🇰🇲 Comores</option>
+                                    <option value="SC">🇸🇨 Seychelles</option>
+                                    <option value="NG">🇳🇬 Nigéria</option>
+                                    <option value="GH">🇬🇭 Ghana</option>
+                                    <option value="ZA">🇿🇦 Afrique du Sud</option>
+                                </optgroup>
+                                <optgroup label="Amériques">
+                                    <option value="US">🇺🇸 États-Unis</option>
+                                    <option value="MX">🇲🇽 Mexique</option>
+                                    <option value="CO">🇨🇴 Colombie</option>
+                                    <option value="BR">🇧🇷 Brésil</option>
+                                    <option value="AR">🇦🇷 Argentine</option>
+                                    <option value="CL">🇨🇱 Chili</option>
+                                    <option value="HT">🇭🇹 Haïti</option>
+                                </optgroup>
+                                <optgroup label="Caraïbes & Petites Îles">
+                                    <option value="JM">🇯🇲 Jamaïque</option>
+                                    <option value="TT">🇹🇹 Trinité-et-Tobago</option>
+                                    <option value="BB">🇧🇧 Barbade</option>
+                                    <option value="LC">🇱🇨 Sainte-Lucie</option>
+                                    <option value="VC">🇻🇨 Saint-Vincent</option>
+                                    <option value="GD">🇬🇩 Grenade</option>
+                                    <option value="DM">🇩🇲 Dominique</option>
+                                    <option value="AG">🇦🇬 Antigua-et-Barbuda</option>
+                                    <option value="KN">🇰🇳 Saint-Kitts-et-Nevis</option>
+                                    <option value="CU">🇨🇺 Cuba</option>
+                                    <option value="DO">🇩🇴 Rép. Dominicaine</option>
+                                    <option value="PR">🇵🇷 Porto Rico</option>
+                                </optgroup>
+                                <optgroup label="Pacifique">
+                                    <option value="FJ">🇫🇯 Fidji</option>
+                                    <option value="SB">🇸🇧 Îles Salomon</option>
+                                    <option value="VU">🇻🇺 Vanuatu</option>
+                                    <option value="TO">🇹🇴 Tonga</option>
+                                    <option value="WS">🇼🇸 Samoa</option>
+                                    <option value="MV">🇲🇻 Maldives</option>
                                 </optgroup>
                                 <optgroup label="International">
-                                    <option value="OTHER">Autre pays (Reste du monde)</option>
+                                    <option value="AE">🇦🇪 Émirats Arabes Unis</option>
+                                    <option value="SG">🇸🇬 Singapour</option>
+                                    <option value="IN">🇮🇳 Inde</option>
+                                    <option value="LB">🇱🇧 Liban</option>
+                                    <option value="OTHER_ISLAND">🏝️ Autre île / Other island</option>
+                                    <option value="OTHER">🌍 Autre pays / Other country</option>
                                 </optgroup>
                             </select>
                             <p id="auth-country-message" style="margin-top: 0.5rem; font-size: 0.8rem; display: none;">
                             </p>
                         </label>
                         <label class="form-group">
-                            <span class="form-label">Email professionnel</span>
+                            <span class="form-label" data-i18n="auth.register.email">Email professionnel</span>
                             <input type="email" id="auth-register-email" class="form-input"
                                 placeholder="vous@exemple.fr" required>
                         </label>
                         <label class="form-group">
-                            <span class="form-label">Mot de passe</span>
+                            <span class="form-label" data-i18n="auth.register.password">Mot de passe</span>
                             <input type="password" id="auth-register-password" class="form-input"
                                 placeholder="Au moins 6 caractères" required minlength="6">
                         </label>
                         <p id="auth-register-error" class="auth-error" aria-live="polite"></p>
-                        <button type="submit" class="button-primary full-width">S'inscrire</button>
+                        <button type="submit" class="button-primary full-width"
+                            data-i18n="auth.register.submit">S'inscrire</button>
                     </form>
 
                     <!-- Forgot Password Form -->
@@ -243,17 +297,20 @@
 
         <header class="landing-hero container">
             <div class="hero-content">
-                <h1 class="hero-title">Dominez votre <br><span class="gradient-text">Rentabilité d'Expert</span></h1>
-                <p class="hero-subtitle">L'outil de chiffrage haute-performance qui pense comme un chef d'entreprise.
+                <h1 class="hero-title" data-i18n="hero.title">Dominez votre <br><span class="gradient-text">Rentabilité
+                        d'Expert</span></h1>
+                <p class="hero-subtitle" data-i18n="hero.subtitle">L'outil de chiffrage haute-performance qui pense
+                    comme un chef d'entreprise.
                     <br>Ne laissez plus aucun euro dormir. Prenez le contrôle total.
                 </p>
                 <div class="hero-buttons">
                     <button class="button-primary big shadow-glow" onclick="showAuthModal('register')"
-                        style="font-size: 1.3rem; padding: 1.2rem 3rem;">
+                        style="font-size: 1.3rem; padding: 1.2rem 3rem;" data-i18n="hero.cta">
                         Accéder à l'Expérience PRO
                     </button>
                     <p class="hero-note"
-                        style="color: var(--text-muted); opacity: 0.8; font-style: italic; margin-top: 1rem;">Précision
+                        style="color: var(--text-muted); opacity: 0.8; font-style: italic; margin-top: 1rem;"
+                        data-i18n="hero.note">Précision
                         Millimétrée. Impact Immédiat.</p>
                 </div>
             </div>
@@ -263,6 +320,7 @@
                     <div
                         style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1.5rem; text-align: center;">
                         Objectif SoloPrice</div>
+
 
                     <div style="text-align: center; margin-bottom: 2rem;">
                         <div id="landing-pipeline-value"
@@ -289,38 +347,41 @@
             <div class="glass-premium"
                 style="padding: 3rem; border-radius: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
                 <div>
-                    <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;">Simulez votre <span
-                            class="gradient-text">Liberté</span></h2>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Combien devriez-vous facturer pour obtenir
+                    <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;" data-i18n="sim.title">Simulez
+                        votre <span class="gradient-text">Liberté</span></h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;" data-i18n="sim.subtitle">Combien
+                        devriez-vous facturer pour obtenir
                         le salaire net de vos rêves ? Notre simulateur calqué sur la fiscalité réelle vous donne la
                         réponse en 3 secondes. <strong>Repartez avec votre Roadmap PDF d'Expert offerte.</strong></p>
-
                     <div class="simulator-form" style="display: grid; gap: 1rem;">
                         <div class="form-group">
-                            <label class="form-label" style="font-size: 0.8rem; opacity: 0.7;">Objectif Salaire Net
+                            <label class="form-label" style="font-size: 0.8rem; opacity: 0.7;"
+                                data-i18n="sim.label.net">Objectif Salaire Net
                                 Mensuel</label>
                             <input type="number" id="sim-net" class="form-input" value="3000"
                                 style="background: rgba(0,0,0,0.3); border-color: var(--primary-glass);">
                         </div>
                         <div class="form-group">
-                            <label class="form-label" style="font-size: 0.8rem; opacity: 0.7;">Jours travaillés par
+                            <label class="form-label" style="font-size: 0.8rem; opacity: 0.7;"
+                                data-i18n="sim.label.days">Jours travaillés par
                                 mois</label>
                             <input type="number" id="sim-days" class="form-input" value="15"
                                 style="background: rgba(0,0,0,0.3); border-color: var(--primary-glass);">
                         </div>
-                        <button class="button-primary full-width" onclick="runMiniSim()"
-                            style="margin-top: 0.5rem;">Calculer mon TJM cible</button>
+                        <button class="button-primary full-width" onclick="runMiniSim()" style="margin-top: 0.5rem;"
+                            data-i18n="sim.btn">Calculer mon TJM cible</button>
                     </div>
                 </div>
-
                 <div id="sim-result" class="glass-premium"
                     style="padding: 2.5rem; border-radius: 20px; text-align: center; border: 2px dashed var(--primary-glass);">
-                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Votre TJM recommandé
+                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;"
+                        data-i18n="sim.result.msg">Votre TJM recommandé
                         pour réussir :</div>
                     <div id="sim-tjm-value"
                         style="font-size: 3.5rem; font-weight: 900; color: var(--primary-light); margin-bottom: 0.5rem;">
                         ---€</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">(Inclut charges
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;"
+                        data-i18n="sim.result.hint">(Inclut charges
                         sociales & frais de fonctionnement)</div>
                 </div>
             </div>
@@ -344,72 +405,90 @@
             }
         </script>
         <div class="section-header">
-            <h2 class="section-title">Choisissez votre <span class="gradient-text">Puissance</span></h2>
-            <p class="section-subtitle">Un investissement rentable dès votre premier devis.</p>
+            <h2 class="section-title" data-i18n="pricing.title">Choisissez votre <span
+                    class="gradient-text">Puissance</span></h2>
+            <p class="section-subtitle" data-i18n="pricing.subtitle">Un investissement rentable dès votre premier devis.
+            </p>
         </div>
-
         <div class="pricing-grid">
             <!-- Standard -->
             <div class="pricing-card glass">
                 <div class="pricing-header">
-                    <h3 class="tier-name">Standard</h3>
-                    <div class="tier-price">0€<span class="period">/mois</span></div>
+                    <h3 class="tier-name" data-i18n="pricing.standard.name">Standard</h3>
+                    <div class="tier-price" data-i18n="pricing.standard.price">0€<span class="period"
+                            data-i18n="pricing.standard.period">/mois</span></div>
                 </div>
                 <ul class="tier-features">
-                    <li><i class="fas fa-check"></i> Calculateur <strong>TJM Stratégique</strong></li>
-                    <li><i class="fas fa-check"></i> <strong>Documents &amp; Devis</strong></li>
-                    <li><i class="fas fa-check"></i> <strong>Missions Disponibles</strong> (Marketplace)</li>
-                    <li><i class="fas fa-check"></i> <strong>Le Cercle</strong> — Clients, Prospects &amp; Partenaires
+                    <li data-i18n="feat.tjm"><i class="fas fa-check"></i> Calculateur <strong>TJM Stratégique</strong>
                     </li>
-                    <li><i class="fas fa-check"></i> <strong>Signature Électronique</strong> Client</li>
-                    <li class="disabled"><i class="fas fa-times"></i> Pipeline Cash-flow &amp; Trésorerie Nette</li>
-                    <li class="disabled"><i class="fas fa-times"></i> Chiffrage Projet (Scoper)</li>
-                    <li class="disabled"><i class="fas fa-times"></i> Stratégie &amp; Closing</li>
+                    <li data-i18n="feat.quotes"><i class="fas fa-check"></i> <strong>Documents &amp; Devis</strong></li>
+                    <li data-i18n="feat.marketplace"><i class="fas fa-check"></i> <strong>Missions Disponibles</strong>
+                        (Marketplace)</li>
+                    <li data-i18n="feat.circle"><i class="fas fa-check"></i> <strong>Le Cercle</strong> — Clients &amp;
+                        Partenaires</li>
+                    <li data-i18n="feat.signature"><i class="fas fa-check"></i> <strong>Signature Électronique</strong>
+                        Client</li>
+                    <li class="disabled" data-i18n="feat.pipeline"><i class="fas fa-times"></i> Pipeline Cash-flow &amp;
+                        Trésorerie Nette</li>
+                    <li class="disabled" data-i18n="feat.scoper"><i class="fas fa-times"></i> Chiffrage Projet (Scoper)
+                    </li>
+                    <li class="disabled" data-i18n="feat.strategy"><i class="fas fa-times"></i> Stratégie &amp; Closing
+                    </li>
                 </ul>
                 <button class="pricing-button"
-                    onclick="Analytics.trackEvent('click_pricing_free'); handlePricingClick('register')">Commencer
+                    onclick="Analytics.trackEvent('click_pricing_free'); handlePricingClick('register')"
+                    data-i18n="pricing.btn.free">Commencer
                     Gratuitement</button>
             </div>
-
             <!-- Pro -->
             <div class="pricing-card glass popular">
-                <div class="popular-badge">Production Illimitée</div>
+                <div class="popular-badge" data-i18n="pricing.pro.badge">Production Illimitée</div>
                 <div class="pricing-header">
-                    <h3 class="tier-name">Pack PRO</h3>
-                    <div class="market-value">Zéro limite opérationnelle</div>
-                    <div class="tier-price">15€<span class="period">/mois</span></div>
+                    <h3 class="tier-name" data-i18n="pricing.pro.name">Pack PRO</h3>
+                    <div class="market-value" data-i18n="pricing.pro.market">Zéro limite opérationnelle</div>
+                    <div class="tier-price" data-i18n="pricing.pro.price">15€<span class="period"
+                            data-i18n="pricing.standard.period">/mois</span></div>
                 </div>
                 <ul class="tier-features">
-                    <li><i class="fas fa-check"></i> Tout du plan Standard</li>
-                    <li><i class="fas fa-check"></i> <strong>Clients &amp; Devis</strong> Illimités</li>
-                    <li><i class="fas fa-check"></i> <strong>Pipeline Kanban</strong> (Prospects → Encaissé)</li>
-                    <li><i class="fas fa-check"></i> <strong>Trésorerie Nette Réelle</strong> (Brut − Charges − URSSAF)
+                    <li data-i18n="feat.everything.standard"><i class="fas fa-check"></i> Tout du plan Standard</li>
+                    <li data-i18n="feat.unlimited"><i class="fas fa-check"></i> <strong>Clients &amp; Devis</strong>
+                        Illimités</li>
+                    <li data-i18n="feat.kanban"><i class="fas fa-check"></i> <strong>Pipeline Kanban</strong> (Prospects
+                        → Encaissé)</li>
+                    <li data-i18n="feat.netcash"><i class="fas fa-check"></i> <strong>Trésorerie Nette Réelle</strong>
+                        (Brut − Charges)</li>
+                    <li data-i18n="feat.scoper"><i class="fas fa-check"></i> <strong>Chiffrage Projet</strong> + Prime
+                        de Risque</li>
+                    <li data-i18n="feat.expenses"><i class="fas fa-check"></i> <strong>Dépenses &amp; Charges</strong> —
+                        Registre complet</li>
+                    <li data-i18n="feat.logo"><i class="fas fa-check"></i> PDF Factures avec <strong>votre Logo</strong>
                     </li>
-                    <li><i class="fas fa-check"></i> <strong>Chiffrage Projet</strong> + Prime de Risque</li>
-                    <li><i class="fas fa-check"></i> <strong>Dépenses &amp; Charges</strong> — Registre complet</li>
-                    <li><i class="fas fa-check"></i> PDF Factures avec <strong>votre Logo</strong></li>
-                    <li><i class="fas fa-check"></i> Support Prioritaire</li>
+                    <li data-i18n="feat.support"><i class="fas fa-check"></i> Support Prioritaire</li>
                 </ul>
                 <button class="pricing-button"
-                    onclick="Analytics.trackEvent('click_pricing_pro'); handlePricingClick('pro')">Débloquer
+                    onclick="Analytics.trackEvent('click_pricing_pro'); handlePricingClick('pro')"
+                    data-i18n="pricing.btn.pro">Débloquer
                     l'Illimité</button>
             </div>
-
             <!-- Expert -->
             <div class="pricing-card glass expert">
                 <div class="pricing-header">
-                    <h3 class="tier-name">Pack EXPERT</h3>
-                    <div class="market-value">Accélérateur de Croissance</div>
-                    <div class="tier-price">29€<span class="period">/mois</span></div>
+                    <h3 class="tier-name" data-i18n="pricing.expert.name">Pack EXPERT</h3>
+                    <div class="market-value" data-i18n="pricing.expert.market">Accélérateur de Croissance</div>
+                    <div class="tier-price" data-i18n="pricing.expert.price">29€<span class="period"
+                            data-i18n="pricing.standard.period">/mois</span></div>
                 </div>
                 <ul class="tier-features">
-                    <li><i class="fas fa-check"></i> Tout du Pack PRO</li>
-                    <li><i class="fas fa-check"></i> <strong>Stratégie &amp; Closing</strong></li>
-                    <li><i class="fas fa-check"></i> <strong>Journal de Bord</strong></li>
-                    <li><i class="fas fa-check"></i> <strong>Profil Expert</strong> mis en avant dans Le Cercle</li>
+                    <li data-i18n="feat.everything.pro"><i class="fas fa-check"></i> Tout du Pack PRO</li>
+                    <li data-i18n="feat.strategy"><i class="fas fa-check"></i> <strong>Stratégie &amp; Closing</strong>
+                    </li>
+                    <li data-i18n="feat.journal"><i class="fas fa-check"></i> <strong>Journal de Bord</strong></li>
+                    <li data-i18n="feat.expert.rank"><i class="fas fa-check"></i> <strong>Profil Expert</strong> mis en
+                        avant</li>
                 </ul>
                 <button class="pricing-button"
-                    onclick="Analytics.trackEvent('click_pricing_expert'); handlePricingClick('expert')">Activer la
+                    onclick="Analytics.trackEvent('click_pricing_expert'); handlePricingClick('expert')"
+                    data-i18n="pricing.btn.expert">Activer la
                     Croissance</button>
             </div>
         </div>
@@ -419,13 +498,15 @@
             <div class="container footer-content">
                 <div class="footer-logo">
                     SoloPrice <span style="color:var(--primary)">Pro</span>
-                    <div style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7; margin-bottom: 5px;">PROPULSÉ
+                    <div style="font-size: 0.8rem; letter-spacing: 2px; opacity: 0.7; margin-bottom: 5px;"
+                        data-i18n="footer.powered">PROPULSÉ
                         par Le Réseau SoloPrice</div>
                 </div>
 
             </div>
             <div class="footer-bottom container">
-                <p>&copy; 2026 SoloPrice Pro. Le copilote des indépendants, partout dans le monde.</p>
+                <p data-i18n="footer.tagline">&copy; 2026 SoloPrice Pro. Le copilote des indépendants, partout dans le
+                    monde.</p>
                 <div class="social-links" style="margin-top: 15px;">
                 </div>
             </div>
@@ -435,9 +516,10 @@
     <!-- APP WRAPPER -->
     <div id="app-wrapper" style="display: none;">
         <div id="freemium-banner" class="freemium-banner">
-            <span>Version Gratuite - Passez à PRO pour débloquer toutes les fonctionnalités</span>
+            <span data-i18n="banner.freemium">Version Gratuite - Passez à PRO pour débloquer toutes les
+                fonctionnalités</span>
             <span class="mobile-show" style="display: none;">Mode Gratuit</span>
-            <button class="btn-upgrade" onclick="App.showUpgradeModal()">Upgrade</button>
+            <button class="btn-upgrade" onclick="App.showUpgradeModal()" data-i18n="banner.upgrade">Upgrade</button>
         </div>
 
         <div class="app-layout">
@@ -459,51 +541,53 @@
                 </div>
 
                 <nav class="sidebar-nav">
-                    <div class="sidebar-section-title">PILOTAGE</div>
-                    <a href="#" class="nav-item active" data-nav="dashboard">
+                    <div class="sidebar-section-title" id="nav-group-pilotage" data-i18n="nav.group.pilotage">PILOTAGE
+                    </div>
+                    <a href="#" class="nav-item active" data-nav="dashboard" id="nav-dashboard">
                         <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
-                        <span class="nav-label">Vue Stratégique</span>
+                        <span class="nav-label" data-i18n="nav.dashboard">Vue Stratégique</span>
                     </a>
-                    <a href="#" class="nav-item" data-nav="kanban">
+                    <a href="#" class="nav-item" data-nav="kanban" id="nav-cashflow">
                         <span class="nav-icon"><i class="fas fa-wallet"></i></span>
-                        <span class="nav-label">Gestion du Cash-flow</span>
+                        <span class="nav-label" data-i18n="nav.cashflow">Gestion du Cash-flow</span>
                     </a>
 
-                    <div class="sidebar-section-title">COMMERCE</div>
-                    <a href="#" class="nav-item" data-nav="clients">
+                    <div class="sidebar-section-title" id="nav-group-commerce" data-i18n="nav.group.commerce">COMMERCE
+                    </div>
+                    <a href="#" class="nav-item" data-nav="clients" id="nav-clients">
                         <span class="nav-icon"><i class="fas fa-address-book"></i></span>
-                        <span class="nav-label">Mes Clients</span>
+                        <span class="nav-label" data-i18n="nav.clients">Mes Clients</span>
                     </a>
-                    <a href="#" class="nav-item" data-nav="quotes">
+                    <a href="#" class="nav-item" data-nav="quotes" id="nav-quotes">
                         <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-                        <span class="nav-label">Documents & Devis</span>
+                        <span class="nav-label" data-i18n="nav.quotes">Documents & Devis</span>
                     </a>
-                    <a href="#" class="nav-item" data-nav="scoper">
+                    <a href="#" class="nav-item" data-nav="scoper" id="nav-strategy">
                         <span class="nav-icon"><i class="fas fa-bullseye"></i></span>
-                        <span class="nav-label">Stratégie & Chiffrage</span>
+                        <span class="nav-label" data-i18n="nav.strategy">Stratégie & Chiffrage</span>
                     </a>
 
                     <!-- FINANCES SUPPRIMÉES POUR SIMPLICITÉ & SÉCURITÉ -->
 
-                    <div class="sidebar-section-title">RÉSEAU</div>
-                    <a href="#" class="nav-item" data-nav="marketplace">
+                    <div class="sidebar-section-title" id="nav-group-reseau" data-i18n="nav.group.reseau">RÉSEAU</div>
+                    <a href="#" class="nav-item" data-nav="marketplace" id="nav-missions">
                         <span class="nav-icon"><i class="fas fa-briefcase"></i></span>
-                        <span class="nav-label">Missions Disponibles</span>
+                        <span class="nav-label" data-i18n="nav.missions">Missions Disponibles</span>
                     </a>
-                    <a href="#" class="nav-item" data-nav="network">
+                    <a href="#" class="nav-item" data-nav="network" id="nav-network">
                         <span class="nav-icon"><i class="fas fa-users"></i></span>
-                        <span class="nav-label">Le Cercle</span>
+                        <span class="nav-label" data-i18n="nav.network">Le Cercle</span>
                     </a>
 
                     <div class="sidebar-divider"></div>
 
-                    <a href="#" class="nav-item" data-nav="profile">
+                    <a href="#" class="nav-item" data-nav="profile" id="nav-profile">
                         <span class="nav-icon"><i class="fas fa-user-circle"></i></span>
-                        <span class="nav-label">Mon Compte</span>
+                        <span class="nav-label" data-i18n="nav.profile">Mon Compte</span>
                     </a>
-                    <a href="#" class="nav-item" data-nav="settings">
+                    <a href="#" class="nav-item" data-nav="settings" id="nav-settings">
                         <span class="nav-icon"><i class="fas fa-cog"></i></span>
-                        <span class="nav-label">Réglages</span>
+                        <span class="nav-label" data-i18n="nav.settings">Réglages</span>
                     </a>
 
                     <!-- ADMIN NAV -->
@@ -527,9 +611,9 @@
                     </div>
                     <!-- Hidden Google Translate Element -->
                     <div id="google_translate_sidebar" style="display: none;"></div>
-                    <button class="logout-btn" onclick="Auth.logout()">
+                    <button class="logout-btn" onclick="Auth.logout()" id="nav-logout">
                         <i class="fas fa-sign-out-alt"></i>
-                        <span>Déconnexion</span>
+                        <span data-i18n="nav.logout">Déconnexion</span>
                     </button>
                 </div>
             </aside>
@@ -793,7 +877,9 @@
 
     <!-- Script de démarrage -->
     <link rel="stylesheet" href="styles.css?v=20260228_1800">
+    <script src="i18n.js?v=20260302_1800"></script>
     <script src="auth.js?v=20260228_1800"></script>
+
     <script src="storage.js?v=20260228_1800"></script>
     <script src="taxes.js?v=20260228_1800"></script>
     <script src="app_v5.js?v=20260228_1800"></script>
@@ -863,9 +949,9 @@
             errEl.textContent = '';
             var email = document.getElementById('auth-login-email').value.trim();
             var password = document.getElementById('auth-login-password').value;
-            if (!email || !password) { errEl.textContent = 'Veuillez remplir tous les champs.'; return; }
+            if (!email || !password) { errEl.textContent = i18n.t('error.fill_all'); return; }
             Auth.login(email, password).then(function () { closeAuthModal(); }).catch(function (err) {
-                errEl.textContent = err && err.message ? err.message : 'Erreur de connexion.';
+                errEl.textContent = err && err.message ? err.message : i18n.t('error.login_failed');
             });
         }
         function handleAuthRegister(e) {
@@ -879,15 +965,15 @@
             var company = document.getElementById('auth-register-company').value.trim();
             var country = document.getElementById('auth-register-country').value;
 
-            if (!email || !password || !firstName || !lastName || !country) { errEl.textContent = 'Veuillez remplir votre nom, prénom, email, mot de passe et pays.'; return; }
+            if (!email || !password || !firstName || !lastName || !country) { errEl.textContent = i18n.t('error.fill_required'); return; }
             Auth.register({ email: email, password: password, first_name: firstName, last_name: lastName, company_name: company, country: country }).then(function (res) {
-                App.showNotification('Inscription réussie ! Connexion...', 'success');
+                App.showNotification(i18n.t('notify.register.success'), 'success');
                 // Automatically log in if no session was returned (admin creation bypasses session)
                 if (res && res.user && !res.session && !res.requiresConfirmation) {
                     return Auth.login(email, password);
                 }
             }).catch(function (err) {
-                errEl.textContent = err && err.message ? err.message : 'Erreur d\'inscription.';
+                errEl.textContent = err && err.message ? err.message : i18n.t('error.register_failed');
             });
         }
         function handleAuthForgot(e) {
@@ -895,12 +981,12 @@
             var errEl = document.getElementById('auth-forgot-error');
             errEl.textContent = '';
             var email = document.getElementById('auth-forgot-email').value.trim();
-            if (!email) { errEl.textContent = 'Veuillez entrer votre email.'; return; }
+            if (!email) { errEl.textContent = i18n.t('error.enter_email'); return; }
             Auth.forgotPassword(email).then(function (res) {
-                App.showNotification(res.message || 'Lien envoyé !', 'success');
+                App.showNotification(res.message || i18n.t('error.forgot_sent'), 'success');
                 switchAuthTab('login');
             }).catch(function (err) {
-                errEl.textContent = err && err.message ? err.message : 'Erreur de récupération.';
+                errEl.textContent = err && err.message ? err.message : i18n.t('error.forgot_failed');
             });
         }
         function handleAuthReset(e) {
@@ -908,22 +994,22 @@
             var errEl = document.getElementById('auth-reset-error');
             errEl.textContent = '';
             var password = document.getElementById('auth-reset-password').value;
-            if (!password || password.length < 6) { errEl.textContent = 'Le mot de passe doit faire 6 caractères min.'; return; }
+            if (!password || password.length < 6) { errEl.textContent = i18n.t('error.password_too_short'); return; }
 
             const urlParams = new URLSearchParams(window.location.hash.substring(1));
             const accessToken = urlParams.get('access_token');
 
             if (!accessToken) {
-                errEl.textContent = "Token manquant ou expiré. Recommencez la demande.";
+                errEl.textContent = i18n.t('error.token_missing');
                 return;
             }
 
             Auth.updatePassword(accessToken, password).then(function () {
-                App.showNotification('Mot de passe mis à jour !', 'success');
+                App.showNotification(i18n.t('error.reset_success'), 'success');
                 window.location.hash = ''; // Clear hash
                 switchAuthTab('login');
             }).catch(function (err) {
-                errEl.textContent = err && err.message ? err.message : 'Erreur de mise à jour.';
+                errEl.textContent = err && err.message ? err.message : i18n.t('error.reset_failed');
             });
         }
 
@@ -931,13 +1017,18 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log(" [DOM] Content Loaded - Starting App");
 
-            // Init language selector from cookie
-            const match = document.cookie.match(/googtrans=\/fr\/([a-z]{2})/);
-            if (match && match[1]) {
-                const lang = match[1];
-                document.querySelectorAll('.custom-lang-selector select').forEach(s => {
-                    if (s.value !== lang) s.value = lang;
-                });
+            // Init i18n on load (reads sp_lang from localStorage or navigator.language)
+            if (typeof i18n !== 'undefined') {
+                i18n.init();
+            } else {
+                // Fallback: sync lang selector from stored cookie
+                const match = document.cookie.match(/googtrans=\/fr\/([a-z]{2})/);
+                if (match && match[1]) {
+                    const lang = match[1];
+                    document.querySelectorAll('.custom-lang-selector select').forEach(s => {
+                        if (s.value !== lang) s.value = lang;
+                    });
+                }
             }
 
             if (typeof App !== 'undefined' && App.init) {
@@ -965,42 +1056,24 @@
             }, 'google_translate_landing');
         }
 
-        // Custom function to trigger Google Translate with retry logic
+        // Custom function using native i18n system (no Google Translate dependency)
         function changeLanguageCustom(langCode) {
-            // Sync all custom selectors immediately
+            if (typeof i18n !== 'undefined') {
+                i18n.setLang(langCode);
+                return;
+            }
+            // Fallback for Google Translate (legacy)
             document.querySelectorAll('.custom-lang-selector select').forEach(s => {
                 if (s.value !== langCode) s.value = langCode;
             });
-
-            // If user switches back to French, reload the page cleanly (GT can't "un-translate")
             if (langCode === 'fr') {
-                // Remove the googtrans cookie and reload
-                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname;
+                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
                 location.reload();
                 return;
             }
-
-            // Set cookie so it persists on reload
             const expires = new Date(Date.now() + 365 * 86400 * 1000).toUTCString();
             document.cookie = `googtrans=/fr/${langCode}; expires=${expires}; path=/`;
-
-            // Try to trigger Google Translate (retry up to 15 times, 200ms apart = 3s)
-            let attempts = 0;
-            function tryTranslate() {
-                const select = document.querySelector('.goog-te-combo');
-                if (select) {
-                    select.value = langCode;
-                    select.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-                } else if (attempts < 15) {
-                    attempts++;
-                    setTimeout(tryTranslate, 200);
-                } else {
-                    // All retries exhausted — reload the page with the cookie set
-                    location.reload();
-                }
-            }
-            tryTranslate();
+            location.reload();
         }
     </script>
     <script type="text/javascript"

@@ -38,6 +38,11 @@ const App = {
     async init() {
         console.log(' [APP] Init started');
 
+        // Initialisation de la langue (i18n)
+        if (typeof i18n !== 'undefined') {
+            i18n.init();
+        }
+
         // Safety timeout to hide loader if init hangs (e.g. slow network)
         const safetyTimer = setTimeout(() => {
             const loader = document.getElementById('app-loader');
@@ -393,13 +398,13 @@ const App = {
                 if (user && user.role === 'admin') {
                     if (this.refreshAdminData) this.refreshAdminData();
                 } else {
-                    if (this.showNotification) this.showNotification('Accès refusé', 'error');
+                    if (this.showNotification) this.showNotification(i18n.t('notify.access_denied'), 'error');
                     this.navigateTo('dashboard');
                 }
             }
         } catch (e) {
             console.error(` [APP] Error rendering page ${page}:`, e);
-            if (this.showNotification) this.showNotification('Erreur d\'affichage', 'error');
+            if (this.showNotification) this.showNotification(i18n.t('notify.render_error'), 'error');
         }
     },
 
@@ -1160,11 +1165,17 @@ const App = {
         } else if (typeof document !== 'undefined') {
             // Fallback to language for guests (Mini-Simulator on landing page)
             let lang = 'fr';
-            const match = document.cookie.match(/googtrans=\/[^\/]+\/([a-z]{2})/);
-            if (match && match[1]) {
-                lang = match[1];
-            } else if (typeof navigator !== 'undefined' && navigator.language) {
-                lang = navigator.language.split('-')[0];
+            // 1. User-set language (from country selection)
+            const storedLang = localStorage.getItem('sp_lang');
+            if (storedLang) {
+                lang = storedLang;
+            } else {
+                const match = document.cookie.match(/googtrans=\/[^\/]+\/([a-z]{2})/);
+                if (match && match[1]) {
+                    lang = match[1];
+                } else if (typeof navigator !== 'undefined' && navigator.language) {
+                    lang = navigator.language.split('-')[0];
+                }
             }
 
             if (lang === 'en') country = 'US';
@@ -1175,15 +1186,27 @@ const App = {
         switch (country) {
             case 'CA': currency = 'CAD'; symbol = 'CAD$'; locale = 'en-CA'; defaultRevenue = 6000; break;
             case 'CH': currency = 'CHF'; symbol = 'CHF'; locale = 'fr-CH'; defaultRevenue = 8000; break;
-            case 'US': currency = 'USD'; symbol = '$'; locale = 'en-US'; defaultRevenue = 6000; break;
+            case 'US': case 'JM': case 'BB': case 'TT': case 'GY': case 'SB': case 'FJ': case 'TO':
+            case 'WS': case 'AE': case 'SG': case 'IN': case 'NG': case 'GH': case 'KN': case 'AG':
+            case 'DM': case 'GD': case 'VC': case 'LC': case 'GB': case 'IE': case 'SC': case 'MV':
+                currency = 'USD'; symbol = '$'; locale = 'en-US'; defaultRevenue = 5000; break;
             case 'GB': currency = 'GBP'; symbol = '£'; locale = 'en-GB'; defaultRevenue = 5000; break;
-            case 'MA': currency = 'MAD'; symbol = 'MAD'; locale = 'fr-MA'; defaultRevenue = 20000; break; // ~2k EUR
-            case 'SN': case 'CI': currency = 'XOF'; symbol = 'FCFA'; locale = 'fr-FR'; defaultRevenue = 1500000; break; // ~2k EUR
+            case 'MA': case 'DZ': case 'TN': currency = 'MAD'; symbol = 'MAD'; locale = 'fr-MA'; defaultRevenue = 20000; break;
+            case 'SN': case 'CI': case 'CM': case 'GA': case 'CD': case 'KM': case 'HT':
+                currency = 'XOF'; symbol = 'FCFA'; locale = 'fr-FR'; defaultRevenue = 1500000; break;
             case 'MG': currency = 'MGA'; symbol = 'Ar'; locale = 'fr-FR'; defaultRevenue = 5000000; break;
             case 'MU': currency = 'MUR'; symbol = 'Rs'; locale = 'en-MU'; defaultRevenue = 100000; break;
-            // Euro countries + DOMTOM
-            case 'FR': case 'BE': case 'LU': case 'DE': case 'ES': case 'IT':
-            case 'RE': case 'GP': case 'MQ': case 'GF':
+            case 'MX': currency = 'MXN'; symbol = 'MX$'; locale = 'es-MX'; defaultRevenue = 50000; break;
+            case 'CO': currency = 'COP'; symbol = 'COP$'; locale = 'es-CO'; defaultRevenue = 10000000; break;
+            case 'BR': currency = 'BRL'; symbol = 'R$'; locale = 'pt-BR'; defaultRevenue = 15000; break;
+            case 'AR': currency = 'ARS'; symbol = 'AR$'; locale = 'es-AR'; defaultRevenue = 500000; break;
+            case 'CL': currency = 'CLP'; symbol = 'CLP$'; locale = 'es-CL'; defaultRevenue = 2500000; break;
+            case 'ZA': currency = 'ZAR'; symbol = 'R'; locale = 'en-ZA'; defaultRevenue = 50000; break;
+            // Euro countries + DOMTOM + francophone
+            case 'FR': case 'BE': case 'LU': case 'DE': case 'ES': case 'IT': case 'PT': case 'NL': case 'IE':
+            case 'RE': case 'GP': case 'MQ': case 'GF': case 'PM': case 'MF': case 'BL':
+            case 'WF': case 'NC': case 'PF': case 'YT':
+            case 'LB': case 'VU':
             default:
                 currency = 'EUR'; symbol = '€'; locale = 'fr-FR'; defaultRevenue = 5000; break;
         }
