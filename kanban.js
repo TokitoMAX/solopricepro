@@ -14,13 +14,51 @@ const Kanban = {
         const leads = Storage.getLeads();
         const quotes = Storage.getQuotes();
         const invoices = Storage.getInvoices();
+        const expenses = Storage.getExpenses() || [];
+
+        // --- TRUE NET CASH CALCULATION ---
+        const paidInvoices = invoices.filter(i => i.status === 'paid');
+        const totalCollected = paidInvoices.reduce((sum, inv) => sum + (parseFloat(inv.total) || 0), 0);
+
+        const totalExpenses = expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
+
+        // Exact URSSAF provision only on collected money
+        let urssafRate = typeof TaxEngine !== 'undefined' ? TaxEngine.getSocialRate() : parseFloat(Storage.get('sp_tax_rate_social') || 21.2);
+        const urssafProvision = totalCollected * (urssafRate / 100);
+
+        const trueNetCash = totalCollected - totalExpenses - urssafProvision;
 
         container.innerHTML = `
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Pilotage du Cash-flow</h1>
-                    <p class="page-subtitle">Suivi visuel des opportunités et des encaissements réels.</p>
+                    <p class="page-subtitle">Suivi visuel strict. Aucune simulation. Que du réel.</p>
                 </div>
+            </div>
+
+            <!-- TABLEAU DE BORD DE TRÉSORERIE NETTE -->
+            <div class="glass-card" style="margin-top: 1rem; margin-bottom: 2rem; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary);">
+                
+                <div style="flex: 1; text-align: center; border-right: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Total Encaissé Bruts</div>
+                    <div style="font-size: 1.5rem; font-weight: 900; color: #10b981;">+ ${App.formatCurrency(totalCollected)}</div>
+                </div>
+
+                <div style="flex: 1; text-align: center; border-right: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Dépenses / Charges</div>
+                    <div style="font-size: 1.2rem; font-weight: 900; color: #ef4444;">- ${App.formatCurrency(totalExpenses)}</div>
+                </div>
+
+                <div style="flex: 1; text-align: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Provisions URSSAF (Dues)</div>
+                    <div style="font-size: 1.2rem; font-weight: 900; color: #f59e0b;">- ${App.formatCurrency(urssafProvision)}</div>
+                </div>
+
+                <div style="flex: 1.2; text-align: right; background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 12px; margin-left: 1rem;">
+                    <div style="font-size: 0.8rem; color: #10b981; text-transform: uppercase; font-weight: 800; margin-bottom: 5px;"><i class="fas fa-gem"></i> TRÉSORERIE NETTE (Reste à vivre)</div>
+                    <div style="font-size: 2rem; font-weight: 900; color: white;">${App.formatCurrency(trueNetCash)}</div>
+                </div>
+
             </div>
 
             <div class="kanban-board">
@@ -247,14 +285,13 @@ const Kanban = {
 
     renderPaidCard(invoice) {
         const client = Storage.getClient(invoice.clientId);
-        const netAmount = invoice.total * (1 - (TaxEngine.getSocialRate() / 100));
         return `
             <div class="kanban-card" onclick="App.navigateTo('invoices')">
                 <span class="card-title">${client?.name || 'Client inconnu'}</span>
                 <span class="card-subtitle">${invoice.number}</span>
                 <span class="card-price" style="color: #10b981;">+ ${App.formatCurrency(invoice.total)}</span>
                 <div class="card-footer">
-                    <span style="color: var(--text-muted);">Net : ${App.formatCurrency(netAmount)}</span>
+                    <span>${App.formatDate(invoice.createdAt)}</span>
                     <span class="badge" style="background: #10b981;">Payé</span>
                 </div>
             </div>
