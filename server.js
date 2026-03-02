@@ -60,7 +60,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// 3. GESTION DU BODY - Toujours parser, sans court-circuits
+// 3. GESTION DU BODY - Compatible Local + Vercel
 app.use((req, res, next) => {
     // Webhooks: buffer brut uniquement
     if (req.originalUrl && req.originalUrl.includes('/webhook')) {
@@ -70,7 +70,17 @@ app.use((req, res, next) => {
             next();
         });
     }
-    // Toutes les autres routes: JSON puis URL-encoded
+
+    // Vercel pre-parse: body already populated with actual data (non-empty object)
+    // Important: check Object.keys().length > 0 to avoid the empty-{} bug
+    if (req.body &&
+        typeof req.body === 'object' &&
+        !Buffer.isBuffer(req.body) &&
+        Object.keys(req.body).length > 0) {
+        return next();
+    }
+
+    // Standard Express parsing (local + non-Vercel deployments)
     express.json({ limit: '10mb' })(req, res, (err) => {
         if (err) return next(err);
         express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
