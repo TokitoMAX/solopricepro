@@ -24,6 +24,13 @@ const Network = {
         return user && user.email === ADMIN_EMAIL;
     },
 
+    isExpert() {
+        const user = Auth.getUser();
+        if (!user) return false;
+        const tier = user.user_metadata?.tier || user.tier || '';
+        return tier === 'expert';
+    },
+
     async refresh() {
         this.loadProviders();
         this.render();
@@ -185,6 +192,36 @@ const Network = {
                 </div>
                 ${isAdmin ? `<button class="button-primary small" onclick="Network.showAddEcosystemModal()"><i class="fas fa-plus"></i> Ajouter un expert</button>` : ''}
             </div>
+
+            ${this.isExpert() ? (() => {
+                const u = Auth.getUser();
+                const profile = Storage.get(Storage.KEYS.PROFILE) || {};
+                const name = profile.company_name || profile.first_name || u?.email?.split('@')[0] || 'Vous';
+                const specialty = profile.activity || profile.specialty || 'Expert SoloPrice';
+                const city = profile.city || profile.ville || '';
+                const email = u?.email || '';
+                const portfolio = profile.portfolio || profile.website || '';
+                return `
+                <div style="margin-bottom: 1.5rem; padding: 1.25rem 1.5rem; border-radius: 16px; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(99,102,241,0.06)); border: 1px solid var(--primary); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 10px; right: 12px; font-size: 0.6rem; font-weight: 800; letter-spacing: 1.5px; color: var(--primary-light); text-transform: uppercase;">✦ Votre Profil — Mis en Avant</div>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
+                        <div style="width: 52px; height: 52px; background: var(--primary-glass); color: var(--primary-light); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; border: 2px solid var(--primary); flex-shrink: 0;">${name.charAt(0).toUpperCase()}</div>
+                        <div style="flex:1;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                                <strong style="font-size: 1rem;">${name}</strong>
+                                <span style="font-size: 0.55rem; background: var(--primary); color: white; padding: 2px 7px; border-radius: 4px; font-weight: 700;">EXPERT</span>
+                            </div>
+                            <div style="color: var(--primary-light); font-size: 0.82rem; font-weight: 600;">${specialty}</div>
+                            ${city ? `<div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;"><i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i>${city}</div>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+                            ${portfolio ? `<a href="${portfolio}" target="_blank" class="button-secondary sm" style="font-size: 0.75rem; text-decoration: none;"><i class="fas fa-external-link-alt"></i> Portfolio</a>` : ''}
+                            ${email ? `<a href="mailto:${email}" class="button-primary small" style="font-size: 0.75rem; text-decoration: none;"><i class="fas fa-envelope"></i> Contacter</a>` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
+            })() : ''}
 
             ${experts.length === 0 ? `
                 <div class="empty-state glass" style="padding: 3rem; border-radius: 16px; text-align: center;">

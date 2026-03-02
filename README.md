@@ -1,105 +1,56 @@
 # SoloPrice Pro
 
-**Chiffrage & Facturation Premium pour Freelances & Consultants**  
-*Propulsé par DomTomConnect*
+**Powered by DomTomConnect**
 
----
+L'outil de collaboration qui facilite les échanges entre clients et prestataires dans l'écosystème DomTomConnect. Calculez vos tarifs, analysez la rentabilité de vos projets, et créez des devis professionnels en quelques clics.
 
 ## 🎯 Mission
 
-SoloPrice Pro est un **SaaS de pilotage financier** conçu pour les indépendants qui veulent arrêter de sous-facturer et gérer leur activité avec des chiffres réels. L'outil couvre l'intégralité du cycle commercial : de l'estimation d'un projet à l'encaissement, en passant par la facturation et la gestion du réseau.
+SoloPrice Pro est une extension de l'écosystème DomTomConnect conçue pour :
+- 🏢 **Clients** : Obtenir des devis transparents de prestataires qualifiés
+- 👨‍💼 **Prestataires** : Répondre aux opportunités avec des tarifs justes
+- 🌐 **Collaboration** : Faciliter les échanges commerciaux dans les DOM-TOM
+
+## 🦄 Pourquoi SoloPrice est unique ? (Vs Concurrents)
+
+Là où les autres outils (Excel, facturiers classiques) sont passifs, SoloPrice est **proactif** :
+
+1.  **L'Approche "Objectif d'abord"** 🎯
+    *   *Les autres :* "Fais une facture et espère que ça suffit."
+    *   *SoloPrice :* Calcule votre besoin réel d'abord. Le système vous alerte si vous facturez en dessous de votre seuil de rentabilité.
+
+2.  **Le "Project Scoper" (Estimateur d'Incertitude)** 🛡️
+    *   *Les autres :* Vous demandent un prix fixe au doigt mouillé.
+    *   *SoloPrice :* Vous permet de définir une fourchette (Min/Max). L'outil calcule une **marge de sécurité** mathématique pour que vous ne perdiez jamais d'argent sur un projet mal estimé.
+
+3.  **Pipeline & Prévisibilité** 🔮
+    *   *Les autres :* Montrent ce que vous avez gagné (le passé).
+    *   *SoloPrice :* Montre l'argent "sur la table" (Devis envoyés) pour vous aider à anticiper les mois difficiles.
+
+4.  **Flux Unifié** ⚡
+    *   Calcul du besoin -> Estimation du projet -> Devis généré -> Conversion en Facture -> Suivi de l'objectif.
+    *   Tout est connecté. Pas de ressaisie.
+
+## ✨ Fonctionnalités Clés
+
+- **Calculateur Intelligent** : Sauvegarde vos hypothèses et objectifs.
+- **Gestionnaire de Devis** : Création rapide, conversion en facture en 1 clic.
+- **Tableau de Bord "Smart"** : Anneau de progression d'objectif en temps réel.
+- **Estimateur de Projet** : Module dédié pour chiffrer les projets complexes.
+- **Exports HTML/PDF Pro** : Documents soignés et imprimables.
+- **100% Local & Privé** : Vos données financières restent dans votre navigateur.
+
+## 🚀 Flux de Travail Conseillé
+
+1.  **Ciblez** : Utilisez le **Calculateur** pour définir votre TJM idéal.
+2.  **Estimez** : Utilisez le **Scoper** pour lister les tâches d'un projet et obtenir un prix sécurisé.
+3.  **Proposez** : Générez un **Devis** professionnel directement depuis l'estimation.
+4.  **Encaissez** : Transformez le devis signé en **Facture** et regardez votre jauge d'objectif se remplir !
+
+## 📦 Installation
+
+Aucune installation requise. Ouvrez simplement `index.html` dans votre navigateur.
 
 ---
 
-## 🛠️ Stack Technique
-
-| Couche | Technologie |
-|---|---|
-| Frontend | HTML / CSS / Vanilla JS (SPA) |
-| Backend | Node.js + Express |
-| Auth & BDD | Supabase (PostgreSQL + Auth) |
-| Paiements | PayPal (abonnement PRO) |
-| PDF | Génération côté client (html2canvas / jsPDF) |
-| Déploiement | Vercel (+ local `node server.js`) |
-
----
-
-## ✨ Fonctionnalités
-
-### 💰 Pilotage Financier
-- **Calculateur TJM** : définissez votre tarif journalier en fonction de vos charges réelles et objectifs de revenu
-- **Trésorerie Nette** : dashboard factuel (Encaissé Brut − Dépenses − Provisions URSSAF) — zéro simulation
-- **Suivi des Dépenses** : registre de charges avec catégories
-- **Vue Stratégique** : tableau de bord de rentabilité et projections
-
-### 📋 Chiffrage & Documents
-- **Project Scoper** : estimateur d'incertitude Min/Max avec marge de sécurité automatique
-- **Devis professionnels** : création rapide, signature électronique client, conversion en facture 1 clic
-- **Factures** : numérotation automatique, suivi de paiement, relances
-- **Exports PDF/HTML** : documents imprimables au design soigné
-
-### 📊 Pipeline Commercial (Kanban)
-- Colonnes : Prospects → Devis envoyés → À récupérer (facturé) → Encaissé
-- Dashboard trésorerie nette en temps réel au-dessus du pipeline
-
-### 👥 Mon Cercle (Réseau)
-- **Mes Clients** : CRM léger intégré
-- **Mes Prospects** : suivi des leads
-- **Mes Partenaires Privés** : carnet d'adresses confidentiel (sous-traitants, collaborateurs)
-- **L'Écosystème** : annuaire d'experts validés DomTomConnect
-- **Rejoindre** : formulaire de candidature pour intégrer l'écosystème
-
-### 📓 Journal de Bord
-- Carnet de notes quotidien (victoires, leçons, notes libres)
-- Timeline chronologique de l'activité
-
-### ⚙️ Compte & Paramètres
-- Authentification sécurisée (Supabase Auth)
-- Modèle **Freemium / PRO** (paiement PayPal)
-- Profil prestataire (nom, entreprise, SIRET, pays)
-- Paramètres fiscaux (URSSAF, TVA)
-
----
-
-## 🚀 Démarrage Local
-
-```bash
-# 1. Installer les dépendances
-npm install
-
-# 2. Configurer les variables d'environnement
-cp .env.example .env
-# Remplir SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, PAYPAL_*
-
-# 3. Lancer le serveur
-node server.js
-# → http://localhost:5050
-```
-
----
-
-## 🗂️ Structure Principale
-
-```
-├── server.js          # Serveur Express
-├── backend/routes/    # API Auth, Data, Payments, Admin, Marketplace
-├── index.html         # Entry point SPA
-├── app_v5.js          # Routeur principal de l'application
-├── auth.js            # Module d'authentification frontend
-├── storage.js         # Abstraction Supabase ↔ LocalStorage
-├── calculator.js      # Calculateur TJM
-├── scoper.js          # Project Scoper + Journal de Bord
-├── quotes.js          # Devis & Factures
-├── kanban.js          # Pipeline + Trésorerie Nette
-├── clients.js         # CRM Clients
-├── leads.js           # Prospects
-├── network.js         # Mon Cercle & Écosystème
-├── expenses.js        # Dépenses & Charges
-├── pdf-generator.js   # Génération PDF
-├── taxes.js           # Moteur fiscal (URSSAF, TVA)
-└── styles.css         # Design system global
-```
-
----
-
-**Conçu pour ceux qui veulent piloter leur activité avec des chiffres réels.** 🚀
+**Conçu pour ceux qui veulent arrêter de sous-facturer.** 🚀
