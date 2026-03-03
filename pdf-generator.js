@@ -202,24 +202,11 @@ const PDFGenerator = {
                     ${(Storage.getTier() === 'expert') ? '' : 'Document généré par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr'}
                 </div>
 
-                <script>
-                    window.onload = function() { setTimeout(() => window.print(), 500); }
-                </script>
             </body>
             </html>
         `;
 
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        App.showNotification('Facture prête pour impression.', 'success');
+        this._downloadRealPdf(htmlContent, `Facture_${invoice.number}.pdf`);
     },
 
     generateQuote(quote, client, user, isPreview = false) {
@@ -473,20 +460,16 @@ const PDFGenerator = {
                     ${(Storage.getTier() === 'expert') ? '' : 'Devis généré professionnellement par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr'}
                 </div>
 
-                <script>
-                    ${isPreview ? '' : 'window.onload = function() { setTimeout(() => window.print(), 500); }'}
-                </script>
             </body>
             </html>
         `;
 
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
         if (isPreview) {
-            // Use window.open for previews to try and keep the opener reference
+            // Keep the browser tab approach for previews to allow interaction with the "Passez PRO" button
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
             const win = window.open(url, '_blank');
             if (!win) {
-                // Fallback if popup blocked
                 const a = document.createElement('a');
                 a.href = url;
                 a.target = '_blank';
@@ -494,17 +477,10 @@ const PDFGenerator = {
                 a.click();
                 document.body.removeChild(a);
             }
+            App.showNotification('Aperçu généré.', 'success');
         } else {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Devis_${quote.number}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            this._downloadRealPdf(htmlContent, `Devis_${quote.number}.pdf`);
         }
-        URL.revokeObjectURL(url);
-
-        App.showNotification(isPreview ? 'Aperçu généré.' : 'Devis prêt pour impression.', 'success');
     },
 
     generateReceiptsLedger(invoices, user) {
@@ -572,12 +548,11 @@ const PDFGenerator = {
                     </tbody>
                 </table>
                 <div class="footer">Document généré par SoloPrice Pro &bull; Certifié conforme aux obligations légales de tenue de registre.</div>
-                <script>window.onload = function() { setTimeout(() => window.print(), 500); }</script>
             </body>
             </html>
         `;
 
-        this.openBlob(htmlContent);
+        this._downloadRealPdf(htmlContent, `Livre_Recettes_${year}.pdf`);
     },
 
     generatePurchasesLedger(expenses, user) {
@@ -643,12 +618,11 @@ const PDFGenerator = {
                     </tbody>
                 </table>
                 <div class="footer">Document généré par SoloPrice Pro &bull; Certifié conforme aux obligations légales de tenue de registre.</div>
-                <script>window.onload = function() { setTimeout(() => window.print(), 500); }</script>
             </body>
             </html>
         `;
 
-        this.openBlob(htmlContent);
+        this._downloadRealPdf(htmlContent, `Registre_Achats_${year}.pdf`);
     },
 
     openBlob(htmlContent) {
@@ -783,14 +757,58 @@ const PDFGenerator = {
                         Généré par SoloPrice Pro &bull; www.soloprice-pro.fr &bull; Le copilote financier des indépendants.
                     </div>
                 </div>
-                <script>
-                    window.onload = function() { setTimeout(() => window.print(), 500); }
-                </script>
             </body>
             </html>
         `;
 
-        this.openBlob(htmlContent);
-        App.showNotification('Roadmap Stratégique générée avec succès !', 'success');
+        this._downloadRealPdf(htmlContent, `Roadmap_Rentabilite.pdf`);
+    },
+
+    async _downloadRealPdf(htmlContent, filename) {
+        if (typeof html2pdf === 'undefined') {
+            console.error('html2pdf library is not loaded');
+            App.showNotification('Erreur système: Librairie PDF manquante.', 'error');
+            return;
+        }
+
+        App.showNotification('Génération du document PDF en cours...', 'info');
+
+        // Create a temporary iframe to render the HTML properly with its <head> and <style>
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.width = '850px'; // Force desktop width for consistent rendering
+        iframe.style.height = '1200px';
+        iframe.style.top = '-9999px';
+        iframe.style.visibility = 'hidden';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
+
+        // Wait for styles and fonts to load
+        setTimeout(async () => {
+            const element = iframeDoc.body;
+            element.style.overflow = 'hidden'; // Prevent scrollbars in output
+
+            const opt = {
+                margin: [0, 0, 0, 0],
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, windowWidth: 850, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                await html2pdf().set(opt).from(element).save();
+                App.showNotification('Document téléchargé avec succès.', 'success');
+            } catch (error) {
+                console.error('PDF Generation Error:', error);
+                App.showNotification('Erreur lors du téléchargement du PDF.', 'error');
+            } finally {
+                document.body.removeChild(iframe);
+            }
+        }, 1500);
     }
 };

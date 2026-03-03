@@ -1165,10 +1165,10 @@ const Quotes = {
                 const itemTotal = (item.quantity || 1) * (item.unitPrice || 0);
                 return `
                                         <tr>
-                                            <td>${item.description}</td>
-                                            <td style="text-align: center;">${item.quantity || 1}</td>
-                                            <td style="text-align: right;">${App.formatCurrency(item.unitPrice || 0)}</td>
-                                            <td style="text-align: right;">${App.formatCurrency(itemTotal)}</td>
+                                            <td data-label="Description">${item.description}</td>
+                                            <td data-label="Qté" style="text-align: center;">${item.quantity || 1}</td>
+                                            <td data-label="P.U." style="text-align: right;">${App.formatCurrency(item.unitPrice || 0)}</td>
+                                            <td data-label="Total" style="text-align: right;">${App.formatCurrency(itemTotal)}</td>
                                         </tr>
                                     `;
             }).join('')}

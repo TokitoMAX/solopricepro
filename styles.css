@@ -5074,6 +5074,81 @@ body.public-view {
     .document-meta h1 {
         font-size: 3rem;
     }
+
+    /* Make items-table responsive */
+    .items-table thead {
+        display: none;
+    }
+
+    .items-table,
+    .items-table tbody,
+    .items-table tr,
+    .items-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .items-table tr {
+        margin-bottom: 1.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1rem;
+    }
+
+    .items-table td {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: right !important;
+        /* Override inline */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .items-table td:last-child {
+        border-bottom: none;
+    }
+
+    .items-table td::before {
+        content: attr(data-label);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-align: left;
+    }
+
+    /* Landing Nav adjustments */
+    .landing-nav {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1rem 0;
+    }
+
+    .landing-actions {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .landing-actions button {
+        flex: 1;
+        text-align: center;
+    }
+
+    /* Modals padding reduction */
+    .modal-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .total-row.large {
+        font-size: 1.4rem;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
 }
 
 /* --- PUBLIC QUOTE ACTIONS --- */
