@@ -89,9 +89,6 @@ const AppConstants = {
         { code: 'SG', label: '🇸🇬 Singapour', regLabel: 'UEN', pattern: null, verify: false, lang: 'en' },
         { code: 'IN', label: '🇮🇳 Inde', regLabel: 'CIN / GSTIN', pattern: null, verify: false, lang: 'en' },
 
-        // ── AUTRE ─────────────────────────────────────────────────────────
-        { code: 'OTHER_ISLAND', label: '🏝️ Autre île / Other island', regLabel: 'Numéro d\'enregistrement entreprise', pattern: null, verify: false, lang: 'fr' },
-        { code: 'OTHER', label: '🌍 Autre pays / Other country', regLabel: 'Numéro d\'enregistrement entreprise', pattern: null, verify: false, lang: 'en' },
     ],
 
     // Map country code → app language
@@ -100,7 +97,7 @@ const AppConstants = {
         'FR': 'fr', 'RE': 'fr', 'GP': 'fr', 'MQ': 'fr', 'GF': 'fr', 'PM': 'fr', 'MF': 'fr', 'BL': 'fr',
         'WF': 'fr', 'NC': 'fr', 'PF': 'fr', 'YT': 'fr', 'BE': 'fr', 'CH': 'fr', 'LU': 'fr', 'IT': 'fr',
         'CA': 'fr', 'HT': 'fr', 'MA': 'fr', 'DZ': 'fr', 'TN': 'fr', 'SN': 'fr', 'CI': 'fr', 'CM': 'fr',
-        'CD': 'fr', 'GA': 'fr', 'MG': 'fr', 'KM': 'fr', 'VU': 'fr', 'LB': 'fr', 'OTHER_ISLAND': 'fr',
+        'CD': 'fr', 'GA': 'fr', 'MG': 'fr', 'KM': 'fr', 'VU': 'fr', 'LB': 'fr',
         // Spanish
         'ES': 'es', 'MX': 'es', 'CO': 'es', 'BR': 'es', 'AR': 'es', 'CL': 'es', 'PT': 'es', 'CU': 'es',
         'DO': 'es', 'PR': 'es', 'CV': 'es', 'ST': 'es',

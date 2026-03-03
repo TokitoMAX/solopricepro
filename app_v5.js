@@ -114,6 +114,16 @@ const App = {
                 return;
             }
 
+
+            // Event listener pour fermeture de modales
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    this.closeModal();
+                }
+            });
+
+            // 6. Populate Registration Countries (Dynamic standardization)
+            this.populateRegistrationCountries();
         } catch (e) {
             console.error(' [APP] Critical Init Error:', e);
         } finally {
@@ -121,12 +131,23 @@ const App = {
             clearTimeout(safetyTimer);
             this.hideLoader();
         }
+    },
 
-        // Event listener pour fermeture de modales
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                this.closeModal();
-            }
+    populateRegistrationCountries() {
+        const select = document.getElementById('auth-register-country');
+        if (!select || typeof AppConstants === 'undefined' || !AppConstants.COUNTRIES) return;
+
+        // Keep the first placeholder
+        const placeholder = select.options[0];
+        select.innerHTML = '';
+        select.appendChild(placeholder);
+
+        AppConstants.COUNTRIES.forEach(c => {
+            if (!c.code) return; // Skip empty/header entries
+            const option = document.createElement('option');
+            option.value = c.code;
+            option.textContent = c.label;
+            select.appendChild(option);
         });
     },
 
