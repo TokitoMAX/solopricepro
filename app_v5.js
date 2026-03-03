@@ -142,12 +142,29 @@ const App = {
         select.innerHTML = '';
         select.appendChild(placeholder);
 
+        let currentGroup = null;
+        let currentOptGroup = null;
+
         AppConstants.COUNTRIES.forEach(c => {
             if (!c.code) return; // Skip empty/header entries
+
+            // Check for new group
+            if (c.group && c.group !== currentGroup) {
+                currentGroup = c.group;
+                currentOptGroup = document.createElement('optgroup');
+                currentOptGroup.label = currentGroup;
+                select.appendChild(currentOptGroup);
+            }
+
             const option = document.createElement('option');
             option.value = c.code;
             option.textContent = c.label;
-            select.appendChild(option);
+
+            if (currentOptGroup) {
+                currentOptGroup.appendChild(option);
+            } else {
+                select.appendChild(option);
+            }
         });
     },
 

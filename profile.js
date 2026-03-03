@@ -48,9 +48,23 @@ const Profile = {
                                     <select name="country" id="prof-country" class="form-input"
                                         onchange="Profile.onCountryChange(this.value)"
                                         style="cursor:pointer;">
-                                        ${AppConstants.COUNTRIES.map(c =>
-            `<option value="${c.code}" ${c.code === savedCountry ? 'selected' : ''}>${c.label}</option>`
-        ).join('')}
+                                        ${(() => {
+                let html = '';
+                let currentGroup = null;
+                AppConstants.COUNTRIES.forEach(c => {
+                    if (!c.code && !c.label.includes('Sélectionner')) return;
+
+                    if (c.group && c.group !== currentGroup) {
+                        if (currentGroup !== null) html += '</optgroup>';
+                        currentGroup = c.group;
+                        html += `<optgroup label="${currentGroup}">`;
+                    }
+
+                    html += `<option value="${c.code}" ${c.code === savedCountry ? 'selected' : ''}>${c.label}</option>`;
+                });
+                if (currentGroup !== null) html += '</optgroup>';
+                return html;
+            })()}
                                     </select>
                                 </div>
 
