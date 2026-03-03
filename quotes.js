@@ -935,18 +935,9 @@ const Quotes = {
 
         try {
             if (this.isPublicSign) {
-                // Appel API public
+                // Appel API public (service layer)
                 console.log(`[QUOTES] Signing public quote: ${id}`);
-                const res = await fetch(`${Auth.apiBase}/api/public/quote/${id}/sign`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ signature: dataUrl })
-                });
-
-                if (!res.ok) {
-                    const errorData = await res.json().catch(() => ({}));
-                    throw new Error(errorData.message || `Erreur serveur (${res.status}) lors de la signature`);
-                }
+                await QuoteService.signPublicQuote(id, dataUrl);
 
                 App.showNotification('Devis signé avec succès !', 'success');
                 this.closeSignatureModal();
@@ -996,25 +987,8 @@ const Quotes = {
         if (typeof App !== 'undefined' && App.showLoader) App.showLoader();
 
         try {
-            const endpoint = `${Auth.apiBase}/api/payments/create-quote-paypal-order`;
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ quoteId: id, type: 'expert' })
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                const msg = errorData.details || errorData.message || `Erreur de paiement prestataire (${res.status}).`;
-                throw new Error(msg);
-            }
-
-            const data = await res.json();
-            if (data.approval_url) {
-                window.location.href = data.approval_url;
-            } else {
-                throw new Error('URL de paiement PayPal manquante.');
-            }
+            const approvalUrl = await QuoteService.createExpertPaymentOrder(id);
+            window.location.href = approvalUrl;
         } catch (err) {
             console.error('[QUOTES] Expert payment error:', err);
             if (typeof App !== 'undefined' && App.hideLoader) App.hideLoader();
@@ -1027,25 +1001,8 @@ const Quotes = {
         if (typeof App !== 'undefined' && App.showLoader) App.showLoader();
 
         try {
-            const endpoint = `${Auth.apiBase}/api/payments/create-quote-paypal-order`;
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ quoteId: id, type: 'platform' })
-            });
-
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                const msg = errorData.details || errorData.message || `Erreur de paiement protection (${res.status}).`;
-                throw new Error(msg);
-            }
-
-            const data = await res.json();
-            if (data.approval_url) {
-                window.location.href = data.approval_url;
-            } else {
-                throw new Error('URL de paiement PayPal manquante.');
-            }
+            const approvalUrl = await QuoteService.createPlatformPaymentOrder(id);
+            window.location.href = approvalUrl;
         } catch (err) {
             console.error('[QUOTES] Platform payment error:', err);
             if (typeof App !== 'undefined' && App.hideLoader) App.hideLoader();

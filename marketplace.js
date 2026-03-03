@@ -428,12 +428,7 @@ const Marketplace = {
                 const slotIdx = parseInt(selectedSlotInput.value);
 
                 // Fetch invitation data carefully
-                const res = await fetch(`${Auth.apiBase}/api/marketplace/invitations`, {
-                    headers: { 'Authorization': `Bearer ${Auth.token}` }
-                });
-                if (!res.ok) throw new Error('Fetch failed');
-
-                const invitations = await res.json();
+                const invitations = await MarketplaceService.getInvitations();
                 const invitation = invitations.find(inv => inv.id === invitationId);
 
                 if (invitation && invitation.proposed_slots && invitation.proposed_slots[slotIdx]) {
@@ -446,16 +441,7 @@ const Marketplace = {
                 updateData.status = 'declined';
             }
 
-            const updateRes = await fetch(`${Auth.apiBase}/api/marketplace/invitations/${invitationId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${Auth.token}`
-                },
-                body: JSON.stringify(updateData)
-            });
-
-            if (!updateRes.ok) throw new Error('Erreur serveur lors de la mise à jour');
+            await MarketplaceService.updateInvitation(invitationId, updateData);
 
             App.showNotification(accept ? 'Entretien confirmé !' : 'Réponse envoyée', 'success');
 
@@ -593,16 +579,7 @@ const Marketplace = {
 
         try {
             // 1. Mark application as hired VIA SPECIFIC BACKEND ENDPOINT
-            const res = await fetch(`${Auth.apiBase}/api/marketplace/applications/${appId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${Auth.token}`
-                },
-                body: JSON.stringify({ status: 'hired' })
-            });
-
-            if (!res.ok) throw new Error('Erreur lors de la mise à jour du statut');
+            await MarketplaceService.updateApplication(appId, { status: 'hired' });
 
             // 2. Close the mission (using generic storage since mission is owned by user)
             await Storage.update(Storage.KEYS.MARKETPLACE_MISSIONS, missionId, { status: 'closed' });
@@ -976,31 +953,15 @@ const Marketplace = {
         }
 
         try {
-            const res = await fetch(`${Auth.apiBase}/api/marketplace/invitations`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${Auth.token}`
-                },
-                body: JSON.stringify({
-                    application_id: appId,
-                    candidate_id: candidateId,
-                    message,
-                    proposed_slots: slots
-                })
+            await MarketplaceService.sendInvitation({
+                application_id: appId,
+                candidate_id: candidateId,
+                message,
+                proposed_slots: slots
             });
-
-            if (!res.ok) throw new Error('Erreur serveur');
 
             // Mark application as accepted VIA SPECIFIC BACKEND ENDPOINT
-            await fetch(`${Auth.apiBase}/api/marketplace/applications/${appId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${Auth.token}`
-                },
-                body: JSON.stringify({ status: 'accepted' })
-            });
+            await MarketplaceService.updateApplication(appId, { status: 'accepted' });
 
             App.showNotification(' Invitation envoyée avec succès !', 'success');
             this.closeInterviewModal();
@@ -1020,16 +981,7 @@ const Marketplace = {
         if (!confirm('Souhaitez-vous écarter ce candidat ?')) return;
 
         try {
-            const res = await fetch(`${Auth.apiBase}/api/marketplace/applications/${id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${Auth.token}`
-                },
-                body: JSON.stringify({ status: 'rejected' })
-            });
-
-            if (!res.ok) throw new Error('Erreur lors du rejet');
+            await MarketplaceService.updateApplication(id, { status: 'rejected' });
 
             if (typeof App !== 'undefined') App.showNotification('Candidature écartée.', 'info');
 
