@@ -1648,6 +1648,12 @@ section {
     line-height: 1;
 }
 
+.modal-close:empty::before {
+    content: "\f00d";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}
+
 .modal-close:hover {
     color: var(--danger);
     transform: scale(1.1);

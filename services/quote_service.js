@@ -70,6 +70,42 @@ const QuoteService = {
         } else {
             throw new Error('URL de paiement PayPal manquante.');
         }
+    },
+
+    /**
+     * Captures an authorized PayPal payment.
+     * @param {string} orderID The PayPal Order ID
+     * @returns {Promise<Object>} The capture result
+     */
+    async capturePaypalQuote(orderID) {
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/payments/paypal-capture-quote`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderID })
+            });
+            if (!res.ok) throw new Error('Échec de la confirmation PayPal.');
+            return await res.json();
+        } catch (e) {
+            console.error('[QuoteService] capturePaypalQuote Error:', e);
+            throw e;
+        }
+    },
+
+    /**
+     * Fetches a public quote by ID.
+     * @param {string} id The quote ID
+     * @returns {Promise<Object>} The quote data payload
+     */
+    async getPublicQuote(id) {
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/public/quote/${id}`);
+            if (!res.ok) throw new Error('Devis introuvable ou lien expiré.');
+            return await res.json();
+        } catch (e) {
+            console.error('[QuoteService] getPublicQuote Error:', e);
+            throw e;
+        }
     }
 };
 

@@ -94,6 +94,57 @@ const NetworkService = {
             headers: { 'Authorization': `Bearer ${Auth.token}` }
         });
         if (!res.ok) throw new Error('Erreur de suppression');
+    },
+
+    /**
+     * Retrieves the list of public ecosystem experts.
+     * @returns {Promise<Array>} List of experts
+     */
+    async getEcosystemExperts() {
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-experts`, {
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+            if (!res.ok) throw new Error('Erreur de récupération des experts');
+            return await res.json();
+        } catch (e) {
+            console.error('[NetworkService] getEcosystemExperts Error:', e);
+            throw e;
+        }
+    },
+
+    /**
+     * Retrieves the list of pending ecosystem applications.
+     * @returns {Promise<Array>} List of applications
+     */
+    async getEcosystemApplications() {
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-applications`, {
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+            if (!res.ok) throw new Error('Erreur de récupération des candidatures');
+            return await res.json();
+        } catch (e) {
+            console.error('[NetworkService] getEcosystemApplications Error:', e);
+            throw e;
+        }
+    },
+
+    /**
+     * Validates a company SIRET via the backend data proxy.
+     * @param {string} siret Company siret code
+     * @returns {Promise<Object>} Validation response
+     */
+    async validateCompanySiret(siret) {
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/data/validate/company?siret=${siret}`, {
+                headers: { 'Authorization': `Bearer ${Auth.token}` }
+            });
+            return { ok: res.ok, data: await res.json() };
+        } catch (e) {
+            console.error('[NetworkService] validateCompanySiret Error:', e);
+            throw e;
+        }
     }
 };
 

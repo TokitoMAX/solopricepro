@@ -292,11 +292,9 @@ const Profile = {
         const errEl = document.getElementById('err-siret');
         const nameInput = document.querySelector('input[name="name"]');
         try {
-            const res = await fetch(`${Auth.apiBase}/api/data/validate/company?siret=${siret}`, {
-                headers: { 'Authorization': `Bearer ${Auth.token}` }
-            });
-            const data = await res.json();
-            if (res.ok && data.valid) {
+            const result = await NetworkService.validateCompanySiret(siret);
+            const data = result.data;
+            if (result.ok && data.valid) {
                 status.textContent = '';
                 // Auto-fill company name if empty
                 if (nameInput && !nameInput.value.trim() && data.name) {

@@ -1041,13 +1041,7 @@ const Quotes = {
                 `;
 
                 try {
-                    const captureRes = await fetch(`${Auth.apiBase}/api/payments/paypal-capture-quote`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderID: paypalOrderId })
-                    });
-
-                    if (!captureRes.ok) throw new Error('Échec de la confirmation PayPal.');
+                    await QuoteService.capturePaypalQuote(paypalOrderId);
 
                     paymentStatus = 'success';
                     App.showNotification(`Paiement ${paymentType === 'expert' ? 'Prestataire' : 'SoloPrice'} validé !`, 'success');
@@ -1070,10 +1064,7 @@ const Quotes = {
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
 
-            const res = await fetch(`${Auth.apiBase}/api/public/quote/${id}`);
-            if (!res.ok) throw new Error('Devis introuvable ou lien expiré.');
-
-            const data = await res.json();
+            const data = await QuoteService.getPublicQuote(id);
             this.publicQuoteData = data;
             const { quote, provider, client } = data;
 

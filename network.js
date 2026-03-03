@@ -187,11 +187,7 @@ const Network = {
 
         let experts = [];
         try {
-            const token = Auth.token;
-            const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-experts`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) experts = await res.json();
+            experts = await NetworkService.getEcosystemExperts();
         } catch (e) {
             console.warn('[ECOSYSTEM] Could not load experts:', e.message);
         }
@@ -389,11 +385,7 @@ const Network = {
 
         let apps = [];
         try {
-            const token = Auth.token;
-            const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-applications`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) apps = await res.json();
+            apps = await NetworkService.getEcosystemApplications();
         } catch (e) {
             console.warn('[ADMIN] Could not load applications:', e.message);
         }
