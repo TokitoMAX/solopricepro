@@ -16,29 +16,17 @@ const Network = {
     },
 
     async loadProviders() {
-        // Ne rien faire si l'utilisateur n'est pas connecté
-        if (!Auth.user || !Auth.token) {
-            this.providers = [];
-            return;
-        }
         // Use cache if already populated by Storage.fetchAllData()
         const cached = Storage._cache[Storage.KEYS.PROVIDERS];
         if (cached && cached.length > 0) {
             this.providers = cached;
             return;
         }
-        // Cache not ready yet — fetch directly from API
+        // Cache not ready yet — fetch via NetworkService
         try {
-            const res = await fetch(`${Auth.apiBase}/api/data/${Storage.KEYS.PROVIDERS}`, {
-                headers: { 'Authorization': `Bearer ${Auth.token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                this.providers = Array.isArray(data) ? data : [];
-                Storage._cache[Storage.KEYS.PROVIDERS] = this.providers;
-            } else {
-                this.providers = [];
-            }
+            const data = await NetworkService.fetchProviders();
+            this.providers = Array.isArray(data) ? data : [];
+            Storage._cache[Storage.KEYS.PROVIDERS] = this.providers;
         } catch (e) {
             console.warn('[NETWORK] loadProviders fallback error:', e.message);
             this.providers = Storage.get(Storage.KEYS.PROVIDERS) || [];
@@ -360,19 +348,8 @@ const Network = {
         };
 
         try {
-            const token = Auth.token;
-            const response = await fetch(`${Auth.apiBase}/api/marketplace/apply-ecosystem`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-            });
+            await NetworkService.applyToEcosystem(payload);
 
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(data.message || 'Erreur lors de l\'envoi');
 
             // Show success state
             const container = document.getElementById('cercle-dynamic-content');
@@ -497,14 +474,8 @@ const Network = {
     },
 
     async reviewApplication(id, status, applicantData) {
-        const token = Auth.token;
         try {
-            const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-applications/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ status, applicant: applicantData })
-            });
-            if (!res.ok) throw new Error((await res.json()).message);
+            await NetworkService.reviewEcosystemApplication(id, status, applicantData);
             App.showNotification(status === 'accepted' ? 'Expert ajouté à l\'écosystème !' : 'Candidature refusée.', status === 'accepted' ? 'success' : 'info');
             this.switchTab('applications');
         } catch (err) {
@@ -593,13 +564,7 @@ const Network = {
         };
 
         try {
-            const token = Auth.token;
-            const res = await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-experts`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(expert)
-            });
-            if (!res.ok) throw new Error((await res.json()).message);
+            await NetworkService.addEcosystemExpert(expert);
             document.getElementById('ecosystem-add-expert-modal')?.classList.remove('active');
             e.target.reset();
             App.showNotification('Expert ajouté à l\'écosystème !', 'success');
@@ -612,11 +577,7 @@ const Network = {
     async deleteEcosystemExpert(id) {
         if (!confirm('Retirer cet expert de l\'écosystème ?')) return;
         try {
-            const token = Auth.token;
-            await fetch(`${Auth.apiBase}/api/marketplace/ecosystem-experts/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            await NetworkService.deleteEcosystemExpert(id);
             App.showNotification('Expert retiré.', 'success');
             this.switchTab('ecosystem');
         } catch (err) {
