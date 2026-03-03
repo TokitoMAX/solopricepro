@@ -7,13 +7,14 @@ router.use((req, res, next) => {
     next();
 });
 
+const { injectWelcomeData } = require('../services/onboarding');
+
 // @route   POST /api/auth/register
 // @desc    Register a new user via Supabase
 // @access  Public
 router.post('/register', async (req, res) => {
-    const { email, password, company_name, first_name, last_name, country } = req.body;
+    const { email, password, company_name, first_name, last_name, country } = req.body || {};
     const supabase = req.app.get('supabase');
-    const { injectWelcomeData } = require('../services/onboarding');
 
     try {
         console.log(`📝 Inscription demandée pour: ${email}`);

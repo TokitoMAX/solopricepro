@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 /**
  * Injects a realistic dummy client and quote into the database for a new user.
@@ -14,7 +14,7 @@ async function injectWelcomeData(supabaseAdmin, userId) {
         console.log(`[ONBOARDING] 🚀 Starting dummy data injection for user: ${userId}`);
 
         // 1. Create a Premium Dummy Client
-        const clientId = uuidv4();
+        const clientId = randomUUID();
         const dummyClient = {
             id: clientId,
             user_id: userId,
@@ -47,12 +47,12 @@ async function injectWelcomeData(supabaseAdmin, userId) {
         const dummyItems = [
             // Section 1: Démolition
             {
-                id: uuidv4(),
+                id: randomUUID(),
                 type: 'section',
                 name: '1. Phase de Démolition & Préparation'
             },
             {
-                id: uuidv4(),
+                id: randomUUID(),
                 type: 'item',
                 category: 'Démolition',
                 name: 'Démolition cloison placo',
@@ -67,12 +67,12 @@ async function injectWelcomeData(supabaseAdmin, userId) {
             },
             // Section 2: Finitions
             {
-                id: uuidv4(),
+                id: randomUUID(),
                 type: 'section',
                 name: '2. Revêtements & Finitions'
             },
             {
-                id: uuidv4(),
+                id: randomUUID(),
                 type: 'item',
                 category: 'Peinture',
                 name: 'Peinture murale 2 couches (Blanc Mat)',
@@ -86,7 +86,7 @@ async function injectWelcomeData(supabaseAdmin, userId) {
                 description: 'Préparation des fonds, enduit partiel et peinture pro.'
             },
             {
-                id: uuidv4(),
+                id: randomUUID(),
                 type: 'item',
                 category: 'Fourniture',
                 name: 'Parquet contrecollé Chêne Clair',
@@ -102,7 +102,7 @@ async function injectWelcomeData(supabaseAdmin, userId) {
         ];
 
         const dummyQuote = {
-            id: uuidv4(),
+            id: randomUUID(),
             user_id: userId,
             client_id: clientId,
             quote_number: quoteId,
