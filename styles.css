@@ -1299,7 +1299,13 @@ section {
     align-items: center;
     gap: 0.75rem;
     flex-wrap: nowrap;
-    /* Force single line */
+}
+
+.landing-simulator-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
 }
 
 .landing-auth-btn {
@@ -1939,6 +1945,7 @@ section {
 /* Energy Gauge */
 .hp-energy-slider {
     -webkit-appearance: none;
+    appearance: none;
     width: 100%;
     height: 6px;
     background: rgba(255, 255, 255, 0.05);
@@ -1948,6 +1955,7 @@ section {
 
 .hp-energy-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
+    appearance: none;
     width: 18px;
     height: 18px;
     background: var(--primary);
@@ -2989,6 +2997,7 @@ section {
 
 .input-range {
     -webkit-appearance: none;
+    appearance: none;
     height: 6px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 5px;
@@ -5123,19 +5132,37 @@ body.public-view {
     .landing-nav {
         flex-direction: column;
         gap: 1.5rem;
-        padding: 1rem 0;
+        padding: 1.5rem 0;
     }
 
     .landing-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
         width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 0.5rem;
     }
 
-    .landing-actions button {
-        flex: 1;
+    .landing-actions button,
+    .custom-lang-selector select {
+        width: 100%;
         text-align: center;
+    }
+
+    .landing-actions .custom-lang-selector {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .landing-simulator-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        text-align: center;
+    }
+
+    #sim-result {
+        padding: 1.5rem !important;
     }
 
     /* Modals padding reduction */
