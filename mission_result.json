@@ -1,0 +1,18 @@
+[
+  {
+    "id": "5f6e9d25-b56b-47d2-b2ba-91f9d61f9794",
+    "user_id": "74c4d7d4-506c-4589-98dd-495c0237ccd4",
+    "title": "sdfsdfsf",
+    "description": "sadsadsadsa",
+    "budget": "555",
+    "deadline": null,
+    "tags": [],
+    "status": "open",
+    "contact": "nwzx.dev@gmail.com",
+    "createdAt": "2026-02-25T22:45:09.418078+00:00",
+    "zone": "Guadeloupe",
+    "urgency": null,
+    "poster_name": "Anonyme",
+    "poster_company": "ffffffff"
+  }
+]
