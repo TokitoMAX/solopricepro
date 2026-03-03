@@ -841,13 +841,12 @@ const App = {
             <!-- Standard -->
             <div class="pricing-card-mini standard" onclick="App.closeModal()">
                 <div class="card-tier">STANDARD</div>
-                <div class="card-price">0€<span>/mois</span></div>
-                <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> Marketplace : 1 réponse/mois</li>
-                    <li><i class="fas fa-minus"></i> 1 Client Actif</li>
-                    <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
+                <ul style="list-style: none; padding: 0; margin: 1.5rem 0; font-size: 0.85rem; color: var(--text-muted); text-align: left; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li><i class="fas fa-check-circle" style="color: var(--primary); margin-right: 8px;"></i> Marketplace : 1 réponse/mois</li>
+                    <li><i class="fas fa-minus" style="margin-right: 8px; opacity: 0.5;"></i> 5 Clients Actifs</li>
+                    <li><i class="fas fa-minus" style="margin-right: 8px; opacity: 0.5;"></i> 3 Devis par mois</li>
                 </ul>
-                <div class="card-select-btn">Rester en Standard</div>
+                <button class="button-secondary full-width" onclick="document.getElementById('upgrade-modal-v2').classList.remove('active')" style="padding: 0.8rem;">Rester en Standard</button>
             </div>
 
             <!-- Pro -->
@@ -857,10 +856,12 @@ const App = {
                 <div class="card-price">15€<span>/mois</span></div>
                 <div class="card-value-tag">Idéal pour produire sans limites</div>
                 <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> Devis/Factures <strong>Illimités</strong></li>
-                    <li><i class="fas fa-check-circle"></i> Votre <strong>Logo</strong> sur PDF</li>
-                    <li><i class="fas fa-check-circle"></i> Pipeline Kanban Complet</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Zéro Limite</strong> sur les documents</li>
+                    <li><i class="fas fa-check-circle"></i> Tout du plan Standard</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Clients & Devis</strong> Illimités</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Pipeline Kanban</strong> & Trésorerie Nette</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Chiffrage Scoper</strong> & Dépenses</li>
+                    <li><i class="fas fa-check-circle"></i> PDF Factures avec <strong>votre Logo</strong></li>
+                    <li><i class="fas fa-check-circle"></i> Support Prioritaire</li>
                 </ul>
                 <button class="card-select-btn pro">Passer Pro</button>
             </div>
@@ -873,9 +874,9 @@ const App = {
                 <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
                 <ul class="card-features-mini">
                     <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Signature Électronique</strong> Sur Place</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Assistant Relance</strong> (Recouvrement)</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Coaching Rentabilité</strong> Avancé</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Stratégie</strong> & Closing</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Journal de Bord</strong></li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Profil Expert</strong> mis en avant</li>
                 </ul>
                 <button class="card-select-btn expert" style="background: #10b981; color: white;">Devenir Expert</button>
             </div>
