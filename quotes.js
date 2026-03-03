@@ -159,6 +159,8 @@ const Quotes = {
     },
 
     async duplicate(id) {
+        if (typeof App !== 'undefined' && !App.enforceLimit('quotes')) return;
+
         const quote = Storage.getQuote(id);
         if (!quote) return;
 
@@ -616,6 +618,8 @@ const Quotes = {
 
     // Convertir un devis en facture
     async convertToInvoice(id) {
+        if (typeof App !== 'undefined' && !App.enforceLimit('invoices')) return;
+
         const quote = Storage.getQuote(id);
         if (!quote) return;
 

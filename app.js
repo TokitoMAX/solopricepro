@@ -389,38 +389,24 @@ const App = {
         const tier = Storage.getTier();
         const isExpert = tier === 'expert';
 
-        const quotes = Storage.getQuotes();
-        const invoices = Storage.getInvoices();
-        const clients = Storage.getClients();
+        const quotes = Storage.getQuotes() || [];
+        const invoices = Storage.getInvoices() || [];
+        const clients = Storage.getClients() || [];
+        const leads = Storage.getLeads ? Storage.getLeads() : [];
+        const partners = Storage.get(Storage.KEYS?.PROVIDERS) || [];
 
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
         const monthlyQuotesCount = quotes.filter(q => {
-            const d = new Date(q.createdAt);
+            const d = new Date(q.createdAt || q.created_at);
             return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         }).length;
 
         const monthlyInvoicesCount = invoices.filter(i => {
-            const d = new Date(i.createdAt);
+            const d = new Date(i.createdAt || i.created_at);
             return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        }).length;
-
-        const marketplaceMissions = Storage.getPublicMissions() || [];
-        const myUserId = user?.id;
-        const monthlyMarketplaceCount = marketplaceMissions.filter(m => {
-            const d = new Date(m.createdAt);
-            // On compte les devis générés depuis le marketplace (ou missions répondues)
-            // Pour l'instant, on va vérifier dans les devis si la note mentionne "Marketplace"
-            return m.user_id === myUserId; // Mais ici on veut les réponses, pas les posts.
-        }).length;
-
-        // Plus précis : filter les devis qui viennent du marketplace
-        const marketplaceQuotesCount = quotes.filter(q => {
-            const d = new Date(q.createdAt);
-            const isMarketplace = q.notes && (q.notes.includes('Radar DomTomConnect') || q.notes.includes('Radar Réseau SoloPrice'));
-            return isMarketplace && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         }).length;
 
         // Banner visibility
@@ -429,16 +415,20 @@ const App = {
 
         return {
             tier: tier,
-            canAddClient: isPro || clients.length < 1,
-            canAddQuote: isPro || monthlyQuotesCount < 2,
-            canAddInvoice: isPro || monthlyInvoicesCount < 2,
-            canAddMarketplaceResponse: isPro || marketplaceQuotesCount < 1,
+            canAddClient: isPro || clients.length < 5,
+            canAddQuote: isPro || monthlyQuotesCount < 3,
+            canAddInvoice: isPro || monthlyInvoicesCount < 3,
+            canAddLead: isPro || leads.length < 10,
+            canAddPartner: isPro || partners.length < 2,
+            canAddMarketplaceResponse: isPro,
             canExportPDF: isPro,
             canAutomateMarketplace: isPro,
             isExpert: isExpert,
-            maxClients: isPro ? Infinity : 1,
-            maxQuotes: isPro ? Infinity : 2,
-            maxInvoices: isPro ? Infinity : 2
+            maxClients: isPro ? Infinity : 5,
+            maxQuotes: isPro ? Infinity : 3,
+            maxInvoices: isPro ? Infinity : 3,
+            maxLeads: isPro ? Infinity : 10,
+            maxPartners: isPro ? Infinity : 2
         };
     },
 
@@ -539,31 +529,37 @@ const App = {
     enforceLimit(feature) {
         const limits = this.checkFreemiumLimits();
 
-        // 1. Gestion des clients
-        if (feature === 'clients') {
-            if (!limits.canAddClient) {
-                this.showUpgradeModal('limit');
-                return false; // Bloqué
-            }
+        if (feature === 'clients' && !limits.canAddClient) {
+            this.showUpgradeModal('limit');
+            return false;
         }
 
-        // 2. Gestion des devis
-        if (feature === 'quotes') {
-            if (!limits.canAddQuote) {
-                this.showUpgradeModal('limit');
-                return false; // Bloqué
-            }
+        if (feature === 'quotes' && !limits.canAddQuote) {
+            this.showUpgradeModal('limit');
+            return false;
         }
 
-        // 4. Gestion du Marketplace (Réponses aux missions)
-        if (feature === 'marketplace_response') {
-            if (!limits.canAddMarketplaceResponse) {
-                this.showUpgradeModal('marketplace_limit');
-                return false;
-            }
+        if (feature === 'invoices' && !limits.canAddInvoice) {
+            this.showUpgradeModal('limit');
+            return false;
         }
 
-        return true; // Autorisé
+        if (feature === 'leads' && !limits.canAddLead) {
+            this.showUpgradeModal('limit');
+            return false;
+        }
+
+        if (feature === 'partners' && !limits.canAddPartner) {
+            this.showUpgradeModal('limit');
+            return false;
+        }
+
+        if (feature === 'marketplace_response' && !limits.canAddMarketplaceResponse) {
+            this.showUpgradeModal('marketplace_limit');
+            return false;
+        }
+
+        return true;
     },
 
     async syncUser() {

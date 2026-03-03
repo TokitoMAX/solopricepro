@@ -91,6 +91,10 @@ const Leads = {
 
 
     showAddForm() {
+        if (typeof App !== 'undefined' && !App.enforceLimit('leads')) {
+            return;
+        }
+
         const container = document.getElementById('lead-form-container');
         container.innerHTML = `
     < div class="form-card glass" style = "margin-bottom: 2rem; animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--primary-glass); box-shadow: 0 20px 50px rgba(0,0,0,0.3);" >

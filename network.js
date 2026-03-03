@@ -516,6 +516,7 @@ const Network = {
     // MODALS: ADD PERSONAL PARTNER
     // =============================================
     showAddModal() {
+        if (typeof App !== 'undefined' && !App.enforceLimit('partners')) return;
         const modal = document.getElementById('network-add-modal');
         if (modal) modal.classList.add('active');
     },
@@ -627,6 +628,8 @@ const Network = {
     // PERSONAL PARTNER ACTIONS
     // =============================================
     showAddModal() {
+        if (typeof App !== 'undefined' && !App.enforceLimit('partners')) return;
+
         let modal = document.getElementById('provider-add-modal');
         if (!modal) {
             modal = document.createElement('div');

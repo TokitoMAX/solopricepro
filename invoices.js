@@ -118,9 +118,7 @@ const Invoices = {
     },
 
     showAddForm() {
-        const limits = App.checkFreemiumLimits();
-        if (!limits.canAddInvoice) {
-            App.showUpgradeModal('limit');
+        if (typeof App !== 'undefined' && !App.enforceLimit('invoices')) {
             return;
         }
 
@@ -726,6 +724,8 @@ const Invoices = {
     },
 
     async duplicate(id) {
+        if (typeof App !== 'undefined' && !App.enforceLimit('invoices')) return;
+
         const invoice = Storage.getInvoice(id);
         if (!invoice) return;
 

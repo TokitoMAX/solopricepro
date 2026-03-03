@@ -503,25 +503,46 @@ const App = {
         const tier = Storage.getTier();
         const isExpert = tier === 'expert';
 
+        const quotes = Storage.getQuotes() || [];
+        const invoices = Storage.getInvoices() || [];
+        const clients = Storage.getClients() || [];
+        const leads = Storage.getLeads ? Storage.getLeads() : [];
+        const partners = Storage.get(Storage.KEYS?.PROVIDERS) || []; // using direct get if needed
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const monthlyQuotesCount = quotes.filter(q => {
+            const d = new Date(q.createdAt || q.created_at);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        }).length;
+
+        const monthlyInvoicesCount = invoices.filter(i => {
+            const d = new Date(i.createdAt || i.created_at);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        }).length;
+
         // Banner visibility
         const banner = document.getElementById('freemium-banner');
         if (banner) banner.style.display = isPro ? 'none' : 'flex';
 
-        // COMPLICATION REMOVED: All local quota counting logic (clients < x, quotes < y) is gone.
-        // The freemium model is now frictionless: everything is open to let users experience value,
-        // but high-value actions (like PDF Export) are gated.
         return {
             tier: tier,
-            canAddClient: true,
-            canAddQuote: true,
-            canAddInvoice: true,
-            canAddMarketplaceResponse: true,
+            canAddClient: isPro || clients.length < 5,
+            canAddQuote: isPro || monthlyQuotesCount < 3,
+            canAddInvoice: isPro || monthlyInvoicesCount < 3,
+            canAddLead: isPro || leads.length < 10,
+            canAddPartner: isPro || partners.length < 2,
+            canAddMarketplaceResponse: isPro, // We already gate this usually, keep it Pro for now.
             canExportPDF: isPro,
             canAutomateMarketplace: isPro,
             isExpert: isExpert,
-            maxClients: Infinity,
-            maxQuotes: Infinity,
-            maxInvoices: Infinity
+            maxClients: isPro ? Infinity : 5,
+            maxQuotes: isPro ? Infinity : 3,
+            maxInvoices: isPro ? Infinity : 3,
+            maxLeads: isPro ? Infinity : 10,
+            maxPartners: isPro ? Infinity : 2
         };
     },
 
@@ -622,28 +643,34 @@ const App = {
     enforceLimit(feature) {
         const limits = this.checkFreemiumLimits();
 
-        // 1. Gestion des clients
-        if (feature === 'clients') {
-            if (!limits.canAddClient) {
-                this.showUpgradeModal('limit');
-                return false; // Bloqué
-            }
+        if (feature === 'clients' && !limits.canAddClient) {
+            this.showUpgradeModal('limit');
+            return false;
         }
 
-        // 2. Gestion des devis
-        if (feature === 'quotes') {
-            if (!limits.canAddQuote) {
-                this.showUpgradeModal('limit');
-                return false; // Bloqué
-            }
+        if (feature === 'quotes' && !limits.canAddQuote) {
+            this.showUpgradeModal('limit');
+            return false;
         }
 
-        // 4. Gestion du Marketplace (Réponses aux missions)
-        if (feature === 'marketplace_response') {
-            if (!limits.canAddMarketplaceResponse) {
-                this.showUpgradeModal('marketplace_limit');
-                return false;
-            }
+        if (feature === 'invoices' && !limits.canAddInvoice) {
+            this.showUpgradeModal('limit');
+            return false;
+        }
+
+        if (feature === 'leads' && !limits.canAddLead) {
+            this.showUpgradeModal('limit');
+            return false;
+        }
+
+        if (feature === 'partners' && !limits.canAddPartner) {
+            this.showUpgradeModal('limit');
+            return false;
+        }
+
+        if (feature === 'marketplace_response' && !limits.canAddMarketplaceResponse) {
+            this.showUpgradeModal('marketplace_limit');
+            return false;
         }
 
         return true; // Autorisé
