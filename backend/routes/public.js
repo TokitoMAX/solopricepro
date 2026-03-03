@@ -66,7 +66,15 @@ router.post('/quote/:id/sign', async (req, res) => {
 
     try {
         console.log(`[PUBLIC-SIGN] Attempting to sign quote ${id}`);
-        const { data, error } = await supabase
+
+        // Use Admin client to bypass RLS for this public-facing write operation
+        const { createClient } = require('@supabase/supabase-js');
+        const supabaseAdmin = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        const { data, error } = await supabaseAdmin
             .from('sp_quotes')
             .update({
                 status: 'accepted',

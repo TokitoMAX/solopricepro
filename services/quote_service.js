@@ -9,6 +9,7 @@ const QuoteService = {
      * @returns {Promise<Object>} Success response or throws Error
      */
     async signPublicQuote(id, signatureDataUrl) {
+        console.log(`[QuoteService] Attempting to sign public quote: ${id}`);
         const res = await fetch(`${Auth.apiBase}/api/public/quote/${id}/sign`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -17,8 +18,10 @@ const QuoteService = {
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
+            console.error(`[QuoteService] Signing failed for ${id}:`, data);
             throw new Error(data.message || `Erreur serveur (${res.status}) lors de la signature`);
         }
+        console.log(`[QuoteService] Signing successful for ${id}`);
         return data;
     },
 

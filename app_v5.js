@@ -1332,6 +1332,10 @@ const App = {
         if (!this.hashListenerSetup) {
             window.addEventListener('hashchange', () => {
                 if (this.updatingHashManually) return;
+
+                // Priorité aux cas spécifiques (Public links, recovery, etc.)
+                if (this.handleUrlHash()) return;
+
                 const route = this.getPageFromHash();
                 if (route && (route.page !== this.currentPage || route.tab)) {
                     this.navigateTo(route.page, route.tab);

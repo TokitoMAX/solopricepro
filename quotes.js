@@ -934,8 +934,20 @@ const Quotes = {
         const dataUrl = canvas.toDataURL('image/png');
 
         try {
+            // Afficher un état de chargement sur le bouton
+            const btn = document.querySelector('#signature-modal .button-primary');
+            const originalText = btn ? btn.innerHTML : 'Valider et Signer';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signature...';
+            }
+
             if (this.isPublicSign) {
                 // Appel API public (service layer)
+                if (typeof QuoteService === 'undefined') {
+                    throw new Error("L'outil de signature n'est pas prêt. Veuillez rafraîchir la page.");
+                }
+
                 console.log(`[QUOTES] Signing public quote: ${id}`);
                 await QuoteService.signPublicQuote(id, dataUrl);
 
@@ -950,15 +962,22 @@ const Quotes = {
                     quote.accepted_at = new Date().toISOString();
                     quote.status = 'accepted';
 
-                    await Storage.updateQuote(id, quote);
+                    await Storage.updateQuote(quote.id || id, quote);
                     App.showNotification('Devis signé et validé !', 'success');
                     this.closeSignatureModal();
                     this.render(this.lastContainerId);
-                    this.showPaymentInstructions(id);
+                    this.showPaymentInstructions(quote.id || id);
                 }
             }
         } catch (err) {
-            App.showNotification(err.message, 'error');
+            console.error('[SIGNATURE-ERROR]', err);
+            // Restaurer le bouton en cas d'erreur
+            const btn = document.querySelector('#signature-modal .button-primary');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = 'Valider et Signer';
+            }
+            App.showNotification(err.message || "Une erreur est survenue lors de la signature.", 'error');
         }
     },
 
@@ -1023,7 +1042,7 @@ const Quotes = {
             paymentStatus = params.get('payment');
             paypalOrderId = params.get('paypal_order_id');
             paymentType = params.get('type');
-        } else {
+        } else if (params) {
             paymentStatus = params;
         }
 
@@ -1092,14 +1111,15 @@ const Quotes = {
             }
 
             const isLogged = Auth.user && Auth.token;
+            const isOwner = isLogged && quote.user_id === Auth.user.id;
 
             container.innerHTML = `
                 <div class="public-quote-wrapper">
                     ${isLogged ? `
-                        <div class="glass-notification" style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); margin-bottom: 2rem; padding: 1rem; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="glass-notification" style="background: ${isOwner ? 'rgba(245, 158, 11, 0.1)' : 'rgba(99, 102, 241, 0.1)'}; border: 1px solid ${isOwner ? '#f59e0b' : 'var(--primary)'}; margin-bottom: 2rem; padding: 1rem; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
                             <div style="font-size: 0.9rem;">
-                                <i class="fas fa-user-circle" style="color: var(--primary); margin-right: 8px;"></i>
-                                Vous êtes connecté en tant que <strong>${Auth.user.email}</strong>
+                                <i class="fas ${isOwner ? 'fa-user-shield' : 'fa-user-circle'}" style="color: ${isOwner ? '#f59e0b' : 'var(--primary)'}; margin-right: 8px;"></i>
+                                ${isOwner ? `<strong>Mode Aperçu :</strong> Vous visualisez ce devis en tant que prestataire.` : `Vous êtes connecté en tant que <strong>${Auth.user.email}</strong>`}
                             </div>
                             <button class="button-outline small" onclick="window.location.href='/'">Mon Tableau de Bord</button>
                         </div>
@@ -1174,9 +1194,19 @@ const Quotes = {
 
                             <div class="public-actions-stack">
                                 ${!quote.signature ? `
-                                    <button class="button-primary big-action" onclick="Quotes.openSignatureModal('${quote.id}', true)">
-                                        <i class="fas fa-pen-nib"></i> 1. Signer le Devis
-                                    </button>
+                                    ${isOwner ? `
+                                        <div class="status-alert info-glass" style="margin-bottom: 1rem; text-align: center;">
+                                            <i class="fas fa-info-circle"></i> En tant que prestataire, vous ne pouvez pas signer ce devis ici. 
+                                            <br><small>Utilisez "Signer en présence" depuis votre tableau de bord si vous êtes avec le client.</small>
+                                        </div>
+                                        <button class="button-primary big-action disabled" style="opacity: 0.6; cursor: not-allowed;" onclick="App.showNotification('Seul le client peut signer ce devis depuis ce lien.', 'info')">
+                                            <i class="fas fa-pen-nib"></i> 1. Signer le Devis (Client Uniquement)
+                                        </button>
+                                    ` : `
+                                        <button class="button-primary big-action" onclick="Quotes.openSignatureModal('${quote.id}', true)">
+                                            <i class="fas fa-pen-nib"></i> 1. Signer le Devis
+                                        </button>
+                                    `}
                                 ` : ''}
 
                                 <div class="dual-payment-container" style="display: flex; flex-direction: column; gap: 1rem;">
