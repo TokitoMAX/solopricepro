@@ -177,7 +177,7 @@ const Profile = {
                                 </h3>
                                 <p style="font-size: 0.85rem; color: var(--text-muted); margin: 4px 0 0 0;">
                                     ${(() => {
-                if (!isPro) return 'Limite de 3 clients et 5 devis / mois.';
+                if (!isPro) return 'Limite de 5 clients et 3 devis / mois.';
                 const status = Storage.getSubscriptionStatus();
                 if (status.isLifetime) return 'Accès Illimité (À vie)';
                 return `Expire le ${App.formatDate(status.expiryDate)} (${status.daysLeft} jours restants)`;
