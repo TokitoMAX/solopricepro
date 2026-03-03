@@ -1091,8 +1091,20 @@ const Quotes = {
                 `;
             }
 
+            const isLogged = Auth.user && Auth.token;
+
             container.innerHTML = `
                 <div class="public-quote-wrapper">
+                    ${isLogged ? `
+                        <div class="glass-notification" style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); margin-bottom: 2rem; padding: 1rem; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="font-size: 0.9rem;">
+                                <i class="fas fa-user-circle" style="color: var(--primary); margin-right: 8px;"></i>
+                                Vous êtes connecté en tant que <strong>${Auth.user.email}</strong>
+                            </div>
+                            <button class="button-outline small" onclick="window.location.href='/'">Mon Tableau de Bord</button>
+                        </div>
+                    ` : ''}
+
                     ${paymentNotification}
                     <header class="public-header">
                         <div class="logo gradient-text">SoloPrice Pro</div>
