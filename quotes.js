@@ -742,7 +742,7 @@ const Quotes = {
         if (typeof PDFGenerator !== 'undefined' && PDFGenerator.generateQuote) {
             PDFGenerator.generateQuote(quote, client, normalizedUser);
         } else {
-            App.showNotification('Module PDF indisponible pour le moment.', 'info');
+            this.showNotification('Module PDF indisponible', 'warning');
         }
     },
 

@@ -337,6 +337,8 @@ const App = {
 
     getPageFromHash() {
         const hash = window.location.hash.substring(1);
+        if (hash.startsWith('view-quote=')) return { page: 'public-quote', id: hash.split('=')[1] };
+
         const params = new URLSearchParams(hash);
         const page = params.get('page');
         const tab = params.get('tab');

@@ -47,6 +47,17 @@ try {
 // Injecter supabase (peut être null si échec init)
 app.set('supabase', supabase);
 
+// 1. Health Check (Public)
+app.get('/api/health', (req, res) => {
+    const sb = req.app.get('supabase');
+    res.json({
+        status: 'UP',
+        timestamp: new Date().toISOString(),
+        supabase: sb ? 'CONNECTED' : 'DISCONNECTED',
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
 // 1. Logs & CORS
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}]  ${req.method} ${req.path}`);
