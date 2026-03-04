@@ -5711,162 +5711,80 @@ body.public-view {
         transform: scale(1);
     }
 }
- @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
-         / *   S c o p e r   W i z a r d   S t e p s   * / 
-         . w i z a r d - s t e p s   { 
-                 o v e r f l o w - x :   a u t o   ! i m p o r t a n t ; 
-                 p a d d i n g - b o t t o m :   2 0 p x   ! i m p o r t a n t ; 
-                 j u s t i f y - c o n t e n t :   f l e x - s t a r t   ! i m p o r t a n t ; 
-                 g a p :   2 r e m   ! i m p o r t a n t ; 
-         } 
-         . w i z a r d - s t e p - i t e m   { 
-                 m i n - w i d t h :   7 0 p x   ! i m p o r t a n t ; 
-                 f l e x - s h r i n k :   0   ! i m p o r t a n t ; 
-         } 
-         . w i z a r d - s t e p s : : - w e b k i t - s c r o l l b a r   {   h e i g h t :   4 p x ;   } 
-         . w i z a r d - s t e p s : : - w e b k i t - s c r o l l b a r - t h u m b   {   b a c k g r o u n d :   v a r ( - - b o r d e r ) ;   b o r d e r - r a d i u s :   2 p x ;   } 
- 
-         / *   Q u o t e s   a n d   I n v o i c e s   D a t a   T a b l e s   * / 
-         . t a b l e - c o n t a i n e r   { 
-                 b o r d e r - r a d i u s :   0   ! i m p o r t a n t ; 
-                 b a c k g r o u n d :   t r a n s p a r e n t   ! i m p o r t a n t ; 
-                 b o r d e r :   n o n e   ! i m p o r t a n t ; 
-                 o v e r f l o w :   v i s i b l e   ! i m p o r t a n t ; 
-         } 
-         . d a t a - t a b l e ,   . d a t a - t a b l e   t b o d y ,   . d a t a - t a b l e   t r   { 
-                 d i s p l a y :   b l o c k   ! i m p o r t a n t ; 
-                 w i d t h :   1 0 0 %   ! i m p o r t a n t ; 
-         } 
-         . d a t a - t a b l e   t h e a d   { 
-                 d i s p l a y :   n o n e   ! i m p o r t a n t ; 
-         } 
-         . d a t a - t a b l e   t r   { 
-                 b a c k g r o u n d :   v a r ( - - d a r k - l i g h t )   ! i m p o r t a n t ; 
-                 b o r d e r :   1 p x   s o l i d   v a r ( - - b o r d e r )   ! i m p o r t a n t ; 
-                 b o r d e r - r a d i u s :   1 2 p x   ! i m p o r t a n t ; 
-                 m a r g i n - b o t t o m :   1 r e m   ! i m p o r t a n t ; 
-                 p a d d i n g :   1 5 p x   ! i m p o r t a n t ; 
-                 p o s i t i o n :   r e l a t i v e   ! i m p o r t a n t ; 
-                 d i s p l a y :   f l e x   ! i m p o r t a n t ; 
-                 f l e x - d i r e c t i o n :   c o l u m n   ! i m p o r t a n t ; 
-                 g a p :   8 p x   ! i m p o r t a n t ; 
-         } 
-         . d a t a - t a b l e   t d   { 
-                 d i s p l a y :   f l e x   ! i m p o r t a n t ; 
-                 j u s t i f y - c o n t e n t :   s p a c e - b e t w e e n   ! i m p o r t a n t ; 
-                 a l i g n - i t e m s :   c e n t e r   ! i m p o r t a n t ; 
-                 p a d d i n g :   5 p x   0   ! i m p o r t a n t ; 
-                 t e x t - a l i g n :   r i g h t   ! i m p o r t a n t ; 
-                 b o r d e r :   n o n e   ! i m p o r t a n t ; 
-         } 
-         . d a t a - t a b l e   t d : : b e f o r e   { 
-                 c o n t e n t :   a t t r ( d a t a - l a b e l )   ! i m p o r t a n t ; 
-                 f o n t - w e i g h t :   6 0 0   ! i m p o r t a n t ; 
-                 t e x t - t r a n s f o r m :   u p p e r c a s e   ! i m p o r t a n t ; 
-                 f o n t - s i z e :   0 . 7 r e m   ! i m p o r t a n t ; 
-                 c o l o r :   v a r ( - - t e x t - m u t e d )   ! i m p o r t a n t ; 
-                 t e x t - a l i g n :   l e f t   ! i m p o r t a n t ; 
-         } 
-         . d a t a - t a b l e   t d . a c t i o n s - c e l l   { 
-                 m a r g i n - t o p :   1 0 p x   ! i m p o r t a n t ; 
-                 p a d d i n g - t o p :   1 5 p x   ! i m p o r t a n t ; 
-                 b o r d e r - t o p :   1 p x   d a s h e d   v a r ( - - b o r d e r )   ! i m p o r t a n t ; 
-                 j u s t i f y - c o n t e n t :   c e n t e r   ! i m p o r t a n t ; 
-         } 
-         . d a t a - t a b l e   t d . a c t i o n s - c e l l : : b e f o r e   { 
-                 d i s p l a y :   n o n e   ! i m p o r t a n t ; 
-         } 
- } 
-  
- 
- @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
-         . m a r k e t p l a c e - g r i d   { 
-                 d i s p l a y :   f l e x   ! i m p o r t a n t ; 
-                 f l e x - d i r e c t i o n :   c o l u m n   ! i m p o r t a n t ; 
-         } 
-         . m a r k e t p l a c e - m a i n - f e e d   { 
-                 o r d e r :   - 1   ! i m p o r t a n t ;   / *   F o r c e s   t h e   f e e d   t o   a p p e a r   F I R S T ,   a b o v e   t h e   p r o f i l e   b o x   * / 
-         } 
- } 
-  
- 
- @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
-         / *   S c o p e r   T o p   N a v i g a t i o n   * / 
-         . s c o p e r - n a v   { 
-                 d i s p l a y :   f l e x   ! i m p o r t a n t ; 
-                 f l e x - w r a p :   n o w r a p   ! i m p o r t a n t ; 
-                 o v e r f l o w - x :   a u t o   ! i m p o r t a n t ; 
-                 p a d d i n g - b o t t o m :   1 0 p x   ! i m p o r t a n t ; 
-                 j u s t i f y - c o n t e n t :   f l e x - s t a r t   ! i m p o r t a n t ; 
-                 g a p :   1 0 p x   ! i m p o r t a n t ; 
-                 - w e b k i t - o v e r f l o w - s c r o l l i n g :   t o u c h ; 
-         } 
-         . s c o p e r - n a v   b u t t o n   { 
-                 f l e x :   0   0   a u t o   ! i m p o r t a n t ; 
-                 w h i t e - s p a c e :   n o w r a p   ! i m p o r t a n t ; 
-                 f o n t - s i z e :   0 . 8 5 r e m   ! i m p o r t a n t ; 
-                 p a d d i n g :   1 0 p x   1 5 p x   ! i m p o r t a n t ; 
-         } 
-         . s c o p e r - n a v : : - w e b k i t - s c r o l l b a r   {   h e i g h t :   4 p x ;   } 
-         . s c o p e r - n a v : : - w e b k i t - s c r o l l b a r - t h u m b   {   b a c k g r o u n d :   v a r ( - - p r i m a r y ) ;   b o r d e r - r a d i u s :   4 p x ;   } 
- 
-         / *   M a r k e t p l a c e   M o b i l e   L a y o u t   * / 
-         . m a r k e t p l a c e - f e e d - c o n t a i n e r   { 
-                 d i s p l a y :   f l e x   ! i m p o r t a n t ; 
-                 f l e x - d i r e c t i o n :   c o l u m n   ! i m p o r t a n t ; 
-         } 
-         / *   R e s e t   t h e   o r d e r   s o   s i d e b a r   i s   a t   t h e   t o p   a g a i n   * / 
-         . m a r k e t p l a c e - m a i n - f e e d   { 
-                 o r d e r :   0   ! i m p o r t a n t ; 
-         } 
-         / *   H i d e   t h e   b i g   u s e r   p r o f i l e   c a r d   t o   s a v e   s p a c e   o n   m o b i l e   * / 
-         . m a r k e t p l a c e - s i d e b a r   . u s e r - q u i c k - c a r d   { 
-                 d i s p l a y :   n o n e   ! i m p o r t a n t ; 
-         } 
-         / *   M a k e   t h e   n a v i g a t i o n   a   h o r i z o n t a l   s c r o l l a b l e   s t r i p   a t   t h e   t o p   * / 
-         . m a r k e t p l a c e - n a v   { 
-                 d i s p l a y :   f l e x   ! i m p o r t a n t ; 
-                 f l e x - d i r e c t i o n :   r o w   ! i m p o r t a n t ; 
-                 o v e r f l o w - x :   a u t o   ! i m p o r t a n t ; 
-                 p a d d i n g :   1 0 p x   ! i m p o r t a n t ; 
-                 m a r g i n - b o t t o m :   1 5 p x   ! i m p o r t a n t ; 
-                 g a p :   1 0 p x   ! i m p o r t a n t ; 
-                 b o r d e r - r a d i u s :   1 2 p x   ! i m p o r t a n t ; 
-         } 
-         . m a r k e t p l a c e - n a v   . n a v - b t n   { 
-                 f l e x :   0   0   a u t o   ! i m p o r t a n t ; 
-                 w h i t e - s p a c e :   n o w r a p   ! i m p o r t a n t ; 
-                 p a d d i n g :   1 0 p x   1 5 p x   ! i m p o r t a n t ; 
-                 j u s t i f y - c o n t e n t :   c e n t e r   ! i m p o r t a n t ; 
-         } 
- } 
-  
- 
- @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
-         / *   E n f o r c e   r i g i d   P D F   w i d t h s   * / 
-         . p d f - p r e v i e w - c o n t a i n e r   i f r a m e   { 
-                 m i n - w i d t h :   8 0 0 p x   ! i m p o r t a n t ; 
-         } 
-         . p d f - p r e v i e w - b o d y   { 
-                 m i n - w i d t h :   8 0 0 p x   ! i m p o r t a n t ; 
-                 o v e r f l o w - x :   a u t o   ! i m p o r t a n t ; 
-         } 
- 
-         / *   F o r c e   K a n b a n   C o l u m n s   t o   n o t   s q u i s h ,   e n a b l i n g   b e a u t i f u l   h o r i z o n t a l   s c r o l l i n g   * / 
-         . k a n b a n - b o a r d   { 
-                 d i s p l a y :   f l e x   ! i m p o r t a n t ; 
-                 f l e x - w r a p :   n o w r a p   ! i m p o r t a n t ; 
-                 o v e r f l o w - x :   a u t o   ! i m p o r t a n t ; 
-                 - w e b k i t - o v e r f l o w - s c r o l l i n g :   t o u c h ; 
-                 s c r o l l - s n a p - t y p e :   x   m a n d a t o r y ; 
-                 g a p :   1 5 p x   ! i m p o r t a n t ; 
-                 p a d d i n g - b o t t o m :   2 0 p x   ! i m p o r t a n t ; 
-         } 
-         . k a n b a n - c o l u m n   { 
-                 f l e x :   0   0   8 5 %   ! i m p o r t a n t ;   / *   T a k e   u p   8 5 %   o f   m o b i l e   s c r e e n   w i d t h   * / 
-                 m i n - w i d t h :   3 0 0 p x   ! i m p o r t a n t ; 
-                 s c r o l l - s n a p - a l i g n :   c e n t e r ; 
-         } 
- } 
-  
- 
+
+
+@media (max-width: 768px) {
+    /* Scoper Wizard Steps (Grid instead of horizontal scroll/slide) */
+    .wizard-steps {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+        padding-bottom: 10px !important;
+        overflow: visible !important;
+    }
+    .wizard-step-item {
+        min-width: 0 !important;
+        padding: 5px !important;
+        text-align: center;
+    }
+    .step-number {
+        margin: 0 auto 5px auto !important;
+    }
+    
+    /* Scoper Top Navigation (Grid instead of slide) */
+    .scoper-nav {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        overflow: visible !important;
+        padding-bottom: 10px !important;
+    }
+    .scoper-nav button {
+        white-space: normal !important;
+        font-size: 0.8rem !important;
+        padding: 8px !important;
+    }
+
+    /* Kanban / Cashflow Pipeline (Vertical Stack instead of slide) */
+    .kanban-board {
+        display: flex !important;
+        flex-direction: column !important;
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+        scroll-snap-type: none !important;
+        gap: 20px !important;
+    }
+    .kanban-column {
+        width: 100% !important;
+        flex: none !important;
+        min-width: 0 !important;
+    }
+
+    /* Marketplace Mobile Layout (Top Horizontal Ribbon) */
+    .marketplace-feed-container {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .marketplace-main-feed {
+        order: 0 !important;
+    }
+    .marketplace-sidebar .user-quick-card {
+        display: none !important;
+    }
+    .marketplace-nav {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        padding: 10px !important;
+        margin-bottom: 15px !important;
+        gap: 10px !important;
+        border-radius: 12px !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .marketplace-nav .nav-btn {
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        padding: 10px 15px !important;
+        justify-content: center !important;
+    }
+}

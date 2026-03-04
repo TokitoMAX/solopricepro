@@ -21,6 +21,14 @@ const PDFGenerator = {
                     * { box-sizing: border-box; }
                     html, body { min-width: 850px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
                     body { font-family: 'Inter', system-ui, sans-serif; color: #111827 !important; line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #ffffff !important; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+                    @media (prefers-color-scheme: dark) {
+                        body { background: #ffffff !important; color: #111827 !important; }
+                        * { color: #111827 !important; border-color: #e5e7eb !important; }
+                        .text-light, .meta-label, td::before, .item-subdesc { color: #4b5563 !important; }
+                        th, .legal-section, tr:nth-child(even) { background: #f9fafb !important; }
+                        .status-stamp { color: rgba(16, 185, 129, 0.2) !important; border-color: rgba(16, 185, 129, 0.2) !important; }
+                        .company-logo-type, .invoice-title { color: #10b981 !important; }
+                    }
                     .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 60px; border-bottom: 1px solid var(--border); padding-bottom: 30px; }
                     .header-logo { max-height: 80px; max-width: 250px; object-fit: contain; }
                     .company-logo-type { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
@@ -241,6 +249,14 @@ const PDFGenerator = {
                     * { box-sizing: border-box; }
                     html, body { min-width: 850px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
                     body { font-family: 'Inter', system-ui, sans-serif; color: #111827 !important; line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #ffffff !important; position: relative; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+                    @media (prefers-color-scheme: dark) {
+                        body { background: #ffffff !important; color: #111827 !important; }
+                        * { color: #111827 !important; border-color: #e5e7eb !important; }
+                        .text-light, .meta-label, td::before, .item-subdesc { color: #6b7280 !important; }
+                        th, .legal-section, tr:nth-child(even) { background: #f9fafb !important; }
+                        .company-logo-type, .invoice-title { color: #10b981 !important; }
+                        .trust-badge, .signature-box, .preview-badge { background: #10b981 !important; color: white !important; }
+                    }
                     
                     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; border-bottom: 2px solid var(--primary); padding-bottom: 30px; }
                     .header-logo { max-height: 80px; max-width: 250px; object-fit: contain; }
@@ -660,6 +676,14 @@ const PDFGenerator = {
                     :root { color-scheme: light only !important; --primary: #10b981; --primary-dark: #059669; --text: #111827; --text-light: #6b7280; --border: #e5e7eb; --bg-light: #f9fafb; }
                     html, body { min-width: 800px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
                     body { font-family: 'Inter', sans-serif; color: #111827 !important; line-height: 1.5; max-width: 800px; margin: 0 auto; padding: 40px; background: #ffffff !important; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+                    @media (prefers-color-scheme: dark) {
+                        body { background: #ffffff !important; color: #111827 !important; }
+                        * { color: #111827 !important; border-color: #e5e7eb !important; }
+                        .text-light { color: #6b7280 !important; }
+                        .card { background: #f9fafb !important; border-color: #10b981 !important; }
+                        .logo { color: #10b981 !important; }
+                        .badge { background: #10b981 !important; color: white !important; }
+                    }
                     .card { border: 2px solid var(--primary); border-radius: 24px; padding: 40px; position: relative; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); }
                     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
                     .logo { font-size: 20px; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
