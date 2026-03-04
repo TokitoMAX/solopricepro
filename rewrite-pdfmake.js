@@ -1,4 +1,6 @@
+const fs = require('fs');
 
+const pdfmakeCode = `
 /**
  * SoloPrice Pro - Vrai Générateur de PDF Vectoriel (PDFMake Edition)
  * Remplace totalement html2canvas et jspdf.
@@ -7,7 +9,7 @@
 const PdfGenerator = {
     COMPANY_INFO: {
         name: 'The SoloPrice Company',
-        address: '123 Avenue de l\'Innovation\n75001 Paris, FRANCE',
+        address: '123 Avenue de l\\'Innovation\\n75001 Paris, FRANCE',
         siret: '123 456 789 00012',
         vat: 'FR123456789'
     },
@@ -88,7 +90,7 @@ const PdfGenerator = {
 
         quote.items.forEach(i => {
             tableBody.push([
-                { text: i.desc + (i.subdesc ? ('\n' + i.subdesc) : ''), fontSize: 10, margin: [0, 5, 0, 5] },
+                { text: i.desc + (i.subdesc ? ('\\n' + i.subdesc) : ''), fontSize: 10, margin: [0, 5, 0, 5] },
                 { text: i.quantity, alignment: 'center', fontSize: 10, margin: [0, 5, 0, 5] },
                 { text: i.price + ' €', alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] },
                 { text: i.total + ' €', alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] }
@@ -104,12 +106,12 @@ const PdfGenerator = {
                 {
                     columns: [
                         { text: 'DEVIS', style: 'header' },
-                        { text: `N° ${quote.id || 'BROUILLON'}`, style: 'quoteNumber' }
+                        { text: \`N° \${quote.id || 'BROUILLON'}\`, style: 'quoteNumber' }
                     ]
                 },
                 {
                     columns: [
-                        { text: `Date d'émission: ${dateStr}\nValable jusqu'au: ${validUntil}`, style: 'small' },
+                        { text: \`Date d'émission: \${dateStr}\\nValable jusqu'au: \${validUntil}\`, style: 'small' },
                         { text: '' }
                     ],
                     margin: [0, 0, 0, 30]
@@ -119,20 +121,20 @@ const PdfGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: 'Prestataire:\n', bold: true, color: '#4b5563' },
-                                `${providerName}\n`,
-                                `${Auth.user?.email || ''}\n`
+                                { text: 'Prestataire:\\n', bold: true, color: '#4b5563' },
+                                \`\${providerName}\\n\`,
+                                \`\${Auth.user?.email || ''}\\n\`
                             ]
                         },
                         {
                             width: '50%',
                             text: [
-                                { text: 'Client:\n', bold: true, color: '#4b5563' },
-                                `${client?.name || 'Client Inconnu'}\n`,
-                                `${client?.company || ''}\n`,
-                                `${client?.address || ''}\n`,
-                                `${client?.email || ''}\n`,
-                                client?.vat_number ? `TVA: ${client.vat_number}` : ''
+                                { text: 'Client:\\n', bold: true, color: '#4b5563' },
+                                \`\${client?.name || 'Client Inconnu'}\\n\`,
+                                \`\${client?.company || ''}\\n\`,
+                                \`\${client?.address || ''}\\n\`,
+                                \`\${client?.email || ''}\\n\`,
+                                client?.vat_number ? \`TVA: \${client.vat_number}\` : ''
                             ],
                             alignment: 'right'
                         }
@@ -156,9 +158,9 @@ const PdfGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: `${quote.subtotal} €`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: `${quote.margin} €`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: `${quote.total} €`, style: 'grandTotalValue', border: [false,true,false,false] }]
+                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${quote.subtotal} €\`, style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${quote.margin} €\`, style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: \`\${quote.total} €\`, style: 'grandTotalValue', border: [false,true,false,false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -180,8 +182,8 @@ const PdfGenerator = {
                         {
                             width: '48%',
                             stack: [
-                                { text: `1. PART PRESTATAIRE (${settings.developerSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
-                                { text: `Destinataire : ${providerName}`, fontSize: 9, margin: [0, 5, 0, 0] },
+                                { text: \`1. PART PRESTATAIRE (\${settings.developerSplit}% HT)\`, bold: true, color: '#10b981', fontSize: 10 },
+                                { text: \`Destinataire : \${providerName}\`, fontSize: 9, margin: [0, 5, 0, 0] },
                                 { text: 'Règlement direct sur compte.', fontSize: 9 }
                             ],
                             margin: [0, 0, 10, 0],
@@ -190,8 +192,8 @@ const PdfGenerator = {
                         {
                             width: '48%',
                             stack: [
-                                { text: `2. SERVICE SOLOPRICE (${settings.platformSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
-                                { text: `Destinataire : SoloPrice Pro`, fontSize: 9, margin: [0, 5, 0, 0] },
+                                { text: \`2. SERVICE SOLOPRICE (\${settings.platformSplit}% HT)\`, bold: true, color: '#10b981', fontSize: 10 },
+                                { text: \`Destinataire : SoloPrice Pro\`, fontSize: 9, margin: [0, 5, 0, 0] },
                                 { text: 'Paiement sécurisé en ligne exigé.', fontSize: 9 }
                             ],
                             margin: [10, 0, 0, 0],
@@ -218,14 +220,14 @@ const PdfGenerator = {
                 }
             ],
             info: {
-                title: `Devis_${quote.id || 'Brouillon'}`,
+                title: \`Devis_\${quote.id || 'Brouillon'}\`,
                 author: providerName,
                 subject: 'Devis de Prestations',
                 keywords: 'devis, soloprice'
             }
         };
 
-        this._downloadRealPdf(docDefinition, `Devis_${quote.id || 'Brouillon'}.pdf`);
+        this._downloadRealPdf(docDefinition, \`Devis_\${quote.id || 'Brouillon'}.pdf\`);
     },
 
     async generateInvoice(quote, client, settings) {
@@ -239,7 +241,7 @@ const PdfGenerator = {
             ],
             [
                 { text: 'Prestations Réalisées conformes au devis', margin: [0, 5, 0, 5] },
-                { text: `${quote.subtotal} €`, alignment: 'right', margin: [0, 5, 0, 5] }
+                { text: \`\${quote.subtotal} €\`, alignment: 'right', margin: [0, 5, 0, 5] }
             ]
         ];
 
@@ -252,11 +254,11 @@ const PdfGenerator = {
                 {
                     columns: [
                         { text: 'FACTURE', style: 'header' },
-                        { text: `N° FAC-${quote.id || '1001'}`, style: 'quoteNumber' }
+                        { text: \`N° FAC-\${quote.id || '1001'}\`, style: 'quoteNumber' }
                     ]
                 },
                 {
-                    text: `Date: ${dateStr}\nRéférence Devis: ${quote.id}`,
+                    text: \`Date: \${dateStr}\\nRéférence Devis: \${quote.id}\`,
                     style: 'small',
                     margin: [0, 0, 0, 30]
                 },
@@ -265,18 +267,18 @@ const PdfGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: 'Prestataire:\n', bold: true, color: '#4b5563' },
-                                `${providerName}\n`,
-                                `${Auth.user?.email || ''}\n`
+                                { text: 'Prestataire:\\n', bold: true, color: '#4b5563' },
+                                \`\${providerName}\\n\`,
+                                \`\${Auth.user?.email || ''}\\n\`
                             ]
                         },
                         {
                             width: '50%',
                             text: [
-                                { text: 'Client:\n', bold: true, color: '#4b5563' },
-                                `${client?.name || 'Client Inconnu'}\n`,
-                                `${client?.company || ''}\n`,
-                                `${client?.address || ''}\n`
+                                { text: 'Client:\\n', bold: true, color: '#4b5563' },
+                                \`\${client?.name || 'Client Inconnu'}\\n\`,
+                                \`\${client?.company || ''}\\n\`,
+                                \`\${client?.address || ''}\\n\`
                             ],
                             alignment: 'right'
                         }
@@ -300,7 +302,7 @@ const PdfGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: `${quote.subtotal} €`, style: 'grandTotalValue', border: [false,true,false,false] }]
+                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: \`\${quote.subtotal} €\`, style: 'grandTotalValue', border: [false,true,false,false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -316,7 +318,7 @@ const PdfGenerator = {
             ]
         };
 
-        this._downloadRealPdf(docDefinition, `Facture_${quote.id || 'Brouillon'}.pdf`);
+        this._downloadRealPdf(docDefinition, \`Facture_\${quote.id || 'Brouillon'}.pdf\`);
     },
 
     async generateRoadmap() {
@@ -333,3 +335,7 @@ const PdfGenerator = {
 };
 
 window.PdfGenerator = PdfGenerator;
+`;
+
+fs.writeFileSync('d:/quick price/QuickPrice-Pro/pdf-generator.js', pdfmakeCode);
+console.log('Successfully injected PDFMake templates!');

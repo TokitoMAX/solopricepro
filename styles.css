@@ -5875,6 +5875,14 @@ body.public-view {
     display: none;
 }
 
+.feed-item,
+.feed-description,
+.feed-title,
+.job-card * {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
 @media (max-width: 768px) {
     .mobile-wizard-counter {
         display: block !important;

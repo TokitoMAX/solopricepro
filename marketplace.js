@@ -190,7 +190,7 @@ const Marketplace = {
                         <p class="feed-description" style="color: var(--text-light); line-height: 1.6; font-size: 0.95rem;">${this.escape(m.description)}</p>
                     </div>
 
-                    <div class="feed-item-pricing mobile-stack" style="display: flex; gap: 1rem; background: var(--dark); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                    <div class="feed-item-pricing mobile-stack" style="gap: 1rem; background: var(--dark); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
                         <div class="price-pill" style="flex: 1;">
                             <span class="label" style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Budget Net Expert</span>
                             <span class="value" style="display: block; font-size: 1.3rem; font-weight: 800; color: var(--white);">${typeof App !== 'undefined' ? App.formatCurrency(m.budget) : m.budget + '€'}</span>
@@ -201,7 +201,7 @@ const Marketplace = {
                         </div>
                     </div>
 
-                    <div class="feed-item-actions mobile-stack" style="display: flex; gap: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                    <div class="feed-item-actions mobile-stack" style="gap: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
                         ${isOwner ? `
                             <button onclick="Marketplace.deleteMission('${m.id}')" class="button-outline danger" style="flex: 1; border-color: var(--danger); color: var(--danger);">
                                 <i class="fas fa-trash"></i> Supprimer
