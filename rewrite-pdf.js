@@ -92,12 +92,18 @@ const newQuoteFunc = `generateQuote(quote, client, user, isPreview = false) {
         doc.text(splitClient, 114, 55);
 
         // Table
-        const tableData = quote.items.map(item => [
-            { content: item.desc + (item.subdesc ? ' - ' + item.subdesc : ''), styles: { fontStyle: 'bold' } },
-            item.quantity,
-            \`\${item.price} €\`,
-            \`\${item.total} €\`
-        ]);
+        const tableData = quote.items.map(item => {
+            const desc = item.description || item.desc || 'Sans désignation';
+            const qty = item.quantity || 0;
+            const price = item.unitPrice || item.price || 0;
+            const total = qty * price;
+            return [
+                { content: desc, styles: { fontStyle: 'bold' } },
+                qty,
+                \`\${price.toLocaleString()} €\`,
+                \`\${total.toLocaleString()} €\`
+            ];
+        });
 
         let finalY = 95;
         
@@ -121,23 +127,31 @@ const newQuoteFunc = `generateQuote(quote, client, user, isPreview = false) {
 
         // Totals Box
         doc.setFillColor(249, 250, 251);
-        doc.rect(110, finalY, 85, 40, 'F');
+        doc.rect(110, finalY, 85, 45, 'F');
         doc.setFontSize(10);
         doc.setTextColor(107, 114, 128);
+        
         doc.text('Prestations HT:', 114, finalY + 8);
-        doc.text(\`\${quote.subtotal} €\`, 190, finalY + 8, { align: 'right' });
+        doc.text(\`\${(quote.itemsSubtotal || 0).toLocaleString()} €\`, 190, finalY + 8, { align: 'right' });
         
         doc.setTextColor(16, 185, 129);
         doc.text('Service & Gestion:', 114, finalY + 16);
-        doc.text(\`\${quote.margin} €\`, 190, finalY + 16, { align: 'right' });
+        doc.text(\`\${(quote.margin || 0).toLocaleString()} €\`, 190, finalY + 16, { align: 'right' });
         
+        doc.setTextColor(107, 114, 128);
+        doc.text('Total HT:', 114, finalY + 24);
+        doc.text(\`\${(quote.subtotal || 0).toLocaleString()} €\`, 190, finalY + 24, { align: 'right' });
+
+        doc.text(\`TVA (\${quote.taxRate || 0}%):\`, 114, finalY + 32);
+        doc.text(\`\${(quote.tax || 0).toLocaleString()} €\`, 190, finalY + 32, { align: 'right' });
+
         doc.setTextColor(17, 24, 39);
         doc.setFont(undefined, 'bold');
-        doc.text('TOTAL TTC:', 114, finalY + 28);
+        doc.text('TOTAL TTC:', 114, finalY + 41);
         doc.setFontSize(14);
-        doc.text(\`\${quote.total} €\`, 190, finalY + 28, { align: 'right' });
+        doc.text(\`\${(quote.total || 0).toLocaleString()} €\`, 190, finalY + 41, { align: 'right' });
 
-        finalY += 50;
+        finalY += 55;
 
         // Legal & Protections
         doc.setFontSize(10);

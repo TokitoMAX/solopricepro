@@ -6,7 +6,7 @@ const pdfmakeCode = `
  * Remplace totalement html2canvas et jspdf.
  * 100% Vectoriel, Sélectionnable, Zoom infini, et natif.
  */
-const PdfGenerator = {
+const PDFGenerator = {
     COMPANY_INFO: {
         name: 'The SoloPrice Company',
         address: '123 Avenue de l\\'Innovation\\n75001 Paris, FRANCE',
@@ -89,11 +89,16 @@ const PdfGenerator = {
         ];
 
         quote.items.forEach(i => {
+            const desc = i.description || i.desc || 'Sans désignation';
+            const qty = i.quantity || 0;
+            const price = i.unitPrice || i.price || 0;
+            const total = qty * price;
+
             tableBody.push([
-                { text: i.desc + (i.subdesc ? ('\\n' + i.subdesc) : ''), fontSize: 10, margin: [0, 5, 0, 5] },
-                { text: i.quantity, alignment: 'center', fontSize: 10, margin: [0, 5, 0, 5] },
-                { text: i.price + ' €', alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] },
-                { text: i.total + ' €', alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] }
+                { text: desc, fontSize: 10, margin: [0, 5, 0, 5] },
+                { text: qty, alignment: 'center', fontSize: 10, margin: [0, 5, 0, 5] },
+                { text: \`\${price.toLocaleString()} €\`, alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] },
+                { text: \`\${total.toLocaleString()} €\`, alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] }
             ]);
         });
 
@@ -106,7 +111,7 @@ const PdfGenerator = {
                 {
                     columns: [
                         { text: 'DEVIS', style: 'header' },
-                        { text: \`N° \${quote.id || 'BROUILLON'}\`, style: 'quoteNumber' }
+                        { text: \`N° \${quote.number || quote.id || 'BROUILLON'}\`, style: 'quoteNumber' }
                     ]
                 },
                 {
@@ -158,9 +163,11 @@ const PdfGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${quote.subtotal} €\`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${quote.margin} €\`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: \`\${quote.total} €\`, style: 'grandTotalValue', border: [false,true,false,false] }]
+                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${(quote.itemsSubtotal || 0).toLocaleString()} €\`, style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${(quote.margin || 0).toLocaleString()} €\`, style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${(quote.subtotal || 0).toLocaleString()} €\`, style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: \`TVA (\${quote.taxRate || 0}%):\`, style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${(quote.tax || 0).toLocaleString()} €\`, style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: \`\${(quote.total || 0).toLocaleString()} €\`, style: 'grandTotalValue', border: [false,true,false,false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -220,14 +227,14 @@ const PdfGenerator = {
                 }
             ],
             info: {
-                title: \`Devis_\${quote.id || 'Brouillon'}\`,
+                title: \`Devis_\${quote.number || quote.id || 'Brouillon'}\`,
                 author: providerName,
                 subject: 'Devis de Prestations',
                 keywords: 'devis, soloprice'
             }
         };
 
-        this._downloadRealPdf(docDefinition, \`Devis_\${quote.id || 'Brouillon'}.pdf\`);
+        this._downloadRealPdf(docDefinition, \`Devis_\${quote.number || quote.id || 'Brouillon'}.pdf\`);
     },
 
     async generateInvoice(quote, client, settings) {
@@ -237,13 +244,34 @@ const PdfGenerator = {
         const tableBody = [
             [
                 { text: 'Désignation', style: 'tableHeader', alignment: 'left' },
-                { text: 'Total', style: 'tableHeader', alignment: 'right' }
-            ],
-            [
-                { text: 'Prestations Réalisées conformes au devis', margin: [0, 5, 0, 5] },
-                { text: \`\${quote.subtotal} €\`, alignment: 'right', margin: [0, 5, 0, 5] }
+                { text: 'Qté', style: 'tableHeader' },
+                { text: 'Prix Unitaire', style: 'tableHeader', alignment: 'right' },
+                { text: 'Total HT', style: 'tableHeader', alignment: 'right' }
             ]
         ];
+
+        if (quote.items && quote.items.length > 0) {
+            quote.items.forEach(i => {
+                const desc = i.description || i.desc || 'Prestation';
+                const qty = i.quantity || 1;
+                const price = i.unitPrice || i.price || 0;
+                const total = qty * price;
+
+                tableBody.push([
+                    { text: desc, fontSize: 10, margin: [0, 5, 0, 5] },
+                    { text: qty, alignment: 'center', fontSize: 10, margin: [0, 5, 0, 5] },
+                    { text: \`\${price.toLocaleString()} €\`, alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] },
+                    { text: \`\${total.toLocaleString()} €\`, alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] }
+                ]);
+            });
+        } else {
+            tableBody.push([
+                { text: 'Prestations Réalisées conformes au devis', margin: [0, 5, 0, 5], colSpan: 3 },
+                {},
+                {},
+                { text: \`\${(quote.subtotal || 0).toLocaleString()} €\`, alignment: 'right', margin: [0, 5, 0, 5] }
+            ]);
+        }
 
         const docDefinition = {
             pageSize: 'A4',
@@ -254,11 +282,11 @@ const PdfGenerator = {
                 {
                     columns: [
                         { text: 'FACTURE', style: 'header' },
-                        { text: \`N° FAC-\${quote.id || '1001'}\`, style: 'quoteNumber' }
+                        { text: \`N° \${quote.number || quote.id || 'FAC-1001'}\`, style: 'quoteNumber' }
                     ]
                 },
                 {
-                    text: \`Date: \${dateStr}\\nRéférence Devis: \${quote.id}\`,
+                    text: \`Date d'émission: \${dateStr}\${quote.id ? \`\\nRéférence: \${quote.id}\` : ''}\`,
                     style: 'small',
                     margin: [0, 0, 0, 30]
                 },
@@ -267,7 +295,7 @@ const PdfGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: 'Prestataire:\\n', bold: true, color: '#4b5563' },
+                                { text: 'Émetteur:\\n', bold: true, color: '#4b5563' },
                                 \`\${providerName}\\n\`,
                                 \`\${Auth.user?.email || ''}\\n\`
                             ]
@@ -275,10 +303,11 @@ const PdfGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: 'Client:\\n', bold: true, color: '#4b5563' },
+                                { text: 'Facturé à:\\n', bold: true, color: '#4b5563' },
                                 \`\${client?.name || 'Client Inconnu'}\\n\`,
                                 \`\${client?.company || ''}\\n\`,
-                                \`\${client?.address || ''}\\n\`
+                                \`\${client?.address || ''}\\n\`,
+                                \`\${client?.email || ''}\\n\`
                             ],
                             alignment: 'right'
                         }
@@ -288,7 +317,7 @@ const PdfGenerator = {
                 {
                     table: {
                         headerRows: 1,
-                        widths: ['*', 'auto'],
+                        widths: ['*', 'auto', 'auto', 'auto'],
                         body: tableBody
                     },
                     layout: 'lightHorizontalLines',
@@ -302,7 +331,11 @@ const PdfGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: \`\${quote.subtotal} €\`, style: 'grandTotalValue', border: [false,true,false,false] }]
+                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: \`\${(quote.itemsSubtotal || 0).toLocaleString()} €\`, style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false, false, false, false] }, { text: \`\${(quote.margin || 0).toLocaleString()} €\`, style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: \`\${(quote.subtotal || 0).toLocaleString()} €\`, style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: \`TVA (\${quote.taxRate || 0}%):\`, style: 'totalLabel', border: [false, false, false, false] }, { text: \`\${(quote.tax || 0).toLocaleString()} €\`, style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false, true, false, false] }, { text: \`\${(quote.total || 0).toLocaleString()} €\`, style: 'grandTotalValue', border: [false, true, false, false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -311,14 +344,24 @@ const PdfGenerator = {
                     margin: [0, 0, 0, 40]
                 },
                 {
-                    text: 'TVA non applicable, art. 293 B du CGI',
-                    style: 'small',
-                    alignment: 'center'
+                    text: 'Mentions Légales',
+                    style: 'subheader'
+                },
+                {
+                    text: 'Pénalités de retard : 3 fois le taux d\\'intérêt légal. Indemnité forfaitaire pour frais de recouvrement : 40 €.\\n' +
+                          (quote.tax === 0 ? 'TVA non applicable, art. 293 B du CGI.' : ''),
+                    style: 'small'
                 }
-            ]
+            ],
+            info: {
+                title: \`Facture_\${quote.number || quote.id}\`,
+                author: providerName,
+                subject: 'Facture de Prestations',
+                keywords: 'facture, soloprice'
+            }
         };
 
-        this._downloadRealPdf(docDefinition, \`Facture_\${quote.id || 'Brouillon'}.pdf\`);
+        this._downloadRealPdf(docDefinition, \`Facture_\${quote.number || quote.id || quote.id}.pdf\`);
     },
 
     async generateRoadmap() {
@@ -334,8 +377,8 @@ const PdfGenerator = {
     }
 };
 
-window.PdfGenerator = PdfGenerator;
-`;
+window.PDFGenerator = PDFGenerator;
+\`;
 
 fs.writeFileSync('d:/quick price/QuickPrice-Pro/pdf-generator.js', pdfmakeCode);
 console.log('Successfully injected PDFMake templates!');
