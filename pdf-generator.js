@@ -797,13 +797,17 @@ const PDFGenerator = {
 
         App.showNotification('Génération du document PDF en cours...', 'info');
 
-        // Create a temporary iframe to render the HTML properly with its <head> and <style>
+        // iOS Safari suspends canvas rendering for elements outside viewport (e.g. top: -9999px)
+        // Position it under everything but within viewport bounds using opacity
         const iframe = document.createElement('iframe');
         iframe.style.position = 'absolute';
-        iframe.style.width = '850px'; // Force desktop width for consistent rendering
+        iframe.style.width = '850px';
         iframe.style.height = '1200px';
-        iframe.style.top = '-9999px';
-        iframe.style.visibility = 'hidden';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.zIndex = '-100';
+        iframe.style.opacity = '0';
+        iframe.style.pointerEvents = 'none';
         document.body.appendChild(iframe);
 
         const iframeDoc = iframe.contentWindow.document;
@@ -856,8 +860,11 @@ const PDFGenerator = {
         iframe.style.position = 'absolute';
         iframe.style.width = '850px';
         iframe.style.height = '1200px';
-        iframe.style.top = '-9999px';
-        iframe.style.visibility = 'hidden';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.zIndex = '-100';
+        iframe.style.opacity = '0';
+        iframe.style.pointerEvents = 'none';
         document.body.appendChild(iframe);
 
         const iframeDoc = iframe.contentWindow.document;

@@ -23,7 +23,7 @@ const Scoper = {
             </div>
 
             <div class="tabs-container" style="margin-bottom: 2rem;">
-                <div class="tabs-header" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border);">
+                <div class="tabs-header scoper-nav" style="border-bottom: 1px solid var(--border);">
                     <button class="tab-btn ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')" style="padding: 1rem; background: none; border: none; color: ${tab === 'objective' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'objective' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-bullseye"></i> Mon Objectif TJM
                         <span style="font-size: 0.6rem; background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Offert</span>
@@ -35,7 +35,7 @@ const Scoper = {
                         <i class="fas fa-magic"></i> Stratégie de Closing
                         ${!Storage.isExpert() ? '<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Expert</span>' : ''}
                     </button>
-                    <button class="tab-btn ${tab === 'journal' ? 'active' : ''}" onclick="Scoper.render('journal')" style="padding: 1rem; background: none; border: none; color: ${tab === 'journal' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'journal' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <button class="tab-btn ${tab === 'journal' ? 'active' : ''}" onclick="Scoper.render('journal')" style="padding: 1rem; background: none; border: none; color: ${tab === 'journal' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'journal' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <i class="fas fa-journal-whills"></i> Journal de Bord
                         ${!Storage.isExpert() ? '<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Expert</span>' : ''}
                     </button>
