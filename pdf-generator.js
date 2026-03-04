@@ -88,7 +88,7 @@ const PDFGenerator = {
                 
                 <div class="header">
                     <div class="company-brand">
-                        ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo">` : `<div class="company-logo-type">${user.company.name || 'SoloPrice Pro User'}</div>`}
+                        ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo" width="250" style="max-height: 80px; width: auto; height: auto; object-fit: contain;">` : `<div class="company-logo-type">${user.company.name || 'SoloPrice Pro User'}</div>`}
                         <div class="company-details">
                             ${user.company.address || ''}<br>
                             ${user.company.email || ''} | ${user.company.phone || ''}
@@ -326,7 +326,7 @@ const PDFGenerator = {
 
                 <div class="header">
                     <div class="company-brand">
-                        ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo">` : `<div class="company-logo-type">${providerName}</div>`}
+                        ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo" width="250" style="max-height: 80px; width: auto; height: auto; object-fit: contain;">` : `<div class="company-logo-type">${providerName}</div>`}
                         <div class="company-details">
                             ${providerAddress ? `${providerAddress}<br>` : ''}
                             ${providerEmail} ${providerPhone ? `| ${providerPhone}` : ''}

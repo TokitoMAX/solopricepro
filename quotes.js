@@ -97,11 +97,11 @@ const Quotes = {
             const client = Storage.getClient(quote.clientId);
             return `
                                     <tr>
-                                        <td><strong>${quote.number}</strong></td>
-                                        <td>${client?.name || 'Client supprimé'}</td>
-                                        <td>${App.formatDate(quote.createdAt)}</td>
-                                        <td>${App.formatCurrency(quote.total)}</td>
-                                        <td>
+                                        <td data-label="Numéro"><strong>${quote.number}</strong></td>
+                                        <td data-label="Client">${client?.name || 'Client supprimé'}</td>
+                                        <td data-label="Date">${App.formatDate(quote.createdAt)}</td>
+                                        <td data-label="Montant TTC">${App.formatCurrency(quote.total)}</td>
+                                        <td data-label="Statut">
                                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                                 <span class="status-badge status-${quote.status}">${this.getStatusLabel(quote.status)}</span>
                                                 ${(quote.status === 'accepted' || quote.status === 'paid') ? `
@@ -112,7 +112,7 @@ const Quotes = {
                                                 ` : ''}
                                             </div>
                                         </td>
-                                        <td>
+                                        <td data-label="Actions" class="actions-cell">
                                             <div class="table-actions-dropdown">
                                                 <button class="button-secondary small action-trigger" onclick="event.stopPropagation(); Quotes.toggleActions('${quote.id}')">
                                                     Actions <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>

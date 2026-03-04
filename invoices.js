@@ -54,13 +54,13 @@ const Invoices = {
             );
             return `
                                     <tr>
-                                        <td><strong>${invoice.number}</strong></td>
-                                        <td>${client?.name || 'Client supprimé'}</td>
-                                        <td>${App.formatDate(invoice.createdAt)}</td>
-                                        <td>${invoice.dueDate ? App.formatDate(invoice.dueDate) : '-'}</td>
-                                        <td>${App.formatCurrency(subtotal)}</td>
-                                        <td>${App.formatCurrency(invoice.total)}</td>
-                                        <td>
+                                        <td data-label="Numéro"><strong>${invoice.number}</strong></td>
+                                        <td data-label="Client">${client?.name || 'Client supprimé'}</td>
+                                        <td data-label="Date">${App.formatDate(invoice.createdAt)}</td>
+                                        <td data-label="Échéance">${invoice.dueDate ? App.formatDate(invoice.dueDate) : '-'}</td>
+                                        <td data-label="Montant HT">${App.formatCurrency(subtotal)}</td>
+                                        <td data-label="Montant TTC">${App.formatCurrency(invoice.total)}</td>
+                                        <td data-label="Statut">
                                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                                 <span class="status-badge status-${invoice.status}">${this.getStatusLabel(invoice.status)}</span>
                                                 ${(invoice.status === 'sent' || invoice.status === 'paid' || invoice.status === 'overdue') ? `
@@ -71,7 +71,7 @@ const Invoices = {
                                                 ` : ''}
                                             </div>
                                         </td>
-                                        <td>
+                                        <td data-label="Actions" class="actions-cell">
                                             <div class="action-buttons">
                                                 <button class="btn-icon" onclick="Invoices.edit('${invoice.id}')" title="Modifier la facture">
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
