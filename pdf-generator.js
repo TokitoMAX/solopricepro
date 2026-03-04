@@ -829,14 +829,51 @@ const PDFGenerator = {
             };
 
             try {
-                await html2pdf().set(opt).from(element).save();
-                App.showNotification('Document téléchargé avec succès.', 'success');
+                // Generate Blob instead of saving directly
+                const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+
+                // Native Share (iOS / Android)
+                const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+                // Only try sharing if supported and we can share files
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: filename,
+                            text: 'Voici votre document SoloPrice Pro'
+                        });
+                        App.showNotification('Partage du document ouvert.', 'success');
+                    } catch (shareError) {
+                        if (shareError.name !== 'AbortError') {
+                            this._fallbackDownload(pdfBlob, filename);
+                        }
+                    }
+                } else {
+                    // Desktop / Non-supported browsers Fallback
+                    this._fallbackDownload(pdfBlob, filename);
+                }
             } catch (error) {
                 console.error('PDF Generation Error:', error);
-                App.showNotification('Erreur lors du téléchargement du PDF.', 'error');
+                App.showNotification('Erreur lors de la génération du PDF.', 'error');
             } finally {
                 document.body.removeChild(iframe);
             }
         }, 1500);
     },
+
+    _fallbackDownload(blob, filename) {
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+            App.showNotification('Document téléchargé avec succès.', 'success');
+        }, 150);
+    }
 };

@@ -5869,8 +5869,8 @@ body.public-view {
 /* UX 6.0 Overrides */
 @media (max-width: 768px) {
     .wizard-steps {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
         gap: 15px !important;
         justify-content: center !important;
     }
@@ -5880,27 +5880,49 @@ body.public-view {
     }
 
     .wizard-steps .wizard-step-item {
-        width: 100% !important;
-        margin-bottom: 10px !important;
+        width: auto !important;
+        min-width: 90px !important;
+        margin-bottom: 5px !important;
     }
 
     .marketplace-nav {
-        display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
-        padding: 0 !important;
-        gap: 5px !important;
+        display: flex !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 5px !important;
+        gap: 10px !important;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .marketplace-nav::-webkit-scrollbar {
+        display: none;
     }
 
     .marketplace-nav .nav-btn {
-        padding: 8px 2px !important;
+        flex: 0 0 auto !important;
+        padding: 10px 15px !important;
+        background: var(--dark-light) !important;
+        border-radius: 30px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .marketplace-nav .nav-btn.active {
+        background: var(--primary) !important;
+        color: white !important;
     }
 
     .marketplace-nav .nav-btn i {
-        font-size: 1.2rem !important;
+        font-size: 1.1rem !important;
+        margin-bottom: 0 !important;
+        margin-right: 8px !important;
     }
 
     .marketplace-nav .nav-btn span,
     .marketplace-nav .nav-btn {
-        font-size: 0.6rem !important;
+        font-size: 0.85rem !important;
     }
 }
