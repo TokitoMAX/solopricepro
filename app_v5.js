@@ -1153,10 +1153,10 @@ const App = {
     },
 
     // Notification système
-    showNotification(message, type = 'info') {
+    showNotification(message, type = 'info', duration = 3000) {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
-        notification.textContent = message;
+        notification.innerHTML = message;
 
         notification.style.cssText = `
             position: fixed;
@@ -1172,15 +1172,19 @@ const App = {
             font-weight: 600;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             z-index: 10000;
-            animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s;
+            animation: slideInRight 0.5s ease;
             max-width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         `;
 
         document.body.appendChild(notification);
 
         setTimeout(() => {
-            notification.remove();
-        }, 3000);
+            notification.style.animation = 'slideOutRight 0.5s ease forwards';
+            setTimeout(() => notification.remove(), 500);
+        }, duration);
     },
 
     // Advanced Currency Configuration based on user country

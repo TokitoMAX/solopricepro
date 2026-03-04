@@ -33,22 +33,25 @@ const PdfGenerator = {
 
         if (typeof App !== 'undefined') App.showNotification('Génération du document vectoriel...', 'info');
 
-        // iOS Safari bloque navigator.share() si l'appel est asynchrone (trop long après le clic).
-        // Solution 1: Lancer le calcul en ASYNC, générer le blob, puis afficher un bouton SYNCHRONE "Ouvrir"
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         pdfMake.createPdf(docDefinition).getBlob((blob) => {
             try {
-                if (isIOS && navigator.share) {
-                    // Try direct share first (might be blocked by Safari)
-                    const file = new File([blob], filename, { type: 'application/pdf' });
-                    navigator.share({
-                        title: filename,
-                        files: [file]
-                    }).catch(err => {
-                        console.log("Share failed (Sync block Safari), falling back to native link", err);
+                if (isIOS) {
+                    // SUR IOS : On ne peut pas appeler navigator.share ou window.open asynchronement après un long calcul.
+                    // On stocke le blob globalement et on demande une action utilisateur MANUELLE.
+                    window._lastPdfBlob = blob;
+                    window._lastPdfFilename = filename;
+
+                    if (typeof App !== 'undefined') {
+                        App.showNotification(
+                            `Prêt ! <button onclick="PdfGenerator._triggerIOSDownload()" style="margin-left:10px; padding:4px 8px; background:white; color:var(--primary); border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Ouvrir / Partager</button>`,
+                            'success',
+                            15000
+                        );
+                    } else {
                         this._fallbackDownload(blob, filename);
-                    });
+                    }
                 } else {
                     // PC / Android -> Classic download
                     this._fallbackDownload(blob, filename);
@@ -58,6 +61,27 @@ const PdfGenerator = {
                 this._fallbackDownload(blob, filename);
             }
         });
+    },
+
+    _triggerIOSDownload() {
+        if (!window._lastPdfBlob) return;
+        const blob = window._lastPdfBlob;
+        const filename = window._lastPdfFilename;
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        if (isIOS && navigator.share) {
+            const file = new File([blob], filename, { type: 'application/pdf' });
+            navigator.share({
+                title: filename,
+                files: [file]
+            }).catch(err => {
+                console.log("Share failed, falling back to window.open", err);
+                this._fallbackDownload(blob, filename);
+            });
+        } else {
+            this._fallbackDownload(blob, filename);
+        }
     },
 
     async _fallbackDownload(blob, filename) {
