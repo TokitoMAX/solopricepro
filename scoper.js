@@ -209,7 +209,7 @@ const Scoper = {
                         <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Définir votre rythme</h2>
                         <p class="text-muted">Un freelance ne facture pas 20 jours par mois. Prévoyez du temps pour la prospection et l'administratif.</p>
                     </div>
-                    <div class="mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div class="input-group">
                             <label class="form-label">Jours facturés / mois</label>
                             <input type="number" id="workingDays" class="form-input" value="${data.workingDays ?? 15}" oninput="Scoper.autoSaveObjective()">
@@ -254,7 +254,7 @@ const Scoper = {
                         <p class="text-muted">Simulez votre impact financier et testez votre force de frappe.</p>
                     </div>
 
-    <div class="mobile-stack" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
         <!-- Col 1: Scénarios & Puissance -->
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
 
@@ -291,7 +291,7 @@ const Scoper = {
             </div>
 
             <!-- Scenario Selector -->
-            <div class="mobile-stack" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                 ${Object.entries(scenarios).map(([key, s]) => `
                                     <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1rem; border-radius: 12px; border: 2px solid ${activeScenario === key ? 'var(--primary)' : 'var(--border)'}; background: ${activeScenario === key ? 'var(--primary-glass)' : 'transparent'}; text-align: center; transition: all 0.2s;">
                                         <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: ${activeScenario === key ? 'var(--primary-light)' : 'var(--text-muted)'};">${s.label}</div>
@@ -494,7 +494,7 @@ const Scoper = {
         </div>
     </div>
 
-    <div class="calculator-container mobile-stack" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem;">
+    <div class="calculator-container" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem;">
 
         <!-- Task List Input -->
         <div class="calculator-inputs" style="background: #0a0a0a; border: 1px solid var(--border); padding: 2rem; border-radius: var(--radius-lg);">
@@ -521,7 +521,7 @@ const Scoper = {
                 <h3 class="results-title" style="font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Analyse Financière</h3>
             </div>
 
-            <div class="result-cards mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+            <div class="result-cards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                 <div class="result-card primary" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary); padding: 1.2rem; border-radius: 12px; grid-column: span 2;">
                     <div class="result-label" style="font-size: 0.8rem; color: var(--text-muted);">Total à Facturer (TTC)</div>
                     <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</div>

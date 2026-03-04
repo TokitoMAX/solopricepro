@@ -5910,11 +5910,11 @@ body.public-view {
 }
 
 .quote-document {
-    padding: 2rem;
+    padding: 2.5rem;
     border-radius: var(--radius-lg);
     background: white;
     box-shadow: var(--shadow-lg);
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
