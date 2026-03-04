@@ -5874,26 +5874,33 @@ body.public-view {
         gap: 15px !important;
         justify-content: center !important;
     }
+
     .wizard-steps::before {
         display: none !important;
     }
-    .wizard-steps .step {
+
+    .wizard-steps .wizard-step-item {
         width: 100% !important;
         margin-bottom: 10px !important;
     }
-    
+
     .marketplace-nav {
+        display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
         padding: 0 !important;
         gap: 5px !important;
     }
+
     .marketplace-nav .nav-btn {
         padding: 8px 2px !important;
     }
+
     .marketplace-nav .nav-btn i {
         font-size: 1.2rem !important;
     }
-    .marketplace-nav .nav-btn span, .marketplace-nav .nav-btn {
+
+    .marketplace-nav .nav-btn span,
+    .marketplace-nav .nav-btn {
         font-size: 0.6rem !important;
     }
 }
