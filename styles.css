@@ -1679,11 +1679,11 @@ section {
 /* --- Marketplace v4.7 (LinkedIn Style) --- */
 .marketplace-feed-container {
     display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 24px;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+    max-width: 100%;
+    margin: 0;
+    padding: 2.5rem;
 }
 
 .marketplace-sidebar {
@@ -5751,8 +5751,9 @@ body.public-view {
 
 /* Grilles Scoper sur Desktop */
 .scoper-page .calculator-container {
-    grid-template-columns: 1.6fr 1fr !important;
-    gap: 2.5rem;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 3rem;
+    max-width: 100%;
 }
 
 .result-cards {
@@ -5949,11 +5950,11 @@ body.public-view {
 }
 
 .quote-document {
-    padding: 2.5rem;
+    padding: 3rem;
     border-radius: var(--radius-lg);
     background: white;
     box-shadow: var(--shadow-lg);
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
