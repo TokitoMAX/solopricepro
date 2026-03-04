@@ -11,6 +11,7 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
+                <meta name="viewport" content="width=850">
                 <title>Facture ${invoice.number}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -229,6 +230,7 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
+                <meta name="viewport" content="width=850">
                 <title>${isPreview ? 'APERÇU - ' : ''}Devis ${quote.number}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -493,6 +495,7 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
+                <meta name="viewport" content="width=850">
                 <title>Livre des Recettes - ${year}</title>
                 <style>
                     body { font-family: sans-serif; padding: 40px; color: #333; }
@@ -565,6 +568,7 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
+                <meta name="viewport" content="width=850">
                 <title>Registre des Achats - ${year}</title>
                 <style>
                     body { font-family: sans-serif; padding: 40px; color: #333; }
@@ -647,6 +651,7 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
+                <meta name="viewport" content="width=850">
                 <title>Ma Roadmap de Rentabilité - SoloPrice Pro</title>
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
                 <style>
