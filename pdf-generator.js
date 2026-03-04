@@ -11,7 +11,7 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
-                <meta name="viewport" content="width=850">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Facture ${invoice.number}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,6 +19,7 @@ const PDFGenerator = {
                 <style>
                     :root { color-scheme: light only !important; --primary: #10b981; --primary-dark: #059669; --text: #000000; --text-light: #4b5563; --border: #e5e7eb; --bg-light: #f9fafb; }
                     * { box-sizing: border-box; }
+                    html, body { min-width: 850px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
                     body { font-family: 'Inter', system-ui, sans-serif; color: #111827 !important; line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #ffffff !important; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
                     .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 60px; border-bottom: 1px solid var(--border); padding-bottom: 30px; }
                     .header-logo { max-height: 80px; max-width: 250px; object-fit: contain; }
@@ -230,7 +231,7 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
-                <meta name="viewport" content="width=850">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>${isPreview ? 'APERÇU - ' : ''}Devis ${quote.number}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -238,6 +239,7 @@ const PDFGenerator = {
                 <style>
                     :root { color-scheme: light only !important; --primary: #10b981; --primary-dark: #059669; --text: #111827; --text-light: #6b7280; --border: #e5e7eb; --bg-light: #f9fafb; }
                     * { box-sizing: border-box; }
+                    html, body { min-width: 850px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
                     body { font-family: 'Inter', system-ui, sans-serif; color: #111827 !important; line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #ffffff !important; position: relative; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
                     
                     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; border-bottom: 2px solid var(--primary); padding-bottom: 30px; }
@@ -651,11 +653,12 @@ const PDFGenerator = {
             <html>
             <head>
                 <meta charset="utf-8">
-                <meta name="viewport" content="width=850">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Ma Roadmap de Rentabilité - SoloPrice Pro</title>
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
                 <style>
                     :root { color-scheme: light only !important; --primary: #10b981; --primary-dark: #059669; --text: #111827; --text-light: #6b7280; --border: #e5e7eb; --bg-light: #f9fafb; }
+                    html, body { min-width: 800px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
                     body { font-family: 'Inter', sans-serif; color: #111827 !important; line-height: 1.5; max-width: 800px; margin: 0 auto; padding: 40px; background: #ffffff !important; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
                     .card { border: 2px solid var(--primary); border-radius: 24px; padding: 40px; position: relative; overflow: hidden; background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); }
                     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
