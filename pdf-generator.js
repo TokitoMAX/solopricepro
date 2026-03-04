@@ -4,7 +4,7 @@
  * Remplace totalement html2canvas et jspdf.
  * 100% Vectoriel, Sélectionnable, Zoom infini, et natif.
  */
-const PdfGenerator = {
+const PDFGenerator = {
     COMPANY_INFO: {
         name: 'The SoloPrice Company',
         address: '123 Avenue de l\'Innovation\n75001 Paris, FRANCE',
@@ -45,7 +45,7 @@ const PdfGenerator = {
 
                     if (typeof App !== 'undefined') {
                         App.showNotification(
-                            `Prêt ! <button onclick="PdfGenerator._triggerIOSDownload()" style="margin-left:10px; padding:4px 8px; background:white; color:var(--primary); border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Ouvrir / Partager</button>`,
+                            `Prêt ! <button onclick="PDFGenerator._triggerIOSDownload()" style="margin-left:10px; padding:4px 8px; background:white; color:var(--primary); border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Ouvrir / Partager</button>`,
                             'success',
                             15000
                         );
@@ -367,4 +367,4 @@ const PdfGenerator = {
     }
 };
 
-window.PdfGenerator = PdfGenerator;
+window.PDFGenerator = PDFGenerator;
