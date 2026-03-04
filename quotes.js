@@ -1030,8 +1030,12 @@ const Quotes = {
     },
 
     async renderPublicView(id, params) {
+        console.log(`[QUOTES] Starting renderPublicView for ID: ${id}`);
         const container = document.getElementById(this.lastContainerId || 'quotes-content');
-        if (!container) return;
+        if (!container) {
+            console.error('[QUOTES] Target container not found for public view');
+            return;
+        }
 
         // Extraire le statut de paiement des paramètres (soit URLSearchParams, soit string legacy)
         let paymentStatus = null;
@@ -1083,9 +1087,19 @@ const Quotes = {
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
 
+            console.log('[QUOTES] Fetching public quote data...');
             const data = await QuoteService.getPublicQuote(id);
+            console.log('[QUOTES] Public data received:', data);
+
+            if (!data || !data.quote) {
+                throw new Error("Données du devis introuvables ou lien expiré.");
+            }
+
             this.publicQuoteData = data;
             const { quote, provider, client } = data;
+
+            if (!provider) console.warn('[QUOTES] Provider data missing');
+            if (!client) console.warn('[QUOTES] Client data missing');
 
             // Si le devis est déjà payé en base, on force paymentStatus à success même si pas dans l'URL
             const actualStatus = quote.status === 'paid' ? 'success' : paymentStatus;
@@ -1126,24 +1140,21 @@ const Quotes = {
                     ` : ''}
 
                     ${paymentNotification}
-                    <header class="public-header">
-                        <div class="logo gradient-text">SoloPrice Pro</div>
-                        <div class="status-badge-large status-${quote.status}">${this.getStatusLabel(quote.status)}</div>
-                    </header>
-                    
                     <div class="quote-document glass">
-                        <div class="document-header">
-                            <div class="provider-info">
-                                ${provider.logo_url ? `<img src="${provider.logo_url}" class="provider-logo" alt="Logo">` : `<h2 class="gradient-text">${provider.company_name || 'Prestataire'}</h2>`}
-                                <p>${provider.email || ''}</p>
-                                <p>${provider.phone || ''}</p>
+                        <header class="public-header">
+                            <div class="provider-brand">
+                                ${provider?.logo ? `<img src="${provider.logo}" alt="Logo" style="max-height: 60px; margin-bottom: 1rem; display: block;">` : ''}
+                                <h2 style="margin:0; font-size: 1.2rem;">${provider?.company_name || 'Prestataire'}</h2>
+                                <p class="text-xs text-muted" style="margin:0;">${provider?.email || ''}</p>
                             </div>
-                            <div class="document-meta">
-                                <h1>DEVIS</h1>
-                                <p><strong>N° ${quote.number}</strong></p>
-                                <p>Le ${App.formatDate(quote.createdAt)}</p>
+                            <div class="quote-meta" style="text-align: right;">
+                                <div class="status-badge-large" style="background: ${quote.status === 'paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)'}; color: ${quote.status === 'paid' ? '#10b981' : '#3b82f6'};">
+                                    ${this.getStatusLabel(quote.status)}
+                                </div>
+                                <h1 style="margin: 0.5rem 0 0; font-size: 1.5rem;">Devis ${quote.number}</h1>
+                                <p class="text-sm text-muted">Émis le ${App.formatDate(quote.createdAt)}</p>
                             </div>
-                        </div>
+                        </header>
 
                         <div class="client-info-box">
                             <label>Destinataire :</label>
