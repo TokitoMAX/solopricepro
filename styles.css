@@ -5739,6 +5739,14 @@ body.public-view {
         overflow: visible !important;
         padding-bottom: 10px !important;
     }
+
+    .scoper-nav-OLD {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        overflow: visible !important;
+        padding-bottom: 10px !important;
+    }
     .scoper-nav button {
         white-space: normal !important;
         font-size: 0.8rem !important;
