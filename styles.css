@@ -2206,6 +2206,7 @@ section {
     padding: 10px 15px;
     background: rgba(0, 0, 0, 0.2);
     display: flex;
+    flex-wrap: wrap;
     gap: 15px;
 }
 
@@ -2230,6 +2231,8 @@ section {
     padding: 10px 15px;
     border-top: 1px solid var(--border);
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .action-btn {
@@ -5734,22 +5737,7 @@ body.public-view {
         margin: 0 auto 5px auto !important;
     }
 
-    /* Scoper Top Navigation (Grid instead of slide) */
-    .scoper-nav {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
-        overflow: visible !important;
-        padding-bottom: 10px !important;
-    }
-
-    .scoper-nav-OLD {
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
-        overflow: visible !important;
-        padding-bottom: 10px !important;
-    }
+    /* Tab overrides */
 
     .scoper-nav button {
         white-space: normal !important;
@@ -5884,6 +5872,32 @@ body.public-view {
 }
 
 @media (max-width: 768px) {
+
+    html,
+    body {
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+    }
+
+    .container,
+    .marketplace-feed-container,
+    main {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    .job-card,
+    .feed-item {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
     .mobile-wizard-counter {
         display: block !important;
         text-align: center;
