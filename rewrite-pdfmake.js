@@ -26,6 +26,12 @@ const PDFGenerator = {
         grandTotalValue: { bold: true, fontSize: 14, alignment: 'right', color: '#10b981', margin: [0, 5, 0, 0] }
     },
 
+    _format(val) {
+        if (typeof val !== 'number') return val || '0 €';
+        // Normalize space (U+00A0 and U+202F) for PDF fonts
+        return val.toLocaleString('fr-FR').replace(/\\u00A0|\\u202F/g, ' ') + ' €';
+    },
+
     async _downloadRealPdf(docDefinition, filename) {
         if (typeof pdfMake === 'undefined') {
             console.error("PDFMake non chargé");
@@ -97,8 +103,8 @@ const PDFGenerator = {
             tableBody.push([
                 { text: desc, fontSize: 10, margin: [0, 5, 0, 5] },
                 { text: qty, alignment: 'center', fontSize: 10, margin: [0, 5, 0, 5] },
-                { text: \`\${price.toLocaleString()} €\`, alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] },
-                { text: \`\${total.toLocaleString()} €\`, alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] }
+                { text: this._format(price), alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] },
+                { text: this._format(total), alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] }
             ]);
         });
 
@@ -163,11 +169,11 @@ const PDFGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${(quote.itemsSubtotal || 0).toLocaleString()} €\`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${(quote.margin || 0).toLocaleString()} €\`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${(quote.subtotal || 0).toLocaleString()} €\`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: \`TVA (\${quote.taxRate || 0}%):\`, style: 'totalLabel', border: [false,false,false,false] }, { text: \`\${(quote.tax || 0).toLocaleString()} €\`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: \`\${(quote.total || 0).toLocaleString()} €\`, style: 'grandTotalValue', border: [false,true,false,false] }]
+                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: \`TVA (\${quote.taxRate || 0}%):\`, style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false,true,false,false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -260,8 +266,8 @@ const PDFGenerator = {
                 tableBody.push([
                     { text: desc, fontSize: 10, margin: [0, 5, 0, 5] },
                     { text: qty, alignment: 'center', fontSize: 10, margin: [0, 5, 0, 5] },
-                    { text: \`\${price.toLocaleString()} €\`, alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] },
-                    { text: \`\${total.toLocaleString()} €\`, alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] }
+                    { text: this._format(price), alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] },
+                    { text: this._format(total), alignment: 'right', fontSize: 10, margin: [0, 5, 0, 5] }
                 ]);
             });
         } else {
@@ -269,7 +275,7 @@ const PDFGenerator = {
                 { text: 'Prestations Réalisées conformes au devis', margin: [0, 5, 0, 5], colSpan: 3 },
                 {},
                 {},
-                { text: \`\${(quote.subtotal || 0).toLocaleString()} €\`, alignment: 'right', margin: [0, 5, 0, 5] }
+                { text: this._format(quote.subtotal || 0), alignment: 'right', margin: [0, 5, 0, 5] }
             ]);
         }
 
@@ -331,11 +337,11 @@ const PDFGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: \`\${(quote.itemsSubtotal || 0).toLocaleString()} €\`, style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false, false, false, false] }, { text: \`\${(quote.margin || 0).toLocaleString()} €\`, style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: \`\${(quote.subtotal || 0).toLocaleString()} €\`, style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: \`TVA (\${quote.taxRate || 0}%):\`, style: 'totalLabel', border: [false, false, false, false] }, { text: \`\${(quote.tax || 0).toLocaleString()} €\`, style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false, true, false, false] }, { text: \`\${(quote.total || 0).toLocaleString()} €\`, style: 'grandTotalValue', border: [false, true, false, false] }]
+                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: \`TVA (\${quote.taxRate || 0}%):\`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false, true, false, false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false, true, false, false] }]
                                 ]
                             },
                             layout: 'noBorders'
