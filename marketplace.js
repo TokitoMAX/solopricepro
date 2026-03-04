@@ -42,7 +42,10 @@ const Marketplace = {
                             </div>
                         </div>
                     </div>
-                    
+                </aside>
+
+                <!-- Central Feed -->
+                <main class="marketplace-main-feed">
                     <div class="marketplace-nav glass">
                         <button class="nav-btn ${this.currentTab === 'radar' ? 'active' : ''}" onclick="Marketplace.switchTab('radar')">
                             <i class="fas fa-rss"></i> Fil d'actualité
@@ -58,10 +61,6 @@ const Marketplace = {
                             <span id="invitation-badge" class="notification-badge" style="display: none;"></span>
                         </button>
                     </div>
-                </aside>
-
-                <!-- Central Feed -->
-                <main class="marketplace-main-feed">
                     <div class="post-trigger-box glass" onclick="Marketplace.showPostForm()">
                         <div class="search-placeholder">Diffuser une offre de mission...</div>
                     </div>

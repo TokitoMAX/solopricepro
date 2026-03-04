@@ -1114,7 +1114,7 @@ const Quotes = {
             const isOwner = isLogged && quote.user_id === Auth.user.id;
 
             container.innerHTML = `
-                <div class="public-quote-wrapper">
+                <div class="public-quote-wrapper force-light-mode">
                     ${isLogged ? `
                         <div class="glass-notification" style="background: ${isOwner ? 'rgba(245, 158, 11, 0.1)' : 'rgba(99, 102, 241, 0.1)'}; border: 1px solid ${isOwner ? '#f59e0b' : 'var(--primary)'}; margin-bottom: 2rem; padding: 1rem; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
                             <div style="font-size: 0.9rem;">

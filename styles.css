@@ -1742,7 +1742,7 @@ section {
     color: var(--primary);
 }
 
-.marketplace-nav {
+.marketplace-nav-old {
     display: flex;
     flex-direction: column;
     padding: 8px;
@@ -5779,7 +5779,7 @@ body.public-view {
     .marketplace-sidebar .user-quick-card {
         display: none !important;
     }
-    .marketplace-nav {
+    .marketplace-nav-old {
         display: flex !important;
         flex-direction: row !important;
         overflow-x: auto !important;
@@ -5795,4 +5795,38 @@ body.public-view {
         padding: 10px 15px !important;
         justify-content: center !important;
     }
+}
+
+
+/* --- PUBLIC QUOTE OVERRIDES (FORCE LIGHT MODE) --- */
+.force-light-mode, .force-light-mode * {
+    color-scheme: light !important;
+}
+.public-quote-wrapper {
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+}
+.public-quote-wrapper .glass, .public-quote-wrapper .quote-document {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #1a1a1a !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+.public-quote-wrapper h1, .public-quote-wrapper h2, .public-quote-wrapper h3, .public-quote-wrapper p, .public-quote-wrapper th, .public-quote-wrapper td, .public-quote-wrapper label {
+    color: #1a1a1a !important;
+}
+.public-quote-wrapper th {
+    background-color: #f8fafc !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+.public-quote-wrapper td {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+.public-quote-wrapper .client-info-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+.public-quote-wrapper .total-row td {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
 }
