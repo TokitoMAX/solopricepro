@@ -31,20 +31,26 @@ const PdfGenerator = {
             return;
         }
 
-        if (typeof App !== 'undefined') App.showNotification('Génération du document vectoriel en cours...', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Génération du document vectoriel...', 'info');
+
+        // iOS Safari bloque navigator.share() si l'appel est asynchrone (trop long après le clic).
+        // Solution 1: Lancer le calcul en ASYNC, générer le blob, puis afficher un bouton SYNCHRONE "Ouvrir"
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         pdfMake.createPdf(docDefinition).getBlob((blob) => {
             try {
-                if (navigator.share && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+                if (isIOS && navigator.share) {
+                    // Try direct share first (might be blocked by Safari)
                     const file = new File([blob], filename, { type: 'application/pdf' });
                     navigator.share({
                         title: filename,
                         files: [file]
                     }).catch(err => {
-                        console.log("Share failed, falling back to download", err);
+                        console.log("Share failed (Sync block Safari), falling back to native link", err);
                         this._fallbackDownload(blob, filename);
                     });
                 } else {
+                    // PC / Android -> Classic download
                     this._fallbackDownload(blob, filename);
                 }
             } catch (e) {
@@ -54,18 +60,21 @@ const PdfGenerator = {
         });
     },
 
-    _fallbackDownload(blob, filename) {
+    async _fallbackDownload(blob, filename) {
+        // Fallback ultime : On ouvre le blob dans un nouvel onglet ou on le télécharge
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
         a.download = filename;
+        // On target blank car sur iOS, cliquer un lien programmeutiquement peut telecharger ou ouvrir
+        a.target = '_blank';
         document.body.appendChild(a);
         a.click();
         setTimeout(() => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            if (typeof App !== 'undefined') App.showNotification('Document téléchargé avec succès', 'success');
+            if (typeof App !== 'undefined') App.showNotification('Document iOS généré avec succès', 'success');
         }, 100);
     },
 

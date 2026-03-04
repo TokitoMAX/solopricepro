@@ -5872,6 +5872,14 @@ body.public-view {
 }
 
 @media (max-width: 768px) {
+    .marketplace-feed-container {
+        grid-template-columns: 1fr !important;
+        padding: 10px !important;
+    }
+
+    .marketplace-sidebar {
+        display: none !important;
+    }
 
     html,
     body {
