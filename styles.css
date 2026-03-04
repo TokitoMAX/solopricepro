@@ -5866,63 +5866,48 @@ body.public-view {
     color: #0f172a !important;
 }
 
-/* UX 6.0 Overrides */
+/* UX Native Ovrrd */
+.mobile-wizard-counter {
+    display: none;
+}
+
+.marketplace-nav-mobile {
+    display: none;
+}
+
 @media (max-width: 768px) {
-    .wizard-steps {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 15px !important;
-        justify-content: center !important;
+    .mobile-wizard-counter {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: 800;
+        color: var(--primary);
+        font-size: 1.1rem;
+        padding: 10px;
+        background: var(--dark-light);
+        border-radius: 12px;
+        border: 1px solid var(--border);
     }
 
-    .wizard-steps::before {
+    .wizard-steps {
         display: none !important;
     }
 
-    .wizard-steps .wizard-step-item {
-        width: auto !important;
-        min-width: 90px !important;
-        margin-bottom: 5px !important;
-    }
-
     .marketplace-nav {
-        display: flex !important;
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding: 5px !important;
-        gap: 10px !important;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        display: none !important;
     }
 
-    .marketplace-nav::-webkit-scrollbar {
-        display: none;
-    }
-
-    .marketplace-nav .nav-btn {
-        flex: 0 0 auto !important;
-        padding: 10px 15px !important;
+    .marketplace-nav-mobile {
+        display: block !important;
+        width: 100% !important;
+        padding: 12px !important;
+        font-size: 1rem !important;
+        border-radius: 12px !important;
         background: var(--dark-light) !important;
-        border-radius: 30px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    .marketplace-nav .nav-btn.active {
-        background: var(--primary) !important;
-        color: white !important;
-    }
-
-    .marketplace-nav .nav-btn i {
-        font-size: 1.1rem !important;
-        margin-bottom: 0 !important;
-        margin-right: 8px !important;
-    }
-
-    .marketplace-nav .nav-btn span,
-    .marketplace-nav .nav-btn {
-        font-size: 0.85rem !important;
+        color: var(--text) !important;
+        border: 1px solid var(--primary) !important;
+        margin-bottom: 1rem !important;
+        -webkit-appearance: none;
+        appearance: none;
     }
 }

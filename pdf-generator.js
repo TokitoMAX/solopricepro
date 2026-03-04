@@ -1,499 +1,281 @@
 // SoloPrice Pro - PDF Generator
 
 const PDFGenerator = {
-    generateInvoice(invoice, client, user) {
+    generateInvoice(invoice, client, user, isPreview = false) {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            App.showNotification('Librairie PDF manquante (jsPDF).', 'error');
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        
         const settings = Storage.get(Storage.KEYS.SETTINGS);
         const date = new Date(invoice.createdAt).toLocaleDateString('fr-FR');
-        const dueDate = invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('fr-FR') : '-';
-
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Facture ${invoice.number}</title>
-                <link rel="preconnect" href="https://fonts.googleapis.com">
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-                <style>
-                    :root { color-scheme: light only !important; --primary: #10b981; --primary-dark: #059669; --text: #000000; --text-light: #4b5563; --border: #e5e7eb; --bg-light: #f9fafb; }
-                    * { box-sizing: border-box; }
-                    html, body { min-width: 850px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-                    body { font-family: 'Inter', system-ui, sans-serif; color: #111827 !important; line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #ffffff !important; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
-                    @media (prefers-color-scheme: dark) {
-                        body { background: #ffffff !important; color: #111827 !important; }
-                        * { color: #111827 !important; border-color: #e5e7eb !important; }
-                        .text-light, .meta-label, td::before, .item-subdesc { color: #4b5563 !important; }
-                        th, .legal-section, tr:nth-child(even) { background: #f9fafb !important; }
-                        .status-stamp { color: rgba(16, 185, 129, 0.2) !important; border-color: rgba(16, 185, 129, 0.2) !important; }
-                        .company-logo-type, .invoice-title { color: #10b981 !important; }
-                    }
-                    .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 60px; border-bottom: 1px solid var(--border); padding-bottom: 30px; }
-                    .header-logo { max-height: 80px; max-width: 250px; object-fit: contain; }
-                    .company-logo-type { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
-                    .company-details { font-size: 13px; color: var(--text-light); margin-top: 10px; }
-                    .invoice-meta { text-align: right; }
-                    .invoice-title { font-size: 24px; font-weight: 800; color: var(--primary); margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 2px; }
-                    .meta-grid { display: grid; grid-template-columns: auto auto; gap: 5px 20px; font-size: 13px; color: var(--text-light); }
-                    .meta-label { font-weight: 600; color: var(--text); }
-                    
-                    .info-section { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 50px; }
-                    .address-box h3 { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-                    .address-box p { font-size: 14px; margin: 0; }
-                    .address-box strong { font-size: 15px; color: var(--text); display: block; margin-bottom: 4px; }
-                    
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-                    th { background: var(--bg-light); padding: 12px 15px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
-                    td { padding: 15px 15px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: top; }
-                    .item-desc { font-weight: 600; color: var(--text); margin-bottom: 4px; }
-                    .item-subdesc { font-size: 12px; color: var(--text-light); }
-                    
-                    .totals-container { display: flex; justify-content: flex-end; }
-                    .totals-table { width: 280px; }
-                    .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
-                    .total-row.grand { border-top: 2px solid var(--primary); margin-top: 10px; padding-top: 12px; font-size: 18px; font-weight: 800; color: var(--primary); }
-                    
-                    .status-stamp {
-                        position: absolute; top: 120px; left: 50%; transform: translateX(-50%) rotate(-12deg);
-                        font-size: 48px; font-weight: 900; color: rgba(16, 185, 129, 0.2); border: 8px solid rgba(16, 185, 129, 0.2);
-                        padding: 10px 30px; border-radius: 12px; pointer-events: none;
-                    }
-                    
-                    .legal-section { margin-top: 60px; padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light); }
-                    .legal-section h4 { font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px; }
-                    
-                    .trust-badge {
-                        position: absolute; top: 20px; right: 20px;
-                        background: var(--primary); color: white;
-                        padding: 6px 12px; border-radius: 6px;
-                        font-size: 9px; font-weight: 800;
-                        text-transform: uppercase; letter-spacing: 0.5px;
-                        display: flex; align-items: center; gap: 6px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    }
-
-                    .footer { margin-top: 40px; text-align: center; font-size: 10px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 20px; }
-                    
-                    .watermark {
-                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                        background-image: url("data:image/svg+xml,%3Csvg width='500' height='500' viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='35' font-weight='900' fill='rgba(0,0,0,0.03)' font-family='Arial' text-anchor='middle' transform='rotate(-35 250 250)'%3ESPÉCIMEN - SOLOPRICE PRO%3C/text%3E%3C/svg%3E");
-                        pointer-events: none; z-index: -1;
-                    }
-
-                    @media print {
-                        body { padding: 0; }
-                        .no-print { display: none; }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="trust-badge">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                    Document Sécurisé via SoloPrice Pro
-                </div>
-                ${!Storage.isPro() ? '<div class="watermark"></div>' : ''}
-                ${invoice.status === 'paid' ? '<div class="status-stamp">PAYÉE</div>' : ''}
-                
-                <div class="header">
-                    <div class="company-brand">
-                        ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo" width="250" style="max-height: 80px; width: auto; height: auto; object-fit: contain;">` : `<div class="company-logo-type">${user.company.name || 'SoloPrice Pro User'}</div>`}
-                        <div class="company-details">
-                            ${user.company.address || ''}<br>
-                            ${user.company.email || ''} | ${user.company.phone || ''}
-                        </div>
-                    </div>
-                    <div class="invoice-meta">
-                        <h1 class="invoice-title">Facture</h1>
-                        <div class="meta-grid">
-                            <span class="meta-label">Référence</span> <span>${invoice.number}</span>
-                            <span class="meta-label">Date</span> <span>${date}</span>
-                            <span class="meta-label">Échéance</span> <span>${dueDate}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-section">
-                    <div class="address-box">
-                        <h3>Émetteur</h3>
-                        <p>
-                            <strong>${user.company.name}</strong>
-                            ${user.company.siret ? `SIRET : ${user.company.siret}` : ''}
-                        </p>
-                    </div>
-                    <div class="address-box">
-                        <h3>Destinataire</h3>
-                        <p>
-                            <strong>${client.name}</strong>
-                            ${client.address || ''}<br>
-                            ${client.zipCode || ''} ${client.city || ''}<br>
-                            ${client.email || ''}
-                        </p>
-                    </div>
-                </div>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="min-width: 300px;">Prestation</th>
-                            <th style="text-align: right;">Quantité</th>
-                            <th style="text-align: right;">Prix Unitaire</th>
-                            <th style="text-align: right;">Total HT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${invoice.items.map(item => `
-                        <tr>
-                            <td>
-                                <div class="item-desc">${item.description}</div>
-                            </td>
-                            <td style="text-align: right;">${item.quantity}</td>
-                            <td style="text-align: right;">${App.formatCurrency(item.unitPrice)}</td>
-                            <td style="text-align: right; font-weight: 600;">${App.formatCurrency(item.quantity * item.unitPrice)}</td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-
-                <div class="totals-container">
-                    <div class="totals-table">
-                        <div class="total-row">
-                            <span class="text-light">Prestations HT</span>
-                            <span style="font-weight: 600;">${App.formatCurrency(invoice.itemsSubtotal || invoice.subtotal)}</span>
-                        </div>
-                        <div class="total-row" style="color: var(--primary);">
-                            <span class="text-light">Frais de Service (15%)</span>
-                            <span style="font-weight: 600;">${App.formatCurrency(invoice.margin || 0)}</span>
-                        </div>
-                        <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px;">
-                            <span class="text-light">Total Hors Taxes</span>
-                            <span style="font-weight: 600;">${App.formatCurrency(invoice.subtotal)}</span>
-                        </div>
-                        <div class="total-row">
-                            <span class="text-light">${invoice.taxContext?.taxName || 'TVA'} (${(invoice.taxContext?.vat !== undefined) ? invoice.taxContext.vat : settings.taxRate}%)</span>
-                            <span style="font-weight: 600;">${App.formatCurrency(invoice.tax)}</span>
-                        </div>
-                        <div class="total-row grand">
-                            <span>TOTAL TTC</span>
-                            <span>${App.formatCurrency(invoice.total)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="legal-section">
-                    <h4>Instructions de Règlement (Paiement Direct)</h4>
-                    <p style="margin-bottom: 15px; color: var(--text-light);">Ce document contient deux instructions de règlement distinctes pour garantir l'indépendance des prestataires.</p>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">PART PRESTATAIRE : ${App.formatCurrency((invoice.itemsSubtotal || 0) * (1 + (invoice.tax / (invoice.subtotal || 1))))}</strong>
-                            <p style="font-size: 11px; margin: 0;">
-                                À régler à : <strong>${user.company.name}</strong><br>
-                                Règlement par carte bancaire ou PayPal via votre espace client sécurisé.
-                            </p>
-                        </div>
-                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
-                            <strong style="color: var(--primary); display: block; margin-bottom: 5px;">FRAIS PLATEFORME : ${App.formatCurrency((invoice.margin || 0) * (1 + (invoice.tax / (invoice.subtotal || 1))))}</strong>
-                            <p style="font-size: 11px; margin: 0;">
-                                À régler à : <strong>SoloPrice Pro</strong><br>
-                                Règlement via votre espace client sécurisé / Mode de paiement enregistré.
-                            </p>
-                        </div>
-                    </div>
-
-                    <p style="margin-top: 20px;">
-                        <strong>Échéance :</strong> ${dueDate}<br>
-                        ${invoice.tax === 0 ? `<strong>${invoice.taxContext?.taxName || 'TVA'} non applicable, art. 293 B du CGI</strong><br>` : ''}
-                        <em>Pénalités de retard : 3 fois le taux d'intérêt légal + 40 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'} d'indemnité forfaitaire (Art. L441-6).</em>
-                    </p>
-                    ${user.company.footer_mentions ? `<div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">${user.company.footer_mentions}</div>` : ''}
-                </div>
-
-                <div class="footer">
-                    ${(Storage.getTier() === 'expert') ? '' : 'Document généré par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr'}
-                </div>
-
-            </body>
-            </html>
-        `;
-
-        if (isPreview) {
-            this._downloadRealPdf(htmlContent, `Facture_Aperçu_${invoice.number}.pdf`);
-        } else {
-            this._downloadRealPdf(htmlContent, `Facture_${invoice.number}.pdf`);
-        }
-    },
-
-    generateQuote(quote, client, user, isPreview = false) {
-        const settings = Storage.get(Storage.KEYS.SETTINGS);
-        const date = new Date(quote.createdAt).toLocaleDateString('fr-FR');
-
-        // Normalization of provider info
+        const dueDate = new Date(invoice.dueDate).toLocaleDateString('fr-FR');
+        
         const providerName = user?.company?.name || user?.user_metadata?.company_name || 'Votre Entreprise';
         const providerAddress = user?.company?.address || user?.user_metadata?.address || '';
         const providerEmail = user?.company?.email || user?.email || '';
         const providerPhone = user?.company?.phone || '';
         const providerSiret = user?.company?.siret || '';
 
-        // Dynamic validity
+        // Styles
+        doc.setFont("helvetica");
+        
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(17, 24, 39);
+        doc.text(isPreview ? 'FACTURE (APERÇU)' : 'FACTURE', 14, 25);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Référence: ${invoice.number} | Émission: ${date} | Échéance: ${dueDate}`, 14, 32);
+
+        // Boxes
+        doc.setFillColor(249, 250, 251);
+        doc.rect(14, 40, 85, 45, 'F');
+        doc.rect(110, 40, 85, 45, 'F');
+        
+        doc.setFontSize(11);
+        doc.setTextColor(17, 24, 39);
+        doc.setFont(undefined, 'bold');
+        doc.text('PRESTATAIRE', 18, 48);
+        doc.text('CLIENT', 114, 48);
+        
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+        const splitProvider = doc.splitTextToSize(`${providerName}\n${providerAddress}\n${providerEmail}\n${providerPhone}\n${providerSiret ? 'SIRET: '+providerSiret : ''}`, 80);
+        doc.text(splitProvider, 18, 55);
+        
+        const splitClient = doc.splitTextToSize(`${client?.name || 'Client Inconnu'}\n${client?.company || ''}\n${client?.address || ''}\n${client?.email || ''}\n${client?.vat_number ? 'TVA: '+client.vat_number : ''}`, 80);
+        doc.text(splitClient, 114, 55);
+
+        // Table
+        const tableData = invoice.items.map(item => [
+            { content: item.desc + (item.subdesc ? ' - ' + item.subdesc : ''), styles: { fontStyle: 'bold' } },
+            item.quantity,
+            `${item.price} €`,
+            `${item.total} €`
+        ]);
+
+        let finalY = 95;
+        
+        if (doc.autoTable) {
+            doc.autoTable({
+                startY: 95,
+                head: [['Désignation des prestations', 'Quantité', 'Prix Unitaire', 'Total HT']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: [248, 250, 252], textColor: [17, 24, 39], fontStyle: 'bold' },
+                styles: { font: "helvetica", fontSize: 10, cellPadding: 5 },
+                columnStyles: {
+                    0: { cellWidth: 90 },
+                    1: { halign: 'center' },
+                    2: { halign: 'right' },
+                    3: { halign: 'right' }
+                }
+            });
+            finalY = doc.lastAutoTable.finalY + 15;
+        }
+
+        // Totals Box
+        doc.setFillColor(249, 250, 251);
+        doc.rect(110, finalY, 85, 30, 'F');
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text('Base Hors Taxes:', 114, finalY + 8);
+        doc.text(`${invoice.subtotal} €`, 190, finalY + 8, { align: 'right' });
+        
+        doc.text(`TVA (${invoice.taxContext?.vat !== undefined ? invoice.taxContext.vat : settings.taxRate}%):`, 114, finalY + 16);
+        doc.text(`${invoice.tax} €`, 190, finalY + 16, { align: 'right' });
+        
+        doc.setTextColor(17, 24, 39);
+        doc.setFont(undefined, 'bold');
+        doc.text('TOTAL TTC:', 114, finalY + 26);
+        doc.setFontSize(14);
+        doc.text(`${invoice.total} €`, 190, finalY + 26, { align: 'right' });
+
+        finalY += 40;
+
+        // Legal 
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(107, 114, 128);
+        
+        if (invoice.tax === 0) {
+            doc.text(`${invoice.taxContext?.taxName || 'TVA'} non applicable, art. 293 B du CGI`, 14, finalY);
+        }
+        
+        doc.text(`Pénalités de retard : 3 fois le taux d'intérêt légal + 40 € d'indemnité forfaitaire (Art. L441-6).`, 14, finalY + 6);
+        
+        if (user.company?.footer_mentions) {
+             const footerSplit = doc.splitTextToSize(user.company.footer_mentions, 180);
+             doc.text(footerSplit, 14, finalY + 15);
+        }
+
+        // Send to share blob
+        this._downloadVectorPdf(doc, `Facture${isPreview ? '_Aperçu' : ''}_${invoice.number}.pdf`);
+    },
+
+
+    generateQuote(quote, client, user, isPreview = false) {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            App.showNotification('Librairie PDF manquante (jsPDF).', 'error');
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        
+        const settings = Storage.get(Storage.KEYS.SETTINGS);
+        const date = new Date(quote.createdAt).toLocaleDateString('fr-FR');
+        
+        const providerName = user?.company?.name || user?.user_metadata?.company_name || 'Votre Entreprise';
+        const providerAddress = user?.company?.address || user?.user_metadata?.address || '';
+        const providerEmail = user?.company?.email || user?.email || '';
+        const providerPhone = user?.company?.phone || '';
+        const providerSiret = user?.company?.siret || '';
         const validityDays = settings.quoteValidityDays || 30;
         const validUntil = new Date(new Date(quote.createdAt).getTime() + validityDays * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR');
 
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>${isPreview ? 'APERÇU - ' : ''}Devis ${quote.number}</title>
-                <link rel="preconnect" href="https://fonts.googleapis.com">
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-                <style>
-                    :root { color-scheme: light only !important; --primary: #10b981; --primary-dark: #059669; --text: #111827; --text-light: #6b7280; --border: #e5e7eb; --bg-light: #f9fafb; }
-                    * { box-sizing: border-box; }
-                    html, body { min-width: 850px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-                    body { font-family: 'Inter', system-ui, sans-serif; color: #111827 !important; line-height: 1.5; max-width: 850px; margin: 0 auto; padding: 50px; background: #ffffff !important; position: relative; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
-                    @media (prefers-color-scheme: dark) {
-                        body { background: #ffffff !important; color: #111827 !important; }
-                        * { color: #111827 !important; border-color: #e5e7eb !important; }
-                        .text-light, .meta-label, td::before, .item-subdesc { color: #6b7280 !important; }
-                        th, .legal-section, tr:nth-child(even) { background: #f9fafb !important; }
-                        .company-logo-type, .invoice-title { color: #10b981 !important; }
-                        .trust-badge, .signature-box, .preview-badge { background: #10b981 !important; color: white !important; }
-                    }
-                    
-                    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; border-bottom: 2px solid var(--primary); padding-bottom: 30px; }
-                    .header-logo { max-height: 80px; max-width: 250px; object-fit: contain; }
-                    .company-logo-type { font-size: 28px; font-weight: 800; color: var(--primary); letter-spacing: -0.03em; margin-bottom: 5px; }
-                    .company-details { font-size: 13px; color: var(--text-light); }
-                    
-                    .invoice-meta { text-align: right; }
-                    .invoice-title { font-size: 32px; font-weight: 800; color: var(--primary); margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px; }
-                    .meta-grid { display: grid; grid-template-columns: auto auto; gap: 8px 30px; font-size: 14px; color: var(--text-light); }
-                    .meta-label { font-weight: 600; color: var(--text); }
-                    
-                    .info-section { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-bottom: 60px; }
-                    .address-box h3 { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-                    .address-box p { font-size: 14px; margin: 0; white-space: pre-line; }
-                    .address-box strong { font-size: 16px; color: var(--text); display: block; margin-bottom: 6px; font-weight: 700; }
-                    
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 50px; }
-                    th { background: var(--bg-light); padding: 15px 20px; text-align: left; font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); }
-                    td { padding: 20px 20px; border-bottom: 1px solid var(--border); font-size: 15px; vertical-align: top; }
-                    .item-desc { font-weight: 600; color: var(--text); margin-bottom: 5px; font-size: 16px; }
-                    
-                    .totals-container { display: flex; justify-content: flex-end; margin-bottom: 60px; }
-                    .totals-table { width: 320px; background: var(--bg-light); padding: 25px; border-radius: 12px; }
-                    .total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 15px; }
-                    .total-row.grand { border-top: 2px solid var(--primary); margin-top: 15px; padding-top: 15px; font-size: 20px; font-weight: 800; color: var(--primary); }
-                    
-                    .signature-area { display: grid; grid-template-columns: 1.5fr 1fr; gap: 50px; margin-top: 40px; page-break-inside: avoid; align-items: stretch; }
-                    .legal-section { padding: 25px; background: var(--bg-light); border-radius: 12px; font-size: 12px; color: var(--text-light); }
-                    .signature-box { border: 2px dashed var(--border); border-radius: 12px; padding: 25px; position: relative; min-height: 200px; background: transparent; transition: all 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
-                    
-                    .footer { font-size: 11px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 30px; text-align: center; margin-top: 60px; line-height: 1.6; }
+        // Styles
+        doc.setFont("helvetica");
+        
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(17, 24, 39);
+        doc.text(isPreview ? 'DEVIS (APERÇU)' : 'DEVIS', 14, 25);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Référence: ${quote.number} | Date: ${date} | Échéance: ${validUntil}`, 14, 32);
 
-                    /* Preview Specific Premium Styles */
-                    /* Watermark & Teaser Styles */
-                    .watermark {
-                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                        background-image: url("data:image/svg+xml,%3Csvg width='500' height='500' viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='35' font-weight='900' fill='rgba(0,0,0,0.03)' font-family='Arial' text-anchor='middle' transform='rotate(-35 250 250)'%3ESPÉCIMEN - SOLOPRICE PRO%3C/text%3E%3C/svg%3E");
-                        pointer-events: none; z-index: -1;
-                    }
-                    .preview-watermark {
-                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                        background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='30' font-weight='900' fill='rgba(0,0,0,0.03)' font-family='Arial' text-anchor='middle' transform='rotate(-35 200 200)'%3EAPERÇU GRATUIT%3C/text%3E%3C/svg%3E");
-                        pointer-events: none; z-index: -1;
-                    }
-                    .preview-bar {
-                        position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px;
-                        background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-                        color: white; padding: 12px 25px; border-radius: 99px;
-                        display: flex; justify-content: space-between; align-items: center;
-                        z-index: 1000; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
-                    }
-                    .preview-info { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; }
-                    .preview-badge { background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-                    .preview-btn {
-                        background: white; color: var(--text); border: none; padding: 10px 22px; border-radius: 99px;
-                        font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                        font-size: 13px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-                    }
-                    .preview-btn:hover { background: var(--primary); color: white; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4); }
+        // Boxes (Provider left, Client right)
+        doc.setFillColor(249, 250, 251);
+        doc.rect(14, 40, 85, 45, 'F');
+        doc.rect(110, 40, 85, 45, 'F');
+        
+        doc.setFontSize(11);
+        doc.setTextColor(17, 24, 39);
+        doc.setFont(undefined, 'bold');
+        doc.text('PRESTATAIRE', 18, 48);
+        doc.text('CLIENT', 114, 48);
+        
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+        const splitProvider = doc.splitTextToSize(`${providerName}\n${providerAddress}\n${providerEmail}\n${providerPhone}\n${providerSiret ? 'SIRET: '+providerSiret : ''}`, 80);
+        doc.text(splitProvider, 18, 55);
+        
+        const splitClient = doc.splitTextToSize(`${client?.name || 'Client Inconnu'}\n${client?.company || ''}\n${client?.address || ''}\n${client?.email || ''}\n${client?.vat_number ? 'TVA: '+client.vat_number : ''}`, 80);
+        doc.text(splitClient, 114, 55);
 
-                    @media print {
-                        body { padding: 0; }
-                        .no-print, .preview-bar, .preview-watermark { display: none; }
-                    }
-                </style>
-            </head>
-            <body style="${isPreview ? 'padding-top: 100px;' : ''}">
-                <div class="trust-badge">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                    Document Sécurisé via SoloPrice Pro
-                </div>
-                ${!Storage.isPro() ? '<div class="watermark"></div>' : ''}
-                ${isPreview ? `
-                    <div class="preview-bar no-print">
-                        <div class="preview-info">
-                            <span class="preview-badge">Aperçu</span>
-                            <span>Export complet réservé aux membres PRO</span>
-                        </div>
-                        <button class="preview-btn" onclick="if(window.opener && window.opener.App) { window.opener.App.showUpgradeModal('pdf_download'); window.close(); } else { alert('Veuillez retourner sur l\\'onglet SoloPrice Pro pour passer PRO.'); }">
-                            Passez PRO pour télécharger
-                        </button>
-                    </div>
-                    <div class="preview-watermark"></div>
-                ` : ''}
+        // Table
+        const tableData = quote.items.map(item => [
+            { content: item.desc + (item.subdesc ? ' - ' + item.subdesc : ''), styles: { fontStyle: 'bold' } },
+            item.quantity,
+            `${item.price} €`,
+            `${item.total} €`
+        ]);
 
-                <div class="header">
-                    <div class="company-brand">
-                        ${(user?.isPro && user.company.logo) ? `<img src="${user.company.logo}" class="header-logo" width="250" style="max-height: 80px; width: auto; height: auto; object-fit: contain;">` : `<div class="company-logo-type">${providerName}</div>`}
-                        <div class="company-details">
-                            ${providerAddress ? `${providerAddress}<br>` : ''}
-                            ${providerEmail} ${providerPhone ? `| ${providerPhone}` : ''}
-                        </div>
-                    </div>
-                    <div class="invoice-meta">
-                        <h1 class="invoice-title">Devis</h1>
-                        <div class="meta-grid">
-                            <span class="meta-label">Référence</span> <span>${quote.number}</span>
-                            <span class="meta-label">Date</span> <span>${date}</span>
-                            <span class="meta-label">Échéance</span> <span>${validUntil}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-section">
-                    <div class="address-box">
-                        <h3>Prestataire</h3>
-                        <p>
-                            <strong>${providerName}</strong>
-                            ${providerSiret ? `SIRET : ${providerSiret}` : ''}
-                        </p>
-                    </div>
-                    <div class="address-box">
-                        <h3>Client</h3>
-                        <p>
-                            <strong>${client.name}</strong>
-                            ${client.address ? `${client.address}<br>` : ''}
-                            ${client.zipCode || ''} ${client.city || ''}<br>
-                            ${client.email || ''}
-                        </p>
-                    </div>
-                </div>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="min-width: 300px;">Désignation des prestations</th>
-                            <th style="text-align: right;">Quantité</th>
-                            <th style="text-align: right;">Prix Unitaire</th>
-                            <th style="text-align: right;">Total HT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${quote.items.map(item => `
-                        <tr>
-                            <td>
-                                <div class="item-desc">${item.description}</div>
-                            </td>
-                            <td style="text-align: right;">${item.quantity}</td>
-                            <td style="text-align: right;">${App.formatCurrency(item.unitPrice)}</td>
-                            <td style="text-align: right; font-weight: 700;">${App.formatCurrency(item.quantity * item.unitPrice)}</td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-
-                <div class="totals-container">
-                    <div class="totals-table">
-                        <div class="total-row">
-                            <span style="color: var(--text-light);">Prestations HT</span>
-                            <span style="font-weight: 600;">${App.formatCurrency(quote.itemsSubtotal || quote.subtotal)}</span>
-                        </div>
-                        <div class="total-row" style="color: var(--primary-dark);">
-                            <span style="color: var(--text-light);">Service & Gestion</span>
-                            <span style="font-weight: 600;">${App.formatCurrency(quote.margin || 0)}</span>
-                        </div>
-                        <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 5px; padding-top: 5px;">
-                            <span style="font-weight: 600;">Base Hors Taxes</span>
-                            <span style="font-weight: 600;">${App.formatCurrency(quote.subtotal)}</span>
-                        </div>
-                        <div class="total-row">
-                            <span style="color: var(--text-light);">${quote.taxContext?.taxName || 'TVA'} (${(quote.taxContext?.vat !== undefined) ? quote.taxContext.vat : settings.taxRate}%)</span>
-                            <span style="font-weight: 600;">${App.formatCurrency(quote.tax)}</span>
-                        </div>
-                        <div class="total-row grand">
-                            <span>TOTAL TTC</span>
-                            <span>${App.formatCurrency(quote.total)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="signature-area">
-                    <div class="legal-section">
-                        <h4 style="font-size: 13px; color: var(--text); margin-top: 0; margin-bottom: 10px;">Instructions de Règlement (Paiement Direct)</h4>
-                        <p style="margin-bottom: 15px; color: var(--text-light); font-size: 11px;">Ce document comporte deux instructions de règlement distinctes : l'une pour le prestataire et l'autre pour les frais de service de la plateforme.</p>
-                        <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
-                                <strong style="color: var(--primary); display: block; margin-bottom: 5px;">1. PART PRESTATAIRE (85% HT + Taxe)</strong>
-                                <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 5px;">
-                                    ${App.formatCurrency((quote.itemsSubtotal || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
-                                </span>
-                                <p style="font-size: 11px; margin: 0;">
-                                    Destinataire : <strong>${providerName}</strong><br>
-                                    Règlement sécurisé via le bouton de validation.
-                                </p>
-                            </div>
-                            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
-                                <strong style="color: var(--primary); display: block; margin-bottom: 5px;">2. PROTECTION SOLOPRICE (Obligatoire)</strong>
-                                <span style="font-size: 16px; font-weight: 800; color: var(--text); display: block; margin-bottom: 5px;">
-                                    ${App.formatCurrency((quote.margin || 0) * (1 + (quote.tax / (quote.subtotal || 1))))}
-                                </span>
-                                <p style="font-size: 11px; margin: 0;">
-                                    Destinataire : <strong>SoloPrice Pro</strong><br>
-                                    Active la garantie de protection des fonds.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 20px; font-size: 11px;">
-                            <p style="margin-bottom: 5px;">Ce devis est valable jusqu'au ${validUntil}.</p>
-                            <p style="color: var(--primary); font-weight: 600; margin-top: 10px;"><i class="fas fa-shield-alt"></i> La Protection SoloPrice est une clause contractuelle obligatoire pour la validation juridique de cette mission.</p>
-                            ${quote.tax === 0 ? '<p style="font-weight: 700; color: var(--text); margin-top: 5px;">TVA non applicable, art. 293 B du CGI</p>' : ''}
-                            ${user.company?.footer_mentions ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">${user.company.footer_mentions}</div>` : ''}
-                        </div>
-                    </div>
-
-                    <div class="signature-box">
-                        <span class="signature-label" style="font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1.5px; display: block; text-align: center;">Bon pour accord</span>
-                        ${quote.signature ? `
-                            <div style="flex-grow: 1; position: relative; display: flex; align-items: center; justify-content: center; min-height: 100px;">
-                                <img src="${quote.signature}" style="max-width: 100%; max-height: 120px; object-fit: contain; mix-blend-mode: multiply;" />
-                            </div>
-                            <div class="signature-mention" style="font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; margin-top: 15px;">Signé le ${quote.accepted_at ? new Date(quote.accepted_at).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR')}</div>
-                        ` : `
-                            <div style="flex-grow: 1; min-height: 100px;"></div>
-                            <div class="signature-mention" style="font-size: 11px; color: var(--text-light); text-align: center; font-style: italic; margin-top: 15px;">Date, signature et cachet</div>
-                        `}
-                    </div>
-                </div>
-
-                <div class="footer">
-                    ${(Storage.getTier() === 'expert') ? '' : 'Devis généré professionnellement par <strong>SoloPrice Pro</strong> &bull; www.soloprice-pro.fr'}
-                </div>
-
-            </body>
-            </html>
-        `;
-
-        if (isPreview) {
-            this._downloadRealPdf(htmlContent, `Devis_Aperçu_${quote.number}.pdf`);
-        } else {
-            this._downloadRealPdf(htmlContent, `Devis_${quote.number}.pdf`);
+        let finalY = 95;
+        
+        if (doc.autoTable) {
+            doc.autoTable({
+                startY: 95,
+                head: [['Désignation des prestations', 'Quantité', 'Prix Unitaire', 'Total HT']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: [248, 250, 252], textColor: [17, 24, 39], fontStyle: 'bold' },
+                styles: { font: "helvetica", fontSize: 10, cellPadding: 5 },
+                columnStyles: {
+                    0: { cellWidth: 90 },
+                    1: { halign: 'center' },
+                    2: { halign: 'right' },
+                    3: { halign: 'right' }
+                }
+            });
+            finalY = doc.lastAutoTable.finalY + 15;
         }
+
+        // Totals Box
+        doc.setFillColor(249, 250, 251);
+        doc.rect(110, finalY, 85, 40, 'F');
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text('Prestations HT:', 114, finalY + 8);
+        doc.text(`${quote.subtotal} €`, 190, finalY + 8, { align: 'right' });
+        
+        doc.setTextColor(16, 185, 129);
+        doc.text('Service & Gestion:', 114, finalY + 16);
+        doc.text(`${quote.margin} €`, 190, finalY + 16, { align: 'right' });
+        
+        doc.setTextColor(17, 24, 39);
+        doc.setFont(undefined, 'bold');
+        doc.text('TOTAL TTC:', 114, finalY + 28);
+        doc.setFontSize(14);
+        doc.text(`${quote.total} €`, 190, finalY + 28, { align: 'right' });
+
+        finalY += 50;
+
+        // Legal & Protections
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(17, 24, 39);
+        doc.text('Instructions de Règlement (Paiement Direct)', 14, finalY);
+        
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(107, 114, 128);
+        doc.text('Ce document comporte deux instructions de règlement distinctes pour le prestataire et les frais de service.', 14, finalY + 6);
+        
+        finalY += 15;
+        
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(229, 231, 235);
+        doc.rect(14, finalY, 85, 25);
+        
+        doc.setTextColor(16, 185, 129);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text(`1. PART PRESTATAIRE (${settings.developerSplit}% HT)`, 18, finalY + 7);
+        doc.setFontSize(9);
+        doc.setTextColor(17, 24, 39);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Destinataire : ${providerName}`, 18, finalY + 14);
+        doc.text('Règlement sur l\'espace client.', 18, finalY + 20);
+
+        doc.rect(110, finalY, 85, 25);
+        doc.setTextColor(16, 185, 129);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('2. PROTECTION SOLOPRICE', 114, finalY + 7);
+        doc.setFontSize(9);
+        doc.setTextColor(17, 24, 39);
+        doc.setFont(undefined, 'normal');
+        doc.text('Destinataire : SoloPrice Pro', 114, finalY + 14);
+        doc.text('Active la garantie de protection.', 114, finalY + 20);
+
+        finalY += 35;
+        
+        doc.setFontSize(9);
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Ce devis est valable jusqu'au ${validUntil}.`, 14, finalY);
+        doc.setTextColor(16, 185, 129);
+        doc.text('La Protection SoloPrice est une clause contractuelle obligatoire pour la validation.', 14, finalY + 6);
+        
+        doc.setTextColor(17, 24, 39);
+        doc.setFont(undefined, 'bold');
+        if (quote.tax === 0) {
+            doc.text('TVA non applicable, art. 293 B du CGI', 14, finalY + 12);
+        }
+        
+        doc.text('BON POUR ACCORD', 140, finalY + 25);
+
+        // Send to share blob
+        this._downloadVectorPdf(doc, `Devis${isPreview ? '_Aperçu' : ''}_${quote.number}.pdf`);
     },
+
 
     generateReceiptsLedger(invoices, user) {
         const year = new Date().getFullYear();
@@ -859,6 +641,35 @@ const PDFGenerator = {
                 document.body.removeChild(iframe);
             }
         }, 1500);
+    },
+
+    
+    async _downloadVectorPdf(doc, filename) {
+        App.showNotification('Génération du document PDF en cours...', 'info');
+        try {
+            const pdfBlob = doc.output('blob');
+            const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: filename,
+                        text: 'Voici votre document SoloPrice Pro'
+                    });
+                    App.showNotification('Partage du document ouvert.', 'success');
+                } catch (shareError) {
+                    if (shareError.name !== 'AbortError') {
+                        this._fallbackDownload(pdfBlob, filename);
+                    }
+                }
+            } else {
+                // Desktop / Non-supported browsers Fallback
+                this._fallbackDownload(pdfBlob, filename);
+            }
+        } catch (error) {
+            console.error('PDF Generation Error:', error);
+            App.showNotification('Erreur lors de la génération du PDF.', 'error');
+        }
     },
 
     _fallbackDownload(blob, filename) {

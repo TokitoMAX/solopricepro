@@ -84,6 +84,9 @@ const Scoper = {
         content.innerHTML = `
             <div class="strategy-wizard" style="max-width: 900px; margin: 0 auto;">
                 <!-- Wizard Header / Steps -->
+                <div class="mobile-wizard-counter">
+                    Étape ${currentStep} / 5 : ${['PROFIL', 'REVENU', 'RYTHME', 'CHARGES', 'VERDICT'][currentStep - 1]}
+                </div>
                 <div class="wizard-steps" style="margin-bottom: 3rem; position: relative;">
                     <div style="position: absolute; top: 20px; left: 0; width: 100%; height: 2px; background: var(--border); z-index: 1;"></div>
                     <div style="position: absolute; top: 20px; left: 0; width: ${(currentStep - 1) * 25}%; height: 2px; background: var(--primary); z-index: 2; transition: width 0.3s ease;"></div>

@@ -61,6 +61,12 @@ const Marketplace = {
                             <span id="invitation-badge" class="notification-badge" style="display: none;"></span>
                         </button>
                     </div>
+                    <select class="marketplace-nav-mobile glass" onchange="Marketplace.switchTab(this.value)">
+                        <option value="radar" ${this.currentTab === 'radar' ? 'selected' : ''}>Fil d'actualité</option>
+                        <option value="mymissions" ${this.currentTab === 'mymissions' ? 'selected' : ''}>Mes Recrutements</option>
+                        <option value="inbox" ${this.currentTab === 'inbox' ? 'selected' : ''}>Inbox Candidatures</option>
+                        <option value="mycandidatures" ${this.currentTab === 'mycandidatures' ? 'selected' : ''}>Mes Candidatures</option>
+                    </select>
                     <div class="post-trigger-box glass" onclick="Marketplace.showPostForm()">
                         <div class="search-placeholder">Diffuser une offre de mission...</div>
                     </div>
