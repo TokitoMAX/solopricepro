@@ -82,7 +82,7 @@ const Scoper = {
         const currentStep = this.currentObjectiveStep || 1;
 
         content.innerHTML = `
-            <div class="strategy-wizard" style="max-width: 900px; margin: 0 auto;">
+            <div class="strategy-wizard" style="max-width: 1100px; margin: 0 auto;">
                 <!-- Wizard Header / Steps -->
                 <div class="mobile-wizard-counter">
                     Étape ${currentStep} / 5 : ${['PROFIL', 'REVENU', 'RYTHME', 'CHARGES', 'VERDICT'][currentStep - 1]}

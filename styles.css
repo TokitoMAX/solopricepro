@@ -388,6 +388,13 @@ section {
     margin-top: 3rem;
 }
 
+@media (min-width: 1200px) {
+    .calculator-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+    }
+}
+
 .calculator-inputs {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -1673,10 +1680,10 @@ section {
 .marketplace-feed-container {
     display: grid;
     grid-template-columns: 280px 1fr;
-    gap: 20px;
-    max-width: 1200px;
+    gap: 24px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 2rem;
 }
 
 .marketplace-sidebar {
@@ -2670,8 +2677,15 @@ section {
 .main-content {
     flex: 1;
     margin-left: 260px;
-    padding: 2rem;
+    padding: 2.5rem;
     min-height: 100vh;
+    background: var(--bg);
+}
+
+@media (min-width: 1600px) {
+    .main-content {
+        padding: 3rem 5rem;
+    }
 }
 
 .page.active {

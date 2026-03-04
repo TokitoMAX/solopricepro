@@ -384,7 +384,7 @@ const PDFGenerator = {
 };
 
 window.PDFGenerator = PDFGenerator;
-\`;
+`;
 
 fs.writeFileSync('d:/quick price/QuickPrice-Pro/pdf-generator.js', pdfmakeCode);
 console.log('Successfully injected PDFMake templates!');

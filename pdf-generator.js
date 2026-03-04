@@ -33,33 +33,24 @@ const PDFGenerator = {
     async _downloadRealPdf(docDefinition, filename) {
         if (typeof pdfMake === 'undefined') {
             console.error("PDFMake non chargé");
-            if (typeof App !== 'undefined') App.showNotification('Erreur système PDF', 'error');
+            if(typeof App !== 'undefined') App.showNotification('Erreur système PDF', 'error');
             return;
         }
 
-        if (typeof App !== 'undefined') App.showNotification('Génération du document vectoriel...', 'info');
-
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if(typeof App !== 'undefined') App.showNotification('Génération du document vectoriel en cours...', 'info');
 
         pdfMake.createPdf(docDefinition).getBlob((blob) => {
             try {
-                if (isIOS) {
-                    // SUR IOS : On ne peut pas appeler navigator.share ou window.open asynchronement après un long calcul.
-                    // On stocke le blob globalement et on demande une action utilisateur MANUELLE.
-                    window._lastPdfBlob = blob;
-                    window._lastPdfFilename = filename;
-
-                    if (typeof App !== 'undefined') {
-                        App.showNotification(
-                            `Prêt ! <button onclick="PDFGenerator._triggerIOSDownload()" style="margin-left:10px; padding:4px 8px; background:white; color:var(--primary); border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Ouvrir / Partager</button>`,
-                            'success',
-                            15000
-                        );
-                    } else {
+                if (navigator.share && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+                    const file = new File([blob], filename, { type: 'application/pdf' });
+                    navigator.share({
+                        title: filename,
+                        files: [file]
+                    }).catch(err => {
+                        console.log("Share failed, falling back to download", err);
                         this._fallbackDownload(blob, filename);
-                    }
+                    });
                 } else {
-                    // PC / Android -> Classic download
                     this._fallbackDownload(blob, filename);
                 }
             } catch (e) {
@@ -69,42 +60,18 @@ const PDFGenerator = {
         });
     },
 
-    _triggerIOSDownload() {
-        if (!window._lastPdfBlob) return;
-        const blob = window._lastPdfBlob;
-        const filename = window._lastPdfFilename;
-
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-        if (isIOS && navigator.share) {
-            const file = new File([blob], filename, { type: 'application/pdf' });
-            navigator.share({
-                title: filename,
-                files: [file]
-            }).catch(err => {
-                console.log("Share failed, falling back to window.open", err);
-                this._fallbackDownload(blob, filename);
-            });
-        } else {
-            this._fallbackDownload(blob, filename);
-        }
-    },
-
-    async _fallbackDownload(blob, filename) {
-        // Fallback ultime : On ouvre le blob dans un nouvel onglet ou on le télécharge
+    _fallbackDownload(blob, filename) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
         a.download = filename;
-        // On target blank car sur iOS, cliquer un lien programmeutiquement peut telecharger ou ouvrir
-        a.target = '_blank';
         document.body.appendChild(a);
         a.click();
         setTimeout(() => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            if (typeof App !== 'undefined') App.showNotification('Document iOS généré avec succès', 'success');
+            if(typeof App !== 'undefined') App.showNotification('Document téléchargé avec succès', 'success');
         }, 100);
     },
 
@@ -113,7 +80,7 @@ const PDFGenerator = {
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 30);
         const validUntil = endDate.toLocaleDateString('fr-FR');
-
+        
         const providerName = Auth.user?.company?.name || Auth.user?.email || 'Prestataire Numérique';
 
         const tableBody = [
@@ -200,11 +167,11 @@ const PDFGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: `TVA (${quote.taxRate || 0}%):`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false, true, false, false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false, true, false, false] }]
+                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: `TVA (${quote.taxRate || 0}%):`, style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false,false,false,false] }],
+                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false,true,false,false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -256,24 +223,22 @@ const PDFGenerator = {
                             width: '50%',
                             stack: [
                                 { text: 'Signature du client', bold: true, alignment: 'center' },
-                                { text: 'Précédé de la mention "Bon pour accord"', fontSize: 8, alignment: 'center', margin: [0, 5, 0, quote.signature ? 10 : 40] },
-                                quote.signature
-                                    ? { image: quote.signature, width: 130, alignment: 'center' }
-                                    : { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1, lineColor: '#d1d5db' }], alignment: 'center' }
+                                { text: 'Précédé de la mention "Bon pour accord"', fontSize: 8, alignment: 'center', margin: [0, 5, 0, 40] },
+                                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1, lineColor: '#d1d5db' }], alignment: 'center' }
                             ]
                         }
                     ]
                 }
             ],
             info: {
-                title: `Devis_${quote.id || 'Brouillon'}`,
+                title: `Devis_${quote.number || quote.id || 'Brouillon'}`,
                 author: providerName,
                 subject: 'Devis de Prestations',
                 keywords: 'devis, soloprice'
             }
         };
 
-        this._downloadRealPdf(docDefinition, `Devis_${quote.id || 'Brouillon'}.pdf`);
+        this._downloadRealPdf(docDefinition, `Devis_${quote.number || quote.id || 'Brouillon'}.pdf`);
     },
 
     async generateInvoice(quote, client, settings) {
@@ -388,7 +353,7 @@ const PDFGenerator = {
                 },
                 {
                     text: 'Pénalités de retard : 3 fois le taux d\'intérêt légal. Indemnité forfaitaire pour frais de recouvrement : 40 €.\n' +
-                        (quote.tax === 0 ? 'TVA non applicable, art. 293 B du CGI.' : ''),
+                          (quote.tax === 0 ? 'TVA non applicable, art. 293 B du CGI.' : ''),
                     style: 'small'
                 }
             ],
@@ -404,15 +369,15 @@ const PDFGenerator = {
     },
 
     async generateRoadmap() {
-        if (typeof App !== 'undefined') App.showNotification('Fonction Roadmap (PDFMake) à configurer via DocDefinition', 'info');
+        if(typeof App !== 'undefined') App.showNotification('Fonction Roadmap (PDFMake) à configurer via DocDefinition', 'info');
     },
 
     async generateRecipeBook(year, data) {
-        if (typeof App !== 'undefined') App.showNotification('Fonction Registre des Recettes (PDFMake) à configurer', 'info');
+         if(typeof App !== 'undefined') App.showNotification('Fonction Registre des Recettes (PDFMake) à configurer', 'info');
     },
 
     async generatePurchaseLedger(year, data) {
-        if (typeof App !== 'undefined') App.showNotification('Fonction Registre des Achats (PDFMake) à configurer', 'info');
+         if(typeof App !== 'undefined') App.showNotification('Fonction Registre des Achats (PDFMake) à configurer', 'info');
     }
 };
 
