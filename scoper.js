@@ -23,7 +23,7 @@ const Scoper = {
             </div>
 
             <div class="tabs-container" style="margin-bottom: 2rem;">
-                <div class="tabs-header scoper-nav" style="border-bottom: 1px solid var(--border);">
+                <div class="tabs-header scoper-nav" style="border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
                     <button class="tab-btn ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')" style="padding: 1rem; background: none; border: none; color: ${tab === 'objective' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'objective' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-bullseye"></i> Mon Objectif TJM
                         <span style="font-size: 0.6rem; background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Offert</span>

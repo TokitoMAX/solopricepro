@@ -27,11 +27,11 @@ const PdfGenerator = {
     async _downloadRealPdf(docDefinition, filename) {
         if (typeof pdfMake === 'undefined') {
             console.error("PDFMake non chargé");
-            if(typeof App !== 'undefined') App.showNotification('Erreur système PDF', 'error');
+            if (typeof App !== 'undefined') App.showNotification('Erreur système PDF', 'error');
             return;
         }
 
-        if(typeof App !== 'undefined') App.showNotification('Génération du document vectoriel en cours...', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Génération du document vectoriel en cours...', 'info');
 
         pdfMake.createPdf(docDefinition).getBlob((blob) => {
             try {
@@ -65,7 +65,7 @@ const PdfGenerator = {
         setTimeout(() => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            if(typeof App !== 'undefined') App.showNotification('Document téléchargé avec succès', 'success');
+            if (typeof App !== 'undefined') App.showNotification('Document téléchargé avec succès', 'success');
         }, 100);
     },
 
@@ -74,7 +74,7 @@ const PdfGenerator = {
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 30);
         const validUntil = endDate.toLocaleDateString('fr-FR');
-        
+
         const providerName = Auth.user?.company?.name || Auth.user?.email || 'Prestataire Numérique';
 
         const tableBody = [
@@ -156,9 +156,9 @@ const PdfGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: `${quote.subtotal} €`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: `${quote.margin} €`, style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: `${quote.total} €`, style: 'grandTotalValue', border: [false,true,false,false] }]
+                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: `${quote.subtotal} €`, style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false, false, false, false] }, { text: `${quote.margin} €`, style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false, true, false, false] }, { text: `${quote.total} €`, style: 'grandTotalValue', border: [false, true, false, false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -210,8 +210,10 @@ const PdfGenerator = {
                             width: '50%',
                             stack: [
                                 { text: 'Signature du client', bold: true, alignment: 'center' },
-                                { text: 'Précédé de la mention "Bon pour accord"', fontSize: 8, alignment: 'center', margin: [0, 5, 0, 40] },
-                                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1, lineColor: '#d1d5db' }], alignment: 'center' }
+                                { text: 'Précédé de la mention "Bon pour accord"', fontSize: 8, alignment: 'center', margin: [0, 5, 0, quote.signature ? 10 : 40] },
+                                quote.signature
+                                    ? { image: quote.signature, width: 130, alignment: 'center' }
+                                    : { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1, lineColor: '#d1d5db' }], alignment: 'center' }
                             ]
                         }
                     ]
@@ -300,7 +302,7 @@ const PdfGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: `${quote.subtotal} €`, style: 'grandTotalValue', border: [false,true,false,false] }]
+                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false, true, false, false] }, { text: `${quote.subtotal} €`, style: 'grandTotalValue', border: [false, true, false, false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -320,15 +322,15 @@ const PdfGenerator = {
     },
 
     async generateRoadmap() {
-        if(typeof App !== 'undefined') App.showNotification('Fonction Roadmap (PDFMake) à configurer via DocDefinition', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Fonction Roadmap (PDFMake) à configurer via DocDefinition', 'info');
     },
 
     async generateRecipeBook(year, data) {
-         if(typeof App !== 'undefined') App.showNotification('Fonction Registre des Recettes (PDFMake) à configurer', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Fonction Registre des Recettes (PDFMake) à configurer', 'info');
     },
 
     async generatePurchaseLedger(year, data) {
-         if(typeof App !== 'undefined') App.showNotification('Fonction Registre des Achats (PDFMake) à configurer', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Fonction Registre des Achats (PDFMake) à configurer', 'info');
     }
 };
 
