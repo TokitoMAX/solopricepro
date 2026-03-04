@@ -188,7 +188,7 @@ function renderCalculatorUI(containerId) {
     const sym = typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€';
 
     container.innerHTML = `
-        <div class="calculator-container" style="grid-template-columns: 1fr; gap: 2rem;">
+        <div class="calculator-container" style="gap: 2rem;">
             <div class="calculator-inputs" style="padding: 1.5rem; background: var(--bg-sidebar);">
                 <div class="input-group">
                     <label class="input-label">
@@ -198,7 +198,7 @@ function renderCalculatorUI(containerId) {
                     <input type="number" id="monthlyRevenue" class="input-field" placeholder="ex: ${(typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 5000}" value="${(typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 5000}">
                 </div>
 
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-grid" style="display: grid; gap: 1rem;">
                     <div class="input-group">
                         <label class="input-label"><span class="label-text">Jours travaillés / mois</span></label>
                         <input type="number" id="workingDays" class="input-field" value="20">
@@ -227,7 +227,7 @@ function renderCalculatorUI(containerId) {
             </div>
 
             <div class="results-panel" id="resultsPanel" style="padding: 1.5rem;">
-                <div class="result-cards" style="grid-template-columns: 1fr 1fr; display: grid; gap: 1rem;">
+                <div class="result-cards" style="display: grid; gap: 1rem;">
                     <div class="result-card primary">
                         <div class="result-label">Taux Journalier (TJM)</div>
                         <div class="result-value" id="dailyRate" style="font-size: 1.8rem;">0 ${sym}/j</div>

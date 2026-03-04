@@ -5176,6 +5176,18 @@ body.public-view {
         align-items: flex-end;
         gap: 0.5rem;
     }
+
+    /* Utility to override inline grid styles on mobile */
+    .mobile-stack {
+        grid-template-columns: 1fr !important;
+        flex-direction: column !important;
+        display: flex !important;
+    }
+
+    /* Keep CSS Grid gap if switching to flex */
+    .mobile-stack.grid-to-flex {
+        display: flex !important;
+    }
 }
 
 /* --- PUBLIC QUOTE ACTIONS --- */

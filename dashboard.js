@@ -149,7 +149,7 @@ const Dashboard = {
                             ${(typeof PremiumWall !== 'undefined' && PremiumWall.renderTeaser) ? PremiumWall.renderTeaser('Profitabilité en Temps Réel', 'Suivez vos dépenses, vos charges sociales et votre salaire net réel automatiquement.', '') : ''}
                         </div>
                     ` : `
-                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 1.5rem;">
+                    <div class="stats-grid mobile-stack" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 1.5rem;">
                         <div class="stat-item">
                             <span class="stat-label">CA Encaissé (Mois)</span>
                             <div class="stat-value" style="color: #10b981;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(caEncaisse) : caEncaisse}</div>

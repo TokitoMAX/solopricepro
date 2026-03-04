@@ -527,7 +527,7 @@ const Marketplace = {
             } else if (statusClass === 'pending') {
                 // ACTIONS INITIALES : Proposer entretien OU Recruter directement
                 workflowHtml = `
-                    <div class="workflow-actions-initial" style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="workflow-actions-initial mobile-stack" style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <button class="button-secondary" onclick="Marketplace.validateApplication('${app.id}')">
                             <i class="fas fa-calendar-alt"></i> Proposer un entretien
                         </button>
@@ -1112,7 +1112,7 @@ const Marketplace = {
                     <h2>Inviter à un Entretien</h2>
                     
                     <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                        <div class="mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
                             <div>
                                 <strong>Candidat:</strong> <span id="interview-candidate-name"></span>
                             </div>
@@ -1141,15 +1141,15 @@ const Marketplace = {
                         <small style="display: block; margin-bottom: 15px; opacity: 0.7;">Le candidat choisira celui qui lui convient le mieux.</small>
 
                         <div style="display: grid; gap: 12px;">
-                            <div class="slot-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="slot-row mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                 <input type="date" name="slot1_date" class="form-input" required>
                                 <input type="time" name="slot1_time" class="form-input" required>
                             </div>
-                            <div class="slot-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="slot-row mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                 <input type="date" name="slot2_date" class="form-input">
                                 <input type="time" name="slot2_time" class="form-input">
                             </div>
-                            <div class="slot-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="slot-row mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                 <input type="date" name="slot3_date" class="form-input">
                                 <input type="time" name="slot3_time" class="form-input">
                             </div>

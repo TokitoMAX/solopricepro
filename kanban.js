@@ -129,6 +129,20 @@ const Kanban = {
                         padding-right: 1rem;
                     }
                 }
+                @media (max-width: 768px) {
+                    .kanban-board {
+                        display: flex;
+                        flex-direction: row;
+                        scroll-snap-type: x mandatory;
+                        padding-bottom: 1.5rem;
+                        gap: 1rem;
+                    }
+                    .kanban-column {
+                        min-width: 85vw;
+                        scroll-snap-align: center;
+                        flex-shrink: 0;
+                    }
+                }
                 .kanban-column {
                     background: rgba(255, 255, 255, 0.02);
                     backdrop-filter: blur(10px);
