@@ -217,7 +217,7 @@ const PDFGenerator = {
         `;
 
         if (isPreview) {
-            this._previewRealPdf(htmlContent, `Facture_Aperçu_${invoice.number}.pdf`);
+            this._downloadRealPdf(htmlContent, `Facture_Aperçu_${invoice.number}.pdf`);
         } else {
             this._downloadRealPdf(htmlContent, `Facture_${invoice.number}.pdf`);
         }
@@ -489,7 +489,7 @@ const PDFGenerator = {
         `;
 
         if (isPreview) {
-            this._previewRealPdf(htmlContent, `Devis_Aperçu_${quote.number}.pdf`);
+            this._downloadRealPdf(htmlContent, `Devis_Aperçu_${quote.number}.pdf`);
         } else {
             this._downloadRealPdf(htmlContent, `Devis_${quote.number}.pdf`);
         }
@@ -839,73 +839,4 @@ const PDFGenerator = {
             }
         }, 1500);
     },
-
-    async _previewRealPdf(htmlContent, filename) {
-        if (typeof html2pdf === 'undefined') {
-            App.showNotification('Erreur système: Librairie PDF manquante.', 'error');
-            return;
-        }
-
-        App.showNotification('Génération de l\'aperçu natif...', 'info');
-
-        // iOS popup blocker workaround: Open window IMMEDIATELY before async tasks
-        const newWindow = window.open('', '_blank');
-        if (newWindow) {
-            newWindow.document.write('<div style="font-family:sans-serif;text-align:center;padding-top:50px;">Génération du PDF en cours... Veuillez patienter.</div>');
-        } else {
-            App.showNotification('Veuillez autoriser les fenêtres contextuelles (popups) pour voir l\'aperçu.', 'warning');
-        }
-
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.width = '850px';
-        iframe.style.height = '1200px';
-        iframe.style.top = '0';
-        iframe.style.left = '0';
-        iframe.style.zIndex = '-100';
-        iframe.style.opacity = '0';
-        iframe.style.pointerEvents = 'none';
-        document.body.appendChild(iframe);
-
-        const iframeDoc = iframe.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write(htmlContent);
-        iframeDoc.close();
-
-        setTimeout(async () => {
-            const element = iframeDoc.body;
-            element.style.overflow = 'hidden';
-
-            const opt = {
-                margin: [0, 0, 0, 0],
-                filename: filename,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, windowWidth: 850, scrollY: 0 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            try {
-                // Generate PDF as Blob Instead of downloading
-                const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-                const blobUrl = URL.createObjectURL(pdfBlob);
-
-                if (newWindow) {
-                    newWindow.location.href = blobUrl;
-                } else {
-                    const a = document.createElement('a');
-                    a.href = blobUrl;
-                    a.target = '_blank';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
-            } catch (error) {
-                console.error('PDF Preview Error:', error);
-                if (newWindow) newWindow.close();
-                App.showNotification('Erreur lors de la création de l\'aperçu PDF.', 'error');
-            } finally {
-                document.body.removeChild(iframe);
-            }
-        }, 1500);
-    }
 };

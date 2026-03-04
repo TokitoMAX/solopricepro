@@ -5865,3 +5865,35 @@ body.public-view {
     background-color: #f1f5f9 !important;
     color: #0f172a !important;
 }
+
+/* UX 6.0 Overrides */
+@media (max-width: 768px) {
+    .wizard-steps {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 15px !important;
+        justify-content: center !important;
+    }
+    .wizard-steps::before {
+        display: none !important;
+    }
+    .wizard-steps .step {
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .marketplace-nav {
+        grid-template-columns: repeat(4, 1fr) !important;
+        padding: 0 !important;
+        gap: 5px !important;
+    }
+    .marketplace-nav .nav-btn {
+        padding: 8px 2px !important;
+    }
+    .marketplace-nav .nav-btn i {
+        font-size: 1.2rem !important;
+    }
+    .marketplace-nav .nav-btn span, .marketplace-nav .nav-btn {
+        font-size: 0.6rem !important;
+    }
+}
