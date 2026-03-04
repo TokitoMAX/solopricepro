@@ -5729,6 +5729,45 @@ body.public-view {
     }
 }
 
+/* ===============================
+   SCOPER - LAYOUT PC (BASE)
+   =============================== */
+
+/* Wizard Steps — horizontal sur Desktop */
+.wizard-steps {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0;
+    overflow: visible;
+}
+
+.wizard-step-item {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Grilles Scoper sur Desktop */
+.scoper-page .calculator-container {
+    grid-template-columns: 1.6fr 1fr !important;
+    gap: 2.5rem;
+}
+
+.result-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Marketplace full-width sur PC */
+@media (min-width: 1024px) {
+    .marketplace-feed-container {
+        grid-template-columns: 260px 1fr !important;
+    }
+}
+
 
 @media (max-width: 768px) {
 
