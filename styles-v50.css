@@ -21,13 +21,13 @@
     --gray-light: #4b5563;
     --white: #ffffff;
 
-    /* REFINED DARK THEME - QONTO INSPIRED */
-    --bg: #050505;
-    --bg-sidebar: #0a0a0a;
-    --bg-card: rgba(26, 26, 26, 0.4);
-    --bg-glass: rgba(10, 10, 10, 0.7);
+    /* REFINED DARK THEME - SOLO HISTORICAL CONTRAST */
+    --bg: #0f1115;
+    --bg-sidebar: #13161c;
+    --bg-card: #181b21;
+    --bg-glass: rgba(24, 27, 33, 0.85);
 
-    --text: #ffffff;
+    --text: #f3f4f6;
     --text-muted: #8899a6;
 
     --border: rgba(255, 255, 255, 0.08);
@@ -1299,7 +1299,7 @@ section {
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
     }
 
     to {
@@ -2729,10 +2729,7 @@ section {
     }
 }
 
-.page.active {
-    display: block;
-    animation: fadeIn 0.4s ease;
-}
+/* Page Active state handled at top for global consistency */
 
 .dashboard-stats {
     display: grid;
@@ -3073,17 +3070,7 @@ section {
     border: 2px solid white;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+/* Harmonized fadeIn removed to avoid conflicts with fadeInUp */
 
 /* Page Headers */
 .page-header {

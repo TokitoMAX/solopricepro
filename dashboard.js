@@ -70,7 +70,7 @@ const Dashboard = {
             ${onboardingHtml}
 
             <!-- COCKPIT CARD (QONTO INSPIRED) -->
-            <div class="cockpit-card glass" style="grid-column: 1 / -1; padding: 2.5rem; border-radius: var(--radius-lg); margin-bottom: 3rem; position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(16, 185, 129, 0.05), rgba(6, 95, 70, 0.05)); border: 1px solid var(--glass-border);">
+            <div class="cockpit-card glass" style="grid-column: 1 / -1; padding: 2.5rem; border-radius: var(--radius-lg); margin-bottom: 3rem; position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(16, 185, 129, 0.12), rgba(6, 95, 70, 0.12)); border: 1px solid var(--glass-border);">
                 <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, var(--primary-glass) 0%, transparent 70%); pointer-events: none;"></div>
                 
                 <div class="cockpit-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2.5rem;">
@@ -203,7 +203,7 @@ const Dashboard = {
                         return `
                                 <div class="doc-row glass" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light);">
                                     <div style="display: flex; align-items: center; gap: 1rem;">
-                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: ${isInvoice ? 'rgba(99, 102, 241, 0.1)' : 'rgba(0, 209, 255, 0.1)'}; display: flex; align-items: center; justify-content: center; color: ${isInvoice ? 'var(--secondary)' : 'var(--primary)'};">
+                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: ${isInvoice ? 'rgba(6, 95, 70, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; display: flex; align-items: center; justify-content: center; color: ${isInvoice ? 'var(--secondary)' : 'var(--primary)'};">
                                             <i class="fas ${isInvoice ? 'fa-file-invoice' : 'fa-file-signature'}"></i>
                                         </div>
                                         <div>
@@ -250,7 +250,7 @@ const Dashboard = {
                         </button>
                     </div>
                     
-                    <div style="margin-top: 2rem; padding: 1.5rem; border-radius: 12px; background: rgba(0, 209, 255, 0.05); border: 1px dotted var(--primary-glass); text-align: center;">
+                    <div style="margin-top: 2rem; padding: 1.5rem; border-radius: 12px; background: rgba(16, 185, 129, 0.05); border: 1px dotted var(--primary-glass); text-align: center;">
                         <p style="font-size: 0.8rem; color: var(--primary-light); margin: 0;">
                             <i class="fas fa-info-circle"></i> Besoin d'aide pour votre closing ?<br>
                             <a href="#" onclick="App.navigateTo('scoper')" style="color: white; font-weight: 700; text-decoration: none;">Voir le Coach de Vente →</a>
