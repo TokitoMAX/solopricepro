@@ -35,7 +35,7 @@ const Profile = {
                                     <button type="button" class="button-primary small" onclick="document.getElementById('avatar-input').click()">Changer la photo</button>
                                     ${user.user_metadata?.avatar_url ? `<button type="button" class="button-danger small" onclick="Profile.removeAvatar()">Supprimer</button>` : ''}
                                 </div>
-                                <p class="text-xs text-muted">PNG, JPG ou WebP. Max 1 Mo. Cette photo sera visible dans l'écosystème SoloPrice.</p>
+                                <p class="text-xs text-muted">Image de votre entreprise. Max 5 Mo. Cette photo sera visible dans l'écosystème SoloPrice.</p>
                             </div>
                         </div>
                     </div>
@@ -163,7 +163,7 @@ const Profile = {
                                                 `}
                                             </div>
                                             <p class="text-xs text-muted" style="margin-top: 0.5rem;">
-                                                ${isPro ? 'PNG or JPG. Max 500KB.' : 'L\'ajout de logo est réservé aux comptes PRO et EXPERT.'}
+                                                ${isPro ? 'PNG or JPG. Max 5 Mo.' : 'L\'ajout de logo est réservé aux comptes PRO et EXPERT.'}
                                             </p>
                                             <input type="hidden" name="logo" id="logo-base64" value="${(isPro && company.logo) ? company.logo : ''}">
                                         </div>
@@ -510,7 +510,7 @@ const Profile = {
     handleAvatarUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
-        if (file.size > 1024 * 1024) { App.showNotification('Image trop lourde (1 Mo max)', 'error'); return; }
+        if (file.size > 5 * 1024 * 1024) { App.showNotification('Image trop lourde (5 Mo max)', 'error'); return; }
 
         window.pendingAvatarFile = file;
         window.removeAvatarPending = false;
@@ -533,7 +533,7 @@ const Profile = {
     handleLogoUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
-        if (file.size > 500 * 1024) { App.showNotification('Image trop lourde (500KB max)', 'error'); return; }
+        if (file.size > 5 * 1024 * 1024) { App.showNotification('Image trop lourde (5 Mo max)', 'error'); return; }
         window.pendingLogoFile = file;
         const reader = new FileReader();
         reader.onload = (event) => {
