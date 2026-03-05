@@ -69,151 +69,139 @@ const Dashboard = {
 
             ${onboardingHtml}
 
-            <!-- COCKPIT CARD (QONTO INSPIRED) -->
-            <div class="cockpit-card glass" style="grid-column: 1 / -1; padding: 2.5rem; border-radius: var(--radius-lg); margin-bottom: 3rem; position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(16, 185, 129, 0.12), rgba(6, 95, 70, 0.12)); border: 1px solid var(--glass-border);">
-                <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, var(--primary-glass) 0%, transparent 70%); pointer-events: none;"></div>
+            <!-- BENTO GRID -->
+            <div class="bento-grid" style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; margin-bottom: 3rem;">
                 
-                <div class="cockpit-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2.5rem;">
-                    <!-- Solde Net Actuel -->
-                    <div class="cockpit-item">
-                        <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 12px;">Salaire Net Encaissé</span>
-                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: -1.5px; color: var(--white);">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(currentNet) : currentNet}</div>
-                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
-                            <span class="badge" style="background: var(--success); color: white; border-radius: 6px; font-size: 0.75rem; padding: 4px 8px;">Vrai Net</span>
-                            <span style="font-size: 0.85rem; color: var(--text-muted);">Mois en cours</span>
-                        </div>
-                    </div>
-
-                    <!-- Projection Fin de Mois -->
-                    <div class="cockpit-item" style="border-left: 1px solid var(--border); padding-left: 2.5rem;">
-                        <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 12px;">Projection Fin de Mois</span>
-                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: -1.5px; color: var(--primary-light); opacity: 0.9;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(projectedNet) : projectedNet}</div>
-                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 12px;">
-                            <span style="font-size: 0.85rem; color: var(--text-muted);">Est. via pipeline (${conversionRate * 100}%)</span>
-                            <div style="flex: 1; height: 4px; background: var(--border); border-radius: 2px; max-width: 100px;">
-                                <div style="height: 100%; width: 75%; background: var(--primary); border-radius: 2px; box-shadow: 0 0 10px var(--primary-glass);"></div>
+                <!-- BENTO: Finance Cockpit (Span 8) -->
+                <div class="bento-item glass" style="grid-column: span 8; padding: 2.5rem; border-radius: 24px; position: relative; overflow: hidden; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); display: flex; flex-direction: column;">
+                    <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, var(--primary-glass) 0%, transparent 70%); pointer-events: none; opacity: 0.5;"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                        <div>
+                            <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">Salaire Net Encaissé</span>
+                            <div style="font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; color: var(--white); line-height: 1;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(currentNet) : currentNet}</div>
+                            <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+                                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--primary-light); border-radius: 8px; font-weight: 700; font-size: 0.75rem; padding: 6px 10px;">Vrai Net</span>
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Mois en cours</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; gap: 2rem;">
-                        <div>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">CA Total</span>
-                            <span style="font-weight: 700;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(stats.monthlyRevenue) : stats.monthlyRevenue}</span>
-                        </div>
-                        <div>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">TVA + Social</span>
-                            <span style="font-weight: 700; color: var(--warning);">-${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(provisionCharges) : provisionCharges}</span>
-                        </div>
-                        <div>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Dépenses</span>
-                            <span style="font-weight: 700; color: var(--danger);">-${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(totalExpenses) : totalExpenses}</span>
+                        <div style="text-align: right;">
+                            <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">Projection Fin de Mois</span>
+                            <div style="font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: var(--primary-light); opacity: 0.9;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(projectedNet) : projectedNet}</div>
+                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-muted);">Est. via pipeline (${conversionRate * 100}%)</div>
                         </div>
                     </div>
-                    <button class="button-outline" onclick="App.navigateTo('expenses')" style="border-radius: 12px; font-size: 0.85rem; padding: 0.6rem 1.2rem;">
-                        Détails Trésorerie <i class="fas fa-arrow-right" style="margin-left: 8px; font-size: 0.8rem;"></i>
-                    </button>
-                </div>
-            </div>
 
-            <!-- Strategic Context Grid -->
-            <div class="stats-grid dashboard-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-                <!-- Goal Card -->
-                <div class="stat-card glass">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-                        <div>
-                            <span class="stat-label" style="font-weight: 800; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Objectif Mensuel</span>
-                            <div style="font-size: 1.8rem; font-weight: 900; margin-top: 4px;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(monthlyGoal) : monthlyGoal}</div>
+                    <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 2.5rem;">
+                            <div>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">CA Total</span>
+                                <span style="font-weight: 700; font-size: 1.1rem; color: white;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(stats.monthlyRevenue) : stats.monthlyRevenue}</span>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">TVA + Social</span>
+                                <span style="font-weight: 700; font-size: 1.1rem; color: #f59e0b;">-${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(provisionCharges) : provisionCharges}</span>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Dépenses</span>
+                                <span style="font-weight: 700; font-size: 1.1rem; color: #ef4444;">-${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(totalExpenses) : totalExpenses}</span>
+                            </div>
                         </div>
-                        <button class="button-outline small" onclick="Dashboard.editGoal()" style="padding: 0.4rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                            <i class="fas fa-pen" style="font-size: 0.7rem;"></i>
+                        <button class="button-outline" onclick="App.navigateTo('expenses')" style="border-radius: 14px; font-size: 0.85rem; padding: 0.8rem 1.4rem; border-color: var(--glass-border-light); background: rgba(255,255,255,0.02); color: white; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.08)';" onmouseout="this.style.background='rgba(255,255,255,0.02)';">
+                            Trésorerie <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
                         </button>
                     </div>
-                    <div style="margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.85rem;">
-                        <span style="color: var(--text-muted);">Atteint: <strong>${progress}%</strong></span>
-                        <span style="color: var(--primary-light); font-weight: 700;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(stats.monthlyRevenue) : stats.monthlyRevenue}</span>
-                    </div>
-                    <div class="progress-bar-container" style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
-                        <div class="progress-bar-fill" style="height: 100%; width: ${progress}%; background: var(--gradient-1); box-shadow: 0 0 15px var(--primary-glass);"></div>
-                    </div>
                 </div>
 
-                <!-- Pipeline Context -->
-                <div class="stat-card glass">
-                    <span class="stat-label" style="font-weight: 800; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Pipeline en Attente</span>
-                    <div style="font-size: 1.8rem; font-weight: 900; margin-top: 4px; color: var(--primary-light);">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(pipelineValue) : pipelineValue}</div>
-                    <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-file-invoice-dollar" style="color: var(--primary);"></i>
-                        ${quotes.filter(q => q.status === 'sent').length} devis envoyés
-                    </div>
-                </div>
-
-                <!-- Sector/Tax -->
-                <div class="stat-card glass" style="border-bottom: 3px solid var(--secondary);">
-                    <span class="stat-label" style="font-weight: 800; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Réglages Stratégiques</span>
-                    <div style="font-size: 1.25rem; font-weight: 800; margin-top: 8px; color: var(--white);">${taxCtx.name}</div>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Charge Sociale : ${socialRate}%</p>
-                    <button class="button-link" onclick="App.navigateTo('settings', 'billing')" style="margin-top: 12px; font-size: 0.8rem; padding: 0; color: var(--primary-light);">Optimiser ma fiscalité →</button>
-                </div>
-            </div>
-
-            <div class="dashboard-sections" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem;">
-                
-                <!-- Focus & Coaching row -->
-                <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <!-- Focus du Jour -->
-                    <div class="focus-widget glass" style="padding: 2rem; border-radius: var(--radius-md);">
-                        <div class="section-header-inline" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-                            <h2 class="section-title-small" style="font-weight: 800; letter-spacing: 1px; color: var(--white); text-transform: uppercase; font-size: 0.9rem;">🎯 Focus du Jour</h2>
-                            <span class="badge" style="background: var(--primary-glass); color: var(--primary-light); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Top 3 PRIORITÉS</span>
-                        </div>
-                        <div class="focus-list" style="display: grid; gap: 1rem;">
-                            ${dailyFocusItems.map(item => `
-                                <div class="focus-item glass" onclick="App.navigateTo('${item.nav}')" style="padding: 1rem; border-radius: 12px; display: flex; gap: 1rem; align-items: center; cursor: pointer; border: 1px solid var(--border-light);">
-                                    <div class="focus-icon" style="font-size: 1.5rem; width: 48px; height: 48px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; border-radius: 10px;">${item.icon}</div>
-                                    <div class="focus-details" style="flex: 1;">
-                                        <div style="font-weight: 800; font-size: 0.95rem; color: white;">${item.title}</div>
-                                        <div style="font-size: 0.8rem; color: var(--text-muted);">${item.description}</div>
-                                    </div>
-                                    <div style="font-size: 0.8rem; color: var(--primary-light);"><i class="fas fa-chevron-right"></i></div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-
+                <!-- BENTO: AI Coach (Span 4) -->
+                <div class="bento-item" style="grid-column: span 4; display: flex; flex-direction: column;">
                     ${coachHtml}
                 </div>
 
-                <!-- Dernières Actions & Documents -->
-                <div class="dashboard-section glass" style="padding: 2rem; border-radius: var(--radius-md);">
-                    <div class="section-header-inline" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h2 class="section-title-small" style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase;">📄 Flux Documents</h2>
-                        <a href="#" onclick="App.navigateTo('quotes')" class="button-link" style="color: var(--primary-light); font-size: 0.8rem;">Tout voir →</a>
+                <!-- BENTO: Pipeline (Span 4) -->
+                <div class="bento-item glass" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(99, 102, 241, 0.1); color: #6366f1; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 4px 10px; border-radius: 8px; font-weight: 600;">${quotes.filter(q => q.status === 'sent').length} devis</span>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Pipeline en Attente</span>
+                        <div style="font-size: 2.2rem; font-weight: 900; margin-top: 8px; color: white;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(pipelineValue) : pipelineValue}</div>
+                    </div>
+                </div>
+
+                <!-- BENTO: Goal (Span 4) -->
+                <div class="bento-item glass" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); position: relative; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <button class="button-ghost small" onclick="Dashboard.editGoal()" style="border-radius: 50%; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); color: white; cursor: pointer; transition: all 0.2s ease; border: none;" onmouseover="this.style.background='rgba(255,255,255,0.1)';" onmouseout="this.style.background='rgba(255,255,255,0.05)';">
+                            <i class="fas fa-pen" style="font-size: 0.8rem;"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Objectif Mensuel</span>
+                        <div style="font-size: 2.2rem; font-weight: 900; margin-top: 8px; color: white;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(monthlyGoal) : monthlyGoal}</div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; font-weight: 600;">
+                            <span style="color: var(--primary-light);">${progress}%</span>
+                            <span style="color: var(--text-muted);">Reste: ${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(Math.max(0, monthlyGoal - stats.monthlyRevenue)) : (monthlyGoal - stats.monthlyRevenue)}</span>
+                        </div>
+                        <div style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; width: ${progress}%; background: var(--gradient-premium); border-radius: 4px; box-shadow: 0 0 10px var(--primary-glass);"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BENTO: Quick Actions (Span 4) -->
+                <div class="bento-item glass" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); display: flex; flex-direction: column;">
+                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1.5rem; display: block;">Actions Rapides</span>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1;">
+                        <button onclick="App.navigateTo('scoper');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
+                            <i class="fas fa-magic" style="font-size: 1.2rem; color: var(--primary-light);"></i> Scoper
+                        </button>
+                        <button onclick="App.navigateTo('quotes');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.1)'; this.style.borderColor='#6366f1';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
+                            <i class="fas fa-file-invoice" style="font-size: 1.2rem; color: #6366f1;"></i> Devis
+                        </button>
+                        <button onclick="App.navigateTo('network');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(245, 158, 11, 0.1)'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
+                            <i class="fas fa-users" style="font-size: 1.2rem; color: #f59e0b;"></i> Cercle
+                        </button>
+                        <button onclick="App.navigateTo('settings');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
+                            <i class="fas fa-cog" style="font-size: 1.2rem; color: var(--text-muted);"></i> Réglages
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BENTO: Recent Docs (Span 12 -> full width at bottom) -->
+                <div class="bento-item glass" style="grid-column: span 12; padding: 2.5rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.1rem; font-weight: 800; color: white; margin: 0;">Flux de Documents Récents</h2>
+                        <button class="button-ghost small" onclick="App.navigateTo('quotes')" style="color: var(--primary-light); background: transparent; border: none; font-weight: 600; cursor: pointer;">Tout voir →</button>
                     </div>
                     
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
                         ${[...recentQuotes, ...recentInvoices]
                     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                    .slice(0, 6)
+                    .slice(0, 4)
                     .map(doc => {
                         const client = (typeof Storage !== 'undefined' && Storage.getClient) ? Storage.getClient(doc.clientId) : null;
                         const isInvoice = doc.number.includes('FACT') || doc.type === 'invoice';
                         return `
-                                <div class="doc-row glass" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light);">
-                                    <div style="display: flex; align-items: center; gap: 1rem;">
-                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: ${isInvoice ? 'rgba(6, 95, 70, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; display: flex; align-items: center; justify-content: center; color: ${isInvoice ? 'var(--secondary)' : 'var(--primary)'};">
+                                <div class="doc-card" style="padding: 1.5rem; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border-light); transition: all 0.2s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='translateY(0)';">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: ${isInvoice ? 'rgba(6, 95, 70, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; display: flex; align-items: center; justify-content: center; color: ${isInvoice ? 'var(--secondary)' : 'var(--primary)'}; font-size: 1.1rem;">
                                             <i class="fas ${isInvoice ? 'fa-file-invoice' : 'fa-file-signature'}"></i>
                                         </div>
-                                        <div>
-                                            <div style="font-weight: 700; font-size: 0.9rem;">${doc.number}</div>
-                                            <div style="font-size: 0.75rem; color: var(--text-muted);">${client?.name || 'Client'}</div>
-                                        </div>
+                                        <span class="status-badge status-${doc.status}" style="padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">${this.getStatusLabel(doc.status)}</span>
                                     </div>
-                                    <div style="text-align: right;">
-                                        <div style="font-weight: 800; font-size: 0.95rem;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(doc.total) : doc.total}</div>
-                                        <div style="font-size: 0.7rem;"><span class="status-badge status-${doc.status}" style="padding: 2px 6px; border-radius: 4px; font-size: 0.65rem;">${this.getStatusLabel(doc.status)}</span></div>
+                                    <div>
+                                        <div style="font-weight: 800; font-size: 1.2rem; color: white; margin-bottom: 4px;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(doc.total) : doc.total}</div>
+                                        <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-muted);">${doc.number}</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted); opacity: 0.7;">${client?.name || 'Client'}</div>
                                     </div>
                                 </div>
                             `;
@@ -221,43 +209,21 @@ const Dashboard = {
                     </div>
 
                     ${(recentQuotes.length === 0 && recentInvoices.length === 0) ? `
-                        <div class="empty-state" style="text-align: center; padding: 2rem;">
-                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Aucun document émis ce mois-ci.</p>
-                            <button class="cta-button" onclick="App.navigateTo('quotes')" style="padding: 0.8rem 1.5rem; font-size: 0.9rem;">Créer un Devis</button>
+                        <div class="empty-state" style="text-align: center; padding: 3rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📄</div>
+                            <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem;">Aucun document émis ce mois-ci.</p>
+                            <button class="cta-button" onclick="App.navigateTo('quotes')" style="padding: 0.8rem 2rem; font-size: 0.95rem; border-radius: 12px; border: none; cursor: pointer; background: var(--gradient-premium); color: white; font-weight: 600;">Créer mon premier devis</button>
                         </div>
                     ` : ''}
                 </div>
-
-                <!-- Quick Actions Block -->
-                <div class="dashboard-section glass" style="padding: 2rem; border-radius: var(--radius-md);">
-                    <h2 class="section-title-small" style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2rem;">🚀 Actions Rapides</h2>
-                    <div class="quick-actions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <button class="action-card glass" onclick="App.navigateTo('scoper');" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 1rem; background: var(--gradient-1); color: white; border: none;">
-                            <i class="fas fa-magic" style="font-size: 1.5rem;"></i>
-                            <span style="font-weight: 800; font-size: 0.9rem;">Calculer TJM</span>
-                        </button>
-                        <button class="action-card glass" onclick="App.navigateTo('network');" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                            <i class="fas fa-users" style="font-size: 1.5rem; color: var(--primary);"></i>
-                            <span style="font-weight: 700; font-size: 0.9rem;">Cercle</span>
-                        </button>
-                        <button class="action-card glass" onclick="App.navigateTo('marketplace');" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                            <i class="fas fa-store" style="font-size: 1.5rem; color: var(--secondary);"></i>
-                            <span style="font-weight: 700; font-size: 0.9rem;">Offres</span>
-                        </button>
-                        <button class="action-card glass" onclick="App.navigateTo('settings')" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                            <i class="fas fa-cog" style="font-size: 1.5rem; color: var(--text-muted);"></i>
-                            <span style="font-weight: 700; font-size: 0.9rem;">Configuration</span>
-                        </button>
-                    </div>
-                    
-                    <div style="margin-top: 2rem; padding: 1.5rem; border-radius: 12px; background: rgba(16, 185, 129, 0.05); border: 1px dotted var(--primary-glass); text-align: center;">
-                        <p style="font-size: 0.8rem; color: var(--primary-light); margin: 0;">
-                            <i class="fas fa-info-circle"></i> Besoin d'aide pour votre closing ?<br>
-                            <a href="#" onclick="App.navigateTo('scoper')" style="color: white; font-weight: 700; text-decoration: none;">Voir le Coach de Vente →</a>
-                        </p>
-                    </div>
-                </div>
             </div>
+
+            <style>
+                @media (max-width: 1024px) {
+                    .bento-grid { display: flex !important; flex-direction: column !important; }
+                    .bento-item { width: 100% !important; }
+                }
+            </style>
         `;
         } catch (error) {
             console.error(' [DASHBOARD] Critical Render Error:', error);

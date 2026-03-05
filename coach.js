@@ -103,24 +103,35 @@ const Coach = {
         const streak = Storage.getStreak();
 
         return `
-            <div class="coach-widget" style="margin-bottom: 2rem;">
-                <div class="section-header-inline" style="margin-bottom: 1rem;">
-                    <h2 class="section-title-small" style="font-size: 0.9rem; color: var(--primary-light);">CONSEILS DU COACH BUSINESS</h2>
-                    ${streak > 0 ? `<span class="streak-tag"> Série : ${streak} jours</span>` : ''}
+            <div class="coach-widget ai-chat-widget glass" style="margin-bottom: 2rem; border-radius: 24px; padding: 2rem; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium);">
+                <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="ai-avatar" style="width: 44px; height: 44px; border-radius: 14px; background: var(--gradient-premium); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); animation: float-gentle 4s ease-in-out infinite;">
+                            ✨
+                        </div>
+                        <div>
+                            <h2 style="font-size: 1.15rem; font-weight: 800; color: white; margin: 0; letter-spacing: -0.5px;">Solo Coach IA</h2>
+                            <p style="font-size: 0.8rem; color: var(--primary-light); margin: 0; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--primary-light); display: inline-block; animation: pulse-ring 2s infinite;"></span>
+                                Analyse en temps réel
+                            </p>
+                        </div>
+                    </div>
+                    ${streak > 0 ? `<div class="streak-pill" style="background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.2); color: #ff6b6b; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;"><i class="fas fa-fire"></i> ${streak} j</div>` : ''}
                 </div>
                 
-                <div class="coach-cards-container" style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                    ${truths.map(truth => `
-                        <div class="coach-card coach-${truth.type} glass">
-                            <div class="coach-card-header">
-                                <span class="coach-card-title">${truth.title}</span>
-                                <span class="coach-card-icon">${this.getTypeIcon(truth.type)}</span>
+                <div class="chat-messages" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    ${truths.map((truth, index) => `
+                        <div class="ai-message message-${truth.type}" style="display: flex; gap: 1.25rem; animation: message-in 0.5s ease-out ${index * 0.15}s both;">
+                            <div class="message-icon" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; margin-top: 2px;">
+                                ${this.getTypeIcon(truth.type) || '💡'}
                             </div>
-                            <div class="coach-card-body">
-                                <p>${truth.message}</p>
-                            </div>
-                            <div class="coach-card-footer">
-                                <button class="button-ghost small" onclick="App.navigateTo('${truth.nav}')">${truth.action} →</button>
+                            <div class="message-content">
+                                <span class="message-title" style="display: block; font-weight: 700; color: white; margin-bottom: 6px; font-size: 0.95rem;">${truth.title}</span>
+                                <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin: 0 0 14px 0;">${truth.message.replace(/\*\*(.*?)\*\*/g, '<strong style="color: white; font-weight: 600;">$1</strong>')}</p>
+                                <button class="action-pill pill-${truth.type}" onclick="App.navigateTo('${truth.nav}')" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid transparent;">
+                                    ${truth.action} <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i>
+                                </button>
                             </div>
                         </div>
                     `).join('')}
@@ -128,32 +139,18 @@ const Coach = {
             </div>
 
             <style>
-                .streak-tag {
-                    background: rgba(255, 107, 107, 0.1);
-                    color: #ff6b6b;
-                    padding: 2px 8px;
-                    border-radius: 10px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    border: 1px solid rgba(255, 107, 107, 0.2);
-                }
-                .coach-card {
-                    padding: 1.2rem;
-                    border-radius: 12px;
-                    border-left: 4px solid var(--primary);
-                    transition: transform 0.2s ease;
-                }
-                .coach-card:hover { transform: translateY(-3px); }
-                .coach-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
-                .coach-card-title { font-weight: 800; font-size: 0.95rem; color: white; }
-                .coach-card-body p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; }
-                .coach-card-footer { margin-top: 1rem; display: flex; justify-content: flex-end; }
+                .message-opportunity .message-icon { background: rgba(16, 185, 129, 0.1); color: var(--primary); }
+                .message-danger .message-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+                .message-warning .message-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+                .message-success .message-icon { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+                .message-info .message-icon { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }
                 
-                .coach-opportunity { border-left-color: #10b981; background: linear-gradient(145deg, rgba(16, 185, 129, 0.05), transparent); }
-                .coach-danger { border-left-color: #ef4444; background: linear-gradient(145deg, rgba(239, 68, 68, 0.05), transparent); }
-                .coach-warning { border-left-color: #f59e0b; background: linear-gradient(145deg, rgba(245, 158, 11, 0.05), transparent); }
-                .coach-success { border-left-color: #6366f1; background: linear-gradient(145deg, rgba(99, 102, 241, 0.05), transparent); }
-                .coach-info { border-left-color: var(--text-muted); background: rgba(255,255,255,0.02); }
+                .action-pill { background: rgba(255,255,255,0.03); color: var(--text-muted); border-color: var(--glass-border-light); }
+                .action-pill:hover { background: rgba(255,255,255,0.08); color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+                
+                .pill-opportunity:hover { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3); }
+                .pill-danger:hover { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3); }
+                .pill-warning:hover { background: #f59e0b; color: white; border-color: #f59e0b; box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3); }
             </style>
         `;
     },
