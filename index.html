@@ -268,14 +268,17 @@
                         Millimétrée. Impact Immédiat.</p>
                 </div>
             </div>
-            <div class="hero-image" style="position: relative; padding: 2rem;">
+            <div class="hero-image" style="position: relative; padding: 2rem; perspective: 1000px;">
                 <!-- Decorative background blur -->
                 <div
                     style="position: absolute; top: 50%; left: 50%; width: 140%; height: 140%; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 50%); transform: translate(-50%, -50%); pointer-events: none; z-index: -1;">
                 </div>
 
-                <div class="floating-card goal-card-landing glass-premium hover-lift"
-                    style="background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); width: 320px; padding: 2.5rem; border-radius: 24px; position: relative; overflow: hidden;">
+                <div class="floating-card goal-card-landing glass-premium hover-lift tilt-card"
+                    style="background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); width: 100%; max-width: 320px; padding: 2.5rem; border-radius: 24px; position: relative; overflow: hidden; box-sizing: border-box;">
+                    <div class="tilt-glare-wrapper">
+                        <div class="tilt-glare"></div>
+                    </div>
                     <!-- Top subtle shine -->
                     <div
                         style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);">
@@ -383,13 +386,16 @@
             </p>
         </div>
         <div class="pricing-grid"
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; margin-top: 3rem; align-items: stretch; position: relative;">
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem; margin-top: 3rem; align-items: stretch; position: relative; perspective: 1200px; padding: 0 1rem;">
             <div
                 style="position: absolute; top: 50%; left: 50%; width: 100vw; height: 100%; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 50%); transform: translate(-50%, -50%); pointer-events: none; z-index: -1;">
             </div>
             <!-- Standard -->
-            <div class="pricing-card glass-premium hover-lift"
-                style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border-light); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: all 0.3s ease;">
+            <div class="pricing-card glass-premium hover-lift tilt-card"
+                style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border-light); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                <div class="tilt-glare-wrapper">
+                    <div class="tilt-glare"></div>
+                </div>
                 <div class="pricing-header"
                     style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <h3 class="tier-name" data-i18n="pricing.standard.name"
@@ -432,8 +438,11 @@
                     Gratuitement</button>
             </div>
             <!-- Pro -->
-            <div class="pricing-card glass-premium popular hover-lift"
-                style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--primary); background: rgba(16, 185, 129, 0.03); backdrop-filter: var(--bg-glass-blur); box-shadow: 0 0 40px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.1); display: flex; flex-direction: column; position: relative; transform: scale(1.05); z-index: 2;">
+            <div class="pricing-card glass-premium popular hover-lift tilt-card"
+                style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--primary); background: rgba(16, 185, 129, 0.03); backdrop-filter: var(--bg-glass-blur); box-shadow: 0 0 40px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.1); display: flex; flex-direction: column; position: relative; z-index: 2; transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                <div class="tilt-glare-wrapper" style="border-radius: 24px;">
+                    <div class="tilt-glare"></div>
+                </div>
                 <!-- Glowing corner effect -->
                 <div
                     style="position: absolute; top:0; right:0; width: 150px; height: 150px; background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.3), transparent 70%); border-radius: 0 24px 0 0; pointer-events: none;">
@@ -483,8 +492,11 @@
                     l'Illimité</button>
             </div>
             <!-- Expert -->
-            <div class="pricing-card glass-premium expert hover-lift"
-                style="padding: 2.5rem; border-radius: 24px; border: 1px solid rgba(245, 158, 11, 0.3); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: all 0.3s ease;">
+            <div class="pricing-card glass-premium expert hover-lift tilt-card"
+                style="padding: 2.5rem; border-radius: 24px; border: 1px solid rgba(245, 158, 11, 0.3); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                <div class="tilt-glare-wrapper">
+                    <div class="tilt-glare"></div>
+                </div>
                 <!-- Glowing corner effect -->
                 <div
                     style="position: absolute; top:0; right:0; width: 120px; height: 120px; background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 70%); border-radius: 0 24px 0 0; pointer-events: none;">
@@ -911,7 +923,7 @@
     </div>
 
     <!-- Script de démarrage -->
-    <link rel="stylesheet" href="styles-v50.css?v=20260306_0020">
+    <link rel="stylesheet" href="styles-v50.css?v=20260306_0025">
     <script src="i18n.js?v=20260304_1750"></script>
     <script src="constants/countries.js?v=20260304_1750"></script>
     <script src="auth.js?v=20260304_1750"></script>
@@ -1073,6 +1085,8 @@
 
             if (typeof App !== 'undefined' && App.init) {
                 App.init();
+                // Initialize 3D Tilt for landing page
+                App.init3DTilt();
             } else {
                 console.error(" [DOM] CRITICAL: App module not found!");
                 // Emergency loader hide if scripts failed to load

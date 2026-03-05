@@ -13,7 +13,8 @@ const PremiumWall = {
      */
     renderTeaser(title, description, icon = '') {
         return `
-            <div class="premium-teaser-card glass-premium" style="padding: 2rem; border-radius: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; position: relative; overflow: hidden; border: 1px solid var(--glass-highlight); box-shadow: var(--shadow-premium); background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.3s ease, border-color 0.3s ease;">
+                    <div class="premium-teaser-card glass-premium tilt-card" style="padding: 2rem; border-radius: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; position: relative; overflow: hidden; border: 1px solid var(--glass-highlight); box-shadow: var(--shadow-premium); background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.1s ease, border-color 0.3s ease;">
+                <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                 <div style="position: absolute; top: -50px; left: 50%; width: 100px; height: 100px; background: var(--primary); opacity: 0.15; filter: blur(40px); transform: translateX(-50%); border-radius: 50%; pointer-events: none;"></div>
                 <div style="font-size: 2.5rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));">${icon}</div>
                 <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; background: linear-gradient(to right, #fff, rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${title}</h3>
@@ -45,17 +46,20 @@ const PremiumWall = {
                     </p>
                     
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 4rem; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;">
-                        <div class="glass-premium hover-lift" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.3s ease, background 0.3s ease;">
+                        <div class="glass-premium hover-lift tilt-card" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.1s ease, background 0.3s ease;">
+                            <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                             <div style="font-size: 1.8rem; margin-bottom: 1rem; color: var(--primary-light);"><i class="fas fa-brain"></i></div>
                             <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">Coaching Business</h4>
                             <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Analyses pointues de votre rentabilité et conseils stratégiques personnalisés.</p>
                         </div>
-                        <div class="glass-premium hover-lift" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.3s ease, background 0.3s ease;">
+                        <div class="glass-premium hover-lift tilt-card" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.1s ease, background 0.3s ease;">
+                            <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                             <div style="font-size: 1.8rem; margin-bottom: 1rem; color: var(--primary-light);"><i class="fas fa-stream"></i></div>
                             <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">Pipeline Kanban</h4>
                             <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Suivez l'état d'avancement de toutes vos opportunités commerciales sans effort.</p>
                         </div>
-                        <div class="glass-premium hover-lift" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.3s ease, background 0.3s ease;">
+                        <div class="glass-premium hover-lift tilt-card" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.1s ease, background 0.3s ease;">
+                            <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                             <div style="font-size: 1.8rem; margin-bottom: 1rem; color: var(--primary-light);"><i class="fas fa-chart-pie"></i></div>
                             <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">Profit Net Réel</h4>
                             <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Calcul ultra-précis de votre trésorerie après charges et impôts.</p>

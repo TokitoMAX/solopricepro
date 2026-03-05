@@ -103,7 +103,8 @@ const Coach = {
         const streak = Storage.getStreak();
 
         return `
-            <div class="coach-widget ai-chat-widget glass" style="margin-bottom: 2rem; border-radius: 24px; padding: 2rem; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium);">
+            <div class="coach-widget ai-chat-widget glass tilt-card" style="margin-bottom: 2rem; border-radius: 24px; padding: 2rem; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                 <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <div class="ai-avatar" style="width: 44px; height: 44px; border-radius: 14px; background: var(--gradient-premium); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); animation: float-gentle 4s ease-in-out infinite;">

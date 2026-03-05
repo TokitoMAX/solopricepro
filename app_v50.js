@@ -255,6 +255,50 @@ const App = {
         }
     },
 
+    // --- 3D Premium Tilt Effect Logic ---
+    init3DTilt() {
+        const tiltCards = document.querySelectorAll('.tilt-card:not([data-tilt-init])');
+        tiltCards.forEach(card => {
+            card.setAttribute('data-tilt-init', 'true');
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = ((y - centerY) / centerY) * -10; // Max 10 deg
+                const rotateY = ((x - centerX) / centerX) * 10;
+
+                let baseScale = card.classList.contains('popular') ? 'scale(1.05)' : 'scale(1)';
+                if (window.innerWidth < 768 && card.classList.contains('popular')) baseScale = 'scale(1)';
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) ${baseScale}`;
+                card.style.transition = 'none';
+
+                const glare = card.querySelector('.tilt-glare');
+                if (glare) {
+                    glare.style.transform = `translate(${x - rect.width}px, ${y - rect.height}px)`;
+                    glare.style.opacity = '1';
+                }
+            });
+
+            card.addEventListener('mouseleave', () => {
+                let baseScale = card.classList.contains('popular') ? 'scale(1.05)' : 'scale(1)';
+                if (window.innerWidth < 768 && card.classList.contains('popular')) baseScale = 'scale(1)';
+
+                card.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) ${baseScale}`;
+
+                const glare = card.querySelector('.tilt-glare');
+                if (glare) {
+                    glare.style.opacity = '0';
+                }
+            });
+        });
+    },
+
     setupMobileOverlay() {
         if (!document.querySelector('.sidebar-backdrop')) {
             const overlay = document.createElement('div');
