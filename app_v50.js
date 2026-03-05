@@ -337,9 +337,11 @@ const App = {
             // Mettre à jour l'état actif de la navigation
             document.querySelectorAll('[data-nav]').forEach(link => {
                 link.classList.remove('active');
-                if (link.dataset.nav === page || (page === 'network' && (link.dataset.nav === 'clients' || link.dataset.nav === 'leads'))) {
+                if (link.dataset.nav === page ||
+                    (page === 'network' && (link.dataset.nav === 'clients' || link.dataset.nav === 'leads')) ||
+                    (page === 'expenses' && link.dataset.nav === 'kanban')) {
                     // Logic for active class on sidebar items
-                    if (link.dataset.nav === page) link.classList.add('active');
+                    if (link.dataset.nav === page || (page === 'expenses' && link.dataset.nav === 'kanban')) link.classList.add('active');
                 }
             });
 
@@ -444,6 +446,13 @@ const App = {
             if (page === 'settings') {
                 if (typeof Settings !== 'undefined' && Settings.render) Settings.render();
                 else console.warn('️ Settings module not ready');
+            }
+            if (page === 'expenses') {
+                if (typeof Expenses !== 'undefined' && Expenses.render) {
+                    this.checkFreemiumLimits();
+                    Expenses.render();
+                }
+                else console.warn('️ Expenses module not ready');
             }
             if (page === 'services') {
                 this.navigateTo('settings', 'billing'); // Redirect to Settings with billing tab
