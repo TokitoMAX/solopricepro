@@ -71,7 +71,7 @@ const Scoper = {
         let data = Storage.get('sp_calculator_data');
         // Ensure default values are populated if missing to avoid `undefined` calculations
         const defaultRev = (typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 3000;
-        const defaultData = { monthlyRevenue: defaultRev, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech', target: 'tpe' };
+        const defaultData = { monthlyRevenue: defaultRev, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: null, target: null };
         data = { ...defaultData, ...(data && typeof data === 'object' ? data : {}) };
 
         // Auto-save the defaults silently so calculations work natively everywhere
