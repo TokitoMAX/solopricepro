@@ -355,6 +355,12 @@ const Scoper = {
             monthlyCharges: document.getElementById('monthlyCharges') ? parseFloat(document.getElementById('monthlyCharges').value) || currentData.monthlyCharges : currentData.monthlyCharges,
             taxRate: document.getElementById('taxRate') ? parseFloat(document.getElementById('taxRate').value) || currentData.taxRate : currentData.taxRate,
         };
+
+        // Recalculate rates every time we advance to ensure consistency
+        const results = PricingEngine.calculateObjective(merged);
+        merged.dailyRate = results.dailyRate;
+        merged.hourlyRate = results.hourlyRate;
+
         Storage.set('sp_calculator_data', merged);
         // Persist to Supabase (non-blocking)
         Storage.saveCalculatorData(merged).catch(e => console.warn('[SCOPER] Sync error:', e));
@@ -406,12 +412,10 @@ const Scoper = {
             taxRate: document.getElementById('taxRate') ? (parseFloat(document.getElementById('taxRate').value) || 0) : (currentData.taxRate || 0)
         };
 
-        // Final calculation for step 5 if we are on it
-        if (this.currentObjectiveStep === 5) {
-            const results = PricingEngine.calculateObjective(data);
-            data.dailyRate = results.dailyRate;
-            data.hourlyRate = results.hourlyRate;
-        }
+        // Recalculate rates on every auto-save to ensure other tabs (Project, Closing) are always up to date
+        const results = PricingEngine.calculateObjective(data);
+        data.dailyRate = results.dailyRate;
+        data.hourlyRate = results.hourlyRate;
 
         Storage.set('sp_calculator_data', data);
 
