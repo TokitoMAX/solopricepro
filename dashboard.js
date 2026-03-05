@@ -73,7 +73,7 @@ const Dashboard = {
             <div class="bento-grid" style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; margin-bottom: 3rem; perspective: 1200px;">
                 
                 <!-- BENTO: Finance Cockpit (Span 8) -->
-                <div class="bento-item glass-premium hover-lift tilt-card" style="grid-column: span 8; padding: 2.5rem; border-radius: 24px; position: relative; overflow: hidden; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); display: flex; flex-direction: column; box-shadow: var(--shadow-premium); transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                <div class="bento-item glass-premium hover-lift tilt-card" style="grid-column: span 8; padding: 2.5rem; border-radius: 24px; position: relative; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); display: flex; flex-direction: column; box-shadow: var(--shadow-premium); transition: transform 0.1s ease, box-shadow 0.3s ease;">
                     <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                     <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);"></div>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; position: relative; z-index: 1;">
@@ -135,7 +135,7 @@ const Dashboard = {
                 </div>
 
                 <!-- BENTO: Goal (Span 4) -->
-                <div class="bento-item glass-premium hover-lift tilt-card" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; overflow: hidden; transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                <div class="bento-item glass-premium hover-lift tilt-card" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; transition: transform 0.1s ease, box-shadow 0.3s ease;">
                     <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                     <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);"></div>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; position: relative; z-index: 1;">
