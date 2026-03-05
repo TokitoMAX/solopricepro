@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #00d1ff;
-    /* Qonto-like Cyan/Electric Blue */
-    --primary-dark: #0099cc;
-    --primary-light: #70e4ff;
-    --primary-glass: rgba(0, 209, 255, 0.1);
+    --primary: #10b981;
+    /* SoloPrice Historical Emerald */
+    --primary-dark: #059669;
+    --primary-light: #34d399;
+    --primary-glass: rgba(16, 185, 129, 0.15);
 
-    --secondary: #6366f1;
-    /* Indigo */
-    --secondary-glass: rgba(99, 102, 241, 0.1);
+    --secondary: #065f46;
+    /* Deep Emerald */
+    --secondary-glass: rgba(6, 95, 70, 0.1);
 
     --success: #10b981;
     --warning: #f59e0b;
@@ -37,7 +37,7 @@
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.2);
     --shadow-lg: 0 24px 48px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 30px rgba(0, 209, 255, 0.15);
+    --shadow-glow: 0 0 30px rgba(16, 185, 129, 0.2);
 
     --backdrop-blur: blur(20px);
     /* Stronger blur */
@@ -46,8 +46,8 @@
     --radius-lg: 24px;
     --radius-full: 9999px;
 
-    --gradient-1: linear-gradient(135deg, #00d1ff 0%, #6366f1 100%);
-    --gradient-premium: linear-gradient(135deg, #00d1ff 0%, #0099cc 50%, #006699 100%);
+    --gradient-1: linear-gradient(135deg, #10b981 0%, #065f46 100%);
+    --gradient-premium: linear-gradient(135deg, #10b981 0%, #059669 50%, #064e3b 100%);
     --gradient-dark: linear-gradient(135deg, #161a22 0%, #0a0c10 100%);
     --glass-border: rgba(255, 255, 255, 0.12);
 }
@@ -78,8 +78,8 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 0% 0%, rgba(0, 209, 255, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+    background: radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(6, 95, 70, 0.05) 0%, transparent 50%),
         var(--bg);
     pointer-events: none;
     z-index: -1;

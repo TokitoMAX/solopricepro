@@ -70,7 +70,7 @@ const Dashboard = {
             ${onboardingHtml}
 
             <!-- COCKPIT CARD (QONTO INSPIRED) -->
-            <div class="cockpit-card glass" style="grid-column: 1 / -1; padding: 2.5rem; border-radius: var(--radius-lg); margin-bottom: 3rem; position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(0, 209, 255, 0.05), rgba(99, 102, 241, 0.05)); border: 1px solid var(--glass-border);">
+            <div class="cockpit-card glass" style="grid-column: 1 / -1; padding: 2.5rem; border-radius: var(--radius-lg); margin-bottom: 3rem; position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(16, 185, 129, 0.05), rgba(6, 95, 70, 0.05)); border: 1px solid var(--glass-border);">
                 <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, var(--primary-glass) 0%, transparent 70%); pointer-events: none;"></div>
                 
                 <div class="cockpit-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2.5rem;">
