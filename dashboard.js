@@ -73,10 +73,9 @@ const Dashboard = {
             <div class="bento-grid" style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; margin-bottom: 3rem;">
                 
                 <!-- BENTO: Finance Cockpit (Span 8) -->
-                <div class="bento-item glass" style="grid-column: span 8; padding: 2.5rem; border-radius: 24px; position: relative; overflow: hidden; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); display: flex; flex-direction: column;">
-                    <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, var(--primary-glass) 0%, transparent 70%); pointer-events: none; opacity: 0.5;"></div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                <div class="bento-item glass-premium hover-lift" style="grid-column: span 8; padding: 2.5rem; border-radius: 24px; position: relative; overflow: hidden; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light); display: flex; flex-direction: column; box-shadow: var(--shadow-premium); transition: all 0.3s ease;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; position: relative; z-index: 1;">
                         <div>
                             <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">Salaire Net Encaissé</span>
                             <div style="font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; color: var(--white); line-height: 1;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(currentNet) : currentNet}</div>
@@ -119,8 +118,9 @@ const Dashboard = {
                 </div>
 
                 <!-- BENTO: Pipeline (Span 4) -->
-                <div class="bento-item glass" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                <div class="bento-item glass-premium hover-lift" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; position: relative; z-index: 1;">
                         <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(99, 102, 241, 0.1); color: #6366f1; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
                             <i class="fas fa-filter"></i>
                         </div>
@@ -133,8 +133,9 @@ const Dashboard = {
                 </div>
 
                 <!-- BENTO: Goal (Span 4) -->
-                <div class="bento-item glass" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); position: relative; overflow: hidden;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                <div class="bento-item glass-premium hover-lift" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; overflow: hidden; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; position: relative; z-index: 1;">
                         <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
                             <i class="fas fa-bullseye"></i>
                         </div>
@@ -158,8 +159,9 @@ const Dashboard = {
                 </div>
 
                 <!-- BENTO: Quick Actions (Span 4) -->
-                <div class="bento-item glass" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); display: flex; flex-direction: column;">
-                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1.5rem; display: block;">Actions Rapides</span>
+                <div class="bento-item glass-premium hover-lift" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; position: relative; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);"></div>
+                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1.5rem; display: block; position: relative; z-index: 1;">Actions Rapides</span>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1;">
                         <button onclick="App.navigateTo('scoper');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
                             <i class="fas fa-magic" style="font-size: 1.2rem; color: var(--primary-light);"></i> Scoper
@@ -177,8 +179,9 @@ const Dashboard = {
                 </div>
 
                 <!-- BENTO: Recent Docs (Span 12 -> full width at bottom) -->
-                <div class="bento-item glass" style="grid-column: span 12; padding: 2.5rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div class="bento-item glass-premium hover-lift" style="grid-column: span 12; padding: 2.5rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; transition: all 0.3s ease;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; position: relative; z-index: 1;">
                         <h2 style="font-size: 1.1rem; font-weight: 800; color: white; margin: 0;">Flux de Documents Récents</h2>
                         <button class="button-ghost small" onclick="App.navigateTo('quotes')" style="color: var(--primary-light); background: transparent; border: none; font-weight: 600; cursor: pointer;">Tout voir →</button>
                     </div>
