@@ -83,7 +83,7 @@ const Expenses = {
                         </tr>
                     </thead>
                     <tbody>
-                        ${expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => {
+                        ${expenses.length > 0 ? expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => {
             const cat = this.getCategoryConfig(e.category);
             return `
                             <tr class="glass-row" style="transition: all 0.2s ease;">
@@ -128,20 +128,20 @@ const Expenses = {
                                 </td>
                             </tr>
                         `}
-                    </tbody >
-                </table >
-            </div >
+                    </tbody>
+                </table>
+            </div>
 
-    <style>
-        .glass-row:hover {
-            background: rgba(255,255,255,0.03) !important;
-        transform: translateX(4px);
+            <style>
+                .glass-row:hover {
+                    background: rgba(255,255,255,0.03) !important;
+                    transform: translateX(4px);
                 }
-        .data-table th {border: none !important; }
-        .data-table td {border: none !important; }
-        .glass-row {background: rgba(255,255,255,0.01); }
-    </style>
-`;
+                .data-table th { border: none !important; }
+                .data-table td { border: none !important; }
+                .glass-row { background: rgba(255,255,255,0.01); }
+            </style>
+        `;
     },
 
     showAddForm() {
@@ -149,7 +149,7 @@ const Expenses = {
         const quotes = Storage.getQuotes() || [];
 
         container.innerHTML = `
-    < div class="glass-card" style = "padding: 2rem; border: 1px solid var(--primary-glass); margin-bottom: 2rem; animation: slideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);" >
+            <div class="glass-card" style="padding: 2rem; border: 1px solid var(--primary-glass); margin-bottom: 2rem; animation: slideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <h3 style="font-weight: 800; font-size: 1.2rem; color: white;">Saisir une Transaction</h3>
                     <button class="btn-icon" onclick="document.getElementById('expense-form-container').innerHTML=''" style="color: var(--text-muted);">
@@ -186,9 +186,9 @@ const Expenses = {
                             <select name="projectId" class="form-input" style="background: rgba(255,255,255,0.05);">
                                 <option value="">Dépense de structure</option>
                                 ${quotes.map(q => {
-                                    const client = Storage.getClient(q.clientId);
-                                    return `<option value="${q.id}">${q.number} - ${client?.name || 'Client'}</option>`;
-                                }).join('')}
+            const client = Storage.getClient(q.clientId);
+            return `<option value="${q.id}">${q.number} - ${client?.name || 'Client'}</option>`;
+        }).join('')}
                             </select>
                         </div>
                         <div class="form-group">
@@ -201,8 +201,8 @@ const Expenses = {
                         <button type="submit" class="button-primary" style="padding: 0.75rem 2rem; border-radius: 10px; font-weight: 800;">Enregistrer</button>
                     </div>
                 </form>
-            </div >
-    `;
+            </div>
+        `;
     },
 
     async save(e) {
