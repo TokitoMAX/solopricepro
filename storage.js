@@ -287,22 +287,43 @@ const Storage = {
     async uploadLogo(file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('path', `logos/${Date.now()}_${file.name}`); // Unique path
+        formData.append('path', `logos/${Date.now()}_${file.name}`);
 
         try {
             const res = await fetch(`${Auth.apiBase}/api/data/storage/upload/logos`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${Auth.token}`
-                },
+                headers: { 'Authorization': `Bearer ${Auth.token}` },
                 body: formData
             });
 
             if (!res.ok) throw new Error('Upload failed');
             const data = await res.json();
-            return data.publicUrl; // Return only the string URL as expected by profile.js
+            return data.publicUrl;
         } catch (err) {
             console.error('Logo upload error:', err);
+            throw err;
+        }
+    },
+
+    // Helper: Upload avatar to Supabase Storage
+    async uploadAvatar(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const ext = file.name.split('.').pop();
+        formData.append('path', `avatars/${Auth.user.id}_profile.${ext}`);
+
+        try {
+            const res = await fetch(`${Auth.apiBase}/api/data/storage/upload/avatars`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${Auth.token}` },
+                body: formData
+            });
+
+            if (!res.ok) throw new Error('Upload failed');
+            const data = await res.json();
+            return data.publicUrl;
+        } catch (err) {
+            console.error('Avatar upload error:', err);
             throw err;
         }
     },

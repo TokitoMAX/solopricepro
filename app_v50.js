@@ -793,7 +793,11 @@ const App = {
 
             infoContainer.innerHTML = `
                 <div class="user-profile" style="cursor: pointer;">
-                    <div class="user-avatar" onclick="App.navigateTo('profile')">${user.company?.name?.charAt(0) || user.email?.charAt(0) || 'U'}</div>
+                    <div class="user-avatar" onclick="App.navigateTo('profile')" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        ${user.user_metadata?.avatar_url
+                    ? `<img src="${user.user_metadata.avatar_url}" style="width: 100%; height: 100%; object-fit: cover;">`
+                    : (user.company?.name?.charAt(0) || user.email?.charAt(0) || 'U')}
+                    </div>
                     <div class="user-details">
                         <div onclick="App.navigateTo('profile')">
                             <span class="user-name">${user.company?.name || user.email}</span>

@@ -243,31 +243,57 @@ const Network = {
                 </div>
             ` : `
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                    ${experts.map(e => `
-                        <div class="glass" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); border-left: 4px solid var(--primary); position: relative;">
-                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                <div style="width: 50px; height: 50px; background: var(--primary-glass); color: var(--primary-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.3rem; border: 1px solid var(--primary-glass);">
-                                    ${(e.name || '?').charAt(0).toUpperCase()}
+                    ${await (async () => {
+                const expertCards = await Promise.all(experts.map(async e => {
+                    const ratings = await Ratings.getUserRatings(e.id);
+                    const canRate = Auth.user && Auth.user.id !== e.id;
+                    const hasAvatar = e.user_metadata?.avatar_url || e.avatar_url;
+
+                    return `
+                                <div class="glass" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); border-left: 4px solid var(--primary); position: relative; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                        <div style="width: 50px; height: 50px; background: var(--primary-glass); color: var(--primary-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.3rem; border: 1px solid var(--primary-glass); overflow: hidden;">
+                                            ${hasAvatar
+                            ? `<img src="${hasAvatar}" style="width:100%; height:100%; object-fit:cover;">`
+                            : (e.name || '?').charAt(0).toUpperCase()}
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <h3 style="margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                                                ${e.name}
+                                                <span style="font-size: 0.55rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px;">VÉRIFIÉ</span>
+                                            </h3>
+                                            <div style="display: flex; align-items: center; gap: 5px; margin-top: 2px;">
+                                                ${Ratings.renderStars(ratings.average)}
+                                                <span style="font-size: 0.7rem; color: var(--text-muted);">(${ratings.count} avis)</span>
+                                            </div>
+                                        </div>
+                                        ${isAdmin ? `
+                                        <button onclick="Network.deleteEcosystemExpert('${e.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                        ` : ''}
+                                    </div>
+                                    <p style="margin: 2px 0 0; color: var(--primary-light); font-size: 0.82rem; font-weight: 600; margin-bottom: 0.5rem;">${e.specialty || ''}</p>
+                                    ${e.city ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;"><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>${e.city}</div>` : ''}
+                                    ${e.description ? `<p style="font-size: 0.82rem; color: var(--text-light); line-height: 1.5; margin-bottom: 1.25rem;">${e.description}</p>` : ''}
+                                    
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                        ${e.portfolio ? `
+                                        <a href="${e.portfolio}" target="_blank" rel="noopener noreferrer" class="button-secondary sm" style="font-size: 0.75rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                            <i class="fas fa-external-link-alt"></i> Portfolio
+                                        </a>` : ''}
+                                        <a href="mailto:${e.email}" class="button-secondary sm" style="font-size: 0.75rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                            <i class="fas fa-envelope"></i> Contacter
+                                        </a>
+                                        ${canRate ? `
+                                        <button class="button-primary small" style="font-size: 0.75rem; background: var(--primary-glass); color: var(--primary-light); border: 1px solid var(--primary-glass);" onclick="Ratings.showRatingModal('${e.id}', '${e.name.replace(/'/g, "\\'")}')">
+                                            ⭐ Noter
+                                        </button>
+                                        ` : ''}
+                                    </div>
                                 </div>
-                                <div style="flex: 1;">
-                                    <h3 style="margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
-                                        ${e.name}
-                                        <span style="font-size: 0.55rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px;">VÉRIFIÉ</span>
-                                    </h3>
-                                    <p style="margin: 2px 0 0; color: var(--primary-light); font-size: 0.82rem; font-weight: 600;">${e.specialty || ''}</p>
-                                </div>
-                                ${isAdmin ? `
-                                <button onclick="Network.deleteEcosystemExpert('${e.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;" title="Supprimer"></button>
-                                ` : ''}
-                            </div>
-                            ${e.city ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;"><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>${e.city}</div>` : ''}
-                            ${e.description ? `<p style="font-size: 0.82rem; color: var(--text-light); line-height: 1.5; margin-bottom: 1rem;">${e.description}</p>` : ''}
-                            ${e.portfolio ? `
-                            <a href="${e.portfolio}" target="_blank" rel="noopener noreferrer" class="button-secondary sm" style="font-size: 0.75rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
-                                <i class="fas fa-external-link-alt"></i> Portfolio / LinkedIn
-                            </a>` : ''}
-                        </div>
-                    `).join('')}
+                            `;
+                }));
+                return expertCards.join('');
+            })()}
                 </div>
             `}
         `;

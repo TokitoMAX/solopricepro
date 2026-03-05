@@ -165,7 +165,6 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
         console.log(`[STORAGE-UPLOAD] 📤 Uploading to bucket: logos | Path: ${bodyPath}`);
 
         // Ensure bucket exists (requires Service Role Key)
-        // Note: In a production environment, you might want to do this once at startup
         const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
         if (bucketError) throw bucketError;
 
@@ -179,9 +178,6 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
             if (createError) throw createError;
         }
 
-        // Optional: Update bucket if it exists but might have old limits? 
-        // Supabase updateBucket requires specific permissions, let's just try to upload and handle errors gracefully.
-
         // Upload to bucket
         const { data, error: uploadError } = await supabase.storage.from('logos').upload(bodyPath, file.buffer, {
             contentType: file.mimetype,
@@ -190,7 +186,6 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
 
         if (uploadError) {
             console.error("[STORAGE-UPLOAD] ❌ Supabase Upload Error:", uploadError);
-            console.error("[STORAGE-UPLOAD] Full Error Object:", JSON.stringify(uploadError, null, 2));
             return res.status(400).json({
                 success: false,
                 message: "L'envoi vers Supabase a échoué. Vérifiez le type et la taille de l'image (max 2Mo).",
@@ -207,6 +202,54 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
     } catch (err) {
         console.error(`[STORAGE-UPLOAD] ❌ Error:`, err);
         res.status(500).json({ message: "Error uploading file", error: err.message });
+    }
+});
+
+// Storage Upload (Avatars)
+router.post('/storage/upload/avatars', upload.single('file'), async (req, res) => {
+    const supabase = req.app.get('supabase');
+    const file = req.file;
+    const bodyPath = req.body.path;
+
+    if (!file) return res.status(400).json({ message: "No file uploaded" });
+
+    try {
+        console.log(`[STORAGE-UPLOAD] 📤 Uploading to bucket: avatars | Path: ${bodyPath}`);
+
+        // Ensure bucket exists
+        const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+        if (bucketError) throw bucketError;
+
+        if (!buckets.find(b => b.id === 'avatars')) {
+            console.log("[STORAGE-UPLOAD] 🏗️ Creating 'avatars' bucket...");
+            const { error: createError } = await supabase.storage.createBucket('avatars', {
+                public: true,
+                allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
+                fileSizeLimit: 1048576 // 1MB for avatars
+            });
+            if (createError) throw createError;
+        }
+
+        // Upload to bucket
+        const { data, error: uploadError } = await supabase.storage.from('avatars').upload(bodyPath, file.buffer, {
+            contentType: file.mimetype,
+            upsert: true
+        });
+
+        if (uploadError) {
+            console.error("[STORAGE-UPLOAD] ❌ Supabase Upload Error:", uploadError);
+            return res.status(400).json({
+                success: false,
+                message: "L'envoi de l'avatar a échoué. Max 1Mo.",
+                error: uploadError.message
+            });
+        }
+
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(bodyPath);
+        res.json({ success: true, publicUrl });
+    } catch (err) {
+        console.error(`[STORAGE-UPLOAD] ❌ Error:`, err);
+        res.status(500).json({ message: "Error uploading avatar", error: err.message });
     }
 });
 

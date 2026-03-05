@@ -138,6 +138,7 @@ const paymentRoutes = require('./backend/routes/payments');
 const adminRoutes = require('./backend/routes/admin'); // [NEW] Admin Routes
 const marketplaceRoutes = require('./backend/routes/marketplace'); // [NEW] Marketplace Routes
 const publicRoutes = require('./backend/routes/public'); // [NEW] Public Routes (No Auth)
+const ratingsRoutes = require('./backend/routes/ratings'); // [NEW] Ratings Routes
 
 // Supabase Guard Middleware for Auth & Data Routes
 app.use(['/api/auth', '/api/data', '/api/admin', '/api/marketplace'], (req, res, next) => {
@@ -157,6 +158,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes); // [NEW] Mount Admin API
 app.use('/api/marketplace', marketplaceRoutes); // [NEW] Mount Marketplace API
 app.use('/api/public', publicRoutes); // [NEW] Mount Public API (Shared Links)
+app.use('/api/ratings', ratingsRoutes); // [NEW] Mount Ratings API
 
 // 2. Static Files
 app.use(express.static(process.cwd()));

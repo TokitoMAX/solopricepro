@@ -23,6 +23,23 @@ const Profile = {
 
             <div class="profile-layout">
                 <div class="profile-section">
+                    <div class="glass-card" style="padding: 2rem; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 2rem;">
+                        <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Photo de Profil</h2>
+                        <div class="avatar-upload-container" style="display: flex; gap: 2rem; align-items: center;">
+                            <div id="avatar-preview" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background: var(--bg-sidebar); border: 2px solid var(--primary-glass); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                ${user.user_metadata?.avatar_url ? `<img src="${user.user_metadata.avatar_url}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-user" style="font-size: 3rem; color: var(--text-muted);"></i>`}
+                            </div>
+                            <div style="flex: 1;">
+                                <input type="file" id="avatar-input" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="Profile.handleAvatarUpload(event)">
+                                <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                                    <button type="button" class="button-primary small" onclick="document.getElementById('avatar-input').click()">Changer la photo</button>
+                                    ${user.user_metadata?.avatar_url ? `<button type="button" class="button-danger small" onclick="Profile.removeAvatar()">Supprimer</button>` : ''}
+                                </div>
+                                <p class="text-xs text-muted">PNG, JPG ou WebP. Max 1 Mo. Cette photo sera visible dans l'écosystème SoloPrice.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="glass-card" style="padding: 2rem; border-radius: 20px; border: 1px solid var(--border);">
                         <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Identité Professionnelle</h2>
                         <form id="company-form" onsubmit="Profile.save(event)">
@@ -442,6 +459,22 @@ const Profile = {
             btn.textContent = 'Enregistrement…';
             btn.disabled = true;
 
+            // Handle Avatar Upload First
+            let avatarUrl = user.user_metadata?.avatar_url || '';
+            if (window.pendingAvatarFile) {
+                try {
+                    avatarUrl = await Storage.uploadAvatar(window.pendingAvatarFile);
+                    window.pendingAvatarFile = null;
+                } catch (err) {
+                    console.error('Avatar upload failed:', err);
+                    App.showNotification("Échec de l'upload de la photo.", 'error');
+                }
+            } else if (window.removeAvatarPending) {
+                avatarUrl = '';
+                window.removeAvatarPending = false;
+            }
+
+            // Handle Logo Upload Next
             if (window.pendingLogoFile) {
                 try {
                     const publicUrl = await Storage.uploadLogo(window.pendingLogoFile);
@@ -453,7 +486,13 @@ const Profile = {
                 }
             }
 
-            await Storage.updateUser({ first_name: firstName, last_name: lastName, company: companyData });
+            // Update user with both metadata (including avatar) and company data
+            await Storage.updateUser({
+                first_name: firstName,
+                last_name: lastName,
+                avatar_url: avatarUrl,
+                company: companyData
+            });
 
             App.renderUserInfo();
             App.showNotification('Profil mis à jour avec succès !', 'success');
@@ -466,6 +505,29 @@ const Profile = {
             App.showNotification('Erreur lors de la sauvegarde.', 'error');
             e.target.querySelector('button[type="submit"]').disabled = false;
         }
+    },
+
+    handleAvatarUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 1024 * 1024) { App.showNotification('Image trop lourde (1 Mo max)', 'error'); return; }
+
+        window.pendingAvatarFile = file;
+        window.removeAvatarPending = false;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            document.getElementById('avatar-preview').innerHTML = `<img src="${event.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
+            App.showNotification("Photo sélectionnée. N'oubliez pas d'enregistrer.", 'info');
+        };
+        reader.readAsDataURL(file);
+    },
+
+    removeAvatar() {
+        window.pendingAvatarFile = null;
+        window.removeAvatarPending = true;
+        document.getElementById('avatar-preview').innerHTML = `<i class="fas fa-user" style="font-size: 3rem; color: var(--text-muted);"></i>`;
+        App.showNotification('Photo supprimée. Enregistrez pour confirmer.', 'info');
     },
 
     handleLogoUpload(e) {
