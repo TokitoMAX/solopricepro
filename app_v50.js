@@ -923,15 +923,16 @@ const App = {
 
             <!-- Expert -->
             <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
-                <div class="card-badge" style="background: #10b981;">ACCÉLÉRATEUR BUSINESS</div>
+                <div class="card-badge" style="background: #10b981;">TOUT INCLUS</div>
                 <div class="card-tier" style="color: #34d399;">PACK EXPERT</div>
                 <div class="card-price">29€<span>/mois</span></div>
-                <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
+                <div class="card-value-tag">Pro + outils pour décrocher des missions</div>
                 <ul class="card-features-mini">
                     <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Stratégie</strong> & Closing</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Journal de Bord</strong></li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Profil Expert</strong> mis en avant</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Marketplace illimitée</strong> — répondre à toutes les missions</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Journal de Bord</strong> — tracker humeur, focus & succès du jour</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Coach IA</strong> — analyses et conseils business personnalisés</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Profil visible</strong> dans le réseau de prestataires</li>
                 </ul>
                 <button class="card-select-btn expert" style="background: #10b981; color: white;">Devenir Expert</button>
             </div>
