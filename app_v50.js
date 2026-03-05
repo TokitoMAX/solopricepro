@@ -299,6 +299,68 @@ const App = {
         });
     },
 
+    /**
+     * INIT SIDE PANEL SYSTEM
+     * Injects the HTML structure for the global side drawer
+     */
+    initSidePanel() {
+        if (document.getElementById('sp-side-panel')) return;
+
+        const html = `
+            <div id="sp-side-panel-overlay" class="side-panel-overlay" onclick="App.hideSidePanel()"></div>
+            <div id="sp-side-panel" class="side-panel">
+                <div class="side-panel-header">
+                    <h2 id="sp-side-panel-title" class="side-panel-title">Détails</h2>
+                    <div class="side-panel-close" onclick="App.hideSidePanel()">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                <div id="sp-side-panel-content" class="side-panel-content">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    /**
+     * SHOW SIDE PANEL
+     * @param {string} title 
+     * @param {string} contentHTML 
+     */
+    showSidePanel(title, contentHTML) {
+        this.initSidePanel(); // Ensure it exists
+
+        const panel = document.getElementById('sp-side-panel');
+        const overlay = document.getElementById('sp-side-panel-overlay');
+        const titleEl = document.getElementById('sp-side-panel-title');
+        const contentEl = document.getElementById('sp-side-panel-content');
+
+        if (!panel || !overlay) return;
+
+        titleEl.textContent = title;
+        contentEl.innerHTML = contentHTML;
+
+        // Force a small delay for the transition to trigger if first inject
+        setTimeout(() => {
+            panel.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scroll
+        }, 10);
+    },
+
+    /**
+     * HIDE SIDE PANEL
+     */
+    hideSidePanel() {
+        const panel = document.getElementById('sp-side-panel');
+        const overlay = document.getElementById('sp-side-panel-overlay');
+
+        if (panel) panel.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scroll
+    },
+
     setupMobileOverlay() {
         if (!document.querySelector('.sidebar-backdrop')) {
             const overlay = document.createElement('div');

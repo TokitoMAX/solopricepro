@@ -19,248 +19,255 @@ const Kanban = {
         // --- TRUE NET CASH CALCULATION ---
         const paidInvoices = invoices.filter(i => i.status === 'paid');
         const totalCollected = paidInvoices.reduce((sum, inv) => sum + (parseFloat(inv.total) || 0), 0);
-
         const totalExpenses = expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
 
-        // Exact URSSAF provision only on collected money
         let urssafRate = typeof TaxEngine !== 'undefined' ? TaxEngine.getSocialRate() : parseFloat(Storage.get('sp_tax_rate_social') || 21.2);
         const urssafProvision = totalCollected * (urssafRate / 100);
-
         const trueNetCash = totalCollected - totalExpenses - urssafProvision;
 
         container.innerHTML = `
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Pilotage du Cash-flow</h1>
-                    <p class="page-subtitle">Suivi visuel strict. Aucune simulation. Que du réel.</p>
+            <div class="page-header" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+                    <div>
+                        <h1 class="page-title" style="font-size: 2.5rem; font-weight: 900; letter-spacing: -1.5px;">Trésorerie <span class="gradient-text">Réelle</span></h1>
+                        <p class="page-subtitle" style="font-size: 1.1rem; opacity: 0.7;">Votre centre de commandement financier. Zéro fiction.</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- TABLEAU DE BORD DE TRÉSORERIE NETTE -->
-            <div class="glass-card" style="margin-top: 1rem; margin-bottom: 2rem; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary);">
+            <!-- ULTRA-PREMIUM PILOTAGE COCKPIT -->
+            <div class="cockpit-unified glass-premium" style="margin-bottom: 3rem; padding: 2rem; border-radius: 24px; border: 1px solid var(--glass-border-light); position: relative; overflow: hidden; background: rgba(255,255,255,0.01);">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--primary-light), transparent); opacity: 0.3;"></div>
                 
-                <div style="flex: 1; text-align: center; border-right: 1px solid rgba(255,255,255,0.1);">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Total Encaissé Bruts</div>
-                    <div style="font-size: 1.5rem; font-weight: 900; color: #10b981;">+ ${App.formatCurrency(totalCollected)}</div>
-                </div>
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 2rem; align-items: center;">
+                    
+                    <!-- Main Metric -->
+                    <div style="padding-right: 2rem; border-right: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size: 0.75rem; color: var(--primary-light); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; margin-bottom: 0.5rem;">
+                            <i class="fas fa-vault" style="margin-right: 8px;"></i> TRÉSORERIE NETTE
+                        </div>
+                        <div style="font-size: 3rem; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -1px;">
+                            ${App.formatCurrency(trueNetCash)}
+                        </div>
+                        <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;"></span>
+                            Disponible immédiatement
+                        </div>
+                    </div>
 
-                <div style="flex: 1; text-align: center; border-right: 1px solid rgba(255,255,255,0.1);">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Dépenses / Charges</div>
-                    <div style="font-size: 1.2rem; font-weight: 900; color: #ef4444;">- ${App.formatCurrency(totalExpenses)}</div>
-                </div>
+                    <!-- Secondary Metrics -->
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem;">Encaissé (Brut)</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: #fff;">${App.formatCurrency(totalCollected)}</div>
+                    </div>
 
-                <div style="flex: 1; text-align: center;">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Provisions URSSAF (Dues)</div>
-                    <div style="font-size: 1.2rem; font-weight: 900; color: #f59e0b;">- ${App.formatCurrency(urssafProvision)}</div>
-                </div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem;">Provision URSSAF</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--warning);">${App.formatCurrency(urssafProvision)}</div>
+                    </div>
 
-                <div style="flex: 1.2; text-align: right; background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 12px; margin-left: 1rem;">
-                    <div style="font-size: 0.8rem; color: #10b981; text-transform: uppercase; font-weight: 800; margin-bottom: 5px;"><i class="fas fa-gem"></i> TRÉSORERIE NETTE (Reste à vivre)</div>
-                    <div style="font-size: 2rem; font-weight: 900; color: white;">${App.formatCurrency(trueNetCash)}</div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem;">Dépenses / Frais</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: #ef4444;">${App.formatCurrency(totalExpenses)}</div>
+                    </div>
                 </div>
-
             </div>
 
-            <div class="kanban-board">
-                <!-- Column: Leads -->
-                <div class="kanban-column">
-                    <div class="kanban-column-header">
-                        <span>PROSPECTS</span>
-                        <span class="badge">${leads.length}</span>
+            <div class="kanban-wrapper">
+                <div class="kanban-board">
+                    <!-- Column: Leads -->
+                    <div class="kanban-column">
+                        <div class="kanban-column-header">
+                            <div class="title-group">
+                                <i class="fas fa-bullseye" style="color: #3b82f6;"></i>
+                                <span>PROSPECTS</span>
+                            </div>
+                            <span class="badge">${leads.length}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            ${leads.length > 0 ? leads.map(lead => this.renderLeadCard(lead)).join('') : '<div class="kanban-empty-info">Aucun prospect</div>'}
+                        </div>
                     </div>
-                    <div class="kanban-cards">
-                        ${leads.length > 0 ? leads.map(lead => this.renderLeadCard(lead)).join('') : '<div class="kanban-empty-info">Aucun prospect</div>'}
-                    </div>
-                </div>
 
-                <!-- Column: Quotes (Draft/Sent) -->
-                <div class="kanban-column">
-                    <div class="kanban-column-header">
-                        <span>DEVIS ENVOYÉS</span>
-                        <span class="badge">${quotes.filter(q => q.status !== 'accepted').length}</span>
+                    <!-- Column: Quotes -->
+                    <div class="kanban-column">
+                        <div class="kanban-column-header">
+                            <div class="title-group">
+                                <i class="fas fa-file-invoice" style="color: #f59e0b;"></i>
+                                <span>DEVIS ENVOYÉS</span>
+                            </div>
+                            <span class="badge">${quotes.filter(q => q.status !== 'accepted').length}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            ${quotes.filter(q => q.status !== 'accepted').length > 0 ? quotes.filter(q => q.status !== 'accepted').map(quote => this.renderQuoteCard(quote)).join('') : '<div class="kanban-empty-info">Aucun devis envoyé</div>'}
+                        </div>
                     </div>
-                    <div class="kanban-cards">
-                        ${quotes.filter(q => q.status !== 'accepted').length > 0 ? quotes.filter(q => q.status !== 'accepted').map(quote => this.renderQuoteCard(quote)).join('') : '<div class="kanban-empty-info">Aucun devis envoyé</div>'}
-                    </div>
-                </div>
 
-                <!-- Column: In Progress / Invoices Sent -->
-                <div class="kanban-column">
-                    <div class="kanban-column-header">
-                        <span>À RÉCUPÉRER (Facturé)</span>
-                        <span class="badge">${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length}</span>
+                    <!-- Column: Invoiced -->
+                    <div class="kanban-column">
+                        <div class="kanban-column-header">
+                            <div class="title-group">
+                                <i class="fas fa-hourglass-half" style="color: #10b981;"></i>
+                                <span>À RÉCUPÉRER</span>
+                            </div>
+                            <span class="badge">${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            ${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length > 0 ? invoices.filter(i => i.status === 'sent' || i.status === 'overdue').map(invoice => this.renderInvoiceCard(invoice)).join('') : '<div class="kanban-empty-info">Aucune facture en attente</div>'}
+                        </div>
                     </div>
-                    <div class="kanban-cards">
-                        ${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length > 0 ? invoices.filter(i => i.status === 'sent' || i.status === 'overdue').map(invoice => this.renderInvoiceCard(invoice)).join('') : '<div class="kanban-empty-info">Aucune facture en attente</div>'}
-                    </div>
-                </div>
 
-                <!-- Column: Paid (Real Net Cash) -->
-                <div class="kanban-column">
-                    <div class="kanban-column-header">
-                        <span>ENCAISSÉ (Vrai Cash)</span>
-                        <span class="badge">${invoices.filter(i => i.status === 'paid').length}</span>
-                    </div>
-                    <div class="kanban-cards">
-                        ${invoices.filter(i => i.status === 'paid').length > 0 ? invoices.filter(i => i.status === 'paid').map(invoice => this.renderPaidCard(invoice)).join('') : '<div class="kanban-empty-info">Aucun encaissement réel</div>'}
+                    <!-- Column: Paid -->
+                    <div class="kanban-column focus-column">
+                        <div class="kanban-column-header">
+                            <div class="title-group">
+                                <i class="fas fa-circle-check" style="color: #a855f7;"></i>
+                                <span>ENCAISSÉ</span>
+                            </div>
+                            <span class="badge">${invoices.filter(i => i.status === 'paid').length}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            ${invoices.filter(i => i.status === 'paid').length > 0 ? invoices.filter(i => i.status === 'paid').map(invoice => this.renderPaidCard(invoice)).join('') : '<div class="kanban-empty-info">Aucun encaissement réel</div>'}
+                        </div>
                     </div>
                 </div>
             </div>
 
             <style>
+                .kanban-wrapper {
+                    margin-left: -2rem;
+                    margin-right: -2rem;
+                    padding-left: 2rem;
+                    padding-right: 2rem;
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
                 .kanban-board {
                     display: grid;
-                    grid-template-columns: repeat(4, 300px);
-                    gap: 1.25rem;
-                    align-items: flex-start;
-                    margin-top: 2rem;
-                    overflow-x: auto;
-                    padding: 0.5rem 0.5rem 2.5rem;
-                    cursor: grab;
-                }
-                .kanban-board:active { cursor: grabbing; }
-                
-                @media (max-width: 1024px) {
-                    .kanban-board {
-                        grid-template-columns: repeat(4, 280px);
-                        margin-left: -1rem;
-                        margin-right: -1rem;
-                        padding-left: 1rem;
-                        padding-right: 1rem;
-                    }
-                }
-                @media (max-width: 768px) {
-                    .kanban-board {
-                        display: flex;
-                        flex-direction: row;
-                        scroll-snap-type: x mandatory;
-                        padding-bottom: 1.5rem;
-                        gap: 1rem;
-                    }
-                    .kanban-column {
-                        min-width: 85vw;
-                        scroll-snap-align: center;
-                        flex-shrink: 0;
-                    }
+                    grid-template-columns: repeat(4, 320px);
+                    gap: 1.5rem;
+                    padding-bottom: 3rem;
+                    min-width: 100%;
                 }
                 .kanban-column {
-                    background: rgba(255, 255, 255, 0.02);
-                    backdrop-filter: blur(10px);
-                    border-radius: 20px;
-                    padding: 1.25rem;
-                    min-height: 600px;
+                    background: rgba(255, 255, 255, 0.015);
                     border: 1px solid var(--border);
-                    transition: all 0.3s ease;
+                    border-radius: 20px;
+                    padding: 1.5rem;
+                    min-height: 70vh;
+                    display: flex;
+                    flex-direction: column;
                 }
-                
-                /* Colonnes Colorées */
-                .kanban-column:nth-child(1) { border-top: 4px solid #3b82f6; } /* Blue - Leads */
-                .kanban-column:nth-child(2) { border-top: 4px solid #f59e0b; } /* Orange - Quotes */
-                .kanban-column:nth-child(3) { border-top: 4px solid #10b981; } /* Green - Invoiced */
-                .kanban-column:nth-child(4) { border-top: 4px solid #a855f7; } /* Purple - Paid */
-
+                .kanban-column.focus-column {
+                    background: rgba(168, 85, 247, 0.02);
+                    border-color: rgba(168, 85, 247, 0.1);
+                }
                 .kanban-column-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding-bottom: 1.25rem;
-                    border-bottom: 1px solid var(--border);
                     margin-bottom: 1.5rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 1px solid rgba(255,255,255,0.03);
                 }
-                .kanban-column-header span:first-child {
+                .kanban-column-header .title-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .kanban-column-header .title-group i { font-size: 0.9rem; }
+                .kanban-column-header .title-group span {
                     font-weight: 800;
                     font-size: 0.75rem;
-                    letter-spacing: 1.5px;
+                    letter-spacing: 1px;
                     color: var(--text-muted);
-                    text-transform: uppercase;
                 }
                 .kanban-column-header .badge {
-                    background: var(--border);
-                    color: var(--text-light);
-                    padding: 4px 10px;
-                    border-radius: 20px;
+                    background: rgba(255,255,255,0.05);
+                    color: var(--text-muted);
+                    padding: 2px 8px;
+                    border-radius: 8px;
                     font-size: 0.7rem;
-                    font-weight: 800;
+                    font-weight: 700;
                 }
                 .kanban-cards {
                     display: flex;
                     flex-direction: column;
-                    gap: 1.25rem;
+                    gap: 1rem;
                 }
                 .kanban-card {
-                    background: #0a0a0a;
+                    background: var(--bg-card);
                     border: 1px solid var(--border);
                     border-radius: 16px;
                     padding: 1.25rem;
                     cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                     position: relative;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                    transition: all 0.2s ease;
                 }
                 .kanban-card:hover {
-                    transform: translateY(-4px) scale(1.02);
-                    border-color: var(--primary);
-                    background: rgba(16, 185, 129, 0.05);
-                    box-shadow: 0 12px 24px rgba(0,0,0,0.4), 0 0 15px rgba(16, 185, 129, 0.1);
+                    border-color: var(--primary-light);
+                    background: rgba(255,255,255,0.03);
+                    box-shadow: var(--shadow-md);
                 }
                 .card-title {
                     font-weight: 700;
-                    font-size: 1rem;
-                    margin-bottom: 0.4rem;
+                    font-size: 0.95rem;
+                    margin-bottom: 0.3rem;
+                    color: #fff;
                     display: block;
-                    color: var(--white);
                 }
                 .card-subtitle {
                     font-size: 0.8rem;
                     color: var(--text-muted);
                     display: block;
-                    margin-bottom: 0.5rem;
                 }
-                .card-price {
+                .card-amount {
                     margin-top: 1rem;
-                    font-size: 1.2rem;
+                    font-size: 1.1rem;
                     font-weight: 800;
-                    color: var(--primary-light);
-                    display: block;
+                    color: #fff;
                 }
                 .card-footer {
                     margin-top: 1rem;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid rgba(255,255,255,0.03);
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    border-top: 1px solid var(--border);
-                    padding-top: 0.8rem;
                     font-size: 0.75rem;
                     color: var(--text-muted);
                 }
-                .card-footer .badge {
-                    padding: 3px 8px;
-                    border-radius: 6px;
-                    font-weight: 700;
-                    font-size: 0.65rem;
-                    color: white;
-                }
-                .kanban-empty-info {
-                    text-align: center;
-                    color: var(--text-muted);
-                    font-size: 0.8rem;
-                    padding: 2rem 1rem;
-                    border: 1px dashed var(--border);
-                    border-radius: 12px;
-                    opacity: 0.5;
-                }
             </style>
         `;
+
+        // Wait for DOM then init interaction
+        setTimeout(() => App.init3DTilt(), 50);
     },
 
+
     renderLeadCard(lead) {
+        const detailHTML = `
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="glass-card" style="padding: 1.5rem; border-left: 4px solid #3b82f6;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Activité / Source</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">${lead.activity || 'Non spécifié'}</div>
+                </div>
+                <div style="padding: 0 0.5rem;">
+                    <p style="color: var(--text-muted); line-height: 1.6;">Prospect identifié le ${App.formatDate(lead.createdAt)}. Prêt pour une conversion en devis.</p>
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                        <button class="button-primary" onclick="App.navigateTo('network', 'leads'); App.hideSidePanel()" style="flex: 1;">Voir sa fiche complète</button>
+                    </div>
+                </div>
+            </div>
+        `;
         return `
-            <div class="kanban-card" onclick="App.navigateTo('network', 'leads')">
+            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${lead.name.replace(/'/g, "\\'")}', \`${detailHTML}\`)">
+                <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                 <span class="card-title">${lead.name}</span>
                 <span class="card-subtitle">${lead.activity || 'Nouveau prospect'}</span>
                 <div class="card-footer">
                     <span>${App.formatDate(lead.createdAt)}</span>
-                    <span class="badge" style="background: #3b82f6;">Lead</span>
+                    <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2);">Lead</span>
                 </div>
             </div>
         `;
@@ -268,14 +275,37 @@ const Kanban = {
 
     renderQuoteCard(quote) {
         const client = Storage.getClient(quote.clientId);
+        const detailHTML = `
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="glass-card" style="padding: 1.5rem; border-left: 4px solid #f59e0b;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Montant du Devis</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">${App.formatCurrency(quote.total || 0)}</div>
+                </div>
+                <div style="padding: 0 0.5rem;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Numéro</div>
+                        <div style="font-weight: 600;">${quote.number}</div>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Statut Actuel</div>
+                        <div style="font-weight: 600;">${quote.status.toUpperCase()}</div>
+                    </div>
+                    <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                        <button class="button-primary" onclick="App.navigateTo('quotes'); App.hideSidePanel()">Aller au document</button>
+                        <button class="button-outline" onclick="App.hideSidePanel()">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        `;
         return `
-            <div class="kanban-card" onclick="App.navigateTo('quotes')">
+            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${client?.name.replace(/'/g, "\\'") || 'Client Unknown'}', \`${detailHTML}\`)">
+                <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                 <span class="card-title">${client?.name || 'Client inconnu'}</span>
                 <span class="card-subtitle">${quote.number}</span>
-                <span class="card-price">${App.formatCurrency(quote.total || 0)}</span>
+                <div class="card-amount">${App.formatCurrency(quote.total || 0)}</div>
                 <div class="card-footer">
                     <span>${App.formatDate(quote.createdAt)}</span>
-                    <span class="badge" style="background: #f59e0b;">Devis</span>
+                    <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2);">Devis</span>
                 </div>
             </div>
         `;
@@ -284,14 +314,38 @@ const Kanban = {
     renderInvoiceCard(invoice) {
         const client = Storage.getClient(invoice.clientId);
         const isOverdue = invoice.status === 'overdue';
+        const color = isOverdue ? '#ef4444' : '#10b981';
+        const detailHTML = `
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="glass-card" style="padding: 1.5rem; border-left: 4px solid ${color};">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Reste à percevoir</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">${App.formatCurrency(invoice.total || 0)}</div>
+                </div>
+                <div style="padding: 0 0.5rem;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Facture n°</div>
+                        <div style="font-weight: 600;">${invoice.number}</div>
+                    </div>
+                    <div style="margin-bottom: 1.5rem; color: ${isOverdue ? 'var(--danger)' : 'inherit'}">
+                        <i class="fas fa-calendar-exclamation" style="margin-right: 8px;"></i>
+                        En attente de règlement depuis le ${App.formatDate(invoice.createdAt)}
+                    </div>
+                    <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                        <button class="button-primary" onclick="App.navigateTo('invoices'); App.hideSidePanel()">Gérer la facture</button>
+                        <button class="button-outline" onclick="App.hideSidePanel()" style="color: var(--danger);">Marquer comme Encaissé</button>
+                    </div>
+                </div>
+            </div>
+        `;
         return `
-            <div class="kanban-card" onclick="App.navigateTo('invoices')">
+            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${client?.name.replace(/'/g, "\\'") || 'Client Unknown'}', \`${detailHTML}\`)">
+                <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                 <span class="card-title">${client?.name || 'Client inconnu'}</span>
                 <span class="card-subtitle">${invoice.number}</span>
-                <span class="card-price">${App.formatCurrency(invoice.total || 0)}</span>
+                <div class="card-amount">${App.formatCurrency(invoice.total || 0)}</div>
                 <div class="card-footer">
                     <span>${App.formatDate(invoice.createdAt)}</span>
-                    <span class="badge" style="background: ${isOverdue ? '#ef4444' : '#10b981'};">Facturé</span>
+                    <span class="badge" style="background: ${isOverdue ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; color: ${color}; border: 1px solid ${isOverdue ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'};">Facturé</span>
                 </div>
             </div>
         `;
@@ -299,14 +353,34 @@ const Kanban = {
 
     renderPaidCard(invoice) {
         const client = Storage.getClient(invoice.clientId);
+        const detailHTML = `
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="glass-card" style="padding: 1.5rem; border-left: 4px solid #a855f7; background: rgba(168, 85, 247, 0.05);">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Montant Encaissé</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">${App.formatCurrency(invoice.total)}</div>
+                </div>
+                <div style="padding: 0 0.5rem;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Facture n°</div>
+                        <div style="font-weight: 600;">${invoice.number}</div>
+                    </div>
+                    <div style="margin-bottom: 1.5rem; color: #a855f7; font-weight: 600;">
+                        <i class="fas fa-check-double" style="margin-right: 8px;"></i>
+                        Fonds confirmés en trésorerie.
+                    </div>
+                    <button class="button-outline" style="width: 100%;" onclick="App.navigateTo('invoices'); App.hideSidePanel()">Voir l'historique</button>
+                </div>
+            </div>
+        `;
         return `
-            <div class="kanban-card" onclick="App.navigateTo('invoices')">
+            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${client?.name.replace(/'/g, "\\'") || 'Client Unknown'}', \`${detailHTML}\`)">
+                <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                 <span class="card-title">${client?.name || 'Client inconnu'}</span>
                 <span class="card-subtitle">${invoice.number}</span>
-                <span class="card-price" style="color: #10b981;">+ ${App.formatCurrency(invoice.total)}</span>
+                <div class="card-amount" style="color: #a855f7;">+ ${App.formatCurrency(invoice.total)}</div>
                 <div class="card-footer">
                     <span>${App.formatDate(invoice.createdAt)}</span>
-                    <span class="badge" style="background: #10b981;">Payé</span>
+                    <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2);">Payé</span>
                 </div>
             </div>
         `;

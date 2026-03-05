@@ -28,7 +28,8 @@
     --bg-glass: rgba(10, 10, 12, 0.4);
 
     --text: #ffffff;
-    --text-muted: #888888;
+    --text-muted: #94a3b8;
+    /* Increased from #888888 for better contrast */
 
     --border: rgba(255, 255, 255, 0.04);
     /* Minimalist border */
@@ -95,6 +96,96 @@
 .tilt-card:hover .tilt-glare {
     opacity: 1;
 }
+
+/* SIDE PANEL SYSTEM (Side Drawer) */
+.side-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.side-panel-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: -500px;
+    width: 100%;
+    max-width: 480px;
+    height: 100%;
+    background: var(--bg-glass-heavy);
+    backdrop-filter: var(--bg-glass-blur);
+    border-left: 1px solid var(--glass-border);
+    z-index: 2001;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.side-panel.active {
+    right: 0;
+}
+
+.side-panel-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.side-panel-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.side-panel-close {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+}
+
+.side-panel-close:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.side-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+@media (max-width: 500px) {
+    .side-panel {
+        max-width: 100%;
+        right: -100%;
+    }
+}
+
+/* End Side Panel */
 
 /* End 3D Tilt */
 
