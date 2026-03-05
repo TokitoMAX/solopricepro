@@ -580,4 +580,61 @@ router.post('/restore-subscription', async (req, res) => {
     }
 });
 
+// @route   POST /api/auth/google-callback
+// @desc    Valide un token Supabase issu du flux Google OAuth et retourne une session app
+// @access  Public (token Supabase fourni par le client)
+router.post('/google-callback', async (req, res) => {
+    const { supabase_token, user_id, email, full_name, avatar_url } = req.body || {};
+    const supabase = req.app.get('supabase');
+
+    if (!supabase_token || !email) {
+        return res.status(400).json({ message: 'Token ou email manquant.' });
+    }
+
+    try {
+        console.log(`[GOOGLE-AUTH] Callback pour: ${email}`);
+
+        // 1. Vérifier que le token est valide auprès de Supabase
+        const { data: { user }, error: authErr } = await supabase.auth.getUser(supabase_token);
+        if (authErr || !user) {
+            console.error('[GOOGLE-AUTH] Token invalide:', authErr?.message);
+            return res.status(401).json({ message: 'Token Google invalide ou expiré.' });
+        }
+
+        console.log(`[GOOGLE-AUTH] Token valide pour: ${user.email}`);
+
+        // 2. S'assurer que le profil utilisateur existe dans sp_user_profile
+        const { createClient } = require('@supabase/supabase-js');
+        const adminClient = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        // Upsert du profil (pour la 1ère connexion Google)
+        await adminClient.from('sp_user_profile').upsert({
+            user_id: user.id,
+            email: user.email,
+            full_name: full_name || user.user_metadata?.full_name || '',
+            avatar_url: avatar_url || user.user_metadata?.avatar_url || ''
+        }, { onConflict: 'user_id', ignoreDuplicates: true });
+
+        // 3. Retourner le format attendu par Auth.handleAuthSuccess()
+        res.json({
+            user: {
+                id: user.id,
+                email: user.email,
+                user_metadata: user.user_metadata || {}
+            },
+            session: {
+                access_token: supabase_token // On réutilise le token Supabase comme jeton app
+            }
+        });
+
+        console.log(`[GOOGLE-AUTH] Callback réussi pour: ${user.email}`);
+    } catch (err) {
+        console.error('[GOOGLE-AUTH] Erreur callback:', err.message);
+        res.status(500).json({ message: 'Erreur lors de la vérification Google.' });
+    }
+});
+
 module.exports = router;

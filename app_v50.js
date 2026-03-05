@@ -53,6 +53,21 @@ const App = {
         }, 10000);
 
         try {
+            // --- Détection Callback Google OAuth ---
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('auth') === 'google') {
+                console.log('[GOOGLE-AUTH] Callback détecté, traitement en cours...');
+                if (typeof Auth !== 'undefined' && Auth.handleGoogleCallback) {
+                    const handled = await Auth.handleGoogleCallback();
+                    if (handled) {
+                        clearTimeout(safetyTimer);
+                        this.hideLoader();
+                        return;
+                    }
+                }
+            }
+            // --- Fin Callback Google ---
+
             console.log(' [APP] Step 1: Core components');
             this.setupNavigation();
             this.migrateData();

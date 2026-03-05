@@ -384,6 +384,130 @@ const Auth = {
 // Exposer Auth globalement
 window.Auth = Auth;
 
+// ============================================================
+// Supabase Client (pour Google OAuth uniquement)
+// ============================================================
+(function initSupabaseClient() {
+    try {
+        if (typeof supabase === 'undefined' || !supabase.createClient) {
+            console.warn('[SUPABASE-CLIENT] SDK non chargé. OAuth Google indisponible.');
+            return;
+        }
+        const SUPABASE_URL = 'https://kisldntelhrnilrihelr.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Fy9VImo4K_Xlqbx4d-L8jw_B3VwLm_8';
+        window.sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('[SUPABASE-CLIENT] Client initialisé pour OAuth.');
+    } catch (e) {
+        console.error('[SUPABASE-CLIENT] Erreur init:', e);
+    }
+})();
+
+// ============================================================
+// Google OAuth Login
+// ============================================================
+Auth.loginWithGoogle = async function () {
+    try {
+        if (!window.sbClient) {
+            if (typeof App !== 'undefined' && App.showNotification) {
+                App.showNotification('Connexion Google indisponible (SDK non chargé).', 'error');
+            }
+            return;
+        }
+
+        // Détermine l'URL de base de l'app
+        const redirectTo = window.location.origin + window.location.pathname + '?auth=google';
+
+        const { data, error } = await window.sbClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: redirectTo,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent'
+                }
+            }
+        });
+
+        if (error) {
+            console.error('[GOOGLE-AUTH] Erreur OAuth:', error);
+            if (typeof App !== 'undefined' && App.showNotification) {
+                App.showNotification('Erreur lors de la connexion Google : ' + error.message, 'error');
+            }
+        }
+        // Si succès → Supabase redirige automatiquement vers Google
+    } catch (err) {
+        console.error('[GOOGLE-AUTH] Exception:', err);
+    }
+};
+
+// ============================================================
+// Gestion du callback Google OAuth (après retour de Google)
+// ============================================================
+Auth.handleGoogleCallback = async function () {
+    if (!window.sbClient) return false;
+
+    try {
+        const { data: { session }, error } = await window.sbClient.auth.getSession();
+
+        if (error || !session) return false;
+
+        const user = session.user;
+        console.log('[GOOGLE-AUTH] Session récupérée pour:', user.email);
+
+        // Synchroniser avec le backend pour obtenir le token JWT applicatif
+        const response = await fetch(`${Auth.apiBase}/api/auth/google-callback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                supabase_token: session.access_token,
+                user_id: user.id,
+                email: user.email,
+                full_name: user.user_metadata?.full_name || '',
+                avatar_url: user.user_metadata?.avatar_url || ''
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            Auth.handleAuthSuccess(result);
+            // Nettoyer l'URL
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+            return true;
+        } else {
+            // Fallback : utiliser directement le token Supabase comme token app
+            console.warn('[GOOGLE-AUTH] Backend callback indisponible, utilisation du token Supabase.');
+            const userData = {
+                id: user.id,
+                email: user.email,
+                user_metadata: user.user_metadata || {},
+                company: { name: user.user_metadata?.full_name || user.email },
+                isPro: !!(user.user_metadata?.is_pro),
+                token: session.access_token
+            };
+
+            Auth.token = userData.token;
+            Auth.user = userData;
+            localStorage.setItem('sp_token', userData.token);
+            localStorage.setItem('sp_user', JSON.stringify(userData));
+
+            if (typeof Storage !== 'undefined') {
+                Storage.setUser(userData);
+            }
+
+            if (typeof closeAllModals === 'function') closeAllModals();
+            if (typeof App !== 'undefined' && App.enterApp) App.enterApp();
+
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+            return true;
+        }
+    } catch (err) {
+        console.error('[GOOGLE-AUTH] Callback error:', err);
+        return false;
+    }
+};
+
 try {
     Auth.init();
     console.log("Auth initialized");

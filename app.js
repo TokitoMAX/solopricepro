@@ -8,6 +8,21 @@ const App = {
     async init() {
         try {
             console.log(' SoloPrice Pro Initializing...');
+
+            // --- Détection Callback Google OAuth ---
+            // Si on revient d'un flux Google OAuth, on gère la session avant tout
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('auth') === 'google') {
+                console.log('[GOOGLE-AUTH] Callback détecté, traitement en cours...');
+                if (typeof Auth !== 'undefined' && Auth.handleGoogleCallback) {
+                    const handled = await Auth.handleGoogleCallback();
+                    if (handled) {
+                        this.hideLoader();
+                        return; // handleGoogleCallback appelle App.enterApp() lui-même
+                    }
+                }
+            }
+            // --- Fin Callback Google ---
             this.setupNavigation();
             this.migrateData();
             this.setupMobileOverlay();
