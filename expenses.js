@@ -22,6 +22,8 @@ const Expenses = {
         const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
 
         // Treasury Context
+        const leads = (typeof Storage !== 'undefined' && typeof Storage.getLeads === 'function') ? Storage.getLeads() : [];
+        const quotes = (typeof Storage !== 'undefined' && typeof Storage.getQuotes === 'function') ? Storage.getQuotes() : [];
         const invoices = Storage.getInvoices() || [];
         const totalCollected = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + (i.total || 0), 0);
         const socialRate = (typeof TaxEngine !== 'undefined' && TaxEngine.getSocialRate) ? TaxEngine.getSocialRate() : 21.1;
@@ -64,9 +66,58 @@ const Expenses = {
                 </div>
             </div>
 
-            <div id="expense-form-container"></div>
+            <!-- PIPELINE KANBAN (MASTER VIEW) -->
+            ${(typeof Kanban !== 'undefined') ? `
+            <div class="kanban-board" style="margin-bottom: 3rem;">
+                <!-- Column: Leads -->
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <span>PROSPECTS</span>
+                        <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;">${leads.length}</span>
+                    </div>
+                    <div class="kanban-cards">
+                        ${leads.length > 0 ? leads.map(lead => Kanban.renderLeadCard(lead)).join('') : '<div class="kanban-empty-info">Aucun prospect</div>'}
+                    </div>
+                </div>
 
-            <div class="glass-card" style="padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); animation: fadeInUp 0.6s ease-out;">
+                <!-- Column: Quotes (Draft/Sent) -->
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <span>DEVIS ENVOYÉS</span>
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b;">${quotes.filter(q => q.status !== 'accepted').length}</span>
+                    </div>
+                    <div class="kanban-cards">
+                        ${quotes.filter(q => q.status !== 'accepted').length > 0 ? quotes.filter(q => q.status !== 'accepted').map(quote => Kanban.renderQuoteCard(quote)).join('') : '<div class="kanban-empty-info">Aucun devis envoyé</div>'}
+                    </div>
+                </div>
+
+                <!-- Column: In Progress / Invoices Sent -->
+                <div class="kanban-column">
+                    <div class="kanban-column-header">
+                        <span>À RÉCUPÉRER (Facturé)</span>
+                        <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length}</span>
+                    </div>
+                    <div class="kanban-cards">
+                        ${invoices.filter(i => i.status === 'sent' || i.status === 'overdue').length > 0 ? invoices.filter(i => i.status === 'sent' || i.status === 'overdue').map(invoice => Kanban.renderInvoiceCard(invoice)).join('') : '<div class="kanban-empty-info">Aucune facture en attente</div>'}
+                    </div>
+                </div>
+
+                <!-- Column: Paid (Real Net Cash) -->
+                <div class="kanban-column" style="background: rgba(16, 185, 129, 0.02); border: 1px dashed rgba(16, 185, 129, 0.2);">
+                    <div class="kanban-column-header">
+                        <span style="color: #10b981;">ENCAISSÉ (Vrai Cash)</span>
+                        <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">${invoices.filter(i => i.status === 'paid').length}</span>
+                    </div>
+                    <div class="kanban-cards">
+                        ${invoices.filter(i => i.status === 'paid').length > 0 ? invoices.filter(i => i.status === 'paid').map(invoice => Kanban.renderPaidCard(invoice)).join('') : '<div class="kanban-empty-info" style="color: #10b981;">Aucun encaissement réel</div>'}
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+
+            <div id="expense-form-container" style="margin-bottom: 2rem;"></div>
+
+            <div class="glass-card transaction-journal" style="padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); animation: fadeInUp 0.6s ease-out;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h3 style="font-weight: 800; font-size: 1.1rem;">Journal des Transactions</h3>
                     <div style="font-size: 0.85rem; color: var(--text-muted);">${expenses.length} opération(s)</div>
@@ -140,6 +191,68 @@ const Expenses = {
                 .data-table th { border: none !important; }
                 .data-table td { border: none !important; }
                 .glass-row { background: rgba(255,255,255,0.01); }
+
+                /* Styles pour le Pipeline Kanban intégré */
+                .kanban-board {
+                    display: grid;
+                    grid-template-columns: repeat(4, minmax(250px, 1fr));
+                    gap: 1.25rem;
+                    align-items: flex-start;
+                    overflow-x: auto;
+                    padding-bottom: 1rem;
+                }
+                @media (max-width: 1024px) {
+                    .kanban-board {
+                        display: flex;
+                        flex-direction: row;
+                        scroll-snap-type: x mandatory;
+                        padding-bottom: 1.5rem;
+                        gap: 1rem;
+                    }
+                    .kanban-column {
+                        min-width: 85vw;
+                        scroll-snap-align: center;
+                        flex-shrink: 0;
+                    }
+                }
+                .kanban-column {
+                    background: var(--bg-glass);
+                    backdrop-filter: blur(16px);
+                    border-radius: 16px;
+                    padding: 1.25rem;
+                    min-height: 500px;
+                    border: 1px solid var(--border);
+                }
+                .kanban-column:nth-child(1) { border-top: 3px solid #3b82f6; } /* Blue - Leads */
+                .kanban-column:nth-child(2) { border-top: 3px solid #f59e0b; } /* Orange - Quotes */
+                .kanban-column:nth-child(3) { border-top: 3px solid #10b981; } /* Green - Invoiced */
+                .kanban-column:nth-child(4) { border-top: 3px solid #a855f7; } /* Purple - Paid */
+
+                .kanban-column-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+                .kanban-column-header span:first-child { font-weight: 800; font-size: 0.75rem; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; }
+                .kanban-column-header .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }
+                .kanban-cards { display: flex; flex-direction: column; gap: 1rem; }
+                .kanban-card {
+                    background: #121214;
+                    border: 1px solid var(--border-light);
+                    border-radius: 12px;
+                    padding: 1.25rem;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+                    position: relative;
+                }
+                .kanban-card:hover {
+                    transform: translateY(-4px) scale(1.02);
+                    border-color: rgba(255,255,255,0.1);
+                    background: rgba(255, 255, 255, 0.02);
+                    box-shadow: 0 12px 24px rgba(0,0,0,0.4), 0 0 15px rgba(255, 255, 255, 0.05);
+                }
+                .kanban-card .card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; display: block; color: var(--white); }
+                .kanban-card .card-subtitle { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem; }
+                .kanban-card .card-price { margin-top: 0.5rem; font-size: 1.1rem; font-weight: 800; color: var(--primary-light); display: block; }
+                .kanban-card .card-footer { margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); padding-top: 0.8rem; font-size: 0.7rem; color: var(--text-muted); }
+                .kanban-card .card-footer .badge { padding: 3px 6px; border-radius: 4px; font-weight: 700; font-size: 0.65rem; color: white; }
+                .kanban-empty-info { text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 2rem 1rem; border: 1px dashed var(--border); border-radius: 12px; opacity: 0.5; }
             </style>
         `;
     },
