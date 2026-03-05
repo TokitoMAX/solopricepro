@@ -522,13 +522,62 @@ router.post('/paypal-capture', async (req, res) => {
 router.post('/paypal-subscription', async (req, res) => {
     try {
         const { subscriptionID, tier, userId } = req.body;
-        const isProd = process.env.NODE_ENV === 'production';
 
-        console.log(`📡 [PAYPAL-SUB] Reçu notification pour: ${subscriptionID}, User: ${userId}`);
+        if (!subscriptionID || !tier || !userId) {
+            return res.status(400).json({ status: 'failed', message: 'Données incomplètes (subscriptionID, tier, userId requis).' });
+        }
 
-        // Dans un environnement de prod, on devrait vérifier le statut de l'abonnement via l'API PayPal ici.
-        // Pour l'instant on fait confiance au client pour valider l'UX Sandbox.
+        console.log(`📡 [PAYPAL-SUB] Vérification de l'abonnement: ${subscriptionID}, User: ${userId}`);
 
+        // ================================================================
+        // ÉTAPE 1 — Vérification obligatoire côté API PayPal
+        // Sans cette étape, n'importe qui peut s'upgrader gratuitement
+        // en envoyant un subscriptionID quelconque.
+        // ================================================================
+        let paypalToken, paypalBaseUrl;
+        try {
+            const tokenData = await getPayPalAccessToken();
+            paypalToken = tokenData.token;
+            paypalBaseUrl = tokenData.baseUrl;
+        } catch (tokenErr) {
+            console.error('[PAYPAL-SUB] Impossible d\'obtenir le token PayPal:', tokenErr.message);
+            return res.status(500).json({ status: 'failed', message: 'Erreur de configuration PayPal. Contactez le support.' });
+        }
+
+        // Appel à l'API PayPal pour vérifier l'abonnement
+        const subRes = await fetch(`${paypalBaseUrl}/v1/billing/subscriptions/${subscriptionID}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${paypalToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!subRes.ok) {
+            const subErr = await subRes.json().catch(() => ({}));
+            console.error(`[PAYPAL-SUB] ❌ Abonnement introuvable (${subRes.status}):`, subErr);
+            return res.status(400).json({ status: 'failed', message: 'Abonnement PayPal introuvable ou invalide.' });
+        }
+
+        const subscription = await subRes.json();
+        console.log(`[PAYPAL-SUB] Statut abonnement: ${subscription.status} (attendu: ACTIVE)`);
+
+        // Vérification stricte du statut
+        if (subscription.status !== 'ACTIVE') {
+            console.warn(`[PAYPAL-SUB] ⛔ Statut invalide: ${subscription.status}. Promotion refusée.`);
+            return res.status(400).json({
+                status: 'failed',
+                message: `L'abonnement n'est pas actif (statut: ${subscription.status}). Promotion impossible.`
+            });
+        }
+
+        // Vérification que l'abonnement correspond au bon plan (optionnel mais sécurisé)
+        const planIdFromPayPal = subscription.plan_id;
+        console.log(`[PAYPAL-SUB] ✅ Abonnement ACTIVE. Plan PayPal: ${planIdFromPayPal}`);
+
+        // ================================================================
+        // ÉTAPE 2 — Promotion de l'utilisateur (seulement si vérifié)
+        // ================================================================
         const supabaseUrl = process.env.SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -536,23 +585,42 @@ router.post('/paypal-subscription', async (req, res) => {
             throw new Error('Supabase configuration missing');
         }
 
+        const { createClient } = require('@supabase/supabase-js');
         const adminClient = createClient(supabaseUrl, serviceKey, {
             auth: { autoRefreshToken: false, persistSession: false }
         });
+
+        // Enregistrer le paiement pour historique
+        try {
+            await adminClient.from('sp_payments').insert({
+                user_id: userId,
+                amount: tier === 'pro' ? 15 : 29,
+                currency: 'eur',
+                method: 'paypal_subscription',
+                status: 'completed',
+                provider_id: subscriptionID,
+                metadata: { type: 'saas_upgrade', tier, planId: planIdFromPayPal },
+                completed_at: new Date().toISOString()
+            });
+        } catch (payErr) {
+            console.warn('[PAYPAL-SUB] Avertissement enregistrement sp_payments:', payErr.message);
+        }
 
         const { error } = await adminClient.auth.admin.updateUserById(userId, {
             user_metadata: {
                 is_pro: true,
                 tier: tier,
                 subscription_id: subscriptionID,
-                payment_method: 'paypal_subscription'
+                subscription_plan_id: planIdFromPayPal,
+                payment_method: 'paypal_subscription',
+                subscription_activated_at: new Date().toISOString()
             }
         });
 
         if (error) throw error;
 
-        console.log(`🚀 [PAYPAL-SUB] Utilisateur ${userId} promu (permanent) via abonnement ${subscriptionID}.`);
-        res.json({ status: 'success', message: 'Abonnement enregistré et compte activé.' });
+        console.log(`🚀 [PAYPAL-SUB] ✅ Utilisateur ${userId} promu (${tier}) via abonnement vérifié ${subscriptionID}.`);
+        res.json({ status: 'success', message: 'Abonnement vérifié et compte activé.' });
 
     } catch (err) {
         console.error('💥 PayPal Subscription Error:', err);

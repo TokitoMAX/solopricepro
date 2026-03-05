@@ -1,7 +1,10 @@
 /**
- * Storage Module for SoloPrice Pro (v4.3 Debug)
+ * Storage Module for SoloPrice Pro (v4.3)
  * Handles data synchronization with Supabase and local cache.
  */
+
+// Log conditionnel — actif seulement si localStorage.getItem('sp_debug') === '1'
+const _log = (...args) => { if (localStorage.getItem('sp_debug') === '1') console.log(...args); };
 
 // Simple event bus for reactivity
 const EventBus = {
@@ -719,8 +722,104 @@ const Storage = {
     },
 
     getStreak() {
-        // Simple streak calculation stub
-        return 1; // Todo: Implement real streak logic based on daily login/activity
+        // Calcul réel de la streak basé sur les entrées du journal de bord
+        try {
+            const journal = this.get(this.KEYS.JOURNAL) || [];
+            if (!journal.length) return 0;
+
+            // Trier les entrées par date décroissante
+            const sortedDates = journal
+                .map(e => new Date(e.date || e.createdAt || e.created_at).toDateString())
+                .filter(d => d !== 'Invalid Date');
+
+            // Dédupliquer les dates
+            const uniqueDates = [...new Set(sortedDates)]
+                .map(d => new Date(d))
+                .sort((a, b) => b - a); // Plus récent en premier
+
+            if (!uniqueDates.length) return 0;
+
+            // Vérifier si aujourd'hui ou hier est inclus (streak active)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            const mostRecent = new Date(uniqueDates[0]);
+            mostRecent.setHours(0, 0, 0, 0);
+
+            // Si la dernière entrée est plus ancienne qu'hier → streak brisée
+            if (mostRecent < yesterday) return 0;
+
+            // Compter les jours consécutifs
+            let streak = 1;
+            for (let i = 1; i < uniqueDates.length; i++) {
+                const prev = new Date(uniqueDates[i - 1]);
+                const curr = new Date(uniqueDates[i]);
+                prev.setHours(0, 0, 0, 0);
+                curr.setHours(0, 0, 0, 0);
+                const diff = (prev - curr) / (1000 * 60 * 60 * 24);
+                if (diff === 1) {
+                    streak++;
+                } else {
+                    break; // Rupture de la streak
+                }
+            }
+            return streak;
+        } catch (e) {
+            return 0;
+        }
+    },
+
+    getSubscriptionStatus() {
+        // Retourne les vraies informations d'abonnement depuis les métadonnées utilisateur
+        try {
+            const user = this.getUser();
+            const meta = user?.user_metadata || {};
+            const tier = this.getTier();
+            const isPro = this.isPro();
+
+            if (!isPro || tier === 'free' || tier === 'standard') {
+                return { active: false, tier: 'standard', daysLeft: 0, expiryDate: null };
+            }
+
+            // Lire la date d'expiration stockée lors de l'activation PayPal
+            const expiryStr = meta.subscriptionExpiry || meta.subscription_expiry || null;
+            const activatedAt = meta.subscription_activated_at || meta.subscriptionActivatedAt || null;
+
+            if (expiryStr) {
+                const expiryDate = new Date(expiryStr);
+                const now = new Date();
+                const daysLeft = Math.max(0, Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24)));
+                return {
+                    active: daysLeft > 0,
+                    tier,
+                    daysLeft,
+                    expiryDate: expiryDate.toISOString(),
+                    subscriptionId: meta.subscription_id || null
+                };
+            }
+
+            // Fallback : si pas de date d'expiration stockée mais abonnement actif (anciens comptes)
+            // On estime 30 jours depuis l'activation
+            if (activatedAt) {
+                const expiryDate = new Date(new Date(activatedAt).getTime() + 30 * 24 * 60 * 60 * 1000);
+                const now = new Date();
+                const daysLeft = Math.max(0, Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24)));
+                return {
+                    active: daysLeft > 0,
+                    tier,
+                    daysLeft,
+                    expiryDate: expiryDate.toISOString(),
+                    subscriptionId: meta.subscription_id || null
+                };
+            }
+
+            // Dernier fallback pour les comptes pro sans dates enregistrées
+            return { active: true, tier, daysLeft: null, expiryDate: null, subscriptionId: meta.subscription_id || null };
+        } catch (e) {
+            return { active: false, tier: 'standard', daysLeft: 0, expiryDate: null };
+        }
     },
 
     getStats() {
