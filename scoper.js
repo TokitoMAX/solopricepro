@@ -118,9 +118,14 @@ const Scoper = {
                     </div>
 
                     <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
-                        <button class="button-outline" ${currentStep === 1 ? 'disabled' : ''} onclick="Scoper.prevObjectiveStep()">
-                            Retour
-                        </button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="button-outline" ${currentStep === 1 ? 'disabled' : ''} onclick="Scoper.prevObjectiveStep()">
+                                Retour
+                            </button>
+                            <button class="button-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2);" onclick="Scoper.resetObjective()">
+                                <i class="fas fa-undo"></i> Réinitialiser
+                            </button>
+                        </div>
                         ${currentStep < 5 ? `
                             <button class="button-primary" onclick="Scoper.nextObjectiveStep()">
                                 Continuer <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
@@ -1426,5 +1431,37 @@ const Scoper = {
         journal.entries = journal.entries.filter(e => e.id !== id);
         Storage.saveJournal(journal);
         this.renderJournalTab();
+    },
+
+    /**
+     * Réinitialise complètement l'objectif TJM
+     */
+    async resetObjective() {
+        if (!confirm('Voulez-vous vraiment réinitialiser votre stratégie TJM ? Toutes les données de l\'assistant seront effacées.')) return;
+
+        const defaultData = {
+            monthlyRevenue: (typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 3000,
+            workingDays: 15,
+            hoursPerDay: 7,
+            monthlyCharges: 500,
+            taxRate: 22,
+            sector: null,
+            target: null,
+            dailyRate: 0,
+            hourlyRate: 0
+        };
+
+        this.currentObjectiveStep = 1;
+        Storage.set('sp_scoper_current_step', 1);
+        Storage.set('sp_calculator_data', defaultData);
+
+        try {
+            await Storage.saveCalculatorData(defaultData);
+        } catch (e) {
+            console.warn('[SCOPER] Reset sync warning:', e);
+        }
+
+        this.render('objective');
+        App.showNotification('Stratégie réinitialisée.', 'info');
     }
 };
