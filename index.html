@@ -257,8 +257,9 @@
                     <br>Ne laissez plus aucun euro dormir. Prenez le contrôle total.
                 </p>
                 <div class="hero-buttons">
-                    <button class="button-primary big shadow-glow" onclick="showAuthModal('register')"
-                        style="font-size: 1.3rem; padding: 1.2rem 3rem;" data-i18n="hero.cta">
+                    <button class="button-primary big shadow-glow hover-lift" onclick="showAuthModal('register')"
+                        style="font-size: 1.3rem; padding: 1.2rem 3rem; font-weight: 700; border-radius: 16px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;"
+                        data-i18n="hero.cta">
                         Accéder à l'Expérience PRO
                     </button>
                     <p class="hero-note"
@@ -267,24 +268,40 @@
                         Millimétrée. Impact Immédiat.</p>
                 </div>
             </div>
-            <div class="hero-image">
-                <div class="floating-card goal-card-landing pulse-glow"
-                    style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9)); border: 1px solid var(--primary-glass); width: 280px; padding: 2rem; border-radius: 24px;">
-                    <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1.5rem; text-align: center;"
-                        data-i18n="hero.card.title">Objectif SoloPrice</div>
+            <div class="hero-image" style="position: relative; padding: 2rem;">
+                <!-- Decorative background blur -->
+                <div
+                    style="position: absolute; top: 50%; left: 50%; width: 140%; height: 140%; background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 60%); transform: translate(-50%, -50%); pointer-events: none; z-index: -1;">
+                </div>
 
+                <div class="floating-card goal-card-landing glass-premium hover-lift"
+                    style="background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-highlight); box-shadow: var(--shadow-premium); width: 320px; padding: 2.5rem; border-radius: 24px; position: relative; overflow: hidden;">
+                    <!-- Top subtle shine -->
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);">
+                    </div>
+                    <div
+                        style="position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 150px; height: 150px; background: rgba(16, 185, 129, 0.15); filter: blur(50px); border-radius: 50%; pointer-events: none;">
+                    </div>
 
-                    <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 800; color: var(--primary-light); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2rem; text-align: center;"
+                        data-i18n="hero.card.title"><i class="fas fa-bullseye"></i> Objectif Financier</div>
+
+                    <div style="text-align: center; margin-bottom: 2.5rem;">
                         <div id="landing-pipeline-value"
-                            style="font-size: 2.5rem; font-weight: 900; color: white; line-height: 1;">4 000 €</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;"
+                            style="font-size: 3rem; font-weight: 900; color: white; line-height: 1; letter-spacing: -1px; text-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                            4 000 €</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; font-weight: 500;"
                             data-i18n="hero.card.label">Salaire Net Mensuel</div>
                     </div>
 
                     <div class="goal-progress-container"
-                        style="background: rgba(255,255,255,0.05); height: 12px; border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem;">
+                        style="background: rgba(255,255,255,0.08); height: 16px; border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
                         <div id="landing-pipeline-progress"
-                            style="width: 65%; height: 100%; background: var(--gradient-premium); box-shadow: 0 0 15px var(--primary);">
+                            style="width: 65%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); border-radius: 12px; position: relative; overflow: hidden;">
+                            <div
+                                style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shimmer 2s infinite linear;">
+                            </div>
                         </div>
                     </div>
 
@@ -295,8 +312,12 @@
             </div>
         </header>
 
-        <section class="landing-simulator container" style="margin-top: 4rem; margin-bottom: 4rem;">
-            <div class="glass-premium landing-simulator-grid" style="padding: 3rem; border-radius: 24px;">
+        <section class="landing-simulator container" style="margin-top: 5rem; margin-bottom: 6rem; position: relative;">
+            <div
+                style="position: absolute; top: 50%; left: 50%; width: 80vw; height: 80vh; background: radial-gradient(circle, rgba(16, 185, 129, 0.03) 0%, transparent 60%); transform: translate(-50%, -50%); pointer-events: none; z-index: -1;">
+            </div>
+            <div class="glass-premium landing-simulator-grid hover-lift"
+                style="padding: 4rem; border-radius: 32px; border: 1px solid var(--glass-highlight); background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); box-shadow: var(--shadow-premium);">
                 <div>
                     <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem;" data-i18n="sim.title">Simulez
                         votre <span class="gradient-text">Liberté</span></h2>
@@ -361,16 +382,30 @@
             <p class="section-subtitle" data-i18n="pricing.subtitle">Un investissement rentable dès votre premier devis.
             </p>
         </div>
-        <div class="pricing-grid">
+        <div class="pricing-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; margin-top: 3rem; align-items: stretch; position: relative;">
+            <div
+                style="position: absolute; top: 50%; left: 50%; width: 100vw; height: 100%; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 50%); transform: translate(-50%, -50%); pointer-events: none; z-index: -1;">
+            </div>
             <!-- Standard -->
-            <div class="pricing-card glass">
-                <div class="pricing-header">
-                    <h3 class="tier-name" data-i18n="pricing.standard.name">Standard</h3>
-                    <div class="tier-price" data-i18n="pricing.standard.price">0€<span class="period"
-                            data-i18n="pricing.standard.period">/mois</span></div>
+            <div class="pricing-card glass-premium hover-lift"
+                style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border-light); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: all 0.3s ease;">
+                <div class="pricing-header"
+                    style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <h3 class="tier-name" data-i18n="pricing.standard.name"
+                        style="font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">
+                        Standard</h3>
+                    <div class="tier-price" data-i18n="pricing.standard.price"
+                        style="font-size: 3rem; font-weight: 800; color: #fff; line-height: 1;">0€<span class="period"
+                            data-i18n="pricing.standard.period"
+                            style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
                 </div>
-                <ul class="tier-features">
-                    <li data-i18n="feat.tjm"><i class="fas fa-check"></i> Calculateur <strong>TJM Stratégique</strong>
+                <ul class="tier-features"
+                    style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
+                    <li data-i18n="feat.tjm"
+                        style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
+                            class="fas fa-check" style="color: var(--primary); margin-top: 4px;"></i> <span>Calculateur
+                            <strong>TJM Stratégique</strong></span>
                     </li>
                     <li data-i18n="feat.quotes"><i class="fas fa-check"></i> <strong>3 Devis</strong> et <strong>3
                             Factures</strong> par mois</li>
@@ -390,20 +425,41 @@
                 </ul>
                 <button class="pricing-button"
                     onclick="Analytics.trackEvent('click_pricing_free'); handlePricingClick('register')"
-                    data-i18n="pricing.btn.free">Commencer
+                    data-i18n="pricing.btn.free"
+                    style="width: 100%; padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.05)'">Commencer
                     Gratuitement</button>
             </div>
             <!-- Pro -->
-            <div class="pricing-card glass popular">
-                <div class="popular-badge" data-i18n="pricing.pro.badge">Production Illimitée</div>
-                <div class="pricing-header">
-                    <h3 class="tier-name" data-i18n="pricing.pro.name">Pack PRO</h3>
-                    <div class="market-value" data-i18n="pricing.pro.market">Zéro limite opérationnelle</div>
-                    <div class="tier-price" data-i18n="pricing.pro.price">15€<span class="period"
-                            data-i18n="pricing.standard.period">/mois</span></div>
+            <div class="pricing-card glass-premium popular hover-lift"
+                style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--primary); background: rgba(16, 185, 129, 0.03); backdrop-filter: var(--bg-glass-blur); box-shadow: 0 0 40px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.1); display: flex; flex-direction: column; position: relative; transform: scale(1.05); z-index: 2;">
+                <!-- Glowing corner effect -->
+                <div
+                    style="position: absolute; top:0; right:0; width: 150px; height: 150px; background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.3), transparent 70%); border-radius: 0 24px 0 0; pointer-events: none;">
                 </div>
-                <ul class="tier-features">
-                    <li data-i18n="feat.everything.standard"><i class="fas fa-check"></i> Tout du plan Standard</li>
+                <div class="popular-badge" data-i18n="pricing.pro.badge"
+                    style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                    Recommandé - PRO</div>
+
+                <div class="pricing-header"
+                    style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <h3 class="tier-name" data-i18n="pricing.pro.name"
+                        style="font-size: 1.5rem; margin-bottom: 0.2rem; color: #fff; font-weight: 700;">Pack PRO</h3>
+                    <div class="market-value" data-i18n="pricing.pro.market"
+                        style="font-size: 0.85rem; color: var(--primary-light); margin-bottom: 1rem; font-weight: 500;">
+                        Zéro limite opérationnelle</div>
+                    <div class="tier-price" data-i18n="pricing.pro.price"
+                        style="font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1;">15€<span
+                            class="period" data-i18n="pricing.standard.period"
+                            style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
+                </div>
+                <ul class="tier-features"
+                    style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
+                    <li data-i18n="feat.everything.standard"
+                        style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
+                            class="fas fa-check" style="color: var(--primary); margin-top: 4px;"></i> <span>Tout du plan
+                            Standard</span></li>
                     <li data-i18n="feat.unlimited"><i class="fas fa-check"></i> <strong>Clients &amp; Devis</strong>
                         Illimités</li>
                     <li data-i18n="feat.kanban"><i class="fas fa-check"></i> <strong>Pipeline Kanban</strong> (Prospects
@@ -418,21 +474,41 @@
                     </li>
                     <li data-i18n="feat.support"><i class="fas fa-check"></i> Support Prioritaire</li>
                 </ul>
-                <button class="pricing-button"
+                <button class="pricing-button button-primary"
                     onclick="Analytics.trackEvent('click_pricing_pro'); handlePricingClick('pro')"
-                    data-i18n="pricing.btn.pro">Débloquer
+                    data-i18n="pricing.btn.pro"
+                    style="width: 100%; padding: 1.2rem; border-radius: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-weight: 700; font-size: 1.05rem; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); border: none; cursor: pointer; transition: all 0.3s ease;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(16, 185, 129, 0.5)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(16, 185, 129, 0.4)';">Débloquer
                     l'Illimité</button>
             </div>
             <!-- Expert -->
-            <div class="pricing-card glass expert">
-                <div class="pricing-header">
-                    <h3 class="tier-name" data-i18n="pricing.expert.name">Pack EXPERT</h3>
-                    <div class="market-value" data-i18n="pricing.expert.market">Accélérateur de Croissance</div>
-                    <div class="tier-price" data-i18n="pricing.expert.price">29€<span class="period"
-                            data-i18n="pricing.standard.period">/mois</span></div>
+            <div class="pricing-card glass-premium expert hover-lift"
+                style="padding: 2.5rem; border-radius: 24px; border: 1px solid rgba(245, 158, 11, 0.3); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: all 0.3s ease;">
+                <!-- Glowing corner effect -->
+                <div
+                    style="position: absolute; top:0; right:0; width: 120px; height: 120px; background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 70%); border-radius: 0 24px 0 0; pointer-events: none;">
                 </div>
-                <ul class="tier-features">
-                    <li data-i18n="feat.everything.pro"><i class="fas fa-check"></i> Tout du Pack PRO</li>
+
+                <div class="pricing-header"
+                    style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <h3 class="tier-name" data-i18n="pricing.expert.name"
+                        style="font-size: 1.3rem; margin-bottom: 0.2rem; color: #fff; font-weight: 700;">Pack EXPERT
+                    </h3>
+                    <div class="market-value" data-i18n="pricing.expert.market"
+                        style="font-size: 0.85rem; color: var(--warning); margin-bottom: 1rem; font-weight: 500;">
+                        Accélérateur de Croissance</div>
+                    <div class="tier-price" data-i18n="pricing.expert.price"
+                        style="font-size: 3rem; font-weight: 800; color: #fff; line-height: 1;">29€<span class="period"
+                            data-i18n="pricing.standard.period"
+                            style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
+                </div>
+                <ul class="tier-features"
+                    style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
+                    <li data-i18n="feat.everything.pro"
+                        style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
+                            class="fas fa-check" style="color: var(--warning); margin-top: 4px;"></i> <span>Tout du Pack
+                            PRO</span></li>
                     <li data-i18n="feat.marketplace.unlimited"><i class="fas fa-check"></i> <strong>Marketplace
                             illimitée</strong> — répondre à toutes les missions</li>
                     <li data-i18n="feat.journal"><i class="fas fa-check"></i> <strong>Journal de Bord</strong> — tracker
@@ -444,7 +520,10 @@
                 </ul>
                 <button class="pricing-button"
                     onclick="Analytics.trackEvent('click_pricing_expert'); handlePricingClick('expert')"
-                    data-i18n="pricing.btn.expert">Activer la
+                    data-i18n="pricing.btn.expert"
+                    style="width: 100%; padding: 1rem; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--warning); font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'"
+                    onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'">Activer la
                     Croissance</button>
             </div>
         </div>
