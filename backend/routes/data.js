@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB limit
+const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
 // Middleware to extract user from Supabase token
 async function authenticateUser(req, res, next) {
@@ -173,7 +173,7 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
             const { error: createError } = await supabase.storage.createBucket('logos', {
                 public: true,
                 allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'],
-                fileSizeLimit: 5242880 // 5MB
+                fileSizeLimit: 10485760 // 10MB
             });
             if (createError) throw createError;
         }
@@ -188,7 +188,7 @@ router.post('/storage/upload/logos', upload.single('file'), async (req, res) => 
             console.error("[STORAGE-UPLOAD] ❌ Supabase Upload Error:", uploadError);
             return res.status(400).json({
                 success: false,
-                message: "L'envoi vers Supabase a échoué. Vérifiez le type et la taille de l'image (max 5Mo).",
+                message: "L'envoi vers Supabase a échoué. Vérifiez le type et la taille de l'image (max 10Mo).",
                 error: uploadError.message,
                 details: uploadError
             });
@@ -225,7 +225,7 @@ router.post('/storage/upload/avatars', upload.single('file'), async (req, res) =
             const { error: createError } = await supabase.storage.createBucket('avatars', {
                 public: true,
                 allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
-                fileSizeLimit: 5242880 // 5MB for avatars
+                fileSizeLimit: 10485760 // 10MB for avatars
             });
             if (createError) throw createError;
         }
@@ -240,7 +240,7 @@ router.post('/storage/upload/avatars', upload.single('file'), async (req, res) =
             console.error("[STORAGE-UPLOAD] ❌ Supabase Upload Error:", uploadError);
             return res.status(400).json({
                 success: false,
-                message: "L'envoi de l'avatar a échoué. Max 5Mo.",
+                message: "L'envoi de l'avatar a échoué. Max 10Mo.",
                 error: uploadError.message
             });
         }
