@@ -1406,7 +1406,7 @@ const App = {
             case 'FR': case 'BE': case 'LU': case 'DE': case 'ES': case 'IT': case 'PT': case 'NL': case 'IE':
             case 'RE': case 'GP': case 'MQ': case 'GF': case 'PM': case 'MF': case 'BL':
             case 'WF': case 'NC': case 'PF': case 'YT':
-            case 'LB': case 'VU':
+            case 'LB': case 'VU': case 'MC':
             default:
                 currency = 'EUR'; symbol = '€'; locale = 'fr-FR'; defaultRevenue = 5000; break;
         }
@@ -1789,8 +1789,9 @@ const App = {
         }
 
         console.log(` [PAYPAL] Loading SDK (${PAYPAL_CONFIG.isLiveMode ? 'LIVE' : 'SANDBOX'})...`);
+        const { currency } = this.getCurrencyConfig();
         const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${config.clientId}&components=buttons&vault=true&intent=subscription&currency=EUR`;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${config.clientId}&components=buttons&vault=true&intent=subscription&currency=${currency}`;
         script.async = true;
 
         script.onload = () => console.log(' [PAYPAL] SDK Loaded dynamically.');

@@ -107,6 +107,30 @@ const TaxEngine = {
             socialRate: 0,
             description: 'Export de services - HT | Charges locales à définir',
             code: 'AFR'
+        },
+        'US-GENERIC': {
+            name: 'United States (General)',
+            vat: 0,
+            taxName: 'Sales Tax',
+            socialRate: 15.3, // Self-employment tax
+            description: 'Sales Tax (depends on State) | SE Tax ~15.3%',
+            code: 'US'
+        },
+        'LATAM-GENERIC': {
+            name: 'América Latina (General)',
+            vat: 15,
+            taxName: 'IVA',
+            socialRate: 10,
+            description: 'IVA promedio 15% | Cargas sociales estimadas 10%',
+            code: 'LATAM'
+        },
+        'ES-GENERIC': {
+            name: 'España (Autónomo)',
+            vat: 21,
+            taxName: 'IVA',
+            socialRate: 30, // Estimación cuota autónomos
+            description: 'IVA 21% | Cuota de autónomos aplicable',
+            code: 'ES'
         }
     },
 
