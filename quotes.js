@@ -1067,7 +1067,7 @@ const Quotes = {
                     await QuoteService.capturePaypalQuote(paypalOrderId);
 
                     paymentStatus = 'success';
-                    App.showNotification(`Paiement ${paymentType === 'expert' ? 'Prestataire' : 'SoloPrice'} validé !`, 'success');
+                    App.showNotification(paymentType === 'expert' ? i18n.t('quotes.notify.payment_expert_validated') : i18n.t('quotes.notify.payment_soloprice_validated'), 'success');
                 } catch (capErr) {
                     console.error('Capture Error:', capErr);
                     paymentStatus = 'error';
@@ -1092,7 +1092,7 @@ const Quotes = {
             console.log('[QUOTES] Public data received:', data);
 
             if (!data || !data.quote) {
-                throw new Error("Données du devis introuvables ou lien expiré.");
+                throw new Error(i18n.t('quotes.error.data_not_found'));
             }
 
             this.publicQuoteData = data;
@@ -1199,7 +1199,7 @@ const Quotes = {
                         <div class="public-actions-wrapper">
                             ${quote.signature ? `
                                 <div class="status-alert success-glass">
-                                    <i class="fas fa-check-circle"></i> Devis signé et validé le ${App.formatDate(quote.accepted_at || quote.createdAt)}
+                                    <i class="fas fa-check-circle"></i> ${i18n.t('quotes.public.signed_on', { date: App.formatDate(quote.accepted_at || quote.createdAt) })}
                                 </div>
                             ` : ''}
 

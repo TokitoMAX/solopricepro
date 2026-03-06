@@ -100,8 +100,8 @@ const newQuoteFunc = `generateQuote(quote, client, user, isPreview = false) {
             return [
                 { content: desc, styles: { fontStyle: 'bold' } },
                 qty,
-                \`\${price.toLocaleString('fr-FR').replace(/\\u00A0|\\u202F/g, ' ')} €\`,
-                \`\${total.toLocaleString('fr-FR').replace(/\\u00A0|\\u202F/g, ' ')} €\`
+                typeof App !== 'undefined' ? App.formatCurrency(price) : price.toLocaleString() + ' €',
+                typeof App !== 'undefined' ? App.formatCurrency(total) : total.toLocaleString() + ' €'
             ];
         });
 
@@ -132,24 +132,24 @@ const newQuoteFunc = `generateQuote(quote, client, user, isPreview = false) {
         doc.setTextColor(107, 114, 128);
         
         doc.text('Prestations HT:', 114, finalY + 8);
-        doc.text(\`\${(quote.itemsSubtotal || 0).toLocaleString('fr-FR').replace(/\\u00A0|\\u202F/g, ' ')} €\`, 190, finalY + 8, { align: 'right' });
+        doc.text(typeof App !== 'undefined' ? App.formatCurrency(quote.itemsSubtotal || 0) : (quote.itemsSubtotal || 0).toLocaleString() + ' €', 190, finalY + 8, { align: 'right' });
         
         doc.setTextColor(16, 185, 129);
         doc.text('Service & Gestion:', 114, finalY + 16);
-        doc.text(\`\${(quote.margin || 0).toLocaleString('fr-FR').replace(/\\u00A0|\\u202F/g, ' ')} €\`, 190, finalY + 16, { align: 'right' });
+        doc.text(typeof App !== 'undefined' ? App.formatCurrency(quote.margin || 0) : (quote.margin || 0).toLocaleString() + ' €', 190, finalY + 16, { align: 'right' });
         
         doc.setTextColor(107, 114, 128);
         doc.text('Total HT:', 114, finalY + 24);
-        doc.text(\`\${(quote.subtotal || 0).toLocaleString('fr-FR').replace(/\\u00A0|\\u202F/g, ' ')} €\`, 190, finalY + 24, { align: 'right' });
+        doc.text(typeof App !== 'undefined' ? App.formatCurrency(quote.subtotal || 0) : (quote.subtotal || 0).toLocaleString() + ' €', 190, finalY + 24, { align: 'right' });
 
         doc.text(\`TVA (\${quote.taxRate || 0}%):\`, 114, finalY + 32);
-        doc.text(\`\${(quote.tax || 0).toLocaleString('fr-FR').replace(/\\u00A0|\\u202F/g, ' ')} €\`, 190, finalY + 32, { align: 'right' });
+        doc.text(typeof App !== 'undefined' ? App.formatCurrency(quote.tax || 0) : (quote.tax || 0).toLocaleString() + ' €', 190, finalY + 32, { align: 'right' });
 
         doc.setTextColor(17, 24, 39);
         doc.setFont(undefined, 'bold');
         doc.text('TOTAL TTC:', 114, finalY + 41);
         doc.setFontSize(14);
-        doc.text(\`\${(quote.total || 0).toLocaleString('fr-FR').replace(/\\u00A0|\\u202F/g, ' ')} €\`, 190, finalY + 41, { align: 'right' });
+        doc.text(typeof App !== 'undefined' ? App.formatCurrency(quote.total || 0) : (quote.total || 0).toLocaleString() + ' €', 190, finalY + 41, { align: 'right' });
 
         finalY += 55;
 
@@ -269,8 +269,8 @@ const newInvoiceFunc = `generateInvoice(invoice, client, user, isPreview = false
         const tableData = invoice.items.map(item => [
             { content: item.desc + (item.subdesc ? ' - ' + item.subdesc : ''), styles: { fontStyle: 'bold' } },
             item.quantity,
-            \`\${item.price} €\`,
-            \`\${item.total} €\`
+            typeof App !== 'undefined' ? App.formatCurrency(item.price) : item.price + ' €',
+            typeof App !== 'undefined' ? App.formatCurrency(item.total) : item.total + ' €'
         ]);
 
         let finalY = 95;
@@ -299,16 +299,16 @@ const newInvoiceFunc = `generateInvoice(invoice, client, user, isPreview = false
         doc.setFontSize(10);
         doc.setTextColor(107, 114, 128);
         doc.text('Base Hors Taxes:', 114, finalY + 8);
-        doc.text(\`\${invoice.subtotal} €\`, 190, finalY + 8, { align: 'right' });
+        doc.text(typeof App !== 'undefined' ? App.formatCurrency(invoice.subtotal) : invoice.subtotal + ' €', 190, finalY + 8, { align: 'right' });
         
         doc.text(\`TVA (\${invoice.taxContext?.vat !== undefined ? invoice.taxContext.vat : settings.taxRate}%):\`, 114, finalY + 16);
-        doc.text(\`\${invoice.tax} €\`, 190, finalY + 16, { align: 'right' });
+        doc.text(typeof App !== 'undefined' ? App.formatCurrency(invoice.tax) : invoice.tax + ' €', 190, finalY + 16, { align: 'right' });
         
         doc.setTextColor(17, 24, 39);
         doc.setFont(undefined, 'bold');
         doc.text('TOTAL TTC:', 114, finalY + 26);
         doc.setFontSize(14);
-        doc.text(\`\${invoice.total} €\`, 190, finalY + 26, { align: 'right' });
+        doc.text(typeof App !== 'undefined' ? App.formatCurrency(invoice.total) : invoice.total + ' €', 190, finalY + 26, { align: 'right' });
 
         finalY += 40;
 

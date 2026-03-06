@@ -11,23 +11,22 @@ const Analytics = {
     }
 };
 
-// --- CONFIGURATION GÉNÉRALE PAYPAL (INTERRUPTEUR) ---
 const PAYPAL_CONFIG = {
-    isLiveMode: true, // BASQUER À TRUE POUR ENCAISSER DU VRAI ARGENT
+    isLiveMode: true,
 
     sandbox: {
         clientId: "AUpGYEYVUGM5Q1MAKvkEd61kYWzQS5w42BkCjLx9_R7UAfSYpFcOOsCg_f8oClj-9aLTxXxJxBe74U7O",
         plans: {
-            pro: "P-8KN785183W634412BNGM6LMQ",
-            expert: "P-4M2114299U772554XNGM623I"
+            EUR: { pro: "P-8KN785183W634412BNGM6LMQ", expert: "P-4M2114299U772554XNGM623I" },
+            USD: { pro: "P-8KN785183W634412BNGM6LMQ", expert: "P-4M2114299U772554XNGM623I" }
         }
     },
 
     live: {
         clientId: "AcBmagCWJpj_JUQpRivjdlrowAA48XOvpD_B022bRdhQqQzYIHR6LgAKLdFadgLKHUa4BPqpYwstW825",
         plans: {
-            pro: "P-13N38598NB647223XNGNDJMY",
-            expert: "P-19X023126K248324VNGNDKOQ"
+            EUR: { pro: "P-13N38598NB647223XNGNDJMY", expert: "P-19X023126K248324VNGNDKOQ" },
+            USD: { pro: "P-13N38598NB647223XNGNDJMY", expert: "P-19X023126K248324VNGNDKOQ" }
         }
     }
 };
@@ -1032,13 +1031,27 @@ const App = {
         const titleEl = modal.querySelector('.upgrade-title');
 
         if (step === 'comparison') {
+            const currencyConfig = this.getCurrencyConfig();
+            const symbol = currencyConfig.symbol;
+
+            // Numeric pricing by zone
+            const priceMap = {
+                'EUR': { pro: 15, expert: 29 },
+                'USD': { pro: 19, expert: 35 }
+            };
+            const prices = priceMap[currencyConfig.currency] || priceMap['EUR'];
+
             titleEl.innerHTML = i18n.t('upgrade.title').replace('PRO', '<span class="gradient-text">PRO</span>');
             container.innerHTML = `
             <!-- ROI Calculator Prompt -->
             <div style="grid-column: 1 / -1; background: rgba(var(--primary-rgb), 0.05); border: 1px solid var(--primary-glass); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
                 <div style="font-size: 1.5rem;"></div>
                 <div style="font-size: 0.85rem; line-height: 1.4; color: var(--text-secondary);">
-                    ${i18n.t('upgrade.roi.desc')}
+                    ${i18n.t('upgrade.roi.desc', {
+                benchmark: '1500',
+                bonus: '150',
+                symbol: symbol
+            })}
                 </div>
             </div>
 
@@ -1057,7 +1070,7 @@ const App = {
             <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', 'pro')">
                 <div class="card-badge">${i18n.t('pricing.pro.badge').toUpperCase()}</div>
                 <div class="card-tier">${i18n.t('pricing.pro.name').toUpperCase()}</div>
-                <div class="card-price">${i18n.t('pricing.pro.price')}€<span>${i18n.t('pricing.standard.period')}</span></div>
+                <div class="card-price">${this.formatCurrency(prices.pro)}<span>${i18n.t('pricing.period')}</span></div>
                 <div class="card-value-tag">${i18n.t('upgrade.pro.value')}</div>
                 <ul class="card-features-mini">
                     <li><i class="fas fa-check-circle"></i> ${i18n.t('feat.everything.standard')}</li>
@@ -1074,7 +1087,7 @@ const App = {
             <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
                 <div class="card-badge" style="background: #10b981;">${i18n.t('upgrade.expert.badge')}</div>
                 <div class="card-tier" style="color: #34d399;">${i18n.t('pricing.expert.name').toUpperCase()}</div>
-                <div class="card-price">${i18n.t('pricing.expert.price')}€<span>${i18n.t('pricing.standard.period')}</span></div>
+                <div class="card-price">${this.formatCurrency(prices.expert)}<span>${i18n.t('pricing.period')}</span></div>
                 <div class="card-value-tag">${i18n.t('upgrade.expert.value')}</div>
                 <ul class="card-features-mini">
                     <li><i class="fas fa-check-circle"></i> ${i18n.t('feat.everything.pro')}</li>
@@ -1089,7 +1102,9 @@ const App = {
         } else if (step === 'checkout') {
             const tier = typeof data === 'string' ? data : data.tier;
             const method = 'paypal'; // Force PayPal uniquement
-            const price = tier === 'pro' ? i18n.t('pricing.pro.price') + '€' : i18n.t('pricing.expert.price') + '€';
+            const currencyConfig = this.getCurrencyConfig();
+            const prices = currencyConfig.currency === 'USD' ? { pro: 19, expert: 35 } : { pro: 15, expert: 29 };
+            const price = this.formatCurrency(tier === 'pro' ? prices.pro : prices.expert);
 
             if (tier === 'standard') { App.closeModal(); return; }
 
@@ -1154,9 +1169,14 @@ const App = {
                         return;
                     }
 
-                    const planId = tier === 'expert' ? config.plans.expert : config.plans.pro;
+                    const currencyConfig = App.getCurrencyConfig();
+                    const currency = currencyConfig.currency || 'EUR';
+                    const plansByCurrency = isLive ? PAYPAL_CONFIG.live.plans : PAYPAL_CONFIG.sandbox.plans;
+                    const planId = plansByCurrency[currency]
+                        ? (tier === 'expert' ? plansByCurrency[currency].expert : plansByCurrency[currency].pro)
+                        : (tier === 'expert' ? config.plans.expert : config.plans.pro);
 
-                    console.log(` [PAYPAL] Rendering buttons for Plan: ${planId} (${isLive ? 'LIVE' : 'SANDBOX'})`);
+                    console.log(` [PAYPAL] Rendering buttons for Plan: ${planId} (${currency}) (${isLive ? 'LIVE' : 'SANDBOX'})`);
                     container.innerHTML = '';
 
                     paypal.Buttons({
@@ -1385,7 +1405,10 @@ const App = {
             }
 
             if (lang === 'en') country = 'US';
-            else if (lang === 'es') country = 'ES';
+            else if (lang === 'es') {
+                const fullLang = (navigator.language || '').toLowerCase();
+                country = fullLang.includes('es-es') ? 'ES' : 'US';
+            }
         }
 
         // Map countries to currencies (matches Profile.COUNTRIES)
@@ -1409,7 +1432,8 @@ const App = {
             case 'CL': currency = 'CLP'; symbol = 'CLP$'; locale = 'es-CL'; defaultRevenue = 2500000; break;
             case 'ZA': currency = 'ZAR'; symbol = 'R'; locale = 'en-ZA'; defaultRevenue = 50000; break;
             // Euro countries + DOMTOM + francophone
-            case 'FR': case 'BE': case 'LU': case 'DE': case 'ES': case 'IT': case 'PT': case 'NL': case 'IE':
+            case 'ES': currency = 'EUR'; symbol = '€'; locale = 'es-ES'; defaultRevenue = 5000; break;
+            case 'FR': case 'BE': case 'LU': case 'DE': case 'IT': case 'PT': case 'NL': case 'IE':
             case 'RE': case 'GP': case 'MQ': case 'GF': case 'PM': case 'MF': case 'BL':
             case 'WF': case 'NC': case 'PF': case 'YT':
             case 'LB': case 'VU': case 'MC':
@@ -1447,7 +1471,8 @@ const App = {
     // Formatage de dates
     formatDate(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('fr-FR');
+        const config = this.getCurrencyConfig();
+        return date.toLocaleDateString(config.locale);
     },
 
     // Calcul de total avec TVA

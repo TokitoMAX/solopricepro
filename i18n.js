@@ -609,6 +609,10 @@ const i18n = {
             'onboarding.step.quote.desc': 'Transformez une opportunité en document officiel.',
             'quotes.form.placeholder.title': 'Objet du Devis (ex: Refonte Site Web)',
             'quotes.form.placeholder.select_client': 'Sélectionner un client',
+            'quotes.notify.payment_expert_validated': 'Paiement Prestataire validé !',
+            'quotes.notify.payment_soloprice_validated': 'Paiement SoloPrice validé !',
+            'quotes.error.data_not_found': 'Données du devis introuvables ou lien expiré.',
+            'quotes.public.signed_on': 'Devis signé et validé le {date}',
             'quotes.btn.advanced': 'Options Avancées (TVA, Statut)',
             'quotes.form.section.items': 'Détail des Prestations',
             'quotes.btn.add_line': 'Ajouter une ligne',
@@ -662,6 +666,9 @@ const i18n = {
             'pricing.standard.name': 'Standard',
             'pricing.standard.price': '0',
             'pricing.standard.period': '/mois',
+            'pricing.currency': 'EUR',
+            'pricing.symbol': '€',
+            'pricing.period': '/mois',
             'pricing.pro.name': 'Pack PRO',
             'pricing.pro.price': '15',
             'pricing.pro.badge': 'Production Illimitée',
@@ -759,7 +766,7 @@ const i18n = {
 
             // — Upgrade Steps —
             'upgrade.roi.title': 'L\'abonnement qui se paie seul :',
-            'upgrade.roi.desc': 'Sur un projet à 1500€, une simple "Prime de Risque" (Facteur PITA) de 10% ajoute <strong>150€</strong> à votre facture. Votre pack PRO est rentabilisé 10 fois sur une seule vente.',
+            'upgrade.roi.desc': 'Sur un projet à {benchmark}€, une simple "Prime de Risque" (Facteur PITA) de 10% ajoute <strong>{bonus}€</strong> à votre facture. Votre pack PRO est rentabilisé 10 fois sur une seule vente.',
             'upgrade.standard.select': 'Rester en Standard',
             'upgrade.pro.value': 'Idéal pour produire sans limites',
             'upgrade.pro.select': 'Passer Pro',
@@ -1172,14 +1179,17 @@ const i18n = {
             'pricing.subtitle': 'A profitable investment from your very first quote.',
             'pricing.standard.name': 'Standard',
             'pricing.standard.price': '0',
-            'pricing.standard.period': '/month',
+            'pricing.standard.period': '/mo',
+            'pricing.currency': 'USD',
+            'pricing.symbol': '$',
+            'pricing.period': '/mo',
             'pricing.pro.name': 'PRO Pack',
             'pricing.pro.badge': 'Unlimited Production',
             'pricing.pro.market': 'Zero operational limits',
-            'pricing.pro.price': '15',
+            'pricing.pro.price': '19',
             'pricing.expert.name': 'EXPERT Pack',
             'pricing.expert.market': 'Growth Accelerator',
-            'pricing.expert.price': '29',
+            'pricing.expert.price': '35',
             'pricing.btn.free': 'Start for Free',
             'pricing.btn.pro': 'Unlock Unlimited',
             'pricing.btn.expert': 'Activate Growth',
@@ -1232,6 +1242,10 @@ const i18n = {
             'onboarding.step.quote.desc': 'Turn an opportunity into an official document.',
             'quotes.form.placeholder.title': 'Quote Subject (e.g. Website Redesign)',
             'quotes.form.placeholder.select_client': 'Select a client',
+            'quotes.notify.payment_expert_validated': 'Provider payment validated!',
+            'quotes.notify.payment_soloprice_validated': 'SoloPrice payment validated!',
+            'quotes.error.data_not_found': 'Quote data not found or link expired.',
+            'quotes.public.signed_on': 'Quote signed and validated on {date}',
             'quotes.btn.advanced': 'Advanced Options (VAT, Status)',
             'quotes.form.section.items': 'Project Details',
             'quotes.btn.add_line': 'Add an item',
@@ -1553,7 +1567,7 @@ const i18n = {
 
             // — Upgrade Steps —
             'upgrade.roi.title': 'The subscription that pays for itself:',
-            'upgrade.roi.desc': 'On a €1500 project, a simple 10% "Risk Premium" (PITA Factor) adds <strong>€150</strong> to your invoice. Your PRO pack pays for itself 10 times over on a single sale.',
+            'upgrade.roi.desc': 'On a {symbol}{benchmark} project, a simple 10% "Risk Premium" (PITA Factor) adds <strong>{symbol}{bonus}</strong> to your invoice. Your PRO pack pays for itself 10 times over on a single sale.',
             'upgrade.standard.select': 'Stay in Standard',
             'upgrade.pro.value': 'Ideal for unlimited production',
             'upgrade.pro.select': 'Go Pro',
@@ -1967,6 +1981,9 @@ const i18n = {
             'pricing.standard.name': 'Estándar',
             'pricing.standard.price': '0',
             'pricing.standard.period': '/mes',
+            'pricing.currency': 'EUR',
+            'pricing.symbol': '€',
+            'pricing.period': '/mes',
             'pricing.pro.name': 'Pack PRO',
             'pricing.pro.badge': 'Producción Ilimitada',
             'pricing.pro.market': 'Cero límites operativos',
@@ -2026,6 +2043,10 @@ const i18n = {
             'onboarding.step.quote.desc': 'Transforme una oportunidad en un documento oficial.',
             'quotes.form.placeholder.title': 'Objeto del Presupuesto (ej: Rediseño Web)',
             'quotes.form.placeholder.select_client': 'Seleccionar un cliente',
+            'quotes.notify.payment_expert_validated': '¡Pago del Prestador validado!',
+            'quotes.notify.payment_soloprice_validated': '¡Pago de SoloPrice validado!',
+            'quotes.error.data_not_found': 'Datos del presupuesto no encontrados o enlace expirado.',
+            'quotes.public.signed_on': 'Presupuesto firmado y validado el {date}',
             'quotes.btn.advanced': 'Opciones Avanzadas (IVA, Estado)',
             'quotes.form.section.items': 'Detalle de las Prestaciones',
             'quotes.btn.add_line': 'Añadir una línea',
@@ -2344,7 +2365,7 @@ const i18n = {
 
             // — Upgrade Steps —
             'upgrade.roi.title': 'La suscripción que se paga sola:',
-            'upgrade.roi.desc': 'En un proyecto de 1500€, una simple "Prima de Riesgo" (Factor PITA) del 10% añade <strong>150€</strong> a tu factura. Tu pack PRO se rentabiliza 10 veces en una sola venta.',
+            'upgrade.roi.desc': 'En un proyecto de {symbol}{benchmark}, una simple "Prima de Riesgo" (Factor PITA) del 10% añade <strong>{symbol}{bonus}</strong> a tu factura. Tu pack PRO se rentabiliza 10 veces en una sola vente.',
             'upgrade.standard.select': 'Quedarse en Standard',
             'upgrade.pro.value': 'Ideal para producir sin límites',
             'upgrade.pro.select': 'Pasar a Pro',
@@ -2422,10 +2443,17 @@ const i18n = {
     },
 
     // Get a translation key
-    t(key) {
-        return (this.TRANSLATIONS[this.lang] || this.TRANSLATIONS.fr)[key]
+    t(key, params = {}) {
+        let text = (this.TRANSLATIONS[this.lang] || this.TRANSLATIONS.fr)[key]
             || this.TRANSLATIONS.fr[key]
             || key;
+
+        // Replace parameters {key} with values
+        Object.entries(params).forEach(([k, v]) => {
+            text = text.replace(new RegExp(`{${k}}`, 'g'), v);
+        });
+
+        return text;
     },
 
     // Apply all data-i18n attributes in the DOM
@@ -2445,9 +2473,15 @@ const i18n = {
 
         // Dynamic Currency Formatting
         if (typeof App !== 'undefined' && App.formatCurrency) {
+            const config = App.getCurrencyConfig();
+            const zonePrices = config.currency === 'USD'
+                ? { 'pricing.pro.price': 19, 'pricing.expert.price': 35 }
+                : { 'pricing.pro.price': 15, 'pricing.expert.price': 29 };
+
             document.querySelectorAll('[data-i18n-currency]').forEach(el => {
-                const amount = el.getAttribute('data-i18n-currency');
-                el.innerHTML = App.formatCurrency(amount);
+                const val = el.getAttribute('data-i18n-currency');
+                const amount = zonePrices[val] || ((val && isNaN(val)) ? this.t(val) : val);
+                el.innerHTML = App.formatCurrency(amount || 0);
             });
         }
 
