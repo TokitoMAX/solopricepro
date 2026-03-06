@@ -228,7 +228,7 @@ const Expenses = {
             description: formData.get('description'),
             amount: parseFloat(formData.get('amount')),
             category: formData.get('category'),
-            project_id: formData.get('project_id'),
+            project_id: formData.get('project_id') || null,
             date: formData.get('date')
         };
 
