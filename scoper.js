@@ -28,7 +28,7 @@ const Scoper = {
                 .scoper-tab-link.active { color: white; background: #1e1e1e; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
                 
                 .expert-lock-badge {
-                    font-size: 0.65rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; 
+                    font-size: 0.65rem; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; 
                     padding: 2px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 950; letter-spacing: 1px;
                 }
             </style>
@@ -100,7 +100,7 @@ const Scoper = {
                     background: rgba(255,255,255,0.05); z-index: 1;
                 }
                 .wizard-progress-bar {
-                    position: absolute; top: 24px; left: 0; height: 2px; background: #a855f7;
+                    position: absolute; top: 24px; left: 0; height: 2px; background: var(--primary);
                     z-index: 2; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 .step-node {
@@ -112,8 +112,8 @@ const Scoper = {
                     display: flex; align-items: center; justify-content: center; color: #4b5563; font-weight: 800;
                     transition: all 0.4s;
                 }
-                .step-node.active .step-circle { border-color: #a855f7; color: white; background: #1e1e1e; box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
-                .step-node.done .step-circle { background: #a855f7; border-color: #a855f7; color: white; }
+                .step-node.active .step-circle { border-color: var(--primary); color: white; background: #1e1e1e; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+                .step-node.done .step-circle { background: var(--primary); border-color: var(--primary); color: white; }
                 .step-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #64748b; text-align: center; }
                 .step-node.active .step-label { color: white; }
                 
@@ -128,9 +128,9 @@ const Scoper = {
                     padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 .sector-card:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
-                .sector-card.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); }
+                .sector-card.active { border-color: var(--primary); background: rgba(16, 185, 129, 0.05); }
                 .sector-card i { font-size: 1.8rem; color: #4b5563; margin-bottom: 1rem; transition: all 0.3s; }
-                .sector-card.active i { color: #a855f7; transform: scale(1.1); }
+                .sector-card.active i { color: var(--primary); transform: scale(1.1); }
                 .sector-label { font-size: 0.85rem; font-weight: 800; color: #94a3b8; }
                 .sector-card.active .sector-label { color: white; }
 
@@ -151,7 +151,7 @@ const Scoper = {
                     font-size: 4rem; font-weight: 950; color: white; width: 100%; text-align: center;
                     padding: 1rem; outline: none; transition: all 0.4s; letter-spacing: -3px;
                 }
-                .form-input-premium:focus { border-color: #a855f7; }
+                .form-input-premium:focus { border-color: var(--primary); }
                 .form-input-premium::placeholder { opacity: 0.1; }
             </style>
 
@@ -172,7 +172,7 @@ const Scoper = {
                 </div>
 
                 <div class="wizard-card">
-                    <div id="step-save-indicator" style="position: absolute; top: 2rem; right: 3rem; font-size: 0.7rem; color: #a855f7; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; pointer-events: none;">
+                    <div id="step-save-indicator" style="position: absolute; top: 2rem; right: 3rem; font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; pointer-events: none;">
                         <i class="fas fa-shield-check"></i> Securing Data
                     </div>
                     
@@ -194,7 +194,7 @@ const Scoper = {
                                     ${i18n.t('scoper.action.continue')} <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                                 </button>
                             ` : `
-                                <button class="button-primary large" onclick="Scoper.saveObjective()" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; font-weight: 900; border-radius: 16px; padding: 1rem 3rem;">
+                                <button class="button-primary large" onclick="Scoper.saveObjective()" style="background: var(--gradient-premium); border: none; font-weight: 900; border-radius: 16px; padding: 1rem 3rem;">
                                     <i class="fas fa-lock" style="margin-right: 10px;"></i> ${i18n.t('scoper.action.save')}
                                 </button>
                             `}
@@ -314,7 +314,7 @@ const Scoper = {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
                         <div style="display: flex; flex-direction: column; gap: 2rem;">
                             <div style="background: #111; border: 1px solid rgba(255,255,255,0.08); border-radius: 32px; padding: 3rem; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-                                <div style="font-size: 0.7rem; font-weight: 950; color: #a855f7; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Projection Annuelle</div>
+                                <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Projection Annuelle</div>
                                 <div style="font-size: 4rem; font-weight: 950; letter-spacing: -3px; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(currentAnnual) : currentAnnual.toLocaleString() + '€'}</div>
                                 <p class="text-muted" style="font-size: 0.9rem; margin-top: 1rem;">Basé sur ${data.workingDays}j / mois à ${typeof App !== 'undefined' ? App.formatCurrency(currentTJM) : currentTJM + '€'}/j</p>
                             </div>
@@ -325,7 +325,7 @@ const Scoper = {
                                     <span style="font-size: 1.2rem; font-weight: 950; color: white;">${powerScore}%</span>
                                 </div>
                                 <div style="height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden;">
-                                    <div style="width: ${powerScore}%; height: 100%; background: linear-gradient(90deg, #a855f7, #6366f1); transition: width 1s ease-out;"></div>
+                                    <div style="width: ${powerScore}%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); transition: width 1s ease-out;"></div>
                                 </div>
                                 <p style="font-size: 0.75rem; color: #64748b; margin-top: 1rem; line-height: 1.5;">
                                     ${powerScore > 70 ? '<strong>Positionnement Fort</strong> : Votre tarif est dans la zone de confort du marché.' : (powerScore > 40 ? '<strong>Positionnement Équilibré</strong> : Nécessite une argumentation solide.' : '<strong>Positionnement Premium</strong> : Exige une autorité d\'expert supérieure.')}
@@ -337,7 +337,7 @@ const Scoper = {
                             <div style="font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">Sélectionner un Profil de Risque</div>
                             <div style="display: grid; gap: 1rem;">
                                 ${Object.entries(scenarios).map(([key, s]) => `
-                                    <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1.5rem; border-radius: 20px; border: 1px solid ${activeScenario === key ? '#a855f7' : 'rgba(255,255,255,0.05)'}; background: ${activeScenario === key ? 'rgba(168, 85, 247, 0.05)' : 'rgba(255,255,255,0.02)'}; transition: all 0.3s; display: flex; justify-content: space-between; align-items: center;">
+                                    <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1.5rem; border-radius: 20px; border: 1px solid ${activeScenario === key ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; background: ${activeScenario === key ? 'var(--primary-glass)' : 'rgba(255,255,255,0.02)'}; transition: all 0.3s; display: flex; justify-content: space-between; align-items: center;">
                                         <div>
                                             <div style="font-size: 0.9rem; font-weight: 800; color: ${activeScenario === key ? 'white' : '#94a3b8'}">${i18n.t(`scoper.scenario.${key}`) || s.label}</div>
                                             <div style="font-size: 0.7rem; color: #64748b;">${key === 'security' ? 'Sécurité maximale' : (key === 'balanced' ? 'Optimisation revenus' : 'Croissance agressive')}</div>
@@ -584,7 +584,7 @@ const Scoper = {
                             </div>
                             <div>
                                 <div style="font-size: 0.6rem; font-weight: 800; color: #64748b; text-transform: uppercase;">TJM Réel</div>
-                                <div id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 900; color: #a855f7;">0 €</div>
+                                <div id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 900; color: var(--primary);">0 €</div>
                             </div>
                         </div>
                     </div>
@@ -600,7 +600,7 @@ const Scoper = {
                          <div style="margin-bottom: 1.5rem;">
                             <label style="font-size: 0.8rem; font-weight: 700; color: white; display: block; margin-bottom: 0.5rem;">Facteur PITA (Risk)</label>
                             <div class="pita-selector">
-                                <div id="pita-multiplier-display" style="grid-column: span 3; font-size: 0.7rem; font-weight: 800; color: #a855f7; text-align: right; margin-bottom: 5px;">Impact : +0%</div>
+                                <div id="pita-multiplier-display" style="grid-column: span 3; font-size: 0.7rem; font-weight: 800; color: var(--primary); text-align: right; margin-bottom: 5px;">Impact : +0%</div>
                                 <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 5px;">Urgence</div>
                                 <input type="range" id="scoper-pita-urgency" min="1" max="5" value="1" oninput="Scoper.calculate()" style="grid-column: span 2; width: 100%;">
                                 <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 5px;">Complexité</div>
@@ -1195,161 +1195,99 @@ const Scoper = {
 
         content.innerHTML = `
             <style>
-                .closing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 4rem; }
+                .closing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
                 .closing-card { 
-                    background: #0a0a0a; border: 1px solid rgba(255,255,255,0.06); border-radius: 32px; padding: 3rem;
-                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
-                    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+                    background: #0a0a0a; border: 1px solid rgba(255,255,255,0.06); border-radius: 24px; 
+                    padding: 2.5rem; position: relative; overflow: hidden;
                 }
-                .closing-card:hover { border-color: rgba(168, 85, 247, 0.3); transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
-                
-                .objection-card {
-                    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 2rem;
-                    transition: all 0.3s ease; cursor: pointer; position: relative;
+                .diag-question {
+                    padding: 1.2rem; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px solid rgba(255,255,255,0.04);
+                    margin-bottom: 0.8rem; font-size: 0.95rem; line-height: 1.5; color: #94a3b8; transition: all 0.3s;
                 }
-                .objection-card:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.04); }
-                .objection-card.active { background: rgba(168, 85, 247, 0.08); border-color: #a855f7; }
+                .diag-question:hover { border-color: var(--primary-glass); color: white; background: rgba(255,255,255,0.04); }
                 
-                .rebuttal-box { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-                .objection-card.active .rebuttal-box { max-height: 400px; opacity: 1; margin-top: 1.5rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.08); }
-                
-                .diag-question { 
-                    padding: 1.4rem; border-radius: 20px; background: rgba(255,255,255,0.02); border-left: 2px solid #a855f7; 
-                    margin-bottom: 1.2rem; font-size: 1rem; color: #e9d5ff; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                }
-                .diag-question:hover { transform: scale(1.02) translateX(10px); background: rgba(168, 85, 247, 0.05); }
-                
-                .expert-hero {
-                    background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(0, 0, 0, 0.8) 100%);
-                    border-radius: 40px; padding: 5rem 2rem; text-align: center; border: 1px solid rgba(255,255,255,0.05); 
-                    margin-bottom: 3.5rem; position: relative; overflow: hidden;
-                    backdrop-filter: blur(20px);
+                .rebuttal-box {
+                    padding: 1.5rem; background: rgba(16, 185, 129, 0.03); border-radius: 16px; border-left: 4px solid var(--primary);
+                    margin-top: 1rem; font-size: 1rem; line-height: 1.6; color: #e2e8f0; font-style: italic;
                 }
                 
-                .tjm-stats-row { display: flex; justify-content: center; gap: 1.2rem; flex-wrap: wrap; margin-top: 3.5rem; }
-                .tjm-pill { 
-                    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04); border-radius: 24px; 
-                    padding: 1.5rem 2rem; min-width: 160px; transition: all 0.3s; text-align: center;
+                .method-step {
+                    display: flex; gap: 1rem; margin-bottom: 2rem;
                 }
-                .tjm-pill.highlight { border-color: rgba(168, 85, 247, 0.3); background: rgba(168,85,247,0.04); }
-                .tjm-val { font-size: 2rem; font-weight: 950; color: white; letter-spacing: -1.5px; }
-                .tjm-lab { font-size: 0.7rem; font-weight: 800; color: #a855f7; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 8px; opacity: 0.8; }
-
-                .badge-expert {
-                    display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; 
-                    background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); 
-                    border-radius: 100px; font-size: 0.75rem; font-weight: 900; color: #c084fc; 
-                    text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 2rem;
+                .method-number {
+                    width: 32px; height: 32px; border-radius: 50%; background: var(--primary-glass); color: var(--primary);
+                    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
+                    border: 1px solid var(--primary-glass);
                 }
             </style>
 
-            <div class="closing-arsenal-v3" style="animation: fadeIn 0.8s ease-out;">
-                <div class="expert-hero">
-                    <div class="badge-expert">
-                        <i class="fas fa-shield-halved" style="font-size: 0.9rem;"></i> Closing Master Tool
-                    </div>
-                    <h1 style="font-size: 4rem; margin-bottom: 1rem; color: white; font-weight: 950; letter-spacing: -3px; line-height: 1;">${i18n.t('scoper.closing.title')}</h1>
-                    <p style="color: #a5b4fc; font-size: 1.25rem; opacity: 0.7; max-width: 700px; margin: 0 auto; line-height: 1.6;">
-                        ${i18n.t('scoper.closing.subtitle', { sector: sectorLabel, target: targetLabel })}
-                    </p>
-
-                    <div class="tjm-stats-row">
-                        <div class="tjm-pill highlight">
-                            <div class="tjm-val">${App.formatCurrency(tjm)}</div>
-                            <div class="tjm-lab">${i18n.t('scoper.ref_tjm_short')}</div>
-                        </div>
-                        <div class="tjm-pill">
-                            <div class="tjm-val">${App.formatCurrency(monthlyNet)}</div>
-                            <div class="tjm-lab">${i18n.t('scoper.monthly_net')}</div>
-                        </div>
-                        <div class="tjm-pill">
-                            <div class="tjm-val">${App.formatCurrency(revenueNeeded)}</div>
-                            <div class="tjm-lab">${i18n.t('dashboard.total_ca') || 'CA Bruti'}</div>
-                        </div>
-                        <div class="tjm-pill">
-                            <div class="tjm-val">${data.workingDays || 15}j</div>
-                            <div class="tjm-lab">${i18n.t('scoper.billed_days')}</div>
-                        </div>
-                    </div>
+            <div class="closing-container" style="animation: fadeInUp 0.8s ease-out;">
+                <div style="background: var(--bg-card); border-radius: 32px; padding: 4rem; border: 1px solid var(--border); margin-bottom: 2rem; text-align: center;">
+                    <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1.5rem;">Diagnostic Stratégique</div>
+                    <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: white; margin-bottom: 1rem;">La Méthode Consultative</h2>
+                    <p class="text-muted" style="font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Positionnez-vous comme un partenaire d'affaires, pas comme un simple prestataire.</p>
                 </div>
 
                 <div class="closing-grid">
                     <div class="closing-card">
-                        <div style="display: flex; align-items: start; gap: 24px; margin-bottom: 3rem;">
-                            <div style="width: 70px; height: 70px; border-radius: 20px; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #a855f7; font-size: 2rem;">
-                                <i class="fas fa-microscope"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h3 style="margin: 0; font-size: 1.8rem; color: white; font-weight: 900; letter-spacing: -1px;">${i18n.t('scoper.closing.dr_expert')}</h3>
-                                <div style="font-size: 1rem; color: #6366f1; margin-top: 6px; font-weight: 600; opacity: 0.8;">La phase de diagnostic critique</div>
-                            </div>
-                        </div>
-                        <div class="questions-list">
-                            ${tactics.diagnostic.questions.map((q, i) => `
-                                <div class="diag-question">
-                                    <span style="display: block; font-size: 0.7rem; font-weight: 900; color: #a855f7; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 2px;">Strategy Q-0${i + 1}</span>
-                                    ${q}
+                        <div class="method-step">
+                            <div class="method-number">01</div>
+                            <div>
+                                <h3 style="font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 0.5rem;">Diagnostic de Valeur</h3>
+                                <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1.5rem;">Posez ces questions pour transformer le prix en investissement.</p>
+                                <div class="questions-list">
+                                    ${tactics.diagnostic.questions.slice(0, 3).map(q => `<div class="diag-question">${q}</div>`).join('')}
                                 </div>
-                            `).join('')}
-                        </div>
-                        <div style="margin-top: 2.5rem; padding: 2rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), transparent); border-radius: 24px; border: 1px solid rgba(16, 185, 129, 0.15); border-left: 5px solid #10b981;">
-                            <div style="font-size: 0.8rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 2px; display: flex; align-items: center; gap: 8px;">
-                                <i class="fas fa-hand-holding-dollar"></i> ${i18n.t('scoper.roi.title')}
                             </div>
-                            <div style="font-size: 1.3rem; font-weight: 800; color: white; line-height: 1.5; letter-spacing: -0.5px;">"${tactics.roi.argument}"</div>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; padding: 1.5rem; background: var(--primary-glass); border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.1);">
+                            <div style="font-size: 0.65rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">L'argument ROI</div>
+                            <div style="font-size: 1rem; color: white; font-weight: 500; font-style: italic;">"${tactics.roi.argument}"</div>
                         </div>
                     </div>
 
                     <div class="closing-card">
-                        <div style="display: flex; align-items: start; gap: 24px; margin-bottom: 3rem;">
-                            <div style="width: 70px; height: 70px; border-radius: 20px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 2rem;">
-                                <i class="fas fa-anchor"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <h3 style="margin: 0; font-size: 1.8rem; color: white; font-weight: 900; letter-spacing: -1px;">${i18n.t('scoper.anchoring.title')}</h3>
-                                <div style="font-size: 1rem; color: #6366f1; margin-top: 6px; font-weight: 600; opacity: 0.8;">Ingénierie du contraste massif</div>
+                        <div class="method-step">
+                            <div class="method-number">02</div>
+                            <div>
+                                <h3 style="font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 0.5rem;">Ancrage Stratégique</h3>
+                                <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1.5rem;">Technique du contraste pour valider votre TJM cible.</p>
                             </div>
                         </div>
-                        <div style="background: rgba(0,0,0,0.4); border-radius: 28px; padding: 3rem; border: 1px solid rgba(255,255,255,0.03); position: relative;">
-                            <div style="opacity: 0.15; transform: scale(0.85) translateX(-20px); transition: all 0.5s;">
-                                <div style="font-size: 0.8rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 2px;"><i class="fas fa-crown"></i> ${i18n.t('scoper.option.elite')}</div>
-                                <div style="font-size: 2.8rem; font-weight: 950; color: white; margin-top: 8px;">${App.formatCurrency(scenarios.elite.tjm)} <span style="font-size: 1.2rem; font-weight: 500; opacity: 0.4;">/ j</span></div>
-                            </div>
-                            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(0,0,0,0.5)); border: 2px solid #10b981; padding: 2.5rem; border-radius: 24px; margin-top: -1.5rem; position: relative; z-index: 2; box-shadow: 0 15px 50px rgba(16, 185, 129, 0.2);">
-                                <div style="font-size: 0.9rem; font-weight: 900; color: #34d399; text-transform: uppercase; letter-spacing: 2px;">${i18n.t('scoper.closing.price_label')}</div>
-                                <div style="font-size: 3.5rem; font-weight: 950; color: white; margin-top: 10px; line-height: 1;">${App.formatCurrency(scenarios.security.tjm)} <span style="font-size: 1.4rem; font-weight: 500; opacity: 0.5;">/ j</span></div>
-                                <div style="position: absolute; top: -16px; right: 24px; background: #10b981; color: white; font-size: 0.8rem; padding: 8px 20px; border-radius: 100px; font-weight: 900; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 1px;">
-                                    ${i18n.t('scoper.price_accepted')}
+
+                        <div style="background: #000; border: 1px solid rgba(255,255,255,0.04); border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem;">
+                             <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); opacity: 0.4;">
+                                <div style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">Référence Marché (Expert)</div>
+                                <div style="font-size: 0.95rem; font-weight: 900; color: white;">${App.formatCurrency(scenarios.elite.tjm)}/j</div>
+                             </div>
+                             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem;">
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Votre Proposition</div>
+                                    <div style="font-size: 2.2rem; font-weight: 950; color: white;">${App.formatCurrency(scenarios.security.tjm)}<span style="font-size: 1rem; font-weight: 500; opacity: 0.5;"> / jour</span></div>
                                 </div>
-                            </div>
+                                <div style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 950; text-transform: uppercase;">Accepté</div>
+                             </div>
                         </div>
-                        <div style="margin-top: 2.5rem; padding: 1.5rem 2rem; background: rgba(99, 102, 241, 0.04); border-radius: 20px; border: 1px dashed rgba(99, 102, 241, 0.2);">
-                            <div style="font-size: 0.8rem; color: #6366f1; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1.5px;">${i18n.t('scoper.psychology.title')}</div>
-                            <div style="font-size: 1.1rem; color: #e0e7ff; font-style: italic; line-height: 1.6; font-weight: 500;">"${tactics.anchoring.logic}"</div>
+
+                        <div class="rebuttal-box" style="margin-top: 0; font-size: 0.95rem;">
+                            <div style="font-size: 0.65rem; color: var(--primary); font-weight: 950; text-transform: uppercase; margin-bottom: 8px;">Logique d'Acceptation</div>
+                            "${tactics.anchoring.logic}"
                         </div>
                     </div>
                 </div>
 
-                <div style="background: #050505; border: 1px solid rgba(255,255,255,0.04); border-radius: 40px; padding: 5rem 4rem; box-shadow: 0 20px 80px rgba(0,0,0,0.5);">
-                    <div style="text-align: center; margin-bottom: 5rem;">
-                        <div style="font-size: 0.8rem; font-weight: 900; color: #f43f5e; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 1.5rem;">The Lab</div>
-                        <h3 style="font-size: 3rem; margin: 0; color: white; font-weight: 950; letter-spacing: -2.5px;">${i18n.t('scoper.objections.title') || 'Simulateur de Contre-Attaque'}</h3>
-                        <p style="color: #6366f1; font-size: 1.2rem; margin-top: 15px; opacity: 0.8;">${i18n.t('scoper.objections.desc') || 'Maîtrisez les 3 freins psychologiques majeurs de vos clients.'}</p>
+                <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 32px; padding: 3rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                        <div class="method-number" style="background: #ef44441a; color: #ef4444; border-color: #ef44441a;">03</div>
+                        <h3 style="font-size: 1.2rem; font-weight: 800; color: white;">Traitement des Objections</h3>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem;">
-                        ${tactics.objections.map((obj, i) => `
-                            <div class="objection-card" onclick="this.classList.toggle('active')">
-                                <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(244, 63, 94, 0.1); display: flex; align-items: center; justify-content: center; color: #f43f5e; margin-bottom: 2rem; font-weight: 950; font-size: 1rem; border: 1px solid rgba(244, 63, 94, 0.2);">!</div>
-                                <div style="font-size: 1.4rem; font-weight: 900; color: white; line-height: 1.4; min-height: 4rem;">"${obj.hook}"</div>
-                                <div class="rebuttal-box">
-                                    <div style="font-size: 0.8rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 14px; letter-spacing: 2px; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-bolt"></i> ${i18n.t('scoper.objection.rebuttal_label')}
-                                    </div>
-                                    <div style="font-size: 1.1rem; color: #e9d5ff; line-height: 1.7; font-style: italic; font-weight: 500; opacity: 0.9;">${obj.rebuttal}</div>
-                                </div>
-                                <div style="margin-top: 2.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.4rem; text-align: center; font-size: 0.75rem; color: var(--text-muted); font-weight: 800; letter-spacing: 1px;">
-                                    <i class="fas fa-eye" style="margin-right: 8px; opacity: 0.6;"></i> ${i18n.t('scoper.objection.click_reveal')}
-                                </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                        ${tactics.objections.map(obj => `
+                            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 20px;">
+                                <div style="font-size: 1.1rem; font-weight: 800; color: white; margin-bottom: 1rem; line-height: 1.4;">"${obj.hook}"</div>
+                                <div class="rebuttal-box" style="font-size: 0.85rem; padding: 1rem;">${obj.rebuttal}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -1368,7 +1306,7 @@ const Scoper = {
         if (!Storage.isExpert()) {
             content.innerHTML = `
                 <div class="lock-screen elite-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem;">
-                    <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: var(--primary);">
+                    <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; margin: 0 auto 2.5rem; color: var(--primary); border: 1px solid var(--primary-glass);">
                         <i class="fas fa-shield-alt" style="font-size: 2.5rem;"></i>
                     </div>
                     <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">${i18n.t('scoper.journal.hp_title') || 'Journal Haute Performance'}</h2>
