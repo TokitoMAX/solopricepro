@@ -1166,7 +1166,8 @@ const Scoper = {
 
         const results = PricingEngine.calculateObjective(data);
         const scenarios = PricingEngine.getScenarios(results);
-        const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, sector);
+        const targetTJM = results.dailyRate;
+        const powerScore = PricingEngine.getMarketPowerScore(targetTJM, sector);
         const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target, this.currentProjectTJM || 0);
 
         const aiPlan = tactics.aiPlan;
@@ -1252,6 +1253,7 @@ const Scoper = {
                                 <div style="font-size: 0.9rem; color: white; line-height: 1.5; font-weight: 500;">${action.text}</div>
                             </div>
                         `).join('')}
+                    </div>
                     <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 1rem; align-items: center;">
                         <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Automations :</span>
                         <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;">
@@ -1364,7 +1366,6 @@ const Scoper = {
         if (!journal.habits) journal.habits = { ...defaultJournal.habits, ...journal.habits };
 
         content.innerHTML = `
-            <div class="elite-journal-container hp-journal mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
             <div class="elite-journal-container hp-journal mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <div class="writing-col">
                     <div style="background: var(--bg-card); border-radius: 24px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 2rem;">
