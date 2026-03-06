@@ -703,19 +703,19 @@ const App = {
         if (!modal) return;
 
         const messages = {
-            limit: 'Passez à la vitesse supérieure.',
-            pdf: 'Logo personnalisé & exports illimités.',
-            feature: 'Fonctionnalité réservée aux membres PRO.',
-            scoper_limit: 'Analyse illimitée réservée aux membres PRO.',
-            marketplace_limit: 'Limite de réponse atteinte (1/mois). Passez PRO pour débloquer le Radar.',
-            marketplace_automation: 'Automatisation réservée aux membres PRO.',
-            pdf_download: 'Téléchargements illimités et logo personnalisé réservés aux membres PRO.'
+            limit: i18n.t('upgrade.msg.limit'),
+            pdf: i18n.t('upgrade.msg.pdf'),
+            feature: i18n.t('upgrade.msg.feature'),
+            scoper_limit: i18n.t('upgrade.msg.scoper_limit'),
+            marketplace_limit: i18n.t('upgrade.msg.marketplace_limit'),
+            marketplace_automation: i18n.t('upgrade.msg.marketplace_automation'),
+            pdf_download: i18n.t('upgrade.msg.pdf_download')
         };
 
         const titleEl = modal.querySelector('.upgrade-title');
         const messageEl = modal.querySelector('.upgrade-message');
 
-        if (titleEl) titleEl.textContent = 'Accès SoloPrice PRO';
+        if (titleEl) titleEl.textContent = i18n.t('upgrade.title');
         if (messageEl) messageEl.textContent = messages[reason] || messages.limit;
 
         // Force display flex to override any potential inline style 'none'
@@ -735,73 +735,73 @@ const App = {
         const titleEl = modal.querySelector('.upgrade-title');
 
         if (step === 'comparison') {
-            titleEl.innerHTML = `Accès SoloPrice <span class="gradient-text">PRO</span>`;
+            titleEl.innerHTML = i18n.t('upgrade.title').replace('PRO', '<span class="gradient-text">PRO</span>');
             container.innerHTML = `
             <!-- ROI Calculator Prompt -->
             <div style="grid-column: 1 / -1; background: rgba(var(--primary-rgb), 0.05); border: 1px solid var(--primary-glass); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
                 <div style="font-size: 1.5rem;"></div>
                 <div style="font-size: 0.85rem; line-height: 1.4; color: var(--text-secondary);">
-                    <strong>L'abonnement qui se paie seul :</strong> Sur un projet à 1500€, une simple "Prime de Risque" (Facteur PITA) de 10% ajoute <strong>150€</strong> à votre facture. Votre pack PRO est rentabilisé 10 fois sur une seule vente.
+                    ${i18n.t('upgrade.roi.desc')}
                 </div>
             </div>
 
             <!-- Standard -->
             <div class="pricing-card-mini standard" onclick="App.closeModal()">
-                <div class="card-tier">STANDARD</div>
-                <div class="card-price">0€<span>/mois</span></div>
+                <div class="card-tier">${i18n.t('pricing.standard.name').toUpperCase()}</div>
+                <div class="card-price">${i18n.t('pricing.standard.price')}€<span>${i18n.t('pricing.standard.period')}</span></div>
                 <ul class="card-features-mini">
                     <li><i class="fas fa-check-circle"></i> Roadmap PDF Offerte</li>
                     <li><i class="fas fa-minus"></i> 1 Client Actif</li>
                     <li><i class="fas fa-minus"></i> 2 Devis par mois</li>
                 </ul>
-                <div class="card-select-btn">Rester en Standard</div>
+                <div class="card-select-btn">${i18n.t('upgrade.standard.select')}</div>
             </div>
 
             <!-- Pro -->
             <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', 'pro')">
-                <div class="card-badge">PRODUCTION ILLIMITÉE</div>
-                <div class="card-tier">SOLOPRICE PRO</div>
-                <div class="card-price">15€<span>/mois</span></div>
-                <div class="card-value-tag">Idéal pour produire sans limites</div>
+                <div class="card-badge">${i18n.t('pricing.pro.badge').toUpperCase()}</div>
+                <div class="card-tier">${i18n.t('pricing.pro.name').toUpperCase()}</div>
+                <div class="card-price">${i18n.t('pricing.pro.price')}€<span>${i18n.t('pricing.standard.period')}</span></div>
+                <div class="card-value-tag">${i18n.t('upgrade.pro.value')}</div>
                 <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> <strong>Chiffrage Projet</strong> Illimité</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Prime de Risque</strong> (PITA)</li>
-                    <li><i class="fas fa-check-circle"></i> Analyse de <strong>Marge Nette</strong></li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('scoper.tab.project')}</strong> Illimité</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('scoper.safety_margin').split(' (')[0]}</strong> (PITA)</li>
+                    <li><i class="fas fa-check-circle"></i> Analyse de <strong>${i18n.t('expenses.real_net_profit')}</strong></li>
                     <li><i class="fas fa-check-circle"></i> Votre <strong>Logo</strong> sur PDF</li>
                 </ul>
-                <button class="card-select-btn pro">Passer Pro</button>
+                <button class="card-select-btn pro">${i18n.t('upgrade.pro.select')}</button>
             </div>
 
             <!-- Expert -->
             <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
-                <div class="card-badge" style="background: #a855f7;">ACCÉLÉRATEUR BUSINESS</div>
-                <div class="card-tier" style="color: #c084fc;">PACK EXPERT</div>
-                <div class="card-price">29€<span>/mois</span></div>
-                <div class="card-value-tag">Le pack pour CHERCHER des clients</div>
+                <div class="card-badge" style="background: #a855f7;">${i18n.t('upgrade.expert.badge')}</div>
+                <div class="card-tier" style="color: #c084fc;">${i18n.t('pricing.expert.name').toUpperCase()}</div>
+                <div class="card-price">${i18n.t('pricing.expert.price')}€<span>${i18n.t('pricing.standard.period')}</span></div>
+                <div class="card-value-tag">${i18n.t('upgrade.expert.value')}</div>
                 <ul class="card-features-mini">
                     <li><i class="fas fa-check-circle"></i> <strong>Scripts de Négociation</strong></li>
                     <li><i class="fas fa-check-circle"></i> <strong>Arguments de Vente</strong> (IA)</li>
                     <li><i class="fas fa-check-circle"></i> Market Power Analyzer</li>
-                    <li><i class="fas fa-check-circle"></i> Signature Électronique</li>
+                    <li><i class="fas fa-check-circle"></i> ${i18n.t('feat.signature').replace('<strong>', '').replace('</strong>', '')}</li>
                 </ul>
-                <button class="card-select-btn expert" style="background: #a855f7; color: white;">Devenir Expert</button>
+                <button class="card-select-btn expert" style="background: #a855f7; color: white;">${i18n.t('upgrade.expert.select')}</button>
             </div>
         `;
         } else if (step === 'checkout') {
             const tier = typeof data === 'string' ? data : data.tier;
             const method = 'paypal'; // Force PayPal uniquement
-            const price = tier === 'pro' ? '15€' : '29€';
+            const price = tier === 'pro' ? i18n.t('pricing.pro.price') + '€' : i18n.t('pricing.expert.price') + '€';
 
             if (tier === 'standard') { App.closeModal(); return; }
 
-            titleEl.textContent = 'Activation Immédiate';
+            titleEl.textContent = i18n.t('upgrade.checkout.title');
             container.innerHTML = `
             <div class="checkout-view" style="width: 100%; text-align: left; padding: 0.5rem;">
                 <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid var(--border);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${tier.toUpperCase()}</h4>
-                            <span style="font-size: 0.8rem; color: var(--text-muted);">Abonnement via PayPal</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">${i18n.t('upgrade.checkout.sub_paypal')}</span>
                         </div>
                         <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">${price}</span>
                     </div>
@@ -809,16 +809,16 @@ const App = {
 
                 <div class="paypal-checkout-box">
                     <div id="paypal-live-badge" class="env-badge" style="display: none; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; width: fit-content; margin-inline: auto;">
-                        <i class="fas fa-check-circle"></i> MODE PRODUCTION (RÉEL)
+                        <i class="fas fa-check-circle"></i> ${i18n.t('upgrade.checkout.mode_live')}
                     </div>
                     <div id="paypal-button-container" class="paypal-button-mount">
                         <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
                     </div>
-                    <p class="paypal-info-text text-muted" style="text-align: center; margin-top: 1rem;">Validation instantanée après paiement</p>
+                    <p class="paypal-info-text text-muted" style="text-align: center; margin-top: 1rem;">${i18n.t('upgrade.checkout.info')}</p>
                 </div>
                 
                 <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1.5rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
-                    <i class="fas fa-arrow-left"></i> Retour aux offres
+                    <i class="fas fa-arrow-left"></i> ${i18n.t('upgrade.checkout.back')}
                 </button>
             </div>
         `;
@@ -850,12 +850,12 @@ const App = {
                     if (!window.paypal) {
                         if (retryCount < 5) {
                             console.log(` [PAYPAL] SDK not ready, retrying (${retryCount + 1}/5)...`);
-                            container.innerHTML = '<div style="text-align:center; padding:1rem;"><i class="fas fa-spinner fa-spin"></i> Initialisation PayPal...</div>';
+                            container.innerHTML = `<div style="text-align:center; padding:1rem;"><i class="fas fa-spinner fa-spin"></i> ${i18n.t('upgrade.checkout.initializing')}</div>`;
                             setTimeout(() => renderButtons(retryCount + 1), 1000);
                             return;
                         }
                         console.error(' [PAYPAL] SDK NOT LOADED after 5s!');
-                        container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">Erreur: Le service PayPal ne répond pas.<br><small>Vérifiez votre connexion ou désactivez votre bloqueur de pub.</small></p>';
+                        container.innerHTML = `<p style="color:red; text-align:center; padding:1rem;">${i18n.t('upgrade.checkout.error_sdk')}</p>`;
                         return;
                     }
 
@@ -877,7 +877,7 @@ const App = {
                             });
                         },
                         onApprove: async (data, actions) => {
-                            App.showNotification(` Activation de votre accès ${tier.toUpperCase()} ${isLive ? '' : '(Sandbox)'}...`, 'success');
+                            App.showNotification(i18n.t('upgrade.checkout.activating').replace('{tier}', tier.toUpperCase()) + (isLive ? '' : ' (Sandbox)'), 'success');
                             const user = Auth.getUser();
 
                             if (user) {
@@ -911,14 +911,13 @@ const App = {
                 renderButtons(0);
             }
         } else if (step === 'success') {
-            titleEl.textContent = 'Félicitations !';
+            titleEl.textContent = i18n.t('upgrade.success.title');
             container.innerHTML = `
                 <div class="upgrade-success" style="text-align: center; padding: 2rem; width: 100%;">
                     <div class="success-icon" style="font-size: 4rem; margin-bottom: 1.5rem;"></div>
-                    <h3 style="margin-bottom: 1rem; color: var(--primary-light);">Paiement Confirmé !</h3>
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-light);">${i18n.t('upgrade.success.subtitle')}</h3>
                     <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 1rem; line-height: 1.5;">
-                        Nous activons vos privilèges SoloPrice PRO.<br>
-                        Veuillez patienter quelques instants...
+                        ${i18n.t('upgrade.success.desc')}
                     </p>
                     <div style="display: flex; justify-content: center;">
                         <div class="loading-spinner"></div>

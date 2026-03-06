@@ -116,13 +116,13 @@ const PDFGenerator = {
             content: [
                 {
                     columns: [
-                        { text: i18n.t('pdf.quote.title') || 'DEVIS', style: 'header' },
-                        { text: `${i18n.t('pdf.number') || 'N°'} ${quote.number || quote.id || 'BROUILLON'}`, style: 'quoteNumber' }
+                        { text: i18n.t('pdf.quote.title'), style: 'header' },
+                        { text: `${i18n.t('pdf.number')} ${quote.number || quote.id || i18n.t('status.draft').toUpperCase()}`, style: 'quoteNumber' }
                     ]
                 },
                 {
                     columns: [
-                        { text: `${i18n.t('pdf.date_issue') || 'Date d\'émission'}: ${dateStr}\n${i18n.t('pdf.valid_until') || 'Valable jusqu\'au'}: ${validUntil}`, style: 'small' },
+                        { text: `${i18n.t('pdf.date_issue')}: ${dateStr}\n${i18n.t('pdf.valid_until')}: ${validUntil}`, style: 'small' },
                         { text: '' }
                     ],
                     margin: [0, 0, 0, 30]
@@ -132,7 +132,7 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: `${i18n.t('pdf.provider') || 'Prestataire'}:\n`, bold: true, color: '#4b5563' },
+                                { text: `${i18n.t('pdf.provider')}:\n`, bold: true, color: '#4b5563' },
                                 `${providerName}\n`,
                                 `${Auth.user?.email || ''}\n`
                             ]
@@ -140,8 +140,8 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: `${i18n.t('pdf.client') || 'Client'}:\n`, bold: true, color: '#4b5563' },
-                                `${client?.name || i18n.t('pdf.client_unknown') || 'Client Inconnu'}\n`,
+                                { text: `${i18n.t('pdf.client')}:\n`, bold: true, color: '#4b5563' },
+                                `${client?.name || i18n.t('pdf.client_unknown')}\n`,
                                 `${client?.company || ''}\n`,
                                 `${client?.address || ''}\n`,
                                 `${client?.email || ''}\n`,
@@ -182,11 +182,11 @@ const PDFGenerator = {
                     margin: [0, 0, 0, 40]
                 },
                 {
-                    text: i18n.t('pdf.settlement.title') || 'Instructions de Règlement & Bon pour accord',
+                    text: i18n.t('pdf.settlement.title'),
                     style: 'subheader'
                 },
                 {
-                    text: i18n.t('pdf.settlement.desc') || 'Ce document comporte deux instructions de règlement distinctes pour le prestataire et les frais de service.',
+                    text: i18n.t('pdf.settlement.desc'),
                     style: 'small',
                     margin: [0, 0, 0, 10]
                 },
@@ -195,9 +195,9 @@ const PDFGenerator = {
                         {
                             width: '48%',
                             stack: [
-                                { text: `1. ${i18n.t('pdf.settlement.part_provider') || 'PART PRESTATAIRE'} (${settings.developerSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
-                                { text: `${i18n.t('pdf.settlement.recipient') || 'Destinataire'} : ${providerName}`, fontSize: 9, margin: [0, 5, 0, 0] },
-                                { text: i18n.t('pdf.settlement.direct') || 'Règlement direct sur compte.', fontSize: 9 }
+                                { text: `1. ${i18n.t('pdf.settlement.part_provider')} (${settings.developerSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
+                                { text: `${i18n.t('pdf.settlement.recipient')} : ${providerName}`, fontSize: 9, margin: [0, 5, 0, 0] },
+                                { text: i18n.t('pdf.settlement.direct'), fontSize: 9 }
                             ],
                             margin: [0, 0, 10, 0],
                             padding: [10, 10, 10, 10]
@@ -205,9 +205,9 @@ const PDFGenerator = {
                         {
                             width: '48%',
                             stack: [
-                                { text: `2. ${i18n.t('pdf.settlement.part_service') || 'SERVICE SOLOPRICE'} (${settings.platformSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
-                                { text: `${i18n.t('pdf.settlement.recipient') || 'Destinataire'} : SoloPrice Pro`, fontSize: 9, margin: [0, 5, 0, 0] },
-                                { text: i18n.t('pdf.settlement.online') || 'Paiement sécurisé en ligne exigé.', fontSize: 9 }
+                                { text: `2. ${i18n.t('pdf.settlement.part_service')} (${settings.platformSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
+                                { text: `${i18n.t('pdf.settlement.recipient')} : SoloPrice Pro`, fontSize: 9, margin: [0, 5, 0, 0] },
+                                { text: i18n.t('pdf.settlement.online'), fontSize: 9 }
                             ],
                             margin: [10, 0, 0, 0],
                             padding: [10, 10, 10, 10]
@@ -224,8 +224,8 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             stack: [
-                                { text: i18n.t('pdf.signature.client') || 'Signature du client', bold: true, alignment: 'center' },
-                                { text: i18n.t('pdf.signature.mention') || 'Précédé de la mention "Bon pour accord"', fontSize: 8, alignment: 'center', margin: [0, 5, 0, 40] },
+                                { text: i18n.t('quotes.signature.title_client'), bold: true, alignment: 'center' },
+                                { text: i18n.t('pdf.signature.mention'), fontSize: 8, alignment: 'center', margin: [0, 5, 0, 40] },
                                 { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1, lineColor: '#d1d5db' }], alignment: 'center' }
                             ]
                         }
@@ -233,14 +233,14 @@ const PDFGenerator = {
                 }
             ],
             info: {
-                title: `Devis_${quote.number || quote.id || 'Brouillon'}`,
+                title: `${i18n.t('pdf.quote.title')}_${quote.number || quote.id || i18n.t('status.draft')}`,
                 author: providerName,
-                subject: 'Devis de Prestations',
+                subject: i18n.t('pdf.quote.subject'),
                 keywords: 'devis, soloprice'
             }
         };
 
-        this._downloadRealPdf(docDefinition, `Devis_${quote.number || quote.id || 'Brouillon'}.pdf`);
+        this._downloadRealPdf(docDefinition, `${i18n.t('pdf.quote.title')}_${quote.number || quote.id || i18n.t('status.draft')}.pdf`);
     },
 
     async generateInvoice(quote, client, settings) {
@@ -288,12 +288,12 @@ const PDFGenerator = {
             content: [
                 {
                     columns: [
-                        { text: i18n.t('pdf.invoice.title') || 'FACTURE', style: 'header' },
-                        { text: `${i18n.t('pdf.number') || 'N°'} ${quote.number || quote.id || 'FAC-1001'}`, style: 'quoteNumber' }
+                        { text: i18n.t('pdf.invoice.title'), style: 'header' },
+                        { text: `${i18n.t('pdf.number')} ${quote.number || quote.id || 'FAC-1001'}`, style: 'quoteNumber' }
                     ]
                 },
                 {
-                    text: `${i18n.t('pdf.date_issue') || 'Date d\'émission'}: ${dateStr}${quote.id ? `\nRéférence: ${quote.id}` : ''}`,
+                    text: `${i18n.t('pdf.date_issue')}: ${dateStr}${quote.id ? `\n${i18n.t('pdf.reference')}: ${quote.id}` : ''}`,
                     style: 'small',
                     margin: [0, 0, 0, 30]
                 },
@@ -302,7 +302,7 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: `${i18n.t('pdf.provider') || 'Émetteur'}:\n`, bold: true, color: '#4b5563' },
+                                { text: `${i18n.t('pdf.provider_issuer')}:\n`, bold: true, color: '#4b5563' },
                                 `${providerName}\n`,
                                 `${Auth.user?.email || ''}\n`
                             ]
@@ -310,8 +310,8 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: `${i18n.t('pdf.client') || 'Facturé à'}:\n`, bold: true, color: '#4b5563' },
-                                `${client?.name || i18n.t('pdf.client_unknown') || 'Client Inconnu'}\n`,
+                                { text: `${i18n.t('pdf.client_billed')}:\n`, bold: true, color: '#4b5563' },
+                                `${client?.name || i18n.t('pdf.client_unknown')}\n`,
                                 `${client?.company || ''}\n`,
                                 `${client?.address || ''}\n`,
                                 `${client?.email || ''}\n`
@@ -351,24 +351,24 @@ const PDFGenerator = {
                     margin: [0, 0, 0, 40]
                 },
                 {
-                    text: i18n.t('pdf.legal.title') || 'Mentions Légales',
+                    text: i18n.t('pdf.legal.title'),
                     style: 'subheader'
                 },
                 {
-                    text: (i18n.t('pdf.legal.penalties', { amount: (typeof App !== 'undefined' ? App.formatCurrency(40) : '40 €') }) || 'Pénalités de retard : 3 fois le taux d\'intérêt légal. Indemnité forfaitaire pour frais de recouvrement : ' + (typeof App !== 'undefined' ? App.formatCurrency(40) : '40 €')) + '.\n' +
-                        (quote.tax === 0 ? (i18n.t('pdf.legal.no_tax') || 'TVA non applicable, art. 293 B du CGI.') : ''),
+                    text: (i18n.t('pdf.legal.penalties', { amount: (typeof App !== 'undefined' ? App.formatCurrency(40) : '40 €') })) + '.\n' +
+                        (quote.tax === 0 ? i18n.t('pdf.legal.no_tax') : ''),
                     style: 'small'
                 }
             ],
             info: {
-                title: `Facture_${quote.number || quote.id}`,
+                title: `${i18n.t('pdf.invoice.title')}_${quote.number || quote.id}`,
                 author: providerName,
-                subject: 'Facture de Prestations',
+                subject: i18n.t('pdf.invoice.subject'),
                 keywords: 'facture, soloprice'
             }
         };
 
-        this._downloadRealPdf(docDefinition, `Facture_${quote.number || quote.id || quote.id}.pdf`);
+        this._downloadRealPdf(docDefinition, `${i18n.t('pdf.invoice.title')}_${quote.number || quote.id}.pdf`);
     },
 
     async generateRoadmap() {

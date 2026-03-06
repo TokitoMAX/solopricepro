@@ -282,40 +282,40 @@ const Quotes = {
                 <form id="quote-form" onsubmit="Quotes.save(event)">
                     <div class="form-grid">
                         <div class="form-group full-width">
-                            <label class="form-label">Objet du devis *</label>
-                            <input type="text" name="title" class="form-input" placeholder="Ex: Refonte site web, Coaching annuel..." value="${quote?.title || ''}" required>
+                            <label class="form-label">${i18n.t('quotes.form.placeholder.title')}</label>
+                            <input type="text" name="title" class="form-input" placeholder="${i18n.t('quotes.form.placeholder.title')}" value="${quote?.title || ''}" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Client *</label>
+                            <label class="form-label">${i18n.t('quotes.table.client')}</label>
                             <div style="display: flex; gap: 10px;">
                                 <select name="clientId" id="quote-client-select" class="form-input" required style="flex: 1;">
-                                    <option value="">Sélectionner un client</option>
+                                    <option value="">${i18n.t('quotes.form.placeholder.select_client')}</option>
                                     ${clients.map(c => `
                                         <option value="${c.id}" ${(quote?.clientId === c.id || preselectedClientId === c.id) ? 'selected' : ''}>
                                             ${c.name}
                                         </option>
                                     `).join('')}
                                 </select>
-                                <button type="button" class="button-secondary" onclick="Quotes.openQuickClientAdd()">
-                                    Nouveau
+                                <button type="button" class="button-secondary" onclick="Quotes.openQuickClientAdd()" title="${i18n.t('quotes.btn.add_client')}">
+                                    <i class="fas fa-user-plus"></i>
                                 </button>
                             </div>
                         </div>
 
                         <div class="form-group full-width">
                             <button type="button" class="button-outline small" onclick="document.getElementById('advanced-quote-options').style.display = document.getElementById('advanced-quote-options').style.display === 'none' ? 'grid' : 'none'" style="width: 100%; justify-content: center; gap: 8px;">
-                                <i class="fas fa-cog"></i> Options Avancées (Statut, Taxes...)
+                                <i class="fas fa-cog"></i> ${i18n.t('quotes.btn.advanced')}
                             </button>
                         </div>
 
                         <div id="advanced-quote-options" style="display: none; grid-column: span 2; grid-template-columns: 1fr 1fr; gap: 20px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 8px; margin-top: -10px;">
                             <div class="form-group">
-                                <label class="form-label">Statut</label>
+                                <label class="form-label">${i18n.t('quotes.table.status')}</label>
                                 <select name="status" class="form-input">
-                                    <option value="draft" ${quote?.status === 'draft' ? 'selected' : ''}>Brouillon</option>
-                                    <option value="sent" ${quote?.status === 'sent' ? 'selected' : ''}>Envoyé</option>
-                                    <option value="accepted" ${quote?.status === 'accepted' ? 'selected' : ''}>Accepté</option>
-                                    <option value="refused" ${quote?.status === 'refused' ? 'selected' : ''}>Refusé</option>
+                                    <option value="draft" ${quote?.status === 'draft' ? 'selected' : ''}>${i18n.t('status.draft')}</option>
+                                    <option value="sent" ${quote?.status === 'sent' ? 'selected' : ''}>${i18n.t('status.sent')}</option>
+                                    <option value="accepted" ${quote?.status === 'accepted' ? 'selected' : ''}>${i18n.t('status.accepted')}</option>
+                                    <option value="refused" ${quote?.status === 'refused' ? 'selected' : ''}>${i18n.t('status.refused')}</option>
                                 </select>
                             </div>
                             <div class="form-group" id="quote-tax-selector-container">
@@ -326,9 +326,9 @@ const Quotes = {
 
                     <div class="form-section">
                         <div class="section-header-inline">
-                            <h4>Lignes du devis</h4>
+                            <h4>${i18n.t('quotes.form.section.items')}</h4>
                             <button type="button" class="button-secondary" onclick="Quotes.addItem()">
-                                Ajouter une ligne
+                                ${i18n.t('quotes.btn.add_line')}
                             </button>
                         </div>
 
@@ -340,15 +340,15 @@ const Quotes = {
 
                         <div class="invoice-totals" style="border-top: 2px solid var(--border); padding-top: 1.5rem;">
                             <div class="total-row">
-                                <span style="opacity: 0.8;">Prestations HT :</span>
+                                <span style="opacity: 0.8;">${i18n.t('pdf.total.items')}:</span>
                                 <span id="subtotal-display">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row" style="color: var(--primary-light);">
-                                <span style="font-weight: 600;">Frais de Service (15%) :</span>
+                                <span style="font-weight: 600;">${i18n.t('pdf.total.service')} (15%):</span>
                                 <span id="margin-display">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row" style="border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem;">
-                                <span style="font-weight: 700;">Total Hors Taxes :</span>
+                                <span style="font-weight: 700;">${i18n.t('pdf.total.subtotal')}:</span>
                                 <span id="final-subtotal-display" style="font-weight: 700;">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row">
@@ -356,7 +356,7 @@ const Quotes = {
                                 <span id="tax-display">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row total" style="background: var(--primary-glass); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                                <span style="font-size: 1.2rem; font-weight: 800;">TOTAL TTC :</span>
+                                <span style="font-size: 1.2rem; font-weight: 800;">${i18n.t('pdf.total.ttc')}:</span>
                                 <span id="total-display" style="font-size: 1.2rem; font-weight: 800; color: var(--primary-light);">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</span>
                             </div>
                             <div class="total-row tax-context-info">
@@ -366,8 +366,8 @@ const Quotes = {
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="button-secondary" onclick="Quotes.hideForm()">Annuler</button>
-                        <button type="submit" class="button-primary">Enregistrer</button>
+                        <button type="button" class="button-secondary" onclick="Quotes.hideForm()">${i18n.t('btn.cancel')}</button>
+                        <button type="submit" class="button-primary">${i18n.t('btn.save')}</button>
                     </div>
                 </form>
             </div>
@@ -380,7 +380,7 @@ const Quotes = {
                 <div class="item-field item-description">
                     <input type="text" 
                            name="items[${index}][description]" 
-                           placeholder="Description (ou choisir dans la liste)" 
+                           placeholder="${i18n.t('quotes.form.placeholder.item_desc')}" 
                            class="form-input" 
                            list="quote-services-list"
                            value="${item.description || ''}"
@@ -390,7 +390,7 @@ const Quotes = {
                 <div class="item-field item-quantity">
                     <input type="number" 
                            name="items[${index}][quantity]" 
-                           placeholder="Qté" 
+                           placeholder="${i18n.t('pdf.table.qty')}" 
                            class="form-input" 
                            value="${item.quantity || 1}"
                            min="0.01"
@@ -401,7 +401,7 @@ const Quotes = {
                 <div class="item-field item-price">
                     <input type="number" 
                            name="items[${index}][unitPrice]" 
-                           placeholder="Prix unitaire" 
+                           placeholder="${i18n.t('pdf.table.unit_price')}" 
                            class="form-input" 
                            value="${item.unitPrice || 0}"
                            min="0"
@@ -414,7 +414,7 @@ const Quotes = {
                 </div>
                 <div class="item-field item-actions">
                     <button type="button" class="btn-icon btn-danger" onclick="Quotes.removeItem(${index})">
-                        Supprimer
+                        ${i18n.t('btn.delete')}
                     </button>
                 </div>
             </div>
@@ -520,21 +520,21 @@ const Quotes = {
 
         const health = Math.min(100, (subtotal / targetTJM) * 100);
         let color = '#ef4444'; // Red
-        let label = 'Rentabilité critique';
+        let label = i18n.t('quotes.margin.critical');
 
-        if (health > 80) { color = '#10b981'; label = 'Seuil de rentabilité atteint'; }
-        else if (health > 50) { color = '#fbbf24'; label = 'Vigilance rentabilité'; }
+        if (health > 80) { color = '#10b981'; label = i18n.t('quotes.margin.success'); }
+        else if (health > 50) { color = '#fbbf24'; label = i18n.t('quotes.margin.warning'); }
 
         container.innerHTML = `
             <div style="background: var(--bg-card); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600;">
-                    <span style="color: var(--text-secondary);">Analyse de Rentabilité</span>
+                    <span style="color: var(--text-secondary);">${i18n.t('quotes.margin.title')}</span>
                     <span style="color: ${color};">${label}</span>
                 </div>
                 <div style="height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
                     <div style="width: ${health}%; height: 100%; background: ${color}; transition: width 0.3s ease;"></div>
                 </div>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Basé sur votre TJM cible de ${App.formatCurrency(targetTJM)}.</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">${i18n.t('quotes.margin.description').replace('{tjm}', App.formatCurrency(targetTJM))}</p>
             </div>
         `;
     },
@@ -646,10 +646,10 @@ const Quotes = {
 
         try {
             await Storage.addInvoice(invoiceData);
-            App.showNotification('Facture générée avec succès.', 'success');
+            App.showNotification(i18n.t('quotes.notify.invoice_generated'), 'success');
             App.navigateTo('invoices');
         } catch (e) {
-            App.showNotification('Erreur de conversion.', 'error');
+            App.showNotification(i18n.t('quotes.notify.convert_error'), 'error');
         }
     },
 
@@ -687,10 +687,10 @@ const Quotes = {
         if (!quote) return;
 
         const statuses = [
-            { value: 'draft', label: 'Brouillon' },
-            { value: 'sent', label: 'Envoyé' },
-            { value: 'accepted', label: 'Accepté' },
-            { value: 'refused', label: 'Refusé' }
+            { value: 'draft', label: i18n.t('quotes.status.draft') },
+            { value: 'sent', label: i18n.t('quotes.status.sent') },
+            { value: 'accepted', label: i18n.t('quotes.status.accepted') },
+            { value: 'refused', label: i18n.t('quotes.status.refused') }
         ];
 
         const currentIndex = statuses.findIndex(s => s.value === quote.status);
@@ -698,7 +698,7 @@ const Quotes = {
         const nextStatus = statuses[nextIndex].value;
 
         await Storage.updateQuote(id, { status: nextStatus });
-        App.showNotification(`Statut mis à jour : ${statuses[nextIndex].label}`, 'success');
+        App.showNotification(i18n.t('quotes.notify.status_updated', { status: statuses[nextIndex].label }), 'success');
         this.render(this.lastContainerId);
     },
 
@@ -711,16 +711,16 @@ const Quotes = {
 
         try {
             await Storage.updateQuote(id, { [field]: newValue });
-            App.showNotification(`Paiement ${type === 'expert' ? 'Prestataire' : 'Commission'} mis à jour.`, 'success');
+            App.showNotification(i18n.t('quotes.notify.payment_updated', { type: type === 'expert' ? i18n.t('quotes.payment_type.expert') : i18n.t('quotes.payment_type.commission') }), 'success');
 
             // Si les deux sont payés, on peut suggérer de passer en status 'paid' global
             if (field === 'expert_paid_at' && newValue && !quote.platform_paid_at) {
-                App.showNotification('Note : N\'oubliez pas de marquer la commission plateforme une fois reçue.', 'info');
+                App.showNotification(i18n.t('quotes.notify.commission_reminder'), 'info');
             }
 
             this.render(this.lastContainerId);
         } catch (e) {
-            App.showNotification('Erreur lors de la mise à jour du paiement.', 'error');
+            App.showNotification(i18n.t('quotes.notify.payment_update_error'), 'error');
         }
     },
 
@@ -729,7 +729,7 @@ const Quotes = {
         const company = Storage.getUserCompany();
 
         if (!company.name || !company.address) {
-            if (confirm('Vos informations entreprise sont incomplètes. Souhaitez-vous les compléter maintenant ?')) {
+            if (confirm(i18n.t('quotes.confirm.incomplete_company_info'))) {
                 App.navigateTo('profile');
             }
             return;
@@ -742,7 +742,7 @@ const Quotes = {
         if (typeof PDFGenerator !== 'undefined' && PDFGenerator.generateQuote) {
             PDFGenerator.generateQuote(quote, client, normalizedUser);
         } else {
-            App.showNotification('Module PDF indisponible', 'warning');
+            App.showNotification(i18n.t('quotes.notify.pdf_module_unavailable'), 'warning');
         }
     },
 
@@ -753,9 +753,9 @@ const Quotes = {
 
         if (typeof PDFGenerator !== 'undefined' && PDFGenerator.generateQuote) {
             PDFGenerator.generateQuote(quote, client, normalizedUser, true);
-            App.showNotification('Ouverture de l\'aperçu...', 'info');
+            App.showNotification(i18n.t('quotes.notify.preview_opening'), 'info');
         } else {
-            App.showNotification('Module PDF indisponible.', 'info');
+            App.showNotification(i18n.t('quotes.notify.pdf_module_unavailable'), 'info');
         }
     },
 
@@ -771,12 +771,12 @@ const Quotes = {
         const publicLink = `${baseUrl}#view-quote=${quote.id}`;
 
         // Préparer le mailto
-        const subject = encodeURIComponent(`Devis ${quote.number} - ${user?.company?.name || 'Prestation'}`);
-        const body = encodeURIComponent(`Bonjour ${client.name},\n\nVeuillez trouver ci-joint le devis ${quote.number} d'un montant de ${App.formatCurrency(quote.total)}.\n\nVous pouvez le consulter et le signer directement en ligne via ce lien sécurisé :\n${publicLink}\n\nCordialement,\n${user?.company?.name || 'Votre prestataire'}`);
+        const subject = encodeURIComponent(i18n.t('quotes.email.subject', { number: quote.number, companyName: user?.company?.name || i18n.t('quotes.email.default_company_name') }));
+        const body = encodeURIComponent(i18n.t('quotes.email.body', { clientName: client.name, quoteNumber: quote.number, total: App.formatCurrency(quote.total), publicLink: publicLink, companyName: user?.company?.name || i18n.t('quotes.email.default_company_name') }));
 
         const mailtoUrl = `mailto:${client.email || ''}?subject=${subject}&body=${body}`;
 
-        App.showNotification('Ouverture de votre messagerie... N\'oubliez pas de joindre le PDF téléchargé !', 'info');
+        App.showNotification(i18n.t('quotes.notify.mailto_opening'), 'info');
 
         // Simuler le passage en mode "envoyé" immédiatement
         await Storage.updateQuote(id, { status: 'sent' });
@@ -794,10 +794,10 @@ const Quotes = {
         const publicLink = `${baseUrl}#view-quote=${quote.id}`;
 
         navigator.clipboard.writeText(publicLink).then(() => {
-            App.showNotification('Lien de signature/paiement copié dans le presse-papier !', 'success');
+            App.showNotification(i18n.t('quotes.notify.link_copied'), 'success');
         }).catch(err => {
             console.error('Failed to copy text: ', err);
-            prompt("Impossible de copier automatiquement. Veuillez copier ce lien :", publicLink);
+            prompt(i18n.t('quotes.notify.copy_failed_fallback'), publicLink);
         });
     },
 
@@ -821,27 +821,27 @@ const Quotes = {
         modal.innerHTML = `
             <div class="modal-content glass" style="max-width: 500px; text-align: center;">
                 <div class="modal-header">
-                    <h3>${isPublic ? 'Signer votre devis' : 'Signature Client'}</h3>
+                    <h3>${isPublic ? i18n.t('quotes.public.btn_sign') : i18n.t('quotes.signature.title')}</h3>
                     <button class="modal-close" onclick="Quotes.closeSignatureModal()"></button>
                 </div>
                 <div class="modal-body" style="padding: 1rem 0;">
-                    <p style="margin-bottom: 1rem;">${isPublic ? 'Veuillez apposer votre signature ci-dessous :' : 'Faites signer le client ci-dessous :'}</p>
+                    <p style="margin-bottom: 1rem;">${isPublic ? i18n.t('quotes.signature.instruction_public') : i18n.t('quotes.signature.instruction_expert')}</p>
                     <div style="border: 2px dashed var(--primary); background: #fff; border-radius: 8px; cursor: crosshair;">
                         <canvas id="signature-pad" width="400" height="200" style="width: 100%; touch-action: none;"></canvas>
                     </div>
                     
                     ${!isPublic ? `
                         <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
-                            <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">Le client a déjà signé (papier/email) ?</p>
+                            <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 1rem;">${i18n.t('quotes.signature.already_signed')}</p>
                             <button class="button-outline full-width" onclick="Quotes.markAsSignedManually('${id}')">
-                                <i class="fas fa-check-double"></i> Valider manuellement
+                                <i class="fas fa-check-double"></i> ${i18n.t('quotes.btn.manual_sign')}
                             </button>
                         </div>
                     ` : ''}
                 </div>
                 <div class="modal-footer" style="justify-content: center; gap: 1rem;">
-                    <button class="button-outline small" onclick="Quotes.clearSignature()">Effacer</button>
-                    <button class="button-primary" onclick="Quotes.saveSignature('${id}')">Valider et Signer</button>
+                    <button class="button-outline small" onclick="Quotes.clearSignature()">${i18n.t('quotes.btn.clear')}</button>
+                    <button class="button-primary" onclick="Quotes.saveSignature('${id}')">${i18n.t('quotes.btn.validate_sign')}</button>
                 </div>
             </div>
         `;
@@ -927,7 +927,7 @@ const Quotes = {
         }
 
         if (isBlank) {
-            App.showNotification('Veuillez apposer votre signature avant de valider.', 'warning');
+            App.showNotification(i18n.t('quotes.signature.blank'), 'warning');
             return;
         }
 
@@ -936,22 +936,22 @@ const Quotes = {
         try {
             // Afficher un état de chargement sur le bouton
             const btn = document.querySelector('#signature-modal .button-primary');
-            const originalText = btn ? btn.innerHTML : 'Valider et Signer';
+            const originalText = btn ? btn.innerHTML : i18n.t('quotes.btn.validate_sign');
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signature...';
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i18n.t('quotes.notify.signing')}...`;
             }
 
             if (this.isPublicSign) {
                 // Appel API public (service layer)
                 if (typeof QuoteService === 'undefined') {
-                    throw new Error("L'outil de signature n'est pas prêt. Veuillez rafraîchir la page.");
+                    throw new Error(i18n.t('quotes.notify.service_not_ready'));
                 }
 
                 console.log(`[QUOTES] Signing public quote: ${id}`);
                 await QuoteService.signPublicQuote(id, dataUrl);
 
-                App.showNotification('Devis signé avec succès !', 'success');
+                App.showNotification(i18n.t('quotes.notify.sign_success'), 'success');
                 this.closeSignatureModal();
                 this.renderPublicView(id);
             } else {
@@ -963,7 +963,7 @@ const Quotes = {
                     quote.status = 'accepted';
 
                     await Storage.updateQuote(quote.id || id, quote);
-                    App.showNotification('Devis signé et validé !', 'success');
+                    App.showNotification(i18n.t('quotes.notify.sign_success'), 'success');
                     this.closeSignatureModal();
                     this.render(this.lastContainerId);
                     this.showPaymentInstructions(quote.id || id);
@@ -975,14 +975,14 @@ const Quotes = {
             const btn = document.querySelector('#signature-modal .button-primary');
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = 'Valider et Signer';
+                btn.innerHTML = i18n.t('quotes.btn.validate_sign');
             }
-            App.showNotification(err.message || "Une erreur est survenue lors de la signature.", 'error');
+            App.showNotification(err.message || i18n.t('quotes.notify.sign_error'), 'error');
         }
     },
 
     async markAsSignedManually(id) {
-        if (!confirm('Confirmer que le client a déjà validé ce devis par ailleurs ?')) return;
+        if (!confirm(i18n.t('quotes.confirm.manual_sign'))) return;
 
         try {
             const quote = Storage.getQuote(id);
@@ -992,12 +992,12 @@ const Quotes = {
                 quote.manual_validation = true;
 
                 await Storage.updateQuote(id, quote);
-                App.showNotification('Devis validé manuellement.', 'success');
+                App.showNotification(i18n.t('quotes.notify.manual_success'), 'success');
                 this.closeSignatureModal();
                 this.render(this.lastContainerId);
             }
         } catch (err) {
-            App.showNotification('Erreur lors de la validation manuelle.', 'error');
+            App.showNotification(i18n.t('quotes.notify.manual_error'), 'error');
         }
     },
 
@@ -1058,8 +1058,8 @@ const Quotes = {
                 container.innerHTML = `
                     <div style="text-align: center; margin: 5rem 0;">
                         <div class="loader-spinner" style="margin-bottom: 2rem;"></div>
-                        <h2 class="gradient-text">Sécurisation du paiement (${paymentType === 'expert' ? 'Prestataire' : 'SoloPrice'})...</h2>
-                        <p class="text-muted">Nous confirmons la transaction auprès de PayPal.</p>
+                        <h2 class="gradient-text">${i18n.t('quotes.public.securing_payment', { type: paymentType === 'expert' ? i18n.t('quotes.payment_type.expert') : i18n.t('quotes.payment_type.commission') })}...</h2>
+                        <p class="text-muted">${i18n.t('quotes.public.confirming_paypal')}</p>
                     </div>
                 `;
 
@@ -1080,8 +1080,8 @@ const Quotes = {
                 container.innerHTML = `
                     <div style="text-align: center; margin: 5rem 0;">
                         <div class="loader-spinner" style="margin-bottom: 2rem;"></div>
-                        <h2 class="gradient-text">Vérification de votre paiement...</h2>
-                        <p class="text-muted">Nous confirmons la transaction auprès de notre partenaire.</p>
+                        <h2 class="gradient-text">${i18n.t('quotes.public.verifying_payment')}...</h2>
+                        <p class="text-muted">${i18n.t('quotes.public.confirming_partner')}</p>
                     </div>
                 `;
                 await new Promise(resolve => setTimeout(resolve, 2000));
@@ -1110,16 +1110,16 @@ const Quotes = {
                 paymentNotification = `
                     <div class="glass-notification" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; margin-bottom: 2rem; padding: 1.5rem; border-radius: 20px; text-align: center;">
                         <i class="fas fa-check-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
-                        <span style="font-weight: 700;">Paiement confirmé !</span><br>
-                        Le devis est désormais validé et le reçu est en cours de génération.
+                        <span style="font-weight: 700;">${i18n.t('quotes.public.payment_confirmed')}!</span><br>
+                        ${i18n.t('quotes.public.payment_success_desc')}
                     </div>
                 `;
             } else if (actualStatus === 'cancel') {
                 paymentNotification = `
                     <div class="glass-notification" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; margin-bottom: 2rem; padding: 1.5rem; border-radius: 20px; text-align: center;">
                         <i class="fas fa-exclamation-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
-                        <span style="font-weight: 700;">Le paiement a été annulé.</span><br>
-                        Aucun frais n'a été prélevé. Vous pouvez réessayer ci-dessous.
+                        <span style="font-weight: 700;">${i18n.t('quotes.public.payment_cancelled')}</span><br>
+                        ${i18n.t('quotes.public.payment_cancelled_desc')}
                     </div>
                 `;
             }
@@ -1133,9 +1133,9 @@ const Quotes = {
                         <div class="glass-notification" style="background: ${isOwner ? 'rgba(245, 158, 11, 0.1)' : 'rgba(99, 102, 241, 0.1)'}; border: 1px solid ${isOwner ? '#f59e0b' : 'var(--primary)'}; margin-bottom: 2rem; padding: 1rem; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
                             <div style="font-size: 0.9rem;">
                                 <i class="fas ${isOwner ? 'fa-user-shield' : 'fa-user-circle'}" style="color: ${isOwner ? '#f59e0b' : 'var(--primary)'}; margin-right: 8px;"></i>
-                                ${isOwner ? `<strong>Mode Aperçu :</strong> Vous visualisez ce devis en tant que prestataire.` : `Vous êtes connecté en tant que <strong>${Auth.user.email}</strong>`}
+                                ${isOwner ? `<strong>${i18n.t('quotes.public.preview_mode')}:</strong> ${i18n.t('quotes.public.preview_desc')}` : `${i18n.t('quotes.public.logged_as')} <strong>${Auth.user.email}</strong>`}
                             </div>
-                            <button class="button-outline small" onclick="window.location.href='/'">Mon Tableau de Bord</button>
+                            <button class="button-outline small" onclick="window.location.href='/'">${i18n.t('quotes.public.my_dashboard')}</button>
                         </div>
                     ` : ''}
 
@@ -1151,13 +1151,13 @@ const Quotes = {
                                 <div class="status-badge-large" style="background: ${quote.status === 'paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)'}; color: ${quote.status === 'paid' ? '#10b981' : '#3b82f6'};">
                                     ${this.getStatusLabel(quote.status)}
                                 </div>
-                                <h1 style="margin: 0.5rem 0 0; font-size: 1.5rem;">Devis ${quote.number}</h1>
-                                <p class="text-sm text-muted">Émis le ${App.formatDate(quote.createdAt)}</p>
+                                <h1 style="margin: 0.5rem 0 0; font-size: 1.5rem;">${i18n.t('pdf.quote.title')} ${quote.number}</h1>
+                                <p class="text-sm text-muted">${i18n.t('quotes.public.issued_on')} ${App.formatDate(quote.createdAt)}</p>
                             </div>
                         </header>
 
                         <div class="client-info-box">
-                            <label>Destinataire :</label>
+                            <label>${i18n.t('quotes.public.recipient')}:</label>
                             <h3>${client.name}</h3>
                             <p>${client.email || ''}</p>
                         </div>
@@ -1165,10 +1165,10 @@ const Quotes = {
                         <table class="items-table">
                             <thead>
                                 <tr>
-                                    <th>Description</th>
-                                    <th style="text-align: center;">Qté</th>
-                                    <th style="text-align: right;">P.U.</th>
-                                    <th style="text-align: right;">Total</th>
+                                    <th>${i18n.t('pdf.table.designation')}</th>
+                                    <th style="text-align: center;">${i18n.t('pdf.table.qty')}</th>
+                                    <th style="text-align: right;">${i18n.t('pdf.table.unit_price')}</th>
+                                    <th style="text-align: right;">${i18n.t('pdf.table.total_ht')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1176,10 +1176,10 @@ const Quotes = {
                 const itemTotal = (item.quantity || 1) * (item.unitPrice || 0);
                 return `
                                         <tr>
-                                            <td data-label="Description">${item.description}</td>
-                                            <td data-label="Qté" style="text-align: center;">${item.quantity || 1}</td>
-                                            <td data-label="P.U." style="text-align: right;">${App.formatCurrency(item.unitPrice || 0)}</td>
-                                            <td data-label="Total" style="text-align: right;">${App.formatCurrency(itemTotal)}</td>
+                                            <td data-label="${i18n.t('pdf.table.designation')}">${item.description}</td>
+                                            <td data-label="${i18n.t('pdf.table.qty')}" style="text-align: center;">${item.quantity || 1}</td>
+                                            <td data-label="${i18n.t('pdf.table.unit_price')}" style="text-align: right;">${App.formatCurrency(item.unitPrice || 0)}</td>
+                                            <td data-label="${i18n.t('pdf.table.total_ht')}" style="text-align: right;">${App.formatCurrency(itemTotal)}</td>
                                         </tr>
                                     `;
             }).join('')}
@@ -1187,13 +1187,13 @@ const Quotes = {
                         </table>
 
                         <div class="quote-totals">
-                            <div class="total-row"><span>Prestations</span> <span>${App.formatCurrency(quote.itemsSubtotal || 0)}</span></div>
+                            <div class="total-row"><span>${i18n.t('pdf.total.items')}</span> <span>${App.formatCurrency(quote.itemsSubtotal || 0)}</span></div>
                             <div class="total-row" style="color: var(--primary-light);">
-                                <span>Frais de Service & Protection SoloPrice <small style="display:block; font-size: 0.7rem; color: var(--text-muted);">(Contrat à Activation Obligatoire)</small></span> 
+                                <span>${i18n.t('pdf.total.service')} <small style="display:block; font-size: 0.7rem; color: var(--text-muted);">${i18n.t('quotes.public.service_tag')}</small></span> 
                                 <span>${App.formatCurrency(quote.margin || 0)}</span>
                             </div>
                             ${quote.tax > 0 ? `<div class="total-row"><span>${typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().taxName : 'TVA'}</span> <span>${App.formatCurrency(quote.tax)}</span></div>` : ''}
-                            <div class="total-row large"><span>Total TTC</span> <span>${App.formatCurrency(quote.total)}</span></div>
+                            <div class="total-row large"><span>${i18n.t('pdf.total.ttc')}</span> <span>${App.formatCurrency(quote.total)}</span></div>
                         </div>
 
                         <div class="public-actions-wrapper">
@@ -1207,15 +1207,15 @@ const Quotes = {
                                 ${!quote.signature ? `
                                     ${isOwner ? `
                                         <div class="status-alert info-glass" style="margin-bottom: 1rem; text-align: center;">
-                                            <i class="fas fa-info-circle"></i> En tant que prestataire, vous ne pouvez pas signer ce devis ici. 
-                                            <br><small>Utilisez "Signer en présence" depuis votre tableau de bord si vous êtes avec le client.</small>
+                                            <i class="fas fa-info-circle"></i> ${i18n.t('quotes.public.provider_cannot_sign_desc')}
+                                            <br><small>${i18n.t('quotes.public.sign_offline_hint')}</small>
                                         </div>
-                                        <button class="button-primary big-action disabled" style="opacity: 0.6; cursor: not-allowed;" onclick="App.showNotification('Seul le client peut signer ce devis depuis ce lien.', 'info')">
-                                            <i class="fas fa-pen-nib"></i> 1. Signer le Devis (Client Uniquement)
+                                        <button class="button-primary big-action disabled" style="opacity: 0.6; cursor: not-allowed;" onclick="App.showNotification(i18n.t('quotes.notify.client_only_sign'), 'info')">
+                                            <i class="fas fa-pen-nib"></i> 1. ${i18n.t('quotes.public.btn_sign')}
                                         </button>
                                     ` : `
                                         <button class="button-primary big-action" onclick="Quotes.openSignatureModal('${quote.id}', true)">
-                                            <i class="fas fa-pen-nib"></i> 1. Signer le Devis
+                                            <i class="fas fa-pen-nib"></i> 1. ${i18n.t('quotes.public.btn_sign')}
                                         </button>
                                     `}
                                 ` : ''}
@@ -1228,9 +1228,9 @@ const Quotes = {
                                                 <i class="fas fa-shield-alt" style="font-size: 0.9rem;"></i>
                                             </div>
                                             <div>
-                                                <h4 style="margin: 0; font-size: 0.9rem; color: var(--primary-light);">Garantie SoloPrice Pro</h4>
+                                                <h4 style="margin: 0; font-size: 0.9rem; color: var(--primary-light);">${i18n.t('quotes.public.protection_title')}</h4>
                                                 <p style="margin: 4px 0 0 0; font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
-                                                    Cette protection <strong>obligatoire</strong> active les garanties légales de votre contrat. Elle sécurise vos fonds, assure la conformité de la mission et vous donne accès à notre support prioritaire.
+                                                    ${i18n.t('quotes.public.protection_desc')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1240,30 +1240,30 @@ const Quotes = {
                                     ${!quote.expert_paid_at ? `
                                         <div class="payment-action-group">
                                             <button class="button-success big-action ${!provider.paypal_email ? 'disabled' : ''}" 
-                                                onclick="${provider.paypal_email ? `Quotes.payExpert('${quote.id}')` : 'App.showNotification(\'Le prestataire n\\\'a pas encore configuré son compte de réception PayPal.\', \'warning\')'}"
+                                                onclick="${provider.paypal_email ? `Quotes.payExpert('${quote.id}')` : `App.showNotification(i18n.t('quotes.notify.paypal_not_config'), 'warning')`}"
                                                 style="${!provider.paypal_email ? 'opacity: 0.5; cursor: not-allowed; filter: grayscale(1);' : ''}">
-                                                <i class="fab fa-paypal"></i> ${quote.signature ? "2. Payer l'Acompte / Prestation" : "Payer l'Acompte / Prestation"}
+                                                <i class="fab fa-paypal"></i> ${quote.signature ? `2. ${i18n.t('quotes.public.btn_pay_expert')}` : i18n.t('quotes.public.btn_pay_expert')}
                                             </button>
                                             ${!provider.paypal_email ? `
                                                 <p class="text-xs text-muted" style="text-align: center; margin-top: -0.25rem; color: #f59e0b;">
-                                                    <i class="fas fa-exclamation-triangle"></i> Compte de réception non configuré par l'expert.
+                                                    <i class="fas fa-exclamation-triangle"></i> ${i18n.t('quotes.public.account_not_ready')}
                                                 </p>
                                             ` : ''}
                                         </div>
                                     ` : `
                                         <div class="status-alert success-glass" style="margin-bottom: 0;">
-                                            <i class="fas fa-check-double"></i> Acompte prestataire réglé
+                                            <i class="fas fa-check-double"></i> ${i18n.t('quotes.public.expert_paid_done')}
                                         </div>
                                     `}
 
                                     <!-- Platform Protection -->
                                     ${!quote.platform_paid_at ? `
                                         <button class="button-success big-action" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: rgba(59, 130, 246, 0.3);" onclick="Quotes.payPlatform('${quote.id}')">
-                                            <i class="fas fa-shield-alt"></i> ${quote.signature ? '3. Activer la Protection SoloPrice' : 'Activer la Protection SoloPrice'}
+                                            <i class="fas fa-shield-alt"></i> ${quote.signature ? `3. ${i18n.t('quotes.public.btn_pay_platform')}` : i18n.t('quotes.public.btn_pay_platform')}
                                         </button>
                                     ` : `
                                         <div class="status-alert info-glass" style="margin-bottom: 0;">
-                                            <i class="fas fa-shield-check"></i> Protection SoloPrice active
+                                            <i class="fas fa-shield-check"></i> ${i18n.t('quotes.public.protection_active')}
                                         </div>
                                     `}
                                 </div>
@@ -1271,8 +1271,8 @@ const Quotes = {
                             
                             ${!quote.signature || quote.status !== 'paid' ? `
                                 <p class="action-caption">
-                                    <i class="fas fa-lock"></i> Paiement sécurisé via SoloPrice Pro.<br>
-                                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 5px;">*Une facture acquittée vous sera délivrée par le prestataire à l'issue de ce paiement.</span>
+                                    <i class="fas fa-lock"></i> ${i18n.t('quotes.public.secure_payment')}<br>
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 5px;">*${i18n.t('quotes.public.receipt_notice')}</span>
                                 </p>
                             ` : ''}
                         </div>
@@ -1296,9 +1296,9 @@ const Quotes = {
             container.innerHTML = `
                 <div class="error-view glass" style="margin: 5rem 2rem; padding: 3rem; text-align: center; border-radius: 30px;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--warning); margin-bottom: 1.5rem;"></i>
-                    <h2 class="gradient-text">Oups !</h2>
+                    <h2 class="gradient-text">${i18n.t('quotes.public.error_title')}</h2>
                     <p style="font-size: 1.1rem; opacity: 0.8; margin-bottom: 2rem;">${err.message}</p>
-                    <button class="button-primary" onclick="window.location.href='/'">Retour à l'accueil</button>
+                    <button class="button-primary" onclick="window.location.href='/'">${i18n.t('quotes.public.btn_return_home')}</button>
                 </div>
             `;
         }
@@ -1353,10 +1353,11 @@ const Quotes = {
 
     getStatusLabel(status) {
         const labels = {
-            draft: 'Brouillon',
-            sent: 'Envoyé',
-            accepted: 'Accepté',
-            refused: 'Refusé'
+            draft: i18n.t('status.draft'),
+            sent: i18n.t('status.sent'),
+            accepted: i18n.t('status.accepted'),
+            refused: i18n.t('status.refused'),
+            paid: i18n.t('status.paid')
         };
         return labels[status] || status;
     },
@@ -1375,26 +1376,26 @@ const Quotes = {
         modal.innerHTML = `
             <div class="modal-content glass" style="max-width: 600px;">
                 <div class="modal-header">
-                    <h3>Félicitations ! Devis Signé.</h3>
+                    <h3>${i18n.t('quotes.payment.title')}</h3>
                     <button class="modal-close" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();"></button>
                 </div>
                 <div class="modal-body" style="padding: 1.5rem 0;">
-                    <p style="margin-bottom: 1.5rem; text-align: center;">Veuillez procéder au règlement pour valider la mission.</p>
+                    <p style="margin-bottom: 1.5rem; text-align: center;">${i18n.t('quotes.payment.subtitle')}</p>
                     
                     <div style="background: var(--bg-sidebar); border: 1px solid var(--primary-glass); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
-                        <h4 style="color: var(--primary-light); margin-bottom: 0.5rem;">Total à payer : ${App.formatCurrency(expertAmount + platformAmount)}</h4>
+                        <h4 style="color: var(--primary-light); margin-bottom: 0.5rem;">${i18n.t('quotes.payment.total_to_pay')} : ${App.formatCurrency(expertAmount + platformAmount)}</h4>
                         <p style="font-size: 0.85rem; line-height: 1.4;">
-                            Le règlement se fait exclusivement en ligne via la plateforme sécurisée SoloPrice Pro pour garantir la protection de vos fonds.
+                            ${i18n.t('quotes.payment.description')}
                         </p>
                     </div>
 
                     <div class="info-box" style="margin-top: 1.5rem; font-size: 0.75rem; background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 10px; border-radius: 8px;">
-                        <i class="fas fa-shield-alt"></i> <strong>Paiement Sécurisé :</strong> Les fonds sont bloqués jusqu'à validation de la prestation selon les conditions générales.
+                        <i class="fas fa-shield-alt"></i> <strong>${i18n.t('quotes.payment.secure_title')} :</strong> ${i18n.t('quotes.payment.secure_desc')}
                     </div>
                 </div>
                 <div class="modal-footer" style="justify-content: center; gap: 1rem;">
-                    <button class="button-outline" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.downloadPDF('${id}'); Quotes.render();">Télécharger Devis PDF</button>
-                    <button class="button-primary" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">Retour au Devis pour payer</button>
+                    <button class="button-outline" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.downloadPDF('${id}'); Quotes.render();">${i18n.t('quotes.payment.btn_pdf')}</button>
+                    <button class="button-primary" onclick="document.getElementById('payment-instructions-modal').remove(); Quotes.render();">${i18n.t('quotes.payment.btn_return')}</button>
                 </div>
             </div>
         `;

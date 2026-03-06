@@ -21,7 +21,7 @@ const PremiumWall = {
                 <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted); max-width: 280px; line-height: 1.5;">${description}</p>
                 <div style="margin-top: 0.5rem;">
                     <button class="button-primary" onclick="App.showUpgradeModal('feature')" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; font-weight: 600; border-radius: 12px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-lock-open"></i> Débloquer l'accès PRO
+                        <i class="fas fa-lock-open"></i> ${i18n.t('premium.teaser.unlock')}
                     </button>
                 </div>
             </div>
@@ -41,33 +41,32 @@ const PremiumWall = {
                     <div class="wall-icon" style="font-size: 3.5rem; margin-bottom: 1.5rem; filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.4));"><i class="fas fa-gem" style="color: var(--primary);"></i></div>
                     <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${featureName}</h1>
                     <p style="font-size: 1.15rem; color: var(--text-muted); margin-bottom: 3rem; max-width: 600px; line-height: 1.6; margin-left: auto; margin-right: auto;">
-                        Cette fonctionnalité avancée est réservée aux membres <strong style="color: var(--primary-light);">SoloPrice PRO</strong>. 
-                        Passez à la vitesse supérieure pour piloter votre activité comme un expert.
+                        ${i18n.t('premium.wall.desc')}
                     </p>
                     
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 4rem; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;">
                         <div class="glass-premium hover-lift tilt-card" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.1s ease, background 0.3s ease;">
                             <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                             <div style="font-size: 1.8rem; margin-bottom: 1rem; color: var(--primary-light);"><i class="fas fa-brain"></i></div>
-                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">Coaching Business</h4>
-                            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Analyses pointues de votre rentabilité et conseils stratégiques personnalisés.</p>
+                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">${i18n.t('premium.wall.feat1.title')}</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">${i18n.t('premium.wall.feat1.desc')}</p>
                         </div>
                         <div class="glass-premium hover-lift tilt-card" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.1s ease, background 0.3s ease;">
                             <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                             <div style="font-size: 1.8rem; margin-bottom: 1rem; color: var(--primary-light);"><i class="fas fa-stream"></i></div>
-                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">Pipeline Kanban</h4>
-                            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Suivez l'état d'avancement de toutes vos opportunités commerciales sans effort.</p>
+                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">${i18n.t('premium.wall.feat2.title')}</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">${i18n.t('premium.wall.feat2.desc')}</p>
                         </div>
                         <div class="glass-premium hover-lift tilt-card" style="padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-highlight); text-align: left; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); transition: transform 0.1s ease, background 0.3s ease;">
                             <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                             <div style="font-size: 1.8rem; margin-bottom: 1rem; color: var(--primary-light);"><i class="fas fa-chart-pie"></i></div>
-                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">Profit Net Réel</h4>
-                            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Calcul ultra-précis de votre trésorerie après charges et impôts.</p>
+                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #fff;">${i18n.t('premium.wall.feat3.title')}</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">${i18n.t('premium.wall.feat3.desc')}</p>
                         </div>
                     </div>
                     
                     <button class="button-primary" style="padding: 1.2rem 3.5rem; font-size: 1.15rem; font-weight: 700; border-radius: 14px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.35); transition: transform 0.2s, box-shadow 0.2s;" onclick="App.showUpgradeModal('feature')" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 40px rgba(16, 185, 129, 0.45)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 30px rgba(16, 185, 129, 0.35)';">
-                        Mettre à niveau mon compte
+                        ${i18n.t('premium.wall.button')}
                     </button>
                 </div>
             </div>
