@@ -1561,11 +1561,37 @@ const Scoper = {
         let modal = document.getElementById(modalId);
 
         if (!modal) {
+            // Add animation styles once
+            if (!document.getElementById('scoper-modal-styles')) {
+                const style = document.createElement('style');
+                style.id = 'scoper-modal-styles';
+                style.textContent = `
+                    @keyframes scoperModalIn {
+                        from { opacity: 0; transform: translateY(30px) scale(0.95); }
+                        to { opacity: 1; transform: translateY(0) scale(1); }
+                    }
+                    .scoper-modal-animate {
+                        animation: scoperModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
             modal = document.createElement('div');
             modal.id = modalId;
-            modal.className = 'modal-v2';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(12px);
+                z-index: 10000;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 1.5rem;
+            `;
             modal.innerHTML = `
-                <div class="modal-content-v2 elite-card" style="max-width: 600px; padding: 3rem;">
+                <div class="elite-card scoper-modal-animate" style="max-width: 600px; width: 100%; padding: 3rem; border-radius: 32px; position: relative;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary-glass); color: var(--primary); display: flex; align-items: center; justify-content: center;">
