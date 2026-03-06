@@ -1128,13 +1128,13 @@ const Scoper = {
 
         if (!Storage.isExpert()) {
             content.innerHTML = `
-                <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid #a855f7;">
-                    <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(168, 85, 247, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #a855f7;">
+                <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid #a855f7; background: rgba(168, 85, 247, 0.05); border-radius: 30px; backdrop-filter: blur(10px);">
+                    <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(168, 85, 247, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #a855f7; box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);">
                         <i class="fas fa-magic" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">${i18n.t('scoper.closing.arsenal') || 'Arsenal de Closing Expert'}</h2>
-                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">${i18n.t('scoper.closing.arsenal_desc') || 'Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.'}</p>
-                    <button class="button-primary large" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none;" onclick="App.showUpgradeModal('premium_feature')">
+                    <h2 style="font-size: 2.2rem; margin-bottom: 1rem; color: white; font-weight: 800; letter-spacing: -1px;">${i18n.t('scoper.closing.arsenal') || 'Arsenal de Closing Expert'}</h2>
+                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem; line-height: 1.6;">${i18n.t('scoper.closing.arsenal_desc') || 'Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.'}</p>
+                    <button class="button-primary large hover-lift" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; padding: 1.2rem 2.5rem; font-weight: 700; border-radius: 12px; transition: all 0.3s ease;" onclick="App.showUpgradeModal('premium_feature')">
                          ${i18n.t('scoper.journal.mode_expert') || 'Passer au Pack EXPERT'}
                     </button>
                 </div>
@@ -1151,7 +1151,6 @@ const Scoper = {
         const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, sector);
         const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target);
 
-        // Human-readable labels
         const sectorLabel = { tech: 'Tech & Web', design: 'Design & Branding', marketing: 'Marketing & Com', conseil: 'Conseil & Strat', media: 'Média & Vidéo', artisanat: 'Artisanat & Prod' }[sector] || sector;
         const targetLabel = { tpe: 'TPE / Indépendants', pme: 'PME & Startups', 'grands-comptes': 'Grands Comptes' }[target] || target;
 
@@ -1163,126 +1162,160 @@ const Scoper = {
 
         content.innerHTML = `
             <style>
+                .closing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+                .closing-card { 
+                    background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 2.5rem;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
+                    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+                }
+                .closing-card:hover { border-color: rgba(168, 85, 247, 0.4); transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+                
                 .objection-card {
-                    background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden;
+                    background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem;
+                    transition: all 0.3s ease; cursor: pointer; position: relative;
                 }
-                .objection-card:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); transform: translateY(-5px); }
-                .objection-card.active { background: rgba(168, 85, 247, 0.1); border-color: #a855f7; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-                .rebuttal-box { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease; }
-                .objection-card.active .rebuttal-box { max-height: 200px; opacity: 1; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
-                .diag-question { padding: 1.2rem; border-radius: 16px; background: rgba(0,0,0,0.2); border-left: 4px solid #a855f7; margin-bottom: 1rem; font-size: 0.95rem; color: #e9d5ff; transition: transform 0.2s; cursor: default; }
-                .diag-question:hover { transform: translateX(10px); background: rgba(168, 85, 247, 0.05); }
+                .objection-card:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); }
+                .objection-card.active { background: rgba(168, 85, 247, 0.1); border-color: #a855f7; }
+                
+                .rebuttal-box { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+                .objection-card.active .rebuttal-box { max-height: 300px; opacity: 1; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+                
+                .diag-question { 
+                    padding: 1.2rem; border-radius: 16px; background: rgba(255,255,255,0.02); border-left: 4px solid #a855f7; 
+                    margin-bottom: 1rem; font-size: 0.95rem; color: #e9d5ff; transition: all 0.2s;
+                }
+                .diag-question:hover { transform: translateX(8px); background: rgba(168, 85, 247, 0.05); }
+                
                 .expert-hero {
-                    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(30, 10, 60, 0.4) 100%);
-                    border-radius: 30px; padding: 3rem 2rem 2rem; text-align: center; border: 1px solid rgba(168, 85, 247, 0.2); margin-bottom: 3rem; position: relative; overflow: hidden;
+                    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(30, 10, 60, 0.2) 100%);
+                    border-radius: 32px; padding: 4rem 2rem; text-align: center; border: 1px solid rgba(168, 85, 247, 0.15); 
+                    margin-bottom: 3rem; position: relative; overflow: hidden;
+                    backdrop-filter: blur(10px);
                 }
-                .tjm-stats-row { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem; }
-                .tjm-stat-pill { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1rem 1.5rem; text-align: center; min-width: 130px; }
-                .tjm-stat-pill.primary { border-color: #a855f7; background: rgba(168,85,247,0.1); }
-                .tjm-stat-value { font-size: 1.6rem; font-weight: 900; color: white; }
-                .tjm-stat-label { font-size: 0.65rem; font-weight: 700; color: #c084fc; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
-                .no-objective-banner { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 1rem 1.5rem; margin-top: 1.5rem; color: #fbbf24; font-size: 0.9rem; }
+                
+                .tjm-stats-row { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; }
+                .tjm-pill { 
+                    background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 18px; 
+                    padding: 1.2rem 1.5rem; min-width: 140px; transition: all 0.3s;
+                }
+                .tjm-pill.highlight { border-color: #a855f7; background: rgba(168,85,247,0.08); }
+                .tjm-val { font-size: 1.8rem; font-weight: 900; color: white; letter-spacing: -1px; }
+                .tjm-lab { font-size: 0.65rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
             </style>
 
-            <div class="expert-closing-tab" style="animation: fadeIn 0.5s ease;">
+            <div class="closing-arsenal-v2" style="animation: fadeIn 0.6s ease-out;">
                 <div class="expert-hero">
-                    <div style="font-size: 0.75rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Closing Engineer Mode</div>
-                    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: white; letter-spacing: -1px;">${i18n.t('scoper.closing.title') || 'Votre Arsenal de Vente'}</h1>
-                    <p style="color: #e9d5ff; font-size: 1rem; opacity: 0.85; margin-bottom: 0;">
-                        ${i18n.t('scoper.closing.subtitle', { sector: sectorLabel, target: targetLabel }) || `Stratégie personnalisée · <strong>${sectorLabel}</strong> → <strong>${targetLabel}</strong>`}
+                    <div style="display: inline-block; padding: 4px 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 100px; font-size: 0.7rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem;">
+                        <i class="fas fa-shield-halved" style="margin-right: 6px;"></i> Closing Master Tool
+                    </div>
+                    <h1 style="font-size: 3.2rem; margin-bottom: 1rem; color: white; font-weight: 900; letter-spacing: -2px;">${i18n.t('scoper.closing.title') || 'Votre Arsenal de Vente'}</h1>
+                    <p style="color: #e9d5ff; font-size: 1.15rem; opacity: 0.8; max-width: 700px; margin: 0 auto;">
+                        ${i18n.t('scoper.closing.subtitle', { sector: sectorLabel, target: targetLabel }) || `Ingénierie de closing optimisée pour un profil <strong>${sectorLabel}</strong> face à un <strong>${targetLabel}</strong>.`}
                     </p>
 
                     ${!hasObjective ? `
-                        <div class="no-objective-banner">
-                            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
-                            ${i18n.t('scoper.no_objective_warn') || 'Aucun objectif TJM défini'} · <a onclick="Scoper.render('objective')" style="color: #fbbf24; cursor:pointer; text-decoration: underline;">${i18n.t('scoper.complete_objective') || 'Compléter l\'Objectif TJM'} →</a>
+                        <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245,158,11,0.2); border-radius: 16px; padding: 1.2rem; margin-top: 2rem; color: #fbbf24; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-triangle-exclamation"></i>
+                            ${i18n.t('scoper.no_objective_warn') || 'Stratégie TJM non définie'} · <a onclick="Scoper.render('objective')" style="color: #fbbf24; cursor:pointer; text-decoration: underline; font-weight: 700;">${i18n.t('scoper.complete_objective') || 'Configurer maintenant'} →</a>
                         </div>
                     ` : `
                         <div class="tjm-stats-row">
-                            <div class="tjm-stat-pill primary">
-                                <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}</div>
-                                <div class="tjm-stat-label">${i18n.t('scoper.ref_tjm_short') || 'TJM Objectif'}</div>
+                            <div class="tjm-pill highlight">
+                                <div class="tjm-val">${App.formatCurrency(tjm)}</div>
+                                <div class="tjm-lab">${i18n.t('scoper.ref_tjm_short') || 'TJM Cible'}</div>
                             </div>
-                            <div class="tjm-stat-pill">
-                                <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(monthlyNet) : monthlyNet.toLocaleString('fr-FR') + '€'}</div>
-                                <div class="tjm-stat-label">${i18n.t('scoper.monthly_net') || 'Salaire Net / mois'}</div>
+                            <div class="tjm-pill">
+                                <div class="tjm-val">${App.formatCurrency(monthlyNet)}</div>
+                                <div class="tjm-lab">${i18n.t('scoper.monthly_net') || 'Net Espéré'}</div>
                             </div>
-                            <div class="tjm-stat-pill">
-                                <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(revenueNeeded) : revenueNeeded.toLocaleString('fr-FR') + '€'}</div>
-                                <div class="tjm-stat-label">${i18n.t('dashboard.total_ca') || 'CA à Facturer'}</div>
+                            <div class="tjm-pill">
+                                <div class="tjm-val">${App.formatCurrency(revenueNeeded)}</div>
+                                <div class="tjm-lab">CA Bruti / Mois</div>
                             </div>
-                            <div class="tjm-stat-pill">
-                                <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(taxAmount) : taxAmount.toLocaleString('fr-FR') + '€'}</div>
-                                <div class="tjm-stat-label">${i18n.t('scoper.charges_month') || 'Charges / mois'}</div>
-                            </div>
-                            <div class="tjm-stat-pill">
-                                <div class="tjm-stat-value">${data.workingDays || 15}j</div>
-                                <div class="tjm-stat-label">${i18n.t('scoper.billed_days') || 'Jours Facturés'}</div>
+                            <div class="tjm-pill">
+                                <div class="tjm-val">${data.workingDays || 15}j</div>
+                                <div class="tjm-lab">Facturables</div>
                             </div>
                         </div>
                     `}
                 </div>
 
-                <div class="mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
-                    <div class="glass-card" style="padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border);">
-                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;">
-                            <div style="width: 55px; height: 55px; border-radius: 15px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #a855f7;"><i class="fas fa-stethoscope" style="font-size: 1.8rem;"></i></div>
-                            <div>
-                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">${i18n.t('scoper.closing.dr_expert') || 'La Posture Dr. Expert'}</h3>
-                                <div style="font-size: 0.85rem; color: var(--text-muted);">${i18n.t('scoper.closing.dr_expert_desc') || 'Posez ces 3 questions pour matérialiser le coût du problème.'}</div>
+                <div class="closing-grid">
+                    <!-- Diagnostic Card -->
+                    <div class="closing-card">
+                        <div style="display: flex; align-items: start; gap: 20px; margin-bottom: 2.5rem;">
+                            <div style="width: 60px; height: 60px; border-radius: 18px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; color: #a855f7; font-size: 1.8rem;">
+                                <i class="fas fa-stethoscope"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0; font-size: 1.6rem; color: white; font-weight: 800;">${i18n.t('scoper.closing.dr_expert') || 'La Posture Dr. Expert'}</h3>
+                                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">Diagnostiquez la douleur avant de proposer le remède.</div>
                             </div>
                         </div>
                         <div class="questions-list">
-                            ${tactics.diagnostic.questions.map((q, i) => `<div class="diag-question"><span style="color: #a855f7; font-weight: 900; margin-right: 12px; font-style: italic;">Q${i + 1}</span>${q}</div>`).join('')}
+                            ${tactics.diagnostic.questions.map((q, i) => `
+                                <div class="diag-question">
+                                    <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #a855f7; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px; opacity: 0.8;">Question Stratégique 0${i + 1}</span>
+                                    ${q}
+                                </div>
+                            `).join('')}
                         </div>
-                        <div style="margin-top: 2rem; padding: 1.2rem; background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent); border-radius: 16px; border-left: 4px solid #10b981;">
-                            <div style="font-size: 0.7rem; color: #10b981; font-weight: 800; text-transform: uppercase; margin-bottom: 6px;">${i18n.t('scoper.roi.title') || 'L\'Argument ROI Imbattable :'}</div>
-                            <div style="font-size: 1rem; font-weight: 700; color: white;">"${tactics.roi.argument}"</div>
+                        <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.02)); border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); border-left: 6px solid #10b981;">
+                            <div style="font-size: 0.7rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">Le Pivot vers le ROI</div>
+                            <div style="font-size: 1.1rem; font-weight: 700; color: white; line-height: 1.4;">"${tactics.roi.argument}"</div>
                         </div>
                     </div>
 
-                    <div class="glass-card" style="padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border);">
-                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;">
-                            <div style="width: 55px; height: 55px; border-radius: 15px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #3b82f6;"><i class="fas fa-anchor" style="font-size: 1.8rem;"></i></div>
-                            <div>
-                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">${i18n.t('scoper.anchoring.title') || 'L\'Ancrage de Puissance'}</h3>
-                                <div style="font-size: 0.85rem; color: var(--text-muted);">${i18n.t('scoper.anchoring.desc') || 'Utilisez le contraste pour rendre votre prix évident.'}</div>
+                    <!-- Anchoring Card -->
+                    <div class="closing-card">
+                        <div style="display: flex; align-items: start; gap: 20px; margin-bottom: 2.5rem;">
+                            <div style="width: 60px; height: 60px; border-radius: 18px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.8rem;">
+                                <i class="fas fa-anchor"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0; font-size: 1.6rem; color: white; font-weight: 800;">${i18n.t('scoper.anchoring.title') || 'L\'Ancrage de Puissance'}</h3>
+                                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">Rendez votre prix évident par le contraste.</div>
                             </div>
                         </div>
-                        <div style="background: rgba(0,0,0,0.3); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="opacity: 0.3; transform: scale(0.9); margin-bottom: 1.5rem;">
-                                <div style="font-size: 0.75rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 5px;"><i class="fas fa-crown"></i> ${i18n.t('scoper.option.elite') || 'OPTION ELITE (Ancre)'}</div>
-                                <div style="font-size: 2.2rem; font-weight: 900; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(scenarios.elite.tjm) : scenarios.elite.tjm + '€'} <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 24px; padding: 2.5rem; border: 1px solid rgba(255,255,255,0.05); position: relative;">
+                            <div style="opacity: 0.25; transform: scale(0.9); margin-bottom: 2rem;">
+                                <div style="font-size: 0.7rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-crown"></i> Option Stratégique (L'Ancre)</div>
+                                <div style="font-size: 2.4rem; font-weight: 900; color: white; margin-top: 5px;">${App.formatCurrency(scenarios.elite.tjm)} <span style="font-size: 1rem; opacity: 0.5;">/ jour</span></div>
                             </div>
-                            <div style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; border-radius: 18px; position: relative;">
-                                <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase;">${i18n.t('scoper.closing.price_label') || 'Votre Prix de Closing'}</div>
-                                <div style="font-size: 2.5rem; font-weight: 900; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(scenarios.security.tjm) : scenarios.security.tjm + '€'} <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
-                                <div style="position: absolute; top: -12px; right: -12px; background: #10b981; color: white; font-size: 0.65rem; padding: 5px 12px; border-radius: 20px; font-weight: 900;">${i18n.t('scoper.price_accepted') || 'PRIX ACCEPTE'}</div>
+                            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border: 2px solid #10b981; padding: 2rem; border-radius: 20px; position: relative; box-shadow: 0 0 30px rgba(16, 185, 129, 0.15);">
+                                <div style="font-size: 0.75rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 1px;">Recommandé (Votre TJM)</div>
+                                <div style="font-size: 2.8rem; font-weight: 900; color: white; margin-top: 5px;">${App.formatCurrency(scenarios.security.tjm)} <span style="font-size: 1.1rem; opacity: 0.5;">/ jour</span></div>
+                                <div style="position: absolute; top: -14px; right: 20px; background: #10b981; color: white; font-size: 0.7rem; padding: 6px 14px; border-radius: 100px; font-weight: 900; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">CONVERSION OPTIMALE</div>
                             </div>
                         </div>
-                        <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(59, 130, 246, 0.05); border-radius: 16px; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                            <div style="font-size: 0.7rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">${i18n.t('scoper.psychology.title') || 'Logique Psychologique :'}</div>
-                            <div style="font-size: 0.9rem; color: #bfdbfe; font-style: italic; line-height: 1.5;">"${tactics.anchoring.logic}"</div>
+                        <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(59, 130, 246, 0.05); border-radius: 18px; border: 1px dashed rgba(59, 130, 246, 0.2);">
+                            <div style="font-size: 0.75rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">Logique de négociation :</div>
+                            <div style="font-size: 0.95rem; color: #bfdbfe; font-style: italic; line-height: 1.5; font-weight: 500;">"${tactics.anchoring.logic}"</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="glass-card" style="padding: 3rem; border-radius: 35px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);">
-                    <div style="text-align: center; margin-bottom: 3rem;">
-                        <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: white;">${i18n.t('scoper.objections.title') || 'Simulateur d\'Objections'}</h3>
-                        <p class="text-muted">${i18n.t('scoper.objections.desc') || 'Cliquez sur une objection pour simuler la réponse parfaite.'}</p>
+                <!-- Objections Simulator -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 35px; padding: 3.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <div style="text-align: center; margin-bottom: 4rem;">
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #f43f5e; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Objections Lab</div>
+                        <h3 style="font-size: 2.2rem; margin: 0; color: white; font-weight: 900; letter-spacing: -1px;">Simulateur de Contre-Attaque</h3>
+                        <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 10px;">Maîtrisez les 3 freins psychologiques majeurs de vos clients.</p>
                     </div>
-                    <div class="mobile-stack" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
                         ${tactics.objections.map((obj, i) => `
                             <div class="objection-card" onclick="this.classList.toggle('active')">
-                                <div style="font-size: 0.7rem; font-weight: 900; color: #f43f5e; margin-bottom: 12px; text-transform: uppercase;">${i18n.t('scoper.objection.hook_label') || 'Objection Courante'}</div>
-                                <div style="font-size: 1.15rem; font-weight: 800; color: white; line-height: 1.3;">"${obj.hook}"</div>
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(244, 63, 94, 0.1); display: flex; align-items: center; justify-content: center; color: #f43f5e; margin-bottom: 1.5rem; font-weight: 900; font-size: 0.8rem; border: 1px solid rgba(244, 63, 94, 0.2);">!</div>
+                                <div style="font-size: 1.25rem; font-weight: 800; color: white; line-height: 1.3; min-height: 3.2rem;">"${obj.hook}"</div>
                                 <div class="rebuttal-box">
-                                    <div style="font-size: 0.7rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 8px;"><i class="fas fa-bolt"></i> ${i18n.t('scoper.objection.rebuttal_label') || 'Contre-Attaque'}</div>
-                                    <div style="font-size: 0.9rem; color: #e9d5ff; line-height: 1.5; font-style: italic;">${obj.rebuttal}</div>
+                                    <div style="font-size: 0.75rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-bolt"></i> Réponse Mentale
+                                    </div>
+                                    <div style="font-size: 1rem; color: #e9d5ff; line-height: 1.6; font-style: italic; font-weight: 500;">${obj.rebuttal}</div>
                                 </div>
-                                <div style="margin-top: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--text-muted);"><i class="fas fa-mouse-pointer" style="margin-right: 5px;"></i> ${i18n.t('scoper.objection.click_reveal') || 'CLIQUEZ POUR RÉVÉLER'}</div>
+                                <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; text-align: center; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">
+                                    <i class="fas fa-eye" style="margin-right: 6px; opacity: 0.6;"></i> CLIQUEZ POUR RÉVÉLER
+                                </div>
                             </div>
                         `).join('')}
                     </div>
@@ -1454,6 +1487,9 @@ const Scoper = {
         Storage.set('sp_scoper_current_step', 1);
         Storage.set('sp_calculator_data', defaultData);
 
+        // Nettoyage complet du journal également
+        Storage.set('sp_journal', { mood: 'focus', energy: 7, entries: [], daily_focus: '', reflection: '', habits: {} });
+
         try {
             await Storage.saveCalculatorData(defaultData);
         } catch (e) {
@@ -1461,6 +1497,6 @@ const Scoper = {
         }
 
         this.render('objective');
-        App.showNotification(i18n.t('scoper.reset_success') || 'Stratégie réinitialisée.', 'info');
+        App.showNotification(i18n.t('scoper.reset_success') || 'Stratégie et Journal réinitialisés.', 'info');
     }
 };
