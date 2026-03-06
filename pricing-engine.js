@@ -300,6 +300,68 @@ const PricingEngine = {
             ],
             aiPlan: aiPlan
         };
+    },
+
+    /**
+     * Génère un script de présentation du devis (SoloPrice AI)
+     */
+    generateQuoteScript(data) {
+        const sector = data.sector || 'tech';
+        const target = data.target || 'pme';
+        const tjm = data.dailyRate || 500;
+        const gap = data.gap || 0;
+
+        const intro = {
+            tech: "En tant qu'expert technique, l'enjeu ici n'est pas seulement de livrer du code, mais de sécuriser votre infrastructure.",
+            marketing: "Notre approche ne se limite pas à la visibilité, mais à la conversion réelle de vos leads.",
+            design: "Le design que je propose est un levier direct pour augmenter votre taux de transformation.",
+            conseil: "Mon accompagnement stratégique vise à optimiser vos processus pour un gain de temps immédiat.",
+            media: "La qualité de votre communication visuelle est le premier vecteur de confiance pour vos clients.",
+            artisanat: "Mon intervention garantit une durabilité et une conformité aux plus hauts standards."
+        }[sector] || "Mon expertise est dédiée à la réussite de votre projet.";
+
+        return `
+Bonjour,
+
+Suite à notre échange, je vous transmets ma proposition détaillée.
+
+${intro}
+
+Pour ce projet, mon TJM est de ${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}. 
+
+Ce tarif reflète l'expertise spécifique nécessaire pour répondre à vos enjeux de ${target === 'grands-comptes' ? 'scalabilité et de conformité' : 'croissance rapide'}.
+
+L'objectif est de transformer cet investissement en ${data.roi || 'un levier de performance'} pour votre activité.
+
+Je reste à votre disposition pour en discuter plus en détail.
+        `.trim();
+    },
+
+    /**
+     * Génère un mail de relance basé sur la valeur (SoloPrice AI)
+     */
+    generateValueFollowup(data) {
+        const sector = data.sector || 'tech';
+        const focus = {
+            tech: "les risques liés à la dette technique",
+            marketing: "le manque à gagner sur vos leads actuels",
+            design: "la perte de conversion liée à l'UX actuelle",
+            conseil: "les inefficacités opérationnelles identifiées",
+            media: "le déficit d'image face à vos concurrents",
+            artisanat: "les coûts de maintenance future"
+        }[sector] || "la réussite de votre projet";
+
+        return `
+Bonjour,
+
+Je reviens vers vous concernant ma proposition.
+
+Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente représente un coût d'opportunité pour votre structure.
+
+Mon objectif est de sécuriser ce point dès le lancement de notre collaboration.
+
+Avons-nous un créneau de 10 min cette semaine pour valider les prochaines étapes ?
+        `.trim();
     }
 };
 

@@ -1256,10 +1256,10 @@ const Scoper = {
                     </div>
                     <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 1rem; align-items: center;">
                         <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Automations :</span>
-                        <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;">
+                        <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;" onclick="Scoper.generateAIContent('quote')">
                             <i class="fas fa-file-invoice"></i> Script de Devis
                         </button>
-                        <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;">
+                        <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;" onclick="Scoper.generateAIContent('followup')">
                             <i class="fas fa-envelope"></i> Relance Valeur
                         </button>
                     </div>
@@ -1522,5 +1522,80 @@ const Scoper = {
 
         this.render('objective');
         App.showNotification(i18n.t('scoper.reset_success') || 'Stratégie et Journal réinitialisés.', 'info');
+    },
+
+    /**
+     * Génère et affiche le contenu IA
+     */
+    generateAIContent(type) {
+        const data = Storage.get('sp_calculator_data') || {};
+        const tactics = PricingEngine.getAdvancedSalesTactics(0, PricingEngine.getScenarios(PricingEngine.calculateObjective(data)), data.sector, data.target, this.currentProjectTJM || 0);
+
+        const scriptData = {
+            sector: data.sector,
+            target: data.target,
+            dailyRate: this.currentProjectTJM || data.dailyRate,
+            gap: tactics.aiPlan.gap,
+            roi: tactics.roi.argument
+        };
+
+        let content = "";
+        let title = "";
+
+        if (type === 'quote') {
+            title = "Script d'Accompagnement de Devis";
+            content = PricingEngine.generateQuoteScript(scriptData);
+        } else {
+            title = "Email de Relance Orientation Valeur";
+            content = PricingEngine.generateValueFollowup(scriptData);
+        }
+
+        this.showAIModal(title, content);
+    },
+
+    /**
+     * Affiche une modale premium pour le contenu IA
+     */
+    showAIModal(title, content) {
+        const modalId = 'scoper-ai-modal';
+        let modal = document.getElementById(modalId);
+
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal-v2';
+            modal.innerHTML = `
+                <div class="modal-content-v2 elite-card" style="max-width: 600px; padding: 3rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary-glass); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h3 id="ai-modal-title" style="margin: 0; font-size: 1.2rem; font-weight: 800; color: white;">SoloPrice AI</h3>
+                        </div>
+                        <button class="close-modal" onclick="document.getElementById('scoper-ai-modal').style.display='none'">&times;</button>
+                    </div>
+                    <div id="ai-modal-body" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; color: #e2e8f0; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 2rem; max-height: 400px; overflow-y: auto; font-family: 'Inter', sans-serif;"></div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="button-primary" style="flex: 1;" onclick="Scoper.copyAIContent()">
+                            <i class="fas fa-copy"></i> Copier le texte
+                        </button>
+                        <button class="button-secondary" style="flex: 1;" onclick="document.getElementById('scoper-ai-modal').style.display='none'">Fermer</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        document.getElementById('ai-modal-title').textContent = title;
+        document.getElementById('ai-modal-body').textContent = content;
+        modal.style.display = 'flex';
+    },
+
+    copyAIContent() {
+        const content = document.getElementById('ai-modal-body').textContent;
+        navigator.clipboard.writeText(content).then(() => {
+            App.showNotification("Texte copié dans le presse-papier !", "success");
+        });
     }
 };
