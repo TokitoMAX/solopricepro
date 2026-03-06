@@ -717,26 +717,32 @@ const App = {
 
     exportPurchasesLedger() {
         const expenses = (typeof Storage !== 'undefined') ? Storage.getExpenses() : [];
-        if (!expenses.length) {
+        if (!expenses || expenses.length === 0) {
             this.showNotification('Aucune dépense à exporter', 'info');
             return;
         }
 
-        this.showNotification('Génération du grand livre des achats...', 'info');
+        const user = (typeof Storage !== 'undefined') ? Storage.getUser() : null;
 
-        // CSV export
-        let csv = 'Date,Operation,Categorie,Montant\n';
-        expenses.forEach(e => {
-            csv += `${e.date},${e.description.replace(/,/g, ' ')},${e.category},${e.amount}\n`;
-        });
+        if (typeof PDFGenerator !== 'undefined' && PDFGenerator.generatePurchaseLedger) {
+            PDFGenerator.generatePurchaseLedger(expenses, user);
+            Analytics.trackEvent('export_purchases_ledger_pdf');
+        } else {
+            console.error('PDFGenerator.generatePurchaseLedger not found, falling back to CSV');
+            // CSV fallback
+            let csv = 'Date,Operation,Categorie,Montant\n';
+            expenses.forEach(e => {
+                csv += `${e.date},${e.description.replace(/,/g, ' ')},${e.category},${e.amount}\n`;
+            });
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute('download', `SoloPrice_Achats_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `SoloPrice_Achats_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     },
 
     isFeatureProGated(feature) {

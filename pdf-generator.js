@@ -472,8 +472,90 @@ const PDFGenerator = {
         this._downloadRealPdf(docDefinition, `Livre_des_Recettes_${new Date().getFullYear()}.pdf`);
     },
 
-    async generatePurchaseLedger(year, data) {
-        if (typeof App !== 'undefined') App.showNotification('Registre des Achats à venir dans une prochaine version.', 'info');
+    async generatePurchaseLedger(expenses, user) {
+        if (!expenses || expenses.length === 0) {
+            if (typeof App !== 'undefined') App.showNotification('Aucune dépense à exporter.', 'info');
+            return;
+        }
+
+        const config = (typeof App !== 'undefined') ? App.getCurrencyConfig() : { locale: 'fr-FR' };
+        const dateStr = new Date().toLocaleDateString(config.locale);
+        const providerName = user?.company?.name || user?.email || 'Prestataire';
+
+        const tableBody = [
+            [
+                { text: 'Date', style: 'tableHeader' },
+                { text: 'Opération', style: 'tableHeader' },
+                { text: 'Catégorie', style: 'tableHeader' },
+                { text: 'Projet', style: 'tableHeader' },
+                { text: 'Montant', style: 'tableHeader', alignment: 'right' }
+            ]
+        ];
+
+        let total = 0;
+        const sortedExpenses = [...expenses].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        sortedExpenses.forEach(exp => {
+            const amount = parseFloat(exp.amount) || 0;
+            total += amount;
+
+            tableBody.push([
+                { text: new Date(exp.date).toLocaleDateString(config.locale), fontSize: 9 },
+                { text: exp.description || 'N/A', fontSize: 9, bold: true },
+                { text: exp.category || 'Autre', fontSize: 9 },
+                { text: (exp.project_id ? (Storage.getQuote(exp.project_id)?.number || 'Lié') : '—'), fontSize: 9 },
+                { text: this._format(amount), alignment: 'right', fontSize: 9, color: '#ef4444' }
+            ]);
+        });
+
+        tableBody.push([
+            { text: 'TOTAL DES DÉPENSES', colSpan: 4, bold: true, margin: [0, 5, 0, 5] },
+            {},
+            {},
+            {},
+            { text: this._format(total), alignment: 'right', bold: true, margin: [0, 5, 0, 5], color: '#ef4444' }
+        ]);
+
+        const docDefinition = {
+            pageSize: 'A4',
+            pageMargins: [40, 60, 40, 60],
+            styles: this.commonStyles,
+            defaultStyle: { font: 'Roboto', fontSize: 10 },
+            content: [
+                {
+                    columns: [
+                        { text: 'REGISTRE DES ACHATS', style: 'header' },
+                        { text: `Généré le ${dateStr}`, alignment: 'right', style: 'small' }
+                    ]
+                },
+                {
+                    text: [
+                        { text: `${providerName}\n`, bold: true },
+                        { text: `SIRET: ${user?.company?.siret || 'Non renseigné'}\n`, fontSize: 9 },
+                        { text: `Registre obligatoire des achats (Art. L123-28 du Code de commerce)`, fontSize: 8, color: '#6b7280', italic: true }
+                    ],
+                    margin: [0, 10, 0, 25]
+                },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['auto', '*', '20%', '15%', '20%'],
+                        body: tableBody
+                    },
+                    layout: 'lightHorizontalLines'
+                }
+            ],
+            footer: (currentPage, pageCount) => {
+                return {
+                    text: `Page ${currentPage} / ${pageCount} - SoloPrice Pro Purchase Ledger`,
+                    alignment: 'center',
+                    fontSize: 8,
+                    margin: [0, 10, 0, 0]
+                };
+            }
+        };
+
+        this._downloadRealPdf(docDefinition, `Registre_des_Achats_${new Date().getFullYear()}.pdf`);
     }
 };
 
