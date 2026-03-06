@@ -246,14 +246,15 @@ const Kanban = {
 
 
     renderLeadCard(lead) {
+        const escapedName = lead.name.replace(/'/g, "\\'").replace(/"/g, '\\"');
         const detailHTML = `
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div class="glass-card" style="padding: 1.5rem; border-left: 4px solid #3b82f6;">
                     <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Activité / Source</div>
-                    <div style="font-size: 1.1rem; font-weight: 600;">${lead.activity || 'Non spécifié'}</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">\${lead.activity || 'Non spécifié'}</div>
                 </div>
                 <div style="padding: 0 0.5rem;">
-                    <p style="color: var(--text-muted); line-height: 1.6;">Prospect identifié le ${App.formatDate(lead.createdAt)}. Prêt pour une conversion en devis.</p>
+                    <p style="color: var(--text-muted); line-height: 1.6;">Prospect identifié le \${App.formatDate(lead.createdAt)}. Prêt pour une conversion en devis.</p>
                     <div style="margin-top: 2rem; display: flex; gap: 1rem;">
                         <button class="button-primary" onclick="App.navigateTo('network', 'leads'); App.hideSidePanel()" style="flex: 1;">Voir sa fiche complète</button>
                     </div>
@@ -261,7 +262,7 @@ const Kanban = {
             </div>
         `;
         return `
-            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${lead.name.replace(/'/g, "\\'")}', \`${detailHTML}\`)">
+            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${escapedName}', \`${detailHTML}\`)">
                 <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                 <span class="card-title">${lead.name}</span>
                 <span class="card-subtitle">${lead.activity || 'Nouveau prospect'}</span>
@@ -275,20 +276,22 @@ const Kanban = {
 
     renderQuoteCard(quote) {
         const client = Storage.getClient(quote.clientId);
+        const name = client?.name || 'Client inconnu';
+        const escapedName = name.replace(/'/g, "\\'").replace(/"/g, '\\"');
         const detailHTML = `
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div class="glass-card" style="padding: 1.5rem; border-left: 4px solid #f59e0b;">
                     <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Montant du Devis</div>
-                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">${App.formatCurrency(quote.total || 0)}</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">\${App.formatCurrency(quote.total || 0)}</div>
                 </div>
                 <div style="padding: 0 0.5rem;">
                     <div style="margin-bottom: 1.5rem;">
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Numéro</div>
-                        <div style="font-weight: 600;">${quote.number}</div>
+                        <div style="font-weight: 600;">\${quote.number}</div>
                     </div>
                     <div style="margin-bottom: 1.5rem;">
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Statut Actuel</div>
-                        <div style="font-weight: 600;">${quote.status.toUpperCase()}</div>
+                        <div style="font-weight: 600;">\${quote.status.toUpperCase()}</div>
                     </div>
                     <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem;">
                         <button class="button-primary" onclick="App.navigateTo('quotes'); App.hideSidePanel()">Aller au document</button>
@@ -298,9 +301,9 @@ const Kanban = {
             </div>
         `;
         return `
-            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${client?.name.replace(/'/g, "\\'") || 'Client Unknown'}', \`${detailHTML}\`)">
+            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${escapedName}', \`${detailHTML}\`)">
                 <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
-                <span class="card-title">${client?.name || 'Client inconnu'}</span>
+                <span class="card-title">${name}</span>
                 <span class="card-subtitle">${quote.number}</span>
                 <div class="card-amount">${App.formatCurrency(quote.total || 0)}</div>
                 <div class="card-footer">
@@ -313,22 +316,24 @@ const Kanban = {
 
     renderInvoiceCard(invoice) {
         const client = Storage.getClient(invoice.clientId);
+        const name = client?.name || 'Client inconnu';
+        const escapedName = name.replace(/'/g, "\\'").replace(/"/g, '\\"');
         const isOverdue = invoice.status === 'overdue';
         const color = isOverdue ? '#ef4444' : '#10b981';
         const detailHTML = `
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div class="glass-card" style="padding: 1.5rem; border-left: 4px solid ${color};">
                     <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Reste à percevoir</div>
-                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">${App.formatCurrency(invoice.total || 0)}</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">\${App.formatCurrency(invoice.total || 0)}</div>
                 </div>
                 <div style="padding: 0 0.5rem;">
                     <div style="margin-bottom: 1.5rem;">
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Facture n°</div>
-                        <div style="font-weight: 600;">${invoice.number}</div>
+                        <div style="font-weight: 600;">\${invoice.number}</div>
                     </div>
-                    <div style="margin-bottom: 1.5rem; color: ${isOverdue ? 'var(--danger)' : 'inherit'}">
+                    <div style="margin-bottom: 1.5rem; color: \${isOverdue ? 'var(--danger)' : 'inherit'}">
                         <i class="fas fa-calendar-exclamation" style="margin-right: 8px;"></i>
-                        En attente de règlement depuis le ${App.formatDate(invoice.createdAt)}
+                        En attente de règlement depuis le \${App.formatDate(invoice.createdAt)}
                     </div>
                     <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem;">
                         <button class="button-primary" onclick="App.navigateTo('invoices'); App.hideSidePanel()">Gérer la facture</button>
@@ -338,9 +343,9 @@ const Kanban = {
             </div>
         `;
         return `
-            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${client?.name.replace(/'/g, "\\'") || 'Client Unknown'}', \`${detailHTML}\`)">
+            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${escapedName}', \`${detailHTML}\`)">
                 <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
-                <span class="card-title">${client?.name || 'Client inconnu'}</span>
+                <span class="card-title">${name}</span>
                 <span class="card-subtitle">${invoice.number}</span>
                 <div class="card-amount">${App.formatCurrency(invoice.total || 0)}</div>
                 <div class="card-footer">
@@ -353,16 +358,18 @@ const Kanban = {
 
     renderPaidCard(invoice) {
         const client = Storage.getClient(invoice.clientId);
+        const name = client?.name || 'Client inconnu';
+        const escapedName = name.replace(/'/g, "\\'").replace(/"/g, '\\"');
         const detailHTML = `
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div class="glass-card" style="padding: 1.5rem; border-left: 4px solid #a855f7; background: rgba(168, 85, 247, 0.05);">
                     <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Montant Encaissé</div>
-                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">${App.formatCurrency(invoice.total)}</div>
+                    <div style="font-size: 1.8rem; font-weight: 900; color: #fff;">\${App.formatCurrency(invoice.total)}</div>
                 </div>
                 <div style="padding: 0 0.5rem;">
                     <div style="margin-bottom: 1.5rem;">
                         <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Facture n°</div>
-                        <div style="font-weight: 600;">${invoice.number}</div>
+                        <div style="font-weight: 600;">\${invoice.number}</div>
                     </div>
                     <div style="margin-bottom: 1.5rem; color: #a855f7; font-weight: 600;">
                         <i class="fas fa-check-double" style="margin-right: 8px;"></i>
@@ -373,9 +380,9 @@ const Kanban = {
             </div>
         `;
         return `
-            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${client?.name.replace(/'/g, "\\'") || 'Client Unknown'}', \`${detailHTML}\`)">
+            <div class="kanban-card tilt-card" onclick="App.showSidePanel('${escapedName}', \`${detailHTML}\`)">
                 <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
-                <span class="card-title">${client?.name || 'Client inconnu'}</span>
+                <span class="card-title">${name}</span>
                 <span class="card-subtitle">${invoice.number}</span>
                 <div class="card-amount" style="color: #a855f7;">+ ${App.formatCurrency(invoice.total)}</div>
                 <div class="card-footer">
@@ -385,6 +392,7 @@ const Kanban = {
             </div>
         `;
     }
+
 };
 
 window.Kanban = Kanban;
