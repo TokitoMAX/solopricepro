@@ -375,12 +375,105 @@ const PDFGenerator = {
         if (typeof App !== 'undefined') App.showNotification('Fonction Roadmap (PDFMake) à configurer via DocDefinition', 'info');
     },
 
-    async generateRecipeBook(year, data) {
-        if (typeof App !== 'undefined') App.showNotification('Fonction Registre des Recettes (PDFMake) à configurer', 'info');
+    async generateReceiptsLedger(invoices, user) {
+        if (!invoices || invoices.length === 0) {
+            if (typeof App !== 'undefined') App.showNotification('Aucune facture à exporter.', 'info');
+            return;
+        }
+
+        const config = (typeof App !== 'undefined') ? App.getCurrencyConfig() : { locale: 'fr-FR' };
+        const dateStr = new Date().toLocaleDateString(config.locale);
+        const providerName = user?.company?.name || user?.email || 'Prestataire';
+
+        // Entête du tableau
+        const tableBody = [
+            [
+                { text: 'Date', style: 'tableHeader' },
+                { text: 'Facture', style: 'tableHeader' },
+                { text: 'Client', style: 'tableHeader' },
+                { text: 'Montant HT', style: 'tableHeader', alignment: 'right' },
+                { text: 'Montant TTC', style: 'tableHeader', alignment: 'right' },
+                { text: 'Statut', style: 'tableHeader', alignment: 'center' }
+            ]
+        ];
+
+        let totalHT = 0;
+        let totalTTC = 0;
+
+        // Tri par date
+        const sortedInvoices = [...invoices].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+        sortedInvoices.forEach(inv => {
+            const amountHT = inv.subtotal || 0;
+            const amountTTC = inv.total || 0;
+            totalHT += amountHT;
+            totalTTC += amountTTC;
+
+            tableBody.push([
+                { text: new Date(inv.createdAt).toLocaleDateString(config.locale), fontSize: 9 },
+                { text: inv.number || 'N/A', fontSize: 9, bold: true },
+                { text: (Storage.getClient(inv.clientId)?.name || 'Client inconnu'), fontSize: 9 },
+                { text: this._format(amountHT), alignment: 'right', fontSize: 9 },
+                { text: this._format(amountTTC), alignment: 'right', fontSize: 9 },
+                { text: inv.status === 'paid' ? 'PAYÉ' : 'EN ATTENTE', alignment: 'center', fontSize: 8, color: inv.status === 'paid' ? '#10b981' : '#f59e0b' }
+            ]);
+        });
+
+        // Ligne de total
+        tableBody.push([
+            { text: 'TOTAUX PÉRIODE', colSpan: 3, bold: true, margin: [0, 5, 0, 5] },
+            {},
+            {},
+            { text: this._format(totalHT), alignment: 'right', bold: true, margin: [0, 5, 0, 5] },
+            { text: this._format(totalTTC), alignment: 'right', bold: true, margin: [0, 5, 0, 5], color: '#10b981' },
+            {}
+        ]);
+
+        const docDefinition = {
+            pageSize: 'A4',
+            pageOrientation: 'landscape',
+            pageMargins: [30, 40, 30, 40],
+            styles: this.commonStyles,
+            defaultStyle: { font: 'Roboto', fontSize: 10 },
+            content: [
+                {
+                    columns: [
+                        { text: 'LIVRE DES RECETTES', style: 'header' },
+                        { text: `Généré le ${dateStr}`, alignment: 'right', style: 'small' }
+                    ]
+                },
+                {
+                    text: [
+                        { text: `${providerName}\n`, bold: true },
+                        { text: `SIRET: ${user?.company?.siret || 'Non renseigné'}\n`, fontSize: 9 },
+                        { text: `Document obligatoire pour la comptabilité Micro-Entrepreneur (Art. L123-28 du Code de commerce)`, fontSize: 8, color: '#6b7280', italic: true }
+                    ],
+                    margin: [0, 10, 0, 25]
+                },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['auto', '15%', '*', '15%', '15%', 'auto'],
+                        body: tableBody
+                    },
+                    layout: 'lightHorizontalLines'
+                }
+            ],
+            footer: (currentPage, pageCount) => {
+                return {
+                    text: `Page ${currentPage} / ${pageCount} - SoloPrice Pro Receipt Ledger`,
+                    alignment: 'center',
+                    fontSize: 8,
+                    margin: [0, 10, 0, 0]
+                };
+            }
+        };
+
+        this._downloadRealPdf(docDefinition, `Livre_des_Recettes_${new Date().getFullYear()}.pdf`);
     },
 
     async generatePurchaseLedger(year, data) {
-        if (typeof App !== 'undefined') App.showNotification('Fonction Registre des Achats (PDFMake) à configurer', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Registre des Achats à venir dans une prochaine version.', 'info');
     }
 };
 

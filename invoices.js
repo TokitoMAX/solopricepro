@@ -10,6 +10,11 @@ const Invoices = {
         const container = document.getElementById(containerId);
         if (!container) return;
 
+        // Auto-close dropdowns
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.actions-menu.active').forEach(m => m.classList.remove('active'));
+        });
+
         const invoices = Storage.getInvoices();
         const limits = App.checkFreemiumLimits();
 
@@ -72,34 +77,39 @@ const Invoices = {
                                             </div>
                                         </td>
                                         <td data-label="Actions" class="actions-cell">
-                                            <div class="action-buttons">
-                                                <button class="btn-icon" onclick="Invoices.edit('${invoice.id}')" title="Modifier la facture">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                            <div class="table-actions-dropdown">
+                                                <button class="button-secondary small action-trigger" onclick="event.stopPropagation(); Invoices.toggleActions('${invoice.id}')">
+                                                    Actions <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>
                                                 </button>
-                                                <button class="btn-icon" onclick="Invoices.fastSend('${invoice.id}')" title="Envoyer par email">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Invoices.changeStatus('${invoice.id}')" title="Changer le statut">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9 9 9 0 0 1 9 9z"></path><path d="M12 8v4l3 3"></path></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Invoices.duplicate('${invoice.id}')" title="Dupliquer">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Invoices.downloadPDF('${invoice.id}')" title="Générer PDF">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                                </button>
-                                                <button class="btn-icon btn-danger" onclick="Invoices.delete('${invoice.id}')" title="Supprimer">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Invoices.openRelanceModal('${invoice.id}')" title="Assistant Relance (Expert)" style="color: #f59e0b;">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Invoices.togglePaymentStatus('${invoice.id}', 'expert')" title="Toggle Paiement Prestataire" style="color: ${invoice.expert_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></svg>
-                                                </button>
-                                                <button class="btn-icon" onclick="Invoices.togglePaymentStatus('${invoice.id}', 'platform')" title="Toggle Commission SoloPrice" style="color: ${invoice.platform_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9.5h20"/></svg>
-                                                </button>
+                                                <div id="invoice-actions-${invoice.id}" class="actions-menu glass">
+                                                    <div class="menu-section">
+                                                        <label>Essentiel</label>
+                                                        <button onclick="Invoices.edit('${invoice.id}')"><i class="fas fa-edit"></i> Modifier</button>
+                                                        <button onclick="Invoices.downloadPDF('${invoice.id}')"><i class="fas fa-file-pdf"></i> PDF Pro</button>
+                                                        <button onclick="Invoices.fastSend('${invoice.id}')"><i class="fas fa-paper-plane"></i> Envoyer</button>
+                                                    </div>
+                                                    
+                                                    <div class="menu-section">
+                                                        <label>Gestion</label>
+                                                        <button onclick="Invoices.changeStatus('${invoice.id}')"><i class="fas fa-sync-alt"></i> Statut</button>
+                                                        <button onclick="Invoices.duplicate('${invoice.id}')"><i class="fas fa-copy"></i> Dupliquer</button>
+                                                        <button onclick="Invoices.openRelanceModal('${invoice.id}')" style="color: #f59e0b;"><i class="fas fa-hourglass-half"></i> Relance (Expert)</button>
+                                                    </div>
+
+                                                    <div class="menu-section">
+                                                        <label>Paiements</label>
+                                                        <button onclick="Invoices.togglePaymentStatus('${invoice.id}', 'expert')" style="color: ${invoice.expert_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
+                                                            <i class="fas fa-user-check"></i> Part Prestataire
+                                                        </button>
+                                                        <button onclick="Invoices.togglePaymentStatus('${invoice.id}', 'platform')" style="color: ${invoice.platform_paid_at ? 'var(--primary)' : 'var(--text-muted)'};">
+                                                            <i class="fas fa-percentage"></i> Commission SoloPrice
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="menu-section">
+                                                        <button onclick="Invoices.delete('${invoice.id}')" class="text-danger"><i class="fas fa-trash-alt"></i> Supprimer</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -789,6 +799,18 @@ const Invoices = {
             overdue: 'En retard'
         };
         return labels[status] || status;
+    },
+
+    toggleActions(id) {
+        const menu = document.getElementById(`invoice-actions-${id}`);
+        if (!menu) return;
+
+        const isActive = menu.classList.contains('active');
+        document.querySelectorAll('.actions-menu.active').forEach(m => m.classList.remove('active'));
+
+        if (!isActive) {
+            menu.classList.add('active');
+        }
     },
 
     addDefaultServicesForClient(clientId) {
