@@ -1064,7 +1064,7 @@ const App = {
                     <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('pricing.feat.unlimited')}</strong></li>
                     <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('feat.kanban')}</strong> & ${i18n.t('dashboard.treasury')}</li>
                     <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('scoper.tab.project')}</strong> & ${i18n.t('dashboard.expenses')}</li>
-                    <li><i class="fas fa-check-circle"></i> PDF ${i18n.t('dashboard.quotes')} avec <strong>${i18n.t('pricing.feat.logo_pdf')}</strong></li>
+                    <li><i class="fas fa-check-circle"></i> PDF ${i18n.t('dashboard.quotes')} ${i18n.t('with')} <strong>${i18n.t('pricing.feat.logo_pdf')}</strong></li>
                     <li><i class="fas fa-check-circle"></i> ${i18n.t('feat.support')}</li>
                 </ul>
                 <button class="card-select-btn pro">${i18n.t('upgrade.pro.select')}</button>

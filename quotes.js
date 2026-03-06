@@ -262,20 +262,20 @@ const Quotes = {
                 </datalist>
 
                 <div class="form-header">
-                    <h3>${quote ? 'Modifier le Devis' : 'Nouveau Devis'}</h3>
+                    <h3>${quote ? i18n.t('quotes.form.edit') : i18n.t('quotes.form.new')}</h3>
                     <button class="btn-close" onclick="Quotes.hideForm()"></button>
                 </div>
 
                 <div class="compliance-checklist info-box" style="background: rgba(var(--primary-rgb), 0.05); border: 1px dashed var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.8rem; cursor: pointer;" onclick="this.querySelector('.checklist-details').style.display = this.querySelector('.checklist-details').style.display === 'none' ? 'grid' : 'none'">
                     <strong style="display: flex; justify-content: space-between; align-items: center; color: var(--primary-light);">
-                        <span><i class="fas fa-certificate"></i> Standards Professionnels SoloPrice Pro</span>
+                        <span><i class="fas fa-certificate"></i> ${i18n.t('quotes.form.compliance.title')}</span>
                         <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
                     </strong>
                     <div class="checklist-details" style="display: none; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
-                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> SIRET obligatoire</div>
-                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Mention Fiscale (art. 293B ou équivalent)</div>
-                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Coordonnées complètes</div>
-                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> Validité & Mentions CGV</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> ${i18n.t('quotes.form.compliance.siret')}</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> ${i18n.t('quotes.form.compliance.tax')}</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> ${i18n.t('quotes.form.compliance.contacts')}</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary);"></i> ${i18n.t('quotes.form.compliance.cgv')}</div>
                     </div>
                 </div>
 

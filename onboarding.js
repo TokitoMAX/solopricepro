@@ -12,29 +12,29 @@ const Onboarding = {
         return [
             {
                 id: 'profile',
-                title: 'Compléter mon profil',
-                description: 'Ajoutez votre SIRET et vos coordonnées Pro.',
+                title: i18n.t('onboarding.step.profile.title'),
+                description: i18n.t('onboarding.step.profile.desc'),
                 isComplete: !!((user.companyName || (user.company && user.company.name)) && (user.siret || (user.company && user.company.siret))),
                 nav: 'profile'
             },
             {
                 id: 'strategy',
-                title: 'Fixer ma stratégie',
-                description: 'Ciblez votre revenu net et votre TJM de sécurité.',
+                title: i18n.t('onboarding.step.strategy.title'),
+                description: i18n.t('onboarding.step.strategy.desc'),
                 isComplete: !!(calculator && calculator.dailyRate),
                 nav: 'scoper'
             },
             {
                 id: 'client',
-                title: 'Ajouter mon premier client',
-                description: 'Importez ou créez votre premier contact dans Le Cercle.',
+                title: i18n.t('onboarding.step.client.title'),
+                description: i18n.t('onboarding.step.client.desc'),
                 isComplete: clients.length > 0,
                 nav: 'network'
             },
             {
                 id: 'quote',
-                title: 'Envoyer mon premier devis',
-                description: 'Transformez une opportunité en document officiel.',
+                title: i18n.t('onboarding.step.quote.title'),
+                description: i18n.t('onboarding.step.quote.desc'),
                 isComplete: quotes.length > 0,
                 nav: 'quotes'
             }
@@ -55,7 +55,7 @@ const Onboarding = {
         return `
             <div class="onboarding-widget glass-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary);">
                 <div class="section-header-inline" style="margin-bottom: 1rem;">
-                    <h3 class="section-title-small" style="color: var(--primary-light);"> Ma Checklist de Lancement</h3>
+                    <h3 class="section-title-small" style="color: var(--primary-light);"> ${i18n.t('onboarding.checklist.title')}</h3>
                     <span class="badge" style="background: var(--primary-glass);">${progress}%</span>
                 </div>
                 <div class="progress-bar-container" style="height: 6px; margin-bottom: 1.5rem;">
