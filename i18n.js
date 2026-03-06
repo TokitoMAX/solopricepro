@@ -29,6 +29,8 @@ const i18n = {
             'dashboard.tax_social': 'TVA + Social',
             'dashboard.expenses': 'Dépenses',
             'dashboard.treasury': 'Trésorerie',
+            'dashboard.payments': 'Suivi des Flux',
+            'dashboard.pending_payments': 'Paiements à Récupérer',
             'dashboard.pending_pipeline': 'Pipeline en Attente',
             'dashboard.monthly_goal': 'Objectif Mensuel',
             'dashboard.remaining': 'Reste',
@@ -236,6 +238,18 @@ const i18n = {
             'pdf.notify.generating': 'Génération du document vectoriel en cours...',
             'pdf.notify.success': 'Document téléchargé avec succès',
             'pdf.items_conform': 'Prestations Réalisées conformes au devis',
+
+            // — Payments Tracking —
+            'payments.title': 'Suivi des Flux Financiers',
+            'payments.subtitle': 'Contrôlez vos encaissements et les commissions de la plateforme.',
+            'payments.tab.invoices': 'Factures',
+            'payments.tab.tracking': 'Paiements',
+            'payments.table.expert': 'Part Prestataire',
+            'payments.table.platform': 'Commission SoloPrice',
+            'payments.status.collected': 'Encaissé',
+            'payments.status.pending': 'En attente',
+            'payments.alert.title': 'Paiement en attente',
+            'payments.alert.desc': 'Vous avez {count} facture(s) impayée(s).',
 
             // — Profile —
             'profile.title': 'Mon Profil',

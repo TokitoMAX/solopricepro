@@ -127,6 +127,79 @@ const Invoices = {
         `;
     },
 
+    renderPaymentTracker(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const invoices = Storage.getInvoices();
+        const trackedInvoices = invoices.filter(i =>
+            i.status === 'sent' || i.status === 'paid' || i.status === 'overdue'
+        ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        if (trackedInvoices.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>${i18n.t('dashboard.no_docs')}</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="section-header-inline">
+                <h3 class="section-title-small">${i18n.t('payments.title')}</h3>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>${i18n.t('pdf.number')}</th>
+                            <th>${i18n.t('pdf.client')}</th>
+                            <th>${i18n.t('pdf.total_ttc')}</th>
+                            <th>${i18n.t('payments.table.expert')}</th>
+                            <th>${i18n.t('payments.table.platform')}</th>
+                            <th>${i18n.t('quotes.table.actions')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${trackedInvoices.map(invoice => {
+            const client = Storage.getClient(invoice.clientId);
+            return `
+                                <tr>
+                                    <td><strong>${invoice.number}</strong></td>
+                                    <td>${client?.name || 'Client supprimé'}</td>
+                                    <td>${App.formatCurrency(invoice.total)}</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="status-badge" style="background: ${invoice.expert_paid_at ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${invoice.expert_paid_at ? '#10b981' : '#ef4444'};">
+                                                ${invoice.expert_paid_at ? i18n.t('payments.status.collected') : i18n.t('payments.status.pending')}
+                                            </span>
+                                            ${!invoice.expert_paid_at ? `<button class="button-ghost small" onclick="Invoices.togglePaymentStatus('${invoice.id}', 'expert')"><i class="fas fa-check"></i></button>` : ''}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="status-badge" style="background: ${invoice.platform_paid_at ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)'}; color: ${invoice.platform_paid_at ? '#10b981' : '#f59e0b'};">
+                                                ${invoice.platform_paid_at ? i18n.t('payments.status.collected') : i18n.t('payments.status.pending')}
+                                            </span>
+                                            ${!invoice.platform_paid_at ? `<button class="button-ghost small" onclick="Invoices.togglePaymentStatus('${invoice.id}', 'platform')"><i class="fas fa-check"></i></button>` : ''}
+                                        </div>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <button class="button-secondary small" onclick="Invoices.edit('${invoice.id}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    },
+
     showAddForm() {
         if (typeof App !== 'undefined' && !App.enforceLimit('invoices')) {
             return;

@@ -136,6 +136,31 @@ const Dashboard = {
                     </div>
                 </div>
 
+                <!-- BENTO: Payments Tracker (Span 4) -->
+                <div class="bento-item glass-premium hover-lift tilt-card" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                    <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; position: relative; z-index: 1;">
+                        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <span class="badge" style="background: ${invoices.filter(i => (i.status === 'sent' || i.status === 'overdue') && !i.expert_paid_at).length > 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.1)'}; color: ${invoices.filter(i => (i.status === 'sent' || i.status === 'overdue') && !i.expert_paid_at).length > 0 ? '#ef4444' : '#10b981'}; padding: 4px 10px; border-radius: 8px; font-weight: 600;">
+                            ${invoices.filter(i => (i.status === 'sent' || i.status === 'overdue') && !i.expert_paid_at).length} ${i18n.t('payments.status.pending').toLowerCase()}
+                        </span>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">${i18n.t('dashboard.pending_payments')}</span>
+                        <div style="font-size: 2.2rem; font-weight: 900; margin-top: 8px; color: ${invoices.filter(i => (i.status === 'sent' || i.status === 'overdue') && !i.expert_paid_at).length > 0 ? '#ef4444' : 'white'};">
+                            ${App.formatCurrency(invoices
+                .filter(i => (i.status === 'sent' || i.status === 'overdue') && !i.expert_paid_at)
+                .reduce((sum, i) => sum + (i.total || 0), 0))}
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="button-ghost small" onclick="App.navigateTo('quotes', 'payments')" style="font-size: 0.75rem; color: var(--primary-light); cursor: pointer; border: none; background: none; font-weight: 600;">${i18n.t('dashboard.payments')} →</button>
+                    </div>
+                </div>
+
                 <!-- BENTO: Goal (Span 4) -->
                 <div class="bento-item glass-premium hover-lift tilt-card" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; transition: transform 0.1s ease, box-shadow 0.3s ease;">
                     <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>

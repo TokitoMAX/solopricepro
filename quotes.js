@@ -27,6 +27,7 @@ const Quotes = {
             <div class="settings-tabs">
                 <button class="settings-tab" data-tab-id="quotes" onclick="Quotes.switchTab('quotes')">${i18n.t('quotes.tab.quotes')}</button>
                 <button class="settings-tab" data-tab-id="invoices" onclick="Quotes.switchTab('invoices')">${i18n.t('quotes.tab.invoices')}</button>
+                <button class="settings-tab" data-tab-id="payments" onclick="Quotes.switchTab('payments')">${i18n.t('payments.tab.tracking') || 'Paiements'}</button>
             </div>
 
             <div id="documents-dynamic-content" style="margin-top: 2rem;">
@@ -60,6 +61,11 @@ const Quotes = {
             container.innerHTML = '<div id="invoices-embedded-container"></div>';
             if (typeof Invoices !== 'undefined') {
                 Invoices.render('invoices-embedded-container');
+            }
+        } else if (tabId === 'payments') {
+            container.innerHTML = '<div id="payments-embedded-container"></div>';
+            if (typeof Invoices !== 'undefined') {
+                Invoices.renderPaymentTracker('payments-embedded-container');
             }
         }
     },
