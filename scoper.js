@@ -15,34 +15,47 @@ const Scoper = {
         if (!this.currentObjectiveStep) this.currentObjectiveStep = Storage.get('sp_scoper_current_step') || 1;
 
         container.innerHTML = `
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">${i18n.t('scoper.title')}</h1>
-                    <p class="page-subtitle">${i18n.t('scoper.subtitle')}</p>
+            <style>
+                .scoper-tabs-nav {
+                    display: flex; gap: 10px; margin-bottom: 3rem; background: rgba(255,255,255,0.02);
+                    padding: 6px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); width: fit-content; margin-left: auto; margin-right: auto;
+                }
+                .scoper-tab-link {
+                    padding: 10px 24px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; color: #94a3b8;
+                    cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 10px;
+                }
+                .scoper-tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
+                .scoper-tab-link.active { color: white; background: #1e1e1e; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+                
+                .expert-lock-badge {
+                    font-size: 0.65rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; 
+                    padding: 2px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 950; letter-spacing: 1px;
+                }
+            </style>
+
+            <div class="page-header" style="text-align: center; margin-bottom: 4rem;">
+                <h1 style="font-size: 3.5rem; font-weight: 950; letter-spacing: -3px; margin-bottom: 0.5rem; line-height: 1;">${i18n.t('scoper.title')}</h1>
+                <p class="text-muted" style="font-size: 1.2rem; max-width: 600px; margin: 0 auto;">${i18n.t('scoper.subtitle')}</p>
+            </div>
+
+            <div class="scoper-tabs-nav">
+                <div class="scoper-tab-link ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')">
+                    <i class="fas fa-crosshairs"></i> ${i18n.t('scoper.tab.objective')}
+                </div>
+                <div class="scoper-tab-link ${tab === 'project' ? 'active' : ''}" onclick="Scoper.render('project')">
+                    <i class="fas fa-layer-group"></i> ${i18n.t('scoper.tab.project')}
+                </div>
+                <div class="scoper-tab-link ${tab === 'closing' ? 'active' : ''}" onclick="Scoper.render('closing')">
+                    <i class="fas fa-magic"></i> ${i18n.t('scoper.tab.closing')}
+                    ${!Storage.isExpert() ? `<span class="expert-lock-badge"><i class="fas fa-lock" style="font-size: 0.6rem;"></i></span>` : ''}
+                </div>
+                <div class="scoper-tab-link ${tab === 'journal' ? 'active' : ''}" onclick="Scoper.render('journal')">
+                    <i class="fas fa-bolt"></i> ${i18n.t('scoper.tab.journal')}
+                    ${!Storage.isExpert() ? `<span class="expert-lock-badge"><i class="fas fa-lock" style="font-size: 0.6rem;"></i></span>` : ''}
                 </div>
             </div>
 
-            <div class="tabs-container" style="margin-bottom: 2rem;">
-                <div class="tabs-header scoper-nav" style="border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
-                    <button class="tab-btn ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')" style="padding: 1rem; background: none; border: none; color: ${tab === 'objective' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'objective' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-bullseye"></i> ${i18n.t('scoper.tab.objective')}
-                        <span style="font-size: 0.6rem; background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">OFFERT</span>
-                    </button>
-                    <button class="tab-btn ${tab === 'project' ? 'active' : ''}" onclick="Scoper.render('project')" style="padding: 1rem; background: none; border: none; color: ${tab === 'project' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'project' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-calculator"></i> ${i18n.t('scoper.tab.project')} 
-                    </button>
-                    <button class="tab-btn ${tab === 'closing' ? 'active' : ''}" onclick="Scoper.render('closing')" style="padding: 1rem; background: none; border: none; color: ${tab === 'closing' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'closing' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-magic"></i> ${i18n.t('scoper.tab.closing')}
-                        ${!Storage.isExpert() ? `<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> ${i18n.t('hero.badge').replace('NOUVEAU : ', '')}</span>` : ''}
-                    </button>
-                    <button class="tab-btn ${tab === 'journal' ? 'active' : ''}" onclick="Scoper.render('journal')" style="padding: 1rem; background: none; border: none; color: ${tab === 'journal' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'journal' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <i class="fas fa-journal-whills"></i> ${i18n.t('scoper.tab.journal')}
-                        ${!Storage.isExpert() ? `<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> ${i18n.t('hero.badge').replace('NOUVEAU : ', '')}</span>` : ''}
-                    </button>
-                </div>
-            </div>
-
-            <div id="scoper-tab-content"></div>
+            <div id="scoper-tab-content" style="min-height: 60vh;"></div>
         `;
 
         if (tab === 'objective') {
@@ -58,7 +71,6 @@ const Scoper = {
 
     renderObjectiveTab() {
         let storedStep = Storage.get('sp_scoper_current_step');
-        // Handle potential array/NaN from storage retrieval
         if (Array.isArray(storedStep) || isNaN(parseInt(storedStep))) {
             storedStep = 1;
             Storage.set('sp_scoper_current_step', 1);
@@ -69,12 +81,10 @@ const Scoper = {
         if (!content) return;
 
         let data = Storage.get('sp_calculator_data');
-        // Ensure default values are populated if missing to avoid `undefined` calculations
         const defaultRev = (typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 3000;
         const defaultData = { monthlyRevenue: defaultRev, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: null, target: null };
         data = { ...defaultData, ...(data && typeof data === 'object' ? data : {}) };
 
-        // Auto-save the defaults silently so calculations work natively everywhere
         if (!Storage.get('sp_calculator_data')) {
             Storage.set('sp_calculator_data', data);
         }
@@ -82,86 +92,128 @@ const Scoper = {
         const currentStep = this.currentObjectiveStep || 1;
 
         content.innerHTML = `
-            <div class="strategy-wizard" style="max-width: 100%; margin: 0 auto; width: 100%;">
-                <!-- Wizard Header / Steps -->
-                <div class="mobile-wizard-counter">
-                    ${i18n.t('scoper.step.label')} ${currentStep} / 5 : ${[i18n.t('scoper.step.1'), i18n.t('scoper.step.2'), i18n.t('scoper.step.3'), i18n.t('scoper.step.4'), i18n.t('scoper.step.5')][currentStep - 1]}
-                </div>
-                <div class="wizard-steps" style="margin-bottom: 3rem; position: relative;">
-                    <div style="position: absolute; top: 20px; left: 0; width: 100%; height: 2px; background: var(--border); z-index: 1;"></div>
-                    <div style="position: absolute; top: 20px; left: 0; width: ${(currentStep - 1) * 25}%; height: 2px; background: var(--primary); z-index: 2; transition: width 0.3s ease;"></div>
-                    
+            <style>
+                .wizard-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+                .wizard-progress { display: flex; justify-content: space-between; margin-bottom: 5rem; position: relative; }
+                .wizard-progress::before {
+                    content: ''; position: absolute; top: 24px; left: 0; width: 100%; height: 2px;
+                    background: rgba(255,255,255,0.05); z-index: 1;
+                }
+                .wizard-progress-bar {
+                    position: absolute; top: 24px; left: 0; height: 2px; background: #a855f7;
+                    z-index: 2; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .step-node {
+                    position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 12px;
+                    width: 48px; cursor: pointer;
+                }
+                .step-circle {
+                    width: 48px; height: 48px; border-radius: 16px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1);
+                    display: flex; align-items: center; justify-content: center; color: #4b5563; font-weight: 800;
+                    transition: all 0.4s;
+                }
+                .step-node.active .step-circle { border-color: #a855f7; color: white; background: #1e1e1e; box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+                .step-node.done .step-circle { background: #a855f7; border-color: #a855f7; color: white; }
+                .step-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #64748b; text-align: center; }
+                .step-node.active .step-label { color: white; }
+                
+                .wizard-card {
+                    background: #0a0a0a; border: 1px solid rgba(255,255,255,0.06); border-radius: 40px; 
+                    padding: 5rem; box-shadow: 0 40px 100px rgba(0,0,0,0.5); position: relative;
+                }
+
+                .sector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem; }
+                .sector-card {
+                    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px;
+                    padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .sector-card:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+                .sector-card.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); }
+                .sector-card i { font-size: 1.8rem; color: #4b5563; margin-bottom: 1rem; transition: all 0.3s; }
+                .sector-card.active i { color: #a855f7; transform: scale(1.1); }
+                .sector-label { font-size: 0.85rem; font-weight: 800; color: #94a3b8; }
+                .sector-card.active .sector-label { color: white; }
+
+                .target-grid { display: flex; gap: 1rem; margin-top: 2rem; }
+                .target-card {
+                    flex: 1; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px;
+                    padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 15px;
+                }
+                .target-card:hover { border-color: rgba(255,255,255,0.2); }
+                .target-card.active { border-color: #6366f1; background: rgba(99, 102, 241, 0.05); }
+                .target-card i { font-size: 1.2rem; color: #4b5563; }
+                .target-card.active i { color: #6366f1; }
+                .target-label { font-size: 0.8rem; font-weight: 800; color: #94a3b8; }
+                .target-card.active .target-label { color: white; }
+
+                .form-input-premium {
+                    background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.05); 
+                    font-size: 4rem; font-weight: 950; color: white; width: 100%; text-align: center;
+                    padding: 1rem; outline: none; transition: all 0.4s; letter-spacing: -3px;
+                }
+                .form-input-premium:focus { border-color: #a855f7; }
+                .form-input-premium::placeholder { opacity: 0.1; }
+            </style>
+
+            <div class="wizard-container" style="animation: fadeIn 0.8s ease-out;">
+                <div class="wizard-progress">
+                    <div class="wizard-progress-bar" style="width: ${(currentStep - 1) * 25}%"></div>
                     ${[1, 2, 3, 4, 5].map(s => {
             const labels = [i18n.t('scoper.step.1'), i18n.t('scoper.step.2'), i18n.t('scoper.step.3'), i18n.t('scoper.step.4'), i18n.t('scoper.step.5')];
-            const icons = ['fa-user-tie', 'fa-money-bill-wave', 'fa-calendar-alt', 'fa-shield-alt', 'fa-flag-checkered'];
             const isActive = currentStep === s;
             const isDone = currentStep > s;
             return `
-                            <div class="wizard-step-item ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}" 
-                                 onclick="Scoper.goToObjectiveStep(${s})"
-                                 style="position: relative; z-index: 3; text-align: center; cursor: pointer;">
-                                <div class="step-icon" style="width: 40px; height: 40px; border-radius: 50%; background: ${isDone ? 'var(--primary)' : (isActive ? 'var(--primary-dark)' : '#111')}; border: 2px solid ${isActive || isDone ? 'var(--primary)' : 'var(--border)'}; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; transition: all 0.3s;">
-                                    <i class="fas ${isDone ? 'fa-check' : icons[s - 1]}" style="color: ${isActive || isDone ? 'var(--white)' : 'var(--text-muted)'}; font-size: 0.9rem;"></i>
-                                </div>
-                                <span style="font-size: 0.7rem; font-weight: 700; color: ${isActive || isDone ? 'var(--primary-light)' : 'var(--text-muted)'}; letter-spacing: 1px;">${labels[s - 1]}</span>
+                            <div class="step-node ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}" onclick="Scoper.goToObjectiveStep(${s})">
+                                <div class="step-circle">${isDone ? '<i class="fas fa-check"></i>' : s}</div>
+                                <span class="step-label">${labels[s - 1]}</span>
                             </div>
                         `;
         }).join('')}
                 </div>
 
-                <div class="wizard-step-content glass-card" style="padding: 3rem; min-height: 400px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
-                    <div id="step-save-indicator" style="position: absolute; top: 1rem; right: 1.5rem; font-size: 0.7rem; color: var(--primary-light); opacity: 0.5; transition: opacity 0.3s; pointer-events: none;">
-                        <i class="fas fa-check"></i> En attente
+                <div class="wizard-card">
+                    <div id="step-save-indicator" style="position: absolute; top: 2rem; right: 3rem; font-size: 0.7rem; color: #a855f7; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; pointer-events: none;">
+                        <i class="fas fa-shield-check"></i> Securing Data
                     </div>
+                    
                     <div id="step-form-container">
                         ${this.renderCurrentStepForm(currentStep, data)}
                     </div>
 
-                    <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="button-outline" ${currentStep === 1 ? 'disabled' : ''} onclick="Scoper.prevObjectiveStep()">
-                                ${i18n.t('scoper.action.back')}
+                    <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 5rem; align-items: center;">
+                        <button class="button-outline" ${currentStep === 1 ? 'style="opacity:0; pointer-events:none;"' : ''} onclick="Scoper.prevObjectiveStep()" style="border-radius: 12px; font-weight: 800; padding: 1rem 2rem;">
+                            <i class="fas fa-arrow-left" style="margin-right: 10px;"></i> ${i18n.t('scoper.action.back')}
+                        </button>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                             <button class="button-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 1rem 1.5rem;" onclick="Scoper.resetObjective()">
+                                <i class="fas fa-power-off"></i>
                             </button>
-                            <button class="button-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2);" onclick="Scoper.resetObjective()">
-                                <i class="fas fa-undo"></i> ${i18n.t('scoper.action.reset')}
-                            </button>
+                            ${currentStep < 5 ? `
+                                <button class="button-primary large" onclick="Scoper.nextObjectiveStep()" style="background: white; color: black; border: none; font-weight: 900; border-radius: 16px; padding: 1rem 3rem;">
+                                    ${i18n.t('scoper.action.continue')} <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                                </button>
+                            ` : `
+                                <button class="button-primary large" onclick="Scoper.saveObjective()" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; font-weight: 900; border-radius: 16px; padding: 1rem 3rem;">
+                                    <i class="fas fa-lock" style="margin-right: 10px;"></i> ${i18n.t('scoper.action.save')}
+                                </button>
+                            `}
                         </div>
-                        ${currentStep < 5 ? `
-                            <button class="button-primary" onclick="Scoper.nextObjectiveStep()">
-                                ${i18n.t('scoper.action.continue')} <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
-                            </button>
-                        ` : `
-                            <div style="display: flex; gap: 1rem;">
-                                <button class="button-primary" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none;" onclick="Scoper.render('closing')">
-                                    Coach de Vente Expert <i class="fas fa-magic" style="margin-left: 10px;"></i>
-                                </button>
-                                <button class="button-primary" onclick="Scoper.saveObjective()">
-                                    ${i18n.t('scoper.action.save')} <i class="fas fa-check" style="margin-left: 10px;"></i>
-                                </button>
-                            </div>
-                        `}
                     </div>
-                </div>
-
-                <div id="objective-next-step" style="display: none; margin-top: 2rem; padding: 1.5rem; background: var(--primary-glass); border: 1px solid var(--primary); border-radius: 12px; text-align: center; animation: fadeInUp 0.5s ease;">
-                    <h4 style="color: var(--primary-light); margin-bottom: 10px;"> Stratégie validée !</h4>
-                    <p style="font-size: 0.9rem; margin-bottom: 1.5rem;">Votre TJM est maintenant enregistré. Utilisez-le pour chiffrer vos futurs projets avec l'onglet <strong>Chiffrage Projet</strong>.</p>
-                    <button class="button-primary" onclick="Scoper.render('project')">Commencer un chiffrage</button>
                 </div>
             </div>
         `;
     },
 
-    renderCurrentStepForm(step, data) {
-
-        switch (step) {
+    renderCurrentStepForm(currentStep, data) {
+        switch (currentStep) {
             case 1: // PROFIL
                 return `
-                    <div class="step-header" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.1')}</h2>
-                        <p class="text-muted">${i18n.t('scoper.wizard.desc.1')}</p>
+                    <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
+                        <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">${i18n.t('scoper.wizard.title.1')}</h2>
+                        <p class="text-muted" style="font-size: 1.1rem;">${i18n.t('scoper.wizard.desc.1')}</p>
                     </div>
-                    <div class="sector-grid mobile-stack" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="sector-grid">
                         ${[
                         { id: 'tech', label: 'Tech & Web', icon: 'fa-code' },
                         { id: 'design', label: 'Design & Branding', icon: 'fa-pen-nib' },
@@ -170,171 +222,148 @@ const Scoper = {
                         { id: 'media', label: 'Média & Vidéo', icon: 'fa-video' },
                         { id: 'artisanat', label: 'Artisanat & Prod', icon: 'fa-hammer' }
                     ].map(s => `
-                            <div class="sector-card ${data.sector === s.id ? 'active selected' : ''}" 
-                                 onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active', 'selected')); this.classList.add('active', 'selected'); Scoper.updateSector('${s.id}')">
-                                <i class="fas ${s.icon} sector-icon"></i>
+                            <div class="sector-card ${data.sector === s.id ? 'active' : ''}" 
+                                 onclick="document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateSector('${s.id}')">
+                                <i class="fas ${s.icon}"></i>
                                 <div class="sector-label">${s.label}</div>
                             </div>
                         `).join('')}
                     </div>
 
-                    <div class="step-header" style="margin: 2.5rem 0 1rem;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Cible Client Principale</h3>
-                        <p class="text-muted" style="font-size: 0.85rem;">Vos scripts de vente seront adaptés à cette typologie.</p>
-                    </div>
-                    <div style="display: flex; gap: 1rem;">
-                        ${[
-                        { id: 'tpe', label: 'TPE / Indépendants', icon: 'fa-user' },
+                    <div style="margin-top: 4rem;">
+                        <h3 style="font-size: 0.8rem; font-weight: 950; text-transform: uppercase; letter-spacing: 2px; color: #4b5563; text-align: center; margin-bottom: 1.5rem;">Client Type</h3>
+                        <div class="target-grid">
+                            ${[
+                        { id: 'tpe', label: 'TPE / Freelance', icon: 'fa-user' },
                         { id: 'pme', label: 'PME & Startups', icon: 'fa-building' },
                         { id: 'grands-comptes', label: 'Grands Comptes', icon: 'fa-city' }
                     ].map(t => `
-                            <div class="target-card ${data.target === t.id ? 'active selected' : ''}" 
-                                 onclick="document.querySelectorAll('.target-card').forEach(c => c.classList.remove('active', 'selected')); this.classList.add('active', 'selected'); Scoper.updateTarget('${t.id}')">
-                                <i class="fas ${t.icon} target-icon"></i>
-                                <div class="target-label">${t.label}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            case 2: // REVENU (Ancien 1)
-                return `
-                    <div class="step-header" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.2')}</h2>
-                        <p class="text-muted">${i18n.t('scoper.wizard.desc.2')}</p>
-                    </div>
-                    <div class="input-group">
-                        <label class="form-label" style="font-size: 1.1rem;">Revenu Net Mensuel souhaité (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
-                        <input type="number" id="monthlyRevenue" class="form-input large" value="${data.monthlyRevenue || ''}" placeholder="ex: 3000" oninput="Scoper.autoSaveObjective()" style="font-size: 1.5rem; padding: 1.2rem;">
-                        <p class="text-xs text-muted" style="margin-top: 10px;"> C'est votre "salaire" cible. Soyez ambitieux mais réaliste pour votre marché.</p>
-                    </div>
-                `;
-            case 3: // RYTHME (Ancien 2)
-                return `
-                    <div class="step-header" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.3')}</h2>
-                        <p class="text-muted">${i18n.t('scoper.wizard.desc.3')}</p>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div class="input-group">
-                            <label class="form-label">Jours facturés / mois</label>
-                            <input type="number" id="workingDays" class="form-input" value="${data.workingDays ?? 15}" oninput="Scoper.autoSaveObjective()">
-                            <p class="text-xs text-muted" style="margin-top: 8px;">Moyenne conseillée : 10 à 15 jours.</p>
-                        </div>
-                        <div class="input-group">
-                            <label class="form-label">Heures productives / jour</label>
-                            <input type="number" id="hoursPerDay" class="form-input" value="${data.hoursPerDay ?? 7}" oninput="Scoper.autoSaveObjective()">
-                            <p class="text-xs text-muted" style="margin-top: 8px;">Le temps réel passé sur les dossiers.</p>
+                                <div class="target-card ${data.target === t.id ? 'active' : ''}" 
+                                     onclick="document.querySelectorAll('.target-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); Scoper.updateTarget('${t.id}')">
+                                    <i class="fas ${t.icon}"></i>
+                                    <div class="target-label">${t.label}</div>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 `;
-            case 4: // CHARGES (Ancien 3)
+            case 2: // REVENU
                 return `
-                    <div class="step-header" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.4')}</h2>
-                        <p class="text-muted">${i18n.t('scoper.wizard.desc.4')}</p>
+                    <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
+                        <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">${i18n.t('scoper.wizard.title.2')}</h2>
+                        <p class="text-muted" style="font-size: 1.1rem;">${i18n.t('scoper.wizard.desc.2')}</p>
                     </div>
-                    <div class="input-group">
-                        <label class="form-label">Charges Fixes Mensuelles (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
-                        <input type="number" id="monthlyCharges" class="form-input" value="${data.monthlyCharges ?? 500}" oninput="Scoper.autoSaveObjective()">
-                        <p class="text-xs text-muted">Abonnements SaaS, loyer, mutuelle, assurance...</p>
-                    </div>
-                    <div class="input-group">
-                        <label class="form-label">Cotisations / Impôts (%)</label>
-                        <input type="number" id="taxRate" class="form-input" value="${data.taxRate ?? 22}" oninput="Scoper.autoSaveObjective()">
-                        <p class="text-xs text-muted">Auto-entrepreneur : ~22% (BNC) ou ~12% (Achat-Revente).</p>
+                    <div style="max-width: 500px; margin: 0 auto; text-align: center;">
+                        <input type="number" id="monthlyRevenue" class="form-input-premium" value="${data.monthlyRevenue || ''}" placeholder="3000" oninput="Scoper.autoSaveObjective()">
+                        <div style="color: #4b5563; font-weight: 900; font-size: 1.5rem; margin-top: -10px;">${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'} / MOIS NET</div>
+                        <p class="text-muted" style="margin-top: 3rem; font-size: 0.9rem;">C'est votre base de calcul pour votre train de vie cible.</p>
                     </div>
                 `;
-            case 5: // VERDICT / ROADMAP / MATRICE
+            case 3: // RYTHME
+                return `
+                    <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
+                        <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">${i18n.t('scoper.wizard.title.3')}</h2>
+                        <p class="text-muted" style="font-size: 1.1rem;">${i18n.t('scoper.wizard.desc.3')}</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px;">Jours Facturés</div>
+                            <input type="number" id="workingDays" class="form-input-premium" value="${data.workingDays ?? 15}" oninput="Scoper.autoSaveObjective()">
+                            <p class="text-muted" style="font-size: 0.8rem; margin-top: 10px;">Moyenne idéale : 12-15 jours.</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px;">Heures / Jour</div>
+                            <input type="number" id="hoursPerDay" class="form-input-premium" value="${data.hoursPerDay ?? 7}" oninput="Scoper.autoSaveObjective()">
+                            <p class="text-muted" style="font-size: 0.8rem; margin-top: 10px;">Temps de production effectif.</p>
+                        </div>
+                    </div>
+                `;
+            case 4: // CHARGES
+                return `
+                    <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
+                        <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">${i18n.t('scoper.wizard.title.4')}</h2>
+                        <p class="text-muted" style="font-size: 1.1rem;">${i18n.t('scoper.wizard.desc.4')}</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px;">Charges Fixes</div>
+                            <input type="number" id="monthlyCharges" class="form-input-premium" value="${data.monthlyCharges ?? 500}" oninput="Scoper.autoSaveObjective()">
+                            <p class="text-muted" style="font-size: 0.8rem; margin-top: 10px;">SaaS, Assurances, Bureaux...</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px;">Imposition (%)</div>
+                            <input type="number" id="taxRate" class="form-input-premium" value="${data.taxRate ?? 22}" oninput="Scoper.autoSaveObjective()">
+                            <p class="text-muted" style="font-size: 0.8rem; margin-top: 10px;">Auto-entrepreneur : ~22%.</p>
+                        </div>
+                    </div>
+                `;
+            case 5: // VERDICT
                 const results = PricingEngine.calculateObjective(data);
                 const scenarios = PricingEngine.getScenarios(results);
-                // We use a local state for the selected scenario in the UI
                 const activeScenario = this.selectedScenario || 'security';
                 const currentTJM = scenarios[activeScenario].tjm;
                 const currentAnnual = scenarios[activeScenario].annual;
                 const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, data.sector);
 
                 return `
-                    <div class="step-header" style="margin-bottom: 2rem; text-align: center;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.5')}</h2>
-                        <p class="text-muted">${i18n.t('scoper.wizard.desc.5')}</p>
+                    <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
+                        <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">${i18n.t('scoper.wizard.title.5')}</h2>
+                        <p class="text-muted" style="font-size: 1.1rem;">${i18n.t('scoper.wizard.desc.5')}</p>
                     </div>
 
-    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
-        <!-- Col 1: Scénarios & Puissance -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+                        <div style="display: flex; flex-direction: column; gap: 2rem;">
+                            <div style="background: #111; border: 1px solid rgba(255,255,255,0.08); border-radius: 32px; padding: 3rem; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                                <div style="font-size: 0.7rem; font-weight: 950; color: #a855f7; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Projection Annuelle</div>
+                                <div style="font-size: 4rem; font-weight: 950; letter-spacing: -3px; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(currentAnnual) : currentAnnual.toLocaleString() + '€'}</div>
+                                <p class="text-muted" style="font-size: 0.9rem; margin-top: 1rem;">Basé sur ${data.workingDays}j / mois à ${typeof App !== 'undefined' ? App.formatCurrency(currentTJM) : currentTJM + '€'}/j</p>
+                            </div>
 
-            <!-- Market Power Gauge -->
-            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(255,255,255,0.02); position: relative; overflow: hidden;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--primary-light);">${i18n.t('scoper.market_power') || 'Market Power Score'}</span>
-                    <span style="font-size: 1.2rem; font-weight: 900; color: var(--white);">${powerScore}/100</span>
-                </div>
-                <div style="height: 8px; background: var(--border); border-radius: 4px; position: relative;">
-                    <div style="position: absolute; top: 0; left: 0; height: 100%; width: ${powerScore}%; background: linear-gradient(90deg, #f43f5e 0%, var(--primary) 100%); border-radius: 4px; transition: width 0.5s;"></div>
-                </div>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px;">
-                    ${powerScore > 70 ? `<strong>${i18n.t('scoper.power.high.title') || 'Prix Massif'}</strong> : ${i18n.t('scoper.power.high.desc') || 'Facile à vendre, volume élevé possible.'}` : (powerScore > 40 ? `<strong>${i18n.t('scoper.power.mid.title') || 'Prix Équilibré'}</strong> : ${i18n.t('scoper.power.mid.desc') || 'Nécessite une bonne preuve sociale.'}` : `<strong>${i18n.t('scoper.power.low.title') || 'Prix Premium'}</strong> : ${i18n.t('scoper.power.low.desc') || 'Demande une autorité d\'expert reconnue.'}`)}
-                </p>
-            </div>
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 2rem;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: center;">
+                                    <span style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">Indice de Crédibilité Marché</span>
+                                    <span style="font-size: 1.2rem; font-weight: 950; color: white;">${powerScore}%</span>
+                                </div>
+                                <div style="height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden;">
+                                    <div style="width: ${powerScore}%; height: 100%; background: linear-gradient(90deg, #a855f7, #6366f1); transition: width 1s ease-out;"></div>
+                                </div>
+                                <p style="font-size: 0.75rem; color: #64748b; margin-top: 1rem; line-height: 1.5;">
+                                    ${powerScore > 70 ? '<strong>Positionnement Fort</strong> : Votre tarif est dans la zone de confort du marché.' : (powerScore > 40 ? '<strong>Positionnement Équilibré</strong> : Nécessite une argumentation solide.' : '<strong>Positionnement Premium</strong> : Exige une autorité d\'expert supérieure.')}
+                                </p>
+                            </div>
+                        </div>
 
-            <!-- Coaching de Vente EXPERT -->
-            <div class="expert-teaser-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid #a855f7; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(124, 58, 237, 0.1)); position: relative; cursor: pointer; transition: all 0.3s ease;" onclick="Scoper.render('closing')">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">${i18n.t('scoper.tab.closing')}</span>
-                    <span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">${i18n.t('hero.badge').replace('NOUVEAU : ', '')}</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="width: 45px; height: 45px; border-radius: 12px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; color: #c084fc;">
-                        <i class="fas fa-magic" style="font-size: 1.2rem;"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 700; color: white; font-size: 0.95rem;">${i18n.t('scoper.closing_ready') || 'Prêt pour le Closing ?'}</div>
-                        <div style="font-size: 0.75rem; color: #e9d5ff; opacity: 0.8;">${i18n.t('scoper.closing_desc') || 'Accédez à votre Arsenal de Vente personnalisé.'}</div>
-                    </div>
-                    <i class="fas fa-chevron-right" style="color: #c084fc; opacity: 0.5;"></i>
-                </div>
-            </div>
-
-            <!-- Scenario Selector -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                ${Object.entries(scenarios).map(([key, s]) => `
-                                    <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1rem; border-radius: 12px; border: 2px solid ${activeScenario === key ? 'var(--primary)' : 'var(--border)'}; background: ${activeScenario === key ? 'var(--primary-glass)' : 'transparent'}; text-align: center; transition: all 0.2s;">
-                                        <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: ${activeScenario === key ? 'var(--primary-light)' : 'var(--text-muted)'};">${i18n.t(`scoper.scenario.${key}`) || s.label}</div>
-                                        <div style="font-size: 1.1rem; font-weight: 900; margin: 4px 0;">${typeof App !== 'undefined' ? App.formatCurrency(s.tjm) : s.tjm + '€'}</div>
-                                        <div style="font-size: 0.6rem; opacity: 0.7;">${typeof App !== 'undefined' ? App.formatCurrency(s.annual) : s.annual.toLocaleString() + '€'}/an</div>
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <div style="font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">Sélectionner un Profil de Risque</div>
+                            <div style="display: grid; gap: 1rem;">
+                                ${Object.entries(scenarios).map(([key, s]) => `
+                                    <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1.5rem; border-radius: 20px; border: 1px solid ${activeScenario === key ? '#a855f7' : 'rgba(255,255,255,0.05)'}; background: ${activeScenario === key ? 'rgba(168, 85, 247, 0.05)' : 'rgba(255,255,255,0.02)'}; transition: all 0.3s; display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <div style="font-size: 0.9rem; font-weight: 800; color: ${activeScenario === key ? 'white' : '#94a3b8'}">${i18n.t(`scoper.scenario.${key}`) || s.label}</div>
+                                            <div style="font-size: 0.7rem; color: #64748b;">${key === 'security' ? 'Sécurité maximale' : (key === 'balanced' ? 'Optimisation revenus' : 'Croissance agressive')}</div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 1.2rem; font-weight: 950; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(s.tjm) : s.tjm + '€'}</div>
+                                            <div style="font-size: 0.7rem; color: #64748b;">TJM Recommandé</div>
+                                        </div>
                                     </div>
                                 `).join('')}
-            </div>
+                            </div>
 
-            <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; text-align: center; border-radius: 20px;">
-                <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">${i18n.t('scoper.annual_projection') || 'PROJECTION REVENU ANNUEL'}</div>
-                <div style="font-size: 2.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${typeof App !== 'undefined' ? App.formatCurrency(currentAnnual) : currentAnnual.toLocaleString() + '€'}<span style="font-size: 0.9rem; font-weight: 400; opacity: 0.7; display: block;">${i18n.t('scoper.projection_desc').replace('{days}', data.workingDays) || `Projection basée sur ${data.workingDays}j facturés / mois`}</span></div>
-            </div>
-        </div>
-
-        <!-- Col 2: Pourquoi passer au Chiffrage ? -->
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary-glass);">
-                <h3 style="font-size: 1rem; color: var(--primary-light); margin-bottom: 10px;"><i class="fas fa-rocket"></i> ${i18n.t('scoper.next_step') || 'Suite Logique : Chiffrage Projet'}</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">
-                    ${i18n.t('scoper.next_step_desc').replace('{tjm}', (typeof App !== 'undefined' ? App.formatCurrency(currentTJM) : currentTJM + '€')) || `Maintenant que vous avez votre <strong>TJM stratégique (${typeof App !== 'undefined' ? App.formatCurrency(currentTJM) : currentTJM + '€'})</strong>, il est crucial de vérifier s'il passe sur un contrat réel.`}
-                </p>
-                <ul style="padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> ${i18n.t('scoper.check.1') || 'Vos prix couvrent-ils vos dépenses réelles ?'}</li>
-                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> ${i18n.t('scoper.check.2') || 'Combien reste-t-il vraiment dans votre poche ?'}</li>
-                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> ${i18n.t('scoper.check.3') || 'Quel impact sur votre marge nette ?'}</li>
-                </ul>
-                <button class="button-primary" onclick="Scoper.render('project')" style="width: 100%; justify-content: center; padding: 12px;">
-                    ${i18n.t('scoper.test_tjm') || 'Tester ce TJM sur un Projet'} <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
-                </button>
-            </div>
-
-            <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center; opacity: 0.5;">
-                <i class="fas fa-magic" style="margin-right: 5px;"></i> Diagnostic propulsé par SoloPrice PRO
-            </p>
-        </div>
-    </div>
-`;
+                            <div onclick="Scoper.render('project')" style="margin-top: 1rem; cursor: pointer; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 20px; padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+                                <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #10b981;">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 800; color: white; font-size: 0.95rem;">Prêt pour votre premier devis ?</div>
+                                    <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">TESTER CE TJM SUR UN PROJET &rarr;</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            default:
+                return 'No form content for this step';
         }
     },
 
@@ -496,117 +525,104 @@ const Scoper = {
         }
 
         content.innerHTML = `
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">${i18n.t('scoper.tab.project')}</h1>
-            <p class="page-subtitle">${i18n.t('scoper.wizard.desc.5')}</p>
-        </div>
-    </div>
+            <style>
+                .project-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 3rem; align-items: start; }
+                .tasks-container { background: #0a0a0a; border: 1px solid rgba(255,255,255,0.06); border-radius: 32px; padding: 3rem; }
+                .task-row-premium {
+                    display: grid; grid-template-columns: 1fr auto; gap: 2rem; padding: 1.5rem;
+                    background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid transparent;
+                    transition: all 0.3s; margin-bottom: 1rem; position: relative;
+                }
+                .task-row-premium:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+                .task-row-premium .delete-task {
+                    position: absolute; top: -10px; right: -10px; width: 24px; height: 24px; border-radius: 50%;
+                    background: #ef4444; color: white; display: flex; align-items: center; justify-content: center;
+                    font-size: 0.7rem; cursor: pointer; opacity: 0; transition: all 0.3s; z-index: 10;
+                }
+                .task-row-premium:hover .delete-task { opacity: 1; }
+                
+                .results-sidebar {
+                    position: sticky; top: 2rem; display: flex; flex-direction: column; gap: 1.5rem;
+                }
+                .summary-card-premium {
+                    background: #111; border: 1px solid rgba(255,255,255,0.08); border-radius: 32px; padding: 2.5rem;
+                    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+                }
 
-    <div class="calculator-container" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem;">
+                .pita-selector {
+                    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1rem;
+                }
+            </style>
 
-        <!-- Task List Input -->
-        <div class="calculator-inputs" style="background: #0a0a0a; border: 1px solid var(--border); padding: 2rem; border-radius: var(--radius-lg);">
-            <div class="section-header-inline" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h3 style="font-size: 1.2rem; font-weight: 700;">${i18n.t('scoper.decomposition') || 'Décomposition du Projet'}</h3>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="button-secondary small" onclick="Scoper.addTask()" title="Ajouter une ligne vide">
-                        + Tâche
-                    </button>
-                    <button class="button-outline small" onclick="Scoper.showCatalogSelector()" title="Importer depuis votre catalogue">
-                        <i class="fas fa-book"></i> Catalogue
-                    </button>
-                </div>
-            </div>
-
-            <div id="scoper-tasks" class="scoper-tasks-list">
-                <!-- Rempli par renderTasks -->
-            </div>
-        </div>
-
-        <!-- Results & Analysis -->
-        <div class="results-panel" style="background: #050505; border: 1px solid var(--primary-glass); padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow);">
-            <div class="results-header" style="margin-bottom: 2rem;">
-                <h3 class="results-title" style="font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">${i18n.t('dashboard.analysis') || 'Analyse Financière'}</h3>
-            </div>
-
-            <div class="result-cards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-                <div class="result-card primary" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary); padding: 1.2rem; border-radius: 12px; grid-column: span 2;">
-                    <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">${typeof App !== 'undefined' ? App.formatCurrency(0) : '0 €'}</div>
-                    <p class="text-xs text-muted">${i18n.t('scoper.budget_estimated') || 'Budget estimé pour ce périmètre'}</p>
-                    <div id="scoper-tax-info" style="font-size: 0.75rem; opacity: 0.7;">TVA: France (20.0%)</div>
-                </div>
-
-                <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
-                    <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">${i18n.t('scoper.est_time') || 'Temps Est.'}</div>
-                    <div class="result-value" id="scoper-total-time" style="font-size: 1.2rem; font-weight: 700;">0h</div>
-                </div>
-
-                <div class="stat-card" style="flex: 1; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);">
-                    <div class="result-label" style="font-size: 0.8rem;">${i18n.t('scoper.actual_tjm') || 'TJM Réel Dégagé'}</div>
-                    <div class="result-value" id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-light);">${typeof App !== 'undefined' ? App.formatCurrency(0) : '0 €'}/j</div>
-                </div>
-            </div>
-
-            <div class="breakdown-section" style="background: transparent; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                <h4 class="breakdown-title" style="margin-bottom: 1.5rem; font-weight: 600;">${i18n.t('scoper.strat_profit') || 'Stratégie & Rentabilité'}</h4>
-
-                <div class="input-group">
-                    <label class="form-label">${i18n.t('scoper.ref_tjm') || 'TJM Stratégique de Référence'} (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
-                    <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="border-color: var(--primary-light);">
-                        <p class="text-xs text-muted" style="margin-top: 4px;">${i18n.t('scoper.ref_tjm_desc') || 'Utilisez votre boussole définit à l\'étape "Objectif".'}</p>
-                </div>
-
-                <div class="input-group" style="margin-top: 1.5rem;">
-                    <label class="form-label" style="display: flex; justify-content: space-between;">
-                        <span>Facteur PITA (Prime de Risque)</span>
-                        <span class="badge" style="background: var(--primary-glass); color: var(--primary-light); font-size: 0.6rem;">PACK PRO</span>
-                    </label>
-                    <div style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; margin-top: 5px; display: grid; gap: 10px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Urgence</span>
-                            <input type="range" id="scoper-pita-urgency" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Complexité</span>
-                            <input type="range" id="scoper-pita-complexity" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Diff. Client</span>
-                            <input type="range" id="scoper-pita-client" min="1" max="5" value="1" oninput="Scoper.calculate()" style="width: 100px;">
-                        </div>
-                        <div id="pita-multiplier-display" style="font-size: 0.75rem; text-align: right; color: var(--primary-light); font-weight: 700;">Impact : +0%</div>
+            <div class="project-grid" style="animation: fadeInUp 0.8s ease-out;">
+                <div class="tasks-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                         <h3 style="font-size: 1.2rem; font-weight: 800; color: white;">Structure du Projet</h3>
+                         <div style="display: flex; gap: 1rem;">
+                            <button class="button-outline small" onclick="Scoper.addTask()" style="border-radius: 8px;">
+                                <i class="fas fa-plus"></i> Ajouter une Tâche
+                            </button>
+                            <button class="button-secondary small" onclick="Scoper.showCatalogSelector()" style="border-radius: 8px; background: rgba(255,255,255,0.05); border: none;">
+                                <i class="fas fa-folder-open"></i> Catalogue
+                            </button>
+                         </div>
                     </div>
+                    
+                    <div id="scoper-tasks"></div>
                 </div>
 
-                <div class="input-group">
-                    <label class="form-label">${i18n.t('scoper.safety_margin') || 'Marge de Sécurité (%)'}</label>
-                    <input type="number" id="scoper-buffer" class="form-input" value="20" onchange="Scoper.calculate()">
-                </div>
+                <div class="results-sidebar">
+                    <div class="summary-card-premium">
+                        <div style="font-size: 0.7rem; font-weight: 950; color: #10b981; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Budget Estimé</div>
+                        <div id="scoper-total-price" style="font-size: 3.5rem; font-weight: 950; letter-spacing: -3px; color: white;">0 €</div>
+                        <div id="scoper-tax-info" style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem;">Incl. TVA 20%</div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <div style="font-size: 0.6rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Temps Est.</div>
+                                <div id="scoper-total-time" style="font-size: 1.2rem; font-weight: 900; color: white;">0h</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.6rem; font-weight: 800; color: #64748b; text-transform: uppercase;">TJM Réel</div>
+                                <div id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 900; color: #a855f7;">0 €</div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="input-group" style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border);">
-                    <label class="checkbox-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="scoper-hide-hours" ${this.settings.hideHours ? 'checked' : ''} onchange="Scoper.updateSettings('hideHours', this.checked)">
-                            <span style="font-size: 0.85rem; font-weight: 500;">${i18n.t('scoper.hide_hours') || 'Masquer le détail des heures sur le devis'}</span>
-                    </label>
-                    <p class="text-xs text-muted" style="margin-top: 5px; margin-left: 25px;">${i18n.t('scoper.focus_value') || 'Focus sur la valeur perçue.'}</p>
-                </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 2rem;">
+                         <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem;">Leviers de Prix</div>
+                         
+                         <div style="margin-bottom: 1.5rem;">
+                            <label style="font-size: 0.8rem; font-weight: 700; color: white; display: block; margin-bottom: 0.5rem;">TJM de Référence</label>
+                            <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="background: #111; border-color: rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem;">
+                         </div>
 
-                <div id="scoper-profitability-indicator" style="margin-top: 1.5rem;">
-                    <!-- Rentabilité interne -->
-                </div>
+                         <div style="margin-bottom: 1.5rem;">
+                            <label style="font-size: 0.8rem; font-weight: 700; color: white; display: block; margin-bottom: 0.5rem;">Facteur PITA (Risk)</label>
+                            <div class="pita-selector">
+                                <div id="pita-multiplier-display" style="grid-column: span 3; font-size: 0.7rem; font-weight: 800; color: #a855f7; text-align: right; margin-bottom: 5px;">Impact : +0%</div>
+                                <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 5px;">Urgence</div>
+                                <input type="range" id="scoper-pita-urgency" min="1" max="5" value="1" oninput="Scoper.calculate()" style="grid-column: span 2; width: 100%;">
+                                <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 5px;">Complexité</div>
+                                <input type="range" id="scoper-pita-complexity" min="1" max="5" value="1" oninput="Scoper.calculate()" style="grid-column: span 2; width: 100%;">
+                            </div>
+                         </div>
 
-                <div id="scoper-tax-container" style="margin-top: 1rem;"></div>
+                         <div style="margin-bottom: 1.5rem;">
+                            <label style="font-size: 0.8rem; font-weight: 700; color: white; display: block; margin-bottom: 0.5rem;">Marge Sécurité (%)</label>
+                            <input type="number" id="scoper-buffer" class="form-input" value="20" onchange="Scoper.calculate()" style="background: #111; border-color: rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem;">
+                         </div>
+
+                         <div id="scoper-tax-container"></div>
+                    </div>
+
+                    <button class="button-primary" id="btn-create-quote" style="padding: 1.5rem; border-radius: 20px; background: white; color: black; border: none; font-weight: 900; font-size: 1.1rem; box-shadow: 0 20px 40px rgba(255,255,255,0.1);">
+                        <i class="fas fa-file-invoice-dollar" style="margin-right: 12px;"></i> Générer le Devis Officiel
+                    </button>
+                </div>
             </div>
+        `;
 
-            <div class="calculator-actions" style="margin-top: 2rem;">
-                <button class="button-primary full-width" id="btn-create-quote" style="padding: 1rem; font-size: 1rem;">
-                    ${i18n.t('scoper.create_quote') || 'Générer le Devis Officiel'}
-                </button>
-            </div>
-        </div>
-    </div>
-`;
 
         this.renderTasks();
 
@@ -751,26 +767,25 @@ const Scoper = {
 
         if (this.tasks.length === 0) {
             container.innerHTML = `
-    <div class="empty-state" style="padding: 3rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: 12px; border: 2px dashed var(--border);">
+                <div class="empty-state" style="padding: 3rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: 12px; border: 2px dashed var(--border);">
                     <p class="text-muted">${i18n.t('scoper.no_tasks') || 'Aucune tâche définie.'}</p>
                     <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
                         <button class="button-primary small" onclick="Scoper.addTask()">+ ${i18n.t('scoper.add_empty') || 'Tâche Vide'}</button>
                         <button class="button-secondary small" onclick="Scoper.showCatalogSelector()">+ ${i18n.t('scoper.from_catalog') || 'Du Catalogue'}</button>
                     </div>
-                </div >
-    `;
+                </div>
+            `;
             return;
         }
 
         container.innerHTML = this.tasks.map((task, index) => {
-            // Calculated price as fallback/ghost
             const tjm = parseFloat(document.getElementById('scoper-tjm')?.value) || this.getTJM();
             const buffer = parseFloat(document.getElementById('scoper-buffer')?.value) || 20;
             const hours = task.max * (1 + buffer / 100);
             const calculatedPrice = (hours / 7) * tjm;
 
             return `
-    <div class="scoper-task-row" data-index="${index}">
+                <div class="scoper-task-row" data-index="${index}">
                     <div class="task-main">
                         <input type="text" placeholder="${i18n.t('scoper.task_placeholder') || 'Nom de la prestation (ex: Design UI)'}" class="form-input task-name" value="${task.name}" onchange="Scoper.updateTask(${index}, 'name', this.value)">
                     </div>
@@ -798,8 +813,8 @@ const Scoper = {
 
                         <button class="btn-icon btn-danger" onclick="Scoper.removeTask(${index})" title="Supprimer"></button>
                     </div>
-                </div >
-    `;
+                </div>
+            `;
         }).join('');
 
         // Inject Styles
@@ -914,6 +929,8 @@ const Scoper = {
     renderProfitability(actualTjm, targetTjm) {
         const container = document.getElementById('scoper-profitability-indicator');
         if (!container) return;
+
+        const sym = typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€';
 
         if (this.tasks.length === 0) {
             container.innerHTML = '';
@@ -1089,11 +1106,11 @@ const Scoper = {
         };
 
         if (service.unitType === 'Jour') {
-            newTask.min = 1;
-            newTask.max = 1;
-        } else if (service.unitType === 'Heure') {
             newTask.min = 7;
             newTask.max = 7;
+        } else if (service.unitType === 'Heure') {
+            newTask.min = 1;
+            newTask.max = 1;
         } else {
             newTask.manualPrice = service.unitPrice;
         }
@@ -1128,14 +1145,14 @@ const Scoper = {
 
         if (!Storage.isExpert()) {
             content.innerHTML = `
-                <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid #a855f7; background: rgba(168, 85, 247, 0.05); border-radius: 30px; backdrop-filter: blur(10px);">
-                    <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(168, 85, 247, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #a855f7; box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);">
+                <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.03); border-radius: 32px; backdrop-filter: blur(20px);">
+                    <div style="width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.05)); display: flex; align-items: center; justify-content: center; margin: 0 auto 2.5rem; color: #a855f7; box-shadow: 0 10px 40px rgba(168, 85, 247, 0.15);">
                         <i class="fas fa-magic" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h2 style="font-size: 2.2rem; margin-bottom: 1rem; color: white; font-weight: 800; letter-spacing: -1px;">${i18n.t('scoper.closing.arsenal') || 'Arsenal de Closing Expert'}</h2>
-                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem; line-height: 1.6;">${i18n.t('scoper.closing.arsenal_desc') || 'Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.'}</p>
-                    <button class="button-primary large hover-lift" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; padding: 1.2rem 2.5rem; font-weight: 700; border-radius: 12px; transition: all 0.3s ease;" onclick="App.showUpgradeModal('premium_feature')">
-                         ${i18n.t('scoper.journal.mode_expert') || 'Passer au Pack EXPERT'}
+                    <h2 style="font-size: 2.4rem; margin-bottom: 1rem; color: white; font-weight: 800; letter-spacing: -1.5px;">${i18n.t('scoper.closing.arsenal') || 'Arsenal de Closing Expert'}</h2>
+                    <p class="text-muted" style="margin-bottom: 3rem; font-size: 1.15rem; line-height: 1.7; max-width: 450px; margin-left: auto; margin-right: auto;">${i18n.t('scoper.closing.arsenal_desc') || 'Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.'}</p>
+                    <button class="button-primary large hover-lift" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; padding: 1.4rem 3rem; font-weight: 800; border-radius: 16px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onclick="App.showUpgradeModal('premium_feature')">
+                         <i class="fas fa-crown" style="margin-right: 10px;"></i> ${i18n.t('scoper.journal.mode_expert') || 'Passer au Pack EXPERT'}
                     </button>
                 </div>
             `;
@@ -1158,163 +1175,180 @@ const Scoper = {
         const tjm = results.dailyRate;
         const monthlyNet = parseFloat(data.monthlyRevenue) || 0;
         const revenueNeeded = results.revenueNeeded;
-        const taxAmount = results.taxAmount;
+
+        if (!hasObjective) {
+            content.innerHTML = `
+                <div class="empty-state-v2" style="max-width: 800px; margin: 6rem auto; text-align: center; animation: fadeInDown 0.8s ease;">
+                    <div style="font-size: 5rem; margin-bottom: 2rem; opacity: 0.5;">🛰️</div>
+                    <h2 style="font-size: 2.8rem; font-weight: 900; color: white; letter-spacing: -2px; margin-bottom: 1rem;">Radar Stratégique Inactif</h2>
+                    <p style="font-size: 1.2rem; color: #a5b4fc; max-width: 500px; margin: 0 auto 3rem; line-height: 1.6; opacity: 0.8;">
+                        Votre arsenal de vente ne peut pas être calibré sans vos objectifs financiers. 
+                        <strong>Définissez votre TJM de sécurité pour activer l'IA de Closing.</strong>
+                    </p>
+                    <button class="button-primary large hover-lift" onclick="Scoper.render('objective')" style="background: white; color: black; border: none; padding: 1.2rem 2.5rem; font-weight: 800; border-radius: 14px;">
+                        <i class="fas fa-crosshairs" style="margin-right: 10px;"></i> Calibrer mon Objectif TJM
+                    </button>
+                </div>
+            `;
+            return;
+        }
 
         content.innerHTML = `
             <style>
-                .closing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+                .closing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 4rem; }
                 .closing-card { 
-                    background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 2.5rem;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
-                    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+                    background: #0a0a0a; border: 1px solid rgba(255,255,255,0.06); border-radius: 32px; padding: 3rem;
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
                 }
-                .closing-card:hover { border-color: rgba(168, 85, 247, 0.4); transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+                .closing-card:hover { border-color: rgba(168, 85, 247, 0.3); transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
                 
                 .objection-card {
-                    background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem;
+                    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 2rem;
                     transition: all 0.3s ease; cursor: pointer; position: relative;
                 }
-                .objection-card:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.05); }
-                .objection-card.active { background: rgba(168, 85, 247, 0.1); border-color: #a855f7; }
+                .objection-card:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.04); }
+                .objection-card.active { background: rgba(168, 85, 247, 0.08); border-color: #a855f7; }
                 
-                .rebuttal-box { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-                .objection-card.active .rebuttal-box { max-height: 300px; opacity: 1; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); }
+                .rebuttal-box { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+                .objection-card.active .rebuttal-box { max-height: 400px; opacity: 1; margin-top: 1.5rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.08); }
                 
                 .diag-question { 
-                    padding: 1.2rem; border-radius: 16px; background: rgba(255,255,255,0.02); border-left: 4px solid #a855f7; 
-                    margin-bottom: 1rem; font-size: 0.95rem; color: #e9d5ff; transition: all 0.2s;
+                    padding: 1.4rem; border-radius: 20px; background: rgba(255,255,255,0.02); border-left: 2px solid #a855f7; 
+                    margin-bottom: 1.2rem; font-size: 1rem; color: #e9d5ff; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 }
-                .diag-question:hover { transform: translateX(8px); background: rgba(168, 85, 247, 0.05); }
+                .diag-question:hover { transform: scale(1.02) translateX(10px); background: rgba(168, 85, 247, 0.05); }
                 
                 .expert-hero {
-                    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(30, 10, 60, 0.2) 100%);
-                    border-radius: 32px; padding: 4rem 2rem; text-align: center; border: 1px solid rgba(168, 85, 247, 0.15); 
-                    margin-bottom: 3rem; position: relative; overflow: hidden;
-                    backdrop-filter: blur(10px);
+                    background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(0, 0, 0, 0.8) 100%);
+                    border-radius: 40px; padding: 5rem 2rem; text-align: center; border: 1px solid rgba(255,255,255,0.05); 
+                    margin-bottom: 3.5rem; position: relative; overflow: hidden;
+                    backdrop-filter: blur(20px);
                 }
                 
-                .tjm-stats-row { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; }
+                .tjm-stats-row { display: flex; justify-content: center; gap: 1.2rem; flex-wrap: wrap; margin-top: 3.5rem; }
                 .tjm-pill { 
-                    background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 18px; 
-                    padding: 1.2rem 1.5rem; min-width: 140px; transition: all 0.3s;
+                    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04); border-radius: 24px; 
+                    padding: 1.5rem 2rem; min-width: 160px; transition: all 0.3s; text-align: center;
                 }
-                .tjm-pill.highlight { border-color: #a855f7; background: rgba(168,85,247,0.08); }
-                .tjm-val { font-size: 1.8rem; font-weight: 900; color: white; letter-spacing: -1px; }
-                .tjm-lab { font-size: 0.65rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+                .tjm-pill.highlight { border-color: rgba(168, 85, 247, 0.3); background: rgba(168,85,247,0.04); }
+                .tjm-val { font-size: 2rem; font-weight: 950; color: white; letter-spacing: -1.5px; }
+                .tjm-lab { font-size: 0.7rem; font-weight: 800; color: #a855f7; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 8px; opacity: 0.8; }
+
+                .badge-expert {
+                    display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; 
+                    background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); 
+                    border-radius: 100px; font-size: 0.75rem; font-weight: 900; color: #c084fc; 
+                    text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 2rem;
+                }
             </style>
 
-            <div class="closing-arsenal-v2" style="animation: fadeIn 0.6s ease-out;">
+            <div class="closing-arsenal-v3" style="animation: fadeIn 0.8s ease-out;">
                 <div class="expert-hero">
-                    <div style="display: inline-block; padding: 4px 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 100px; font-size: 0.7rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem;">
-                        <i class="fas fa-shield-halved" style="margin-right: 6px;"></i> Closing Master Tool
+                    <div class="badge-expert">
+                        <i class="fas fa-shield-halved" style="font-size: 0.9rem;"></i> Closing Master Tool
                     </div>
-                    <h1 style="font-size: 3.2rem; margin-bottom: 1rem; color: white; font-weight: 900; letter-spacing: -2px;">${i18n.t('scoper.closing.title') || 'Votre Arsenal de Vente'}</h1>
-                    <p style="color: #e9d5ff; font-size: 1.15rem; opacity: 0.8; max-width: 700px; margin: 0 auto;">
-                        ${i18n.t('scoper.closing.subtitle', { sector: sectorLabel, target: targetLabel }) || `Ingénierie de closing optimisée pour un profil <strong>${sectorLabel}</strong> face à un <strong>${targetLabel}</strong>.`}
+                    <h1 style="font-size: 4rem; margin-bottom: 1rem; color: white; font-weight: 950; letter-spacing: -3px; line-height: 1;">${i18n.t('scoper.closing.title')}</h1>
+                    <p style="color: #a5b4fc; font-size: 1.25rem; opacity: 0.7; max-width: 700px; margin: 0 auto; line-height: 1.6;">
+                        ${i18n.t('scoper.closing.subtitle', { sector: sectorLabel, target: targetLabel })}
                     </p>
 
-                    ${!hasObjective ? `
-                        <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245,158,11,0.2); border-radius: 16px; padding: 1.2rem; margin-top: 2rem; color: #fbbf24; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-triangle-exclamation"></i>
-                            ${i18n.t('scoper.no_objective_warn') || 'Stratégie TJM non définie'} · <a onclick="Scoper.render('objective')" style="color: #fbbf24; cursor:pointer; text-decoration: underline; font-weight: 700;">${i18n.t('scoper.complete_objective') || 'Configurer maintenant'} →</a>
+                    <div class="tjm-stats-row">
+                        <div class="tjm-pill highlight">
+                            <div class="tjm-val">${App.formatCurrency(tjm)}</div>
+                            <div class="tjm-lab">${i18n.t('scoper.ref_tjm_short')}</div>
                         </div>
-                    ` : `
-                        <div class="tjm-stats-row">
-                            <div class="tjm-pill highlight">
-                                <div class="tjm-val">${App.formatCurrency(tjm)}</div>
-                                <div class="tjm-lab">${i18n.t('scoper.ref_tjm_short') || 'TJM Cible'}</div>
-                            </div>
-                            <div class="tjm-pill">
-                                <div class="tjm-val">${App.formatCurrency(monthlyNet)}</div>
-                                <div class="tjm-lab">${i18n.t('scoper.monthly_net') || 'Net Espéré'}</div>
-                            </div>
-                            <div class="tjm-pill">
-                                <div class="tjm-val">${App.formatCurrency(revenueNeeded)}</div>
-                                <div class="tjm-lab">CA Bruti / Mois</div>
-                            </div>
-                            <div class="tjm-pill">
-                                <div class="tjm-val">${data.workingDays || 15}j</div>
-                                <div class="tjm-lab">Facturables</div>
-                            </div>
+                        <div class="tjm-pill">
+                            <div class="tjm-val">${App.formatCurrency(monthlyNet)}</div>
+                            <div class="tjm-lab">${i18n.t('scoper.monthly_net')}</div>
                         </div>
-                    `}
+                        <div class="tjm-pill">
+                            <div class="tjm-val">${App.formatCurrency(revenueNeeded)}</div>
+                            <div class="tjm-lab">${i18n.t('dashboard.total_ca') || 'CA Bruti'}</div>
+                        </div>
+                        <div class="tjm-pill">
+                            <div class="tjm-val">${data.workingDays || 15}j</div>
+                            <div class="tjm-lab">${i18n.t('scoper.billed_days')}</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="closing-grid">
-                    <!-- Diagnostic Card -->
                     <div class="closing-card">
-                        <div style="display: flex; align-items: start; gap: 20px; margin-bottom: 2.5rem;">
-                            <div style="width: 60px; height: 60px; border-radius: 18px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; color: #a855f7; font-size: 1.8rem;">
-                                <i class="fas fa-stethoscope"></i>
+                        <div style="display: flex; align-items: start; gap: 24px; margin-bottom: 3rem;">
+                            <div style="width: 70px; height: 70px; border-radius: 20px; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #a855f7; font-size: 2rem;">
+                                <i class="fas fa-microscope"></i>
                             </div>
                             <div style="flex: 1;">
-                                <h3 style="margin: 0; font-size: 1.6rem; color: white; font-weight: 800;">${i18n.t('scoper.closing.dr_expert') || 'La Posture Dr. Expert'}</h3>
-                                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">Diagnostiquez la douleur avant de proposer le remède.</div>
+                                <h3 style="margin: 0; font-size: 1.8rem; color: white; font-weight: 900; letter-spacing: -1px;">${i18n.t('scoper.closing.dr_expert')}</h3>
+                                <div style="font-size: 1rem; color: #6366f1; margin-top: 6px; font-weight: 600; opacity: 0.8;">La phase de diagnostic critique</div>
                             </div>
                         </div>
                         <div class="questions-list">
                             ${tactics.diagnostic.questions.map((q, i) => `
                                 <div class="diag-question">
-                                    <span style="display: block; font-size: 0.65rem; font-weight: 900; color: #a855f7; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px; opacity: 0.8;">Question Stratégique 0${i + 1}</span>
+                                    <span style="display: block; font-size: 0.7rem; font-weight: 900; color: #a855f7; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 2px;">Strategy Q-0${i + 1}</span>
                                     ${q}
                                 </div>
                             `).join('')}
                         </div>
-                        <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.02)); border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); border-left: 6px solid #10b981;">
-                            <div style="font-size: 0.7rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">Le Pivot vers le ROI</div>
-                            <div style="font-size: 1.1rem; font-weight: 700; color: white; line-height: 1.4;">"${tactics.roi.argument}"</div>
+                        <div style="margin-top: 2.5rem; padding: 2rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), transparent); border-radius: 24px; border: 1px solid rgba(16, 185, 129, 0.15); border-left: 5px solid #10b981;">
+                            <div style="font-size: 0.8rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 2px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-hand-holding-dollar"></i> ${i18n.t('scoper.roi.title')}
+                            </div>
+                            <div style="font-size: 1.3rem; font-weight: 800; color: white; line-height: 1.5; letter-spacing: -0.5px;">"${tactics.roi.argument}"</div>
                         </div>
                     </div>
 
-                    <!-- Anchoring Card -->
                     <div class="closing-card">
-                        <div style="display: flex; align-items: start; gap: 20px; margin-bottom: 2.5rem;">
-                            <div style="width: 60px; height: 60px; border-radius: 18px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.8rem;">
+                        <div style="display: flex; align-items: start; gap: 24px; margin-bottom: 3rem;">
+                            <div style="width: 70px; height: 70px; border-radius: 20px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 2rem;">
                                 <i class="fas fa-anchor"></i>
                             </div>
                             <div style="flex: 1;">
-                                <h3 style="margin: 0; font-size: 1.6rem; color: white; font-weight: 800;">${i18n.t('scoper.anchoring.title') || 'L\'Ancrage de Puissance'}</h3>
-                                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 4px;">Rendez votre prix évident par le contraste.</div>
+                                <h3 style="margin: 0; font-size: 1.8rem; color: white; font-weight: 900; letter-spacing: -1px;">${i18n.t('scoper.anchoring.title')}</h3>
+                                <div style="font-size: 1rem; color: #6366f1; margin-top: 6px; font-weight: 600; opacity: 0.8;">Ingénierie du contraste massif</div>
                             </div>
                         </div>
-                        <div style="background: rgba(0,0,0,0.3); border-radius: 24px; padding: 2.5rem; border: 1px solid rgba(255,255,255,0.05); position: relative;">
-                            <div style="opacity: 0.25; transform: scale(0.9); margin-bottom: 2rem;">
-                                <div style="font-size: 0.7rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-crown"></i> Option Stratégique (L'Ancre)</div>
-                                <div style="font-size: 2.4rem; font-weight: 900; color: white; margin-top: 5px;">${App.formatCurrency(scenarios.elite.tjm)} <span style="font-size: 1rem; opacity: 0.5;">/ jour</span></div>
+                        <div style="background: rgba(0,0,0,0.4); border-radius: 28px; padding: 3rem; border: 1px solid rgba(255,255,255,0.03); position: relative;">
+                            <div style="opacity: 0.15; transform: scale(0.85) translateX(-20px); transition: all 0.5s;">
+                                <div style="font-size: 0.8rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 2px;"><i class="fas fa-crown"></i> ${i18n.t('scoper.option.elite')}</div>
+                                <div style="font-size: 2.8rem; font-weight: 950; color: white; margin-top: 8px;">${App.formatCurrency(scenarios.elite.tjm)} <span style="font-size: 1.2rem; font-weight: 500; opacity: 0.4;">/ j</span></div>
                             </div>
-                            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border: 2px solid #10b981; padding: 2rem; border-radius: 20px; position: relative; box-shadow: 0 0 30px rgba(16, 185, 129, 0.15);">
-                                <div style="font-size: 0.75rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 1px;">Recommandé (Votre TJM)</div>
-                                <div style="font-size: 2.8rem; font-weight: 900; color: white; margin-top: 5px;">${App.formatCurrency(scenarios.security.tjm)} <span style="font-size: 1.1rem; opacity: 0.5;">/ jour</span></div>
-                                <div style="position: absolute; top: -14px; right: 20px; background: #10b981; color: white; font-size: 0.7rem; padding: 6px 14px; border-radius: 100px; font-weight: 900; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">CONVERSION OPTIMALE</div>
+                            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(0,0,0,0.5)); border: 2px solid #10b981; padding: 2.5rem; border-radius: 24px; margin-top: -1.5rem; position: relative; z-index: 2; box-shadow: 0 15px 50px rgba(16, 185, 129, 0.2);">
+                                <div style="font-size: 0.9rem; font-weight: 900; color: #34d399; text-transform: uppercase; letter-spacing: 2px;">${i18n.t('scoper.closing.price_label')}</div>
+                                <div style="font-size: 3.5rem; font-weight: 950; color: white; margin-top: 10px; line-height: 1;">${App.formatCurrency(scenarios.security.tjm)} <span style="font-size: 1.4rem; font-weight: 500; opacity: 0.5;">/ j</span></div>
+                                <div style="position: absolute; top: -16px; right: 24px; background: #10b981; color: white; font-size: 0.8rem; padding: 8px 20px; border-radius: 100px; font-weight: 900; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); text-transform: uppercase; letter-spacing: 1px;">
+                                    ${i18n.t('scoper.price_accepted')}
+                                </div>
                             </div>
                         </div>
-                        <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(59, 130, 246, 0.05); border-radius: 18px; border: 1px dashed rgba(59, 130, 246, 0.2);">
-                            <div style="font-size: 0.75rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">Logique de négociation :</div>
-                            <div style="font-size: 0.95rem; color: #bfdbfe; font-style: italic; line-height: 1.5; font-weight: 500;">"${tactics.anchoring.logic}"</div>
+                        <div style="margin-top: 2.5rem; padding: 1.5rem 2rem; background: rgba(99, 102, 241, 0.04); border-radius: 20px; border: 1px dashed rgba(99, 102, 241, 0.2);">
+                            <div style="font-size: 0.8rem; color: #6366f1; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1.5px;">${i18n.t('scoper.psychology.title')}</div>
+                            <div style="font-size: 1.1rem; color: #e0e7ff; font-style: italic; line-height: 1.6; font-weight: 500;">"${tactics.anchoring.logic}"</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Objections Simulator -->
-                <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 35px; padding: 3.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-                    <div style="text-align: center; margin-bottom: 4rem;">
-                        <div style="font-size: 0.75rem; font-weight: 800; color: #f43f5e; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Objections Lab</div>
-                        <h3 style="font-size: 2.2rem; margin: 0; color: white; font-weight: 900; letter-spacing: -1px;">Simulateur de Contre-Attaque</h3>
-                        <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 10px;">Maîtrisez les 3 freins psychologiques majeurs de vos clients.</p>
+                <div style="background: #050505; border: 1px solid rgba(255,255,255,0.04); border-radius: 40px; padding: 5rem 4rem; box-shadow: 0 20px 80px rgba(0,0,0,0.5);">
+                    <div style="text-align: center; margin-bottom: 5rem;">
+                        <div style="font-size: 0.8rem; font-weight: 900; color: #f43f5e; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 1.5rem;">The Lab</div>
+                        <h3 style="font-size: 3rem; margin: 0; color: white; font-weight: 950; letter-spacing: -2.5px;">${i18n.t('scoper.objections.title') || 'Simulateur de Contre-Attaque'}</h3>
+                        <p style="color: #6366f1; font-size: 1.2rem; margin-top: 15px; opacity: 0.8;">${i18n.t('scoper.objections.desc') || 'Maîtrisez les 3 freins psychologiques majeurs de vos clients.'}</p>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem;">
                         ${tactics.objections.map((obj, i) => `
                             <div class="objection-card" onclick="this.classList.toggle('active')">
-                                <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(244, 63, 94, 0.1); display: flex; align-items: center; justify-content: center; color: #f43f5e; margin-bottom: 1.5rem; font-weight: 900; font-size: 0.8rem; border: 1px solid rgba(244, 63, 94, 0.2);">!</div>
-                                <div style="font-size: 1.25rem; font-weight: 800; color: white; line-height: 1.3; min-height: 3.2rem;">"${obj.hook}"</div>
+                                <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(244, 63, 94, 0.1); display: flex; align-items: center; justify-content: center; color: #f43f5e; margin-bottom: 2rem; font-weight: 950; font-size: 1rem; border: 1px solid rgba(244, 63, 94, 0.2);">!</div>
+                                <div style="font-size: 1.4rem; font-weight: 900; color: white; line-height: 1.4; min-height: 4rem;">"${obj.hook}"</div>
                                 <div class="rebuttal-box">
-                                    <div style="font-size: 0.75rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;">
-                                        <i class="fas fa-bolt"></i> Réponse Mentale
+                                    <div style="font-size: 0.8rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 14px; letter-spacing: 2px; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-bolt"></i> ${i18n.t('scoper.objection.rebuttal_label')}
                                     </div>
-                                    <div style="font-size: 1rem; color: #e9d5ff; line-height: 1.6; font-style: italic; font-weight: 500;">${obj.rebuttal}</div>
+                                    <div style="font-size: 1.1rem; color: #e9d5ff; line-height: 1.7; font-style: italic; font-weight: 500; opacity: 0.9;">${obj.rebuttal}</div>
                                 </div>
-                                <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; text-align: center; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">
-                                    <i class="fas fa-eye" style="margin-right: 6px; opacity: 0.6;"></i> CLIQUEZ POUR RÉVÉLER
+                                <div style="margin-top: 2.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.4rem; text-align: center; font-size: 0.75rem; color: var(--text-muted); font-weight: 800; letter-spacing: 1px;">
+                                    <i class="fas fa-eye" style="margin-right: 8px; opacity: 0.6;"></i> ${i18n.t('scoper.objection.click_reveal')}
                                 </div>
                             </div>
                         `).join('')}
@@ -1353,8 +1387,7 @@ const Scoper = {
 
         content.innerHTML = `
             <div class="elite-journal-container hp-journal mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                
-                <!-- Col 1: Carnet de Vie (The Real Journaling) -->
+            <div class="elite-journal-container hp-journal mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <div class="writing-col">
                     <div class="elite-card" style="height: 100%; display: flex; flex-direction: column;">
                         <div class="elite-card-title"><i class="fas fa-pen-nib"></i> ${i18n.t('scoper.journal.title') || 'Carnet de Vie'}</div>
@@ -1374,7 +1407,6 @@ const Scoper = {
                     </div>
                 </div>
 
-                <!-- Col 2: Timeline de Route -->
                 <div class="timeline-col">
                     <div class="elite-card" style="height: 100%; display: flex; flex-direction: column; max-height: 600px; overflow-y: auto;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
