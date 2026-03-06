@@ -913,6 +913,7 @@ const Scoper = {
         }
 
         const actualTjm = totalHoursInternal > 0 ? (totalFinalHT / (totalHoursInternal / 7)) : 0;
+        this.currentProjectTJM = actualTjm;
         const totalPriceEl = document.getElementById('scoper-total-price');
         const actualTjmEl = document.getElementById('scoper-actual-tjm');
         const sym = typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€';
@@ -1166,7 +1167,9 @@ const Scoper = {
         const results = PricingEngine.calculateObjective(data);
         const scenarios = PricingEngine.getScenarios(results);
         const powerScore = PricingEngine.getMarketPowerScore(results.dailyRate, sector);
-        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target);
+        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target, this.currentProjectTJM || 0);
+
+        const aiPlan = tactics.aiPlan;
 
         const sectorLabel = { tech: 'Tech & Web', design: 'Design & Branding', marketing: 'Marketing & Com', conseil: 'Conseil & Strat', media: 'Média & Vidéo', artisanat: 'Artisanat & Prod' }[sector] || sector;
         const targetLabel = { tpe: 'TPE / Indépendants', pme: 'PME & Startups', 'grands-comptes': 'Grands Comptes' }[target] || target;
@@ -1222,10 +1225,47 @@ const Scoper = {
             </style>
 
             <div class="closing-container" style="animation: fadeInUp 0.8s ease-out;">
-                <div style="background: var(--bg-card); border-radius: 32px; padding: 4rem; border: 1px solid var(--border); margin-bottom: 2rem; text-align: center;">
-                    <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1.5rem;">Diagnostic Stratégique</div>
-                    <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px; color: white; margin-bottom: 1rem;">La Méthode Consultative</h2>
-                    <p class="text-muted" style="font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Positionnez-vous comme un partenaire d'affaires, pas comme un simple prestataire.</p>
+                <div style="background: var(--bg-card); border-radius: 32px; padding: 3rem; border: 1px solid var(--border); margin-bottom: 2rem; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; opacity: 0.03; color: var(--primary); transform: rotate(-15deg);">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div style="display: flex; gap: 2rem; align-items: center; position: relative; z-index: 2;">
+                        <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 2rem; border: 1px solid var(--primary-glass);">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">SoloPrice AI • Stratège Personnel</div>
+                            <h2 style="font-size: 1.8rem; font-weight: 950; color: white; margin: 0; letter-spacing: -1px;">${aiPlan.message}</h2>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Écart de Performance</div>
+                            <div style="font-size: 1.5rem; font-weight: 950; color: ${aiPlan.status === 'aligned' ? 'var(--primary)' : '#ef4444'};">
+                                ${aiPlan.status === 'aligned' ? '<i class="fas fa-check-circle"></i> Aligné' : `+${aiPlan.gapPercent}%`}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2.5rem;">
+                        ${aiPlan.actions.map(action => `
+                            <div class="ai-action-card" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; border-left: 3px solid var(--primary);">
+                                <div style="color: var(--primary); margin-bottom: 10px; font-size: 0.9rem;"><i class="fas ${action.icon}"></i></div>
+                                <div style="font-size: 0.9rem; color: white; line-height: 1.5; font-weight: 500;">${action.text}</div>
+                            </div>
+                        `).join('')}
+                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 1rem; align-items: center;">
+                        <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Automations :</span>
+                        <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;">
+                            <i class="fas fa-file-invoice"></i> Script de Devis
+                        </button>
+                        <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;">
+                            <i class="fas fa-envelope"></i> Relance Valeur
+                        </button>
+                    </div>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.2); border-radius: 24px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 2rem; text-align: center;">
+                    <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Processus de Vente Méthodique</div>
+                    <p class="text-muted" style="font-size: 1rem; max-width: 600px; margin: 0 auto;">Planifiez votre closing en 3 étapes basées sur votre objectif de <strong>${App.formatCurrency(targetTJM)}</strong>.</p>
                 </div>
 
                 <div class="closing-grid">
@@ -1327,6 +1367,19 @@ const Scoper = {
             <div class="elite-journal-container hp-journal mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
             <div class="elite-journal-container hp-journal mobile-stack" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <div class="writing-col">
+                    <div style="background: var(--bg-card); border-radius: 24px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: white;">Progression Objectif</h3>
+                            <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase;">Actuel vs Cible</div>
+                        </div>
+                        <div style="height: 12px; background: rgba(255,255,255,0.05); border-radius: 100px; overflow: hidden; margin-bottom: 1rem;">
+                            <div style="height: 100%; width: ${Math.min(100, Math.round(((this.currentProjectTJM || 0) / (calcData.dailyRate || 1)) * 100))}%; background: var(--primary); box-shadow: 0 0 20px var(--primary-glass);"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700;">
+                            <div style="color: white;">${App.formatCurrency(this.currentProjectTJM || 0)} <span style="font-size: 0.7rem; opacity: 0.5;">Actuel</span></div>
+                            <div style="color: var(--primary);">${App.formatCurrency(calcData.dailyRate || 0)} <span style="font-size: 0.7rem; opacity: 0.5;">Cible</span></div>
+                        </div>
+                    </div>
                     <div class="elite-card" style="height: 100%; display: flex; flex-direction: column;">
                         <div class="elite-card-title"><i class="fas fa-pen-nib"></i> ${i18n.t('scoper.journal.title') || 'Carnet de Vie'}</div>
                         <p class="text-xs text-muted" style="margin-bottom: 1.5rem;">${i18n.t('scoper.journal.desc') || 'Écrivez votre journée : avancements, réflexions, pensées. Sauvegarde automatique.'}</p>

@@ -131,17 +131,56 @@ const PricingEngine = {
     },
 
     getMarketPowerScore(tjm, sector = 'tech') {
-        let average = 500;
-        if (sector === 'artisanat') average = 350;
+        const benchmarks = {
+            tech: 500, design: 450, marketing: 400, conseil: 600, media: 400, artisanat: 350
+        };
+        const ref = benchmarks[sector] || 450;
+        const ratio = tjm / ref;
+        if (ratio < 0.8) return 95;
+        if (ratio < 1.1) return 80;
+        if (ratio < 1.5) return 60;
+        if (ratio < 2.5) return 35;
+        return 15;
+    },
 
-        // Lower TJM = Higher Market Power (easier to sell)
-        // Higher TJM = Lower Market Power (needs more authority)
-        const ratio = average / tjm;
-        let score = Math.round(ratio * 70); // Base score
+    /**
+     * Analyse de l'Action Assistée par IA (SoloPrice AI)
+     * Génère un plan d'action pour atteindre l'objectif TJM.
+     */
+    getAIActionPlan(currentTJM, targetTJM, sector = 'tech') {
+        const gap = targetTJM - currentTJM;
+        const gapPercent = Math.round((gap / currentTJM) * 100);
 
-        if (score > 100) score = 100;
-        if (score < 10) score = 10;
-        return score;
+        if (gap <= 0) {
+            return {
+                status: 'aligned',
+                message: "Excellent ! Votre projet est aligné ou supérieur à votre objectif financier.",
+                actions: [
+                    { type: 'upsell', text: "Proposez une option 'Fast-Track' (+20%) pour une livraison 2x plus rapide.", icon: 'fa-bolt' },
+                    { type: 'authority', text: "Sécurisez un témoignage vidéo dès la complétion pour votre 'Social Proof'.", icon: 'fa-video' },
+                    { type: 'retention', text: "Préparez une offre de maintenance récurrente pour stabiliser ce CA.", icon: 'fa-sync' }
+                ]
+            };
+        }
+
+        const actions = [];
+        if (gapPercent > 40) {
+            actions.push({ type: 'strategy', text: "Pivot de Valeur : Votre écart est trop grand pour une simple remise. Reformulez le projet comme une 'Solution Business' et non une 'Mise en œuvre technique'.", icon: 'fa-exclamation-triangle' });
+            actions.push({ type: 'scope', text: "Réduction de Périmètre : Supprimez les 20% de tâches les plus chronophages pour faire remonter mécaniquement votre TJM.", icon: 'fa-scissors' });
+        } else {
+            actions.push({ type: 'pricing', text: `Expertise Premium : Appliquez une majoration de ${gapPercent}% justifiée par votre spécialisation ${sector}.`, icon: 'fa-star' });
+            actions.push({ type: 'anchoring', text: "Ancrage Elite : Montrez d'abord une option à 3x ce prix pour rendre votre offre 'évidente'.", icon: 'fa-anchor' });
+        }
+
+        actions.push({ type: 'diagnostic', text: "Questions de Pouvoir : Utilisez le diagnostic pour faire admettre au client le coût de son problème (ROI).", icon: 'fa-stethoscope' });
+
+        return {
+            status: 'gap',
+            gap: gap,
+            gapPercent: gapPercent,
+            message: `Attention : Il vous manque ${Math.round(gap)}€ / jour pour atteindre votre objectif.`,
+            actions: actions
+        };
     },
 
     /**
@@ -160,7 +199,9 @@ const PricingEngine = {
      * Ingénierie de Vente Avancée - [EXPERT]
      * Génère un arsenal complet de vente personnalisé au secteur et à la cible.
      */
-    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme') {
+    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0) {
+        const targetTJM = scenarios.security.tjm;
+        const aiPlan = this.getAIActionPlan(currentTJM > 0 ? currentTJM : targetTJM, targetTJM, sector);
         const sectorData = {
             tech: {
                 focus: "Dette Technique & Perte de Marché",
@@ -256,7 +297,8 @@ const PricingEngine = {
                     hook: "Un concurrent est moins cher.",
                     rebuttal: `Misez sur l'expertise : 'Exact, on trouve toujours moins cher que ${typeof App !== 'undefined' ? App.formatCurrency(securityTJM) : securityTJM + '€'}. Mais quel est le prix d'un projet qui doit être refait dans un an parce qu'il n'était pas assez robuste ?'`
                 }
-            ]
+            ],
+            aiPlan: aiPlan
         };
     }
 };
