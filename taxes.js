@@ -183,6 +183,7 @@ const TaxEngine = {
         return {
             ht: amountHT,
             vat: taxAmount,
+            taxRate: ctx.vat,
             taxName: ctx.taxName || 'TVA',
             ttc: amountHT + taxAmount,
             socialCharges: socialCharges,

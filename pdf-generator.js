@@ -341,7 +341,7 @@ const PDFGenerator = {
                                     [{ text: `${i18n.t('pdf.total.items') || 'Prestations HT'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
                                     [{ text: `${i18n.t('pdf.total.service') || 'Service & Gestion'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false, false, false, false] }],
                                     [{ text: `${i18n.t('pdf.total.subtotal') || 'Total HT'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: `${i18n.t('pdf.total.tax') || 'TVA'} (${quote.taxRate || 0}%):`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${quote.taxName || i18n.t('pdf.total.tax') || 'TVA'} (${quote.taxRate || 0}%):`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false, false, false, false] }],
                                     [{ text: `${i18n.t('pdf.total.net_to_pay') || 'NET À PAYER'}:`, style: 'grandTotalLabel', border: [false, true, false, false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false, true, false, false] }]
                                 ]
                             },
@@ -355,7 +355,7 @@ const PDFGenerator = {
                     style: 'subheader'
                 },
                 {
-                    text: (i18n.t('pdf.legal.penalties', { amount: (typeof App !== 'undefined' ? App.formatCurrency(40) : '40 €') })) + '.\n' +
+                    text: (i18n.t('pdf.legal.penalties', { amount: (typeof App !== 'undefined' ? App.formatCurrency(40) : '40 €') })) + '\n' +
                         (quote.tax === 0 ? i18n.t('pdf.legal.no_tax') : ''),
                     style: 'small'
                 }

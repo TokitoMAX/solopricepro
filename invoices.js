@@ -382,8 +382,9 @@ const Invoices = {
         if (finalSubtotalEl) finalSubtotalEl.textContent = App.formatCurrency(finalSubtotal);
 
         if (taxLabelEl) {
+            const taxName = (typeof TaxEngine !== 'undefined') ? TaxEngine.getCurrent().taxName : 'TVA';
             const taxRate = (typeof TaxEngine !== 'undefined') ? TaxEngine.getCurrent().vat : settings.taxRate;
-            taxLabelEl.textContent = `TVA (${taxRate}%) :`;
+            taxLabelEl.textContent = `${taxName} (${taxRate}%) :`;
         }
 
         if (taxEl) taxEl.textContent = App.formatCurrency(tax);
@@ -480,11 +481,15 @@ const Invoices = {
         let tax = finalSubtotal * (settings.taxRate / 100);
         let total = finalSubtotal + tax;
         let taxContext = null;
+        let taxRate = settings.taxRate;
+        let taxName = typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().taxName : 'TVA';
 
         if (typeof TaxEngine !== 'undefined') {
             const taxResult = TaxEngine.calculate(finalSubtotal);
             tax = taxResult.vat;
             total = taxResult.ttc;
+            taxRate = taxResult.taxRate;
+            taxName = taxResult.taxName;
             taxContext = TaxEngine.currentContext;
         }
 
@@ -497,6 +502,8 @@ const Invoices = {
             margin: margin,
             subtotal: finalSubtotal,
             tax: tax,
+            taxRate: taxRate,
+            taxName: taxName,
             total: total,
             taxContext: taxContext
         };

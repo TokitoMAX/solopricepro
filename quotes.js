@@ -571,11 +571,15 @@ const Quotes = {
         let tax = finalSubtotal * (settings.taxRate / 100);
         let total = finalSubtotal + tax;
         let taxContext = null;
+        let taxRate = settings.taxRate;
+        let taxName = typeof TaxEngine !== 'undefined' ? TaxEngine.getCurrent().taxName : 'TVA';
 
         if (typeof TaxEngine !== 'undefined') {
             const taxResult = TaxEngine.calculate(finalSubtotal);
             tax = taxResult.vat;
             total = taxResult.ttc;
+            taxRate = taxResult.taxRate;
+            taxName = taxResult.taxName;
             taxContext = TaxEngine.currentContext;
         }
 
@@ -588,6 +592,8 @@ const Quotes = {
             margin: margin,
             subtotal: finalSubtotal,
             tax: tax,
+            taxRate: taxRate,
+            taxName: taxName,
             total: total,
             taxContext: taxContext
         };
