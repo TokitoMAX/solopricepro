@@ -875,5 +875,6 @@ const Storage = {
 };
 
 window.Storage = Storage;
+window.EventBus = EventBus;
 
 // Auto-init removed. App.init() is now responsible for initializing Storage after Auth verification.

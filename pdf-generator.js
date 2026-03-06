@@ -25,19 +25,20 @@ const PDFGenerator = {
     },
 
     _format(val) {
-        if (typeof val !== 'number') return val || '0 €';
-        // Normalize space (U+00A0 and U+202F) for PDF fonts
-        return val.toLocaleString('fr-FR').replace(/\u00A0|\u202F/g, ' ') + ' €';
+        if (typeof val !== 'number') return val || (typeof App !== 'undefined' ? App.formatCurrency(0) : '0 €');
+        if (typeof App !== 'undefined') return App.formatCurrency(val);
+        const config = (typeof App !== 'undefined') ? App.getCurrencyConfig() : { locale: i18n.currentLanguage === 'fr' ? 'fr-FR' : (i18n.currentLanguage === 'es' ? 'es-ES' : 'en-US'), symbol: '€' };
+        return val.toLocaleString(config.locale).replace(/\u00A0|\u202F/g, ' ') + ' ' + config.symbol;
     },
 
     async _downloadRealPdf(docDefinition, filename) {
         if (typeof pdfMake === 'undefined') {
             console.error("PDFMake non chargé");
-            if(typeof App !== 'undefined') App.showNotification('Erreur système PDF', 'error');
+            if (typeof App !== 'undefined') App.showNotification(i18n.t('error.pdf_system') || 'Erreur système PDF', 'error');
             return;
         }
 
-        if(typeof App !== 'undefined') App.showNotification('Génération du document vectoriel en cours...', 'info');
+        if (typeof App !== 'undefined') App.showNotification(i18n.t('pdf.notify.generating') || 'Génération du document vectoriel en cours...', 'info');
 
         pdfMake.createPdf(docDefinition).getBlob((blob) => {
             try {
@@ -71,29 +72,30 @@ const PDFGenerator = {
         setTimeout(() => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            if(typeof App !== 'undefined') App.showNotification('Document téléchargé avec succès', 'success');
+            if (typeof App !== 'undefined') App.showNotification(i18n.t('pdf.notify.success') || 'Document téléchargé avec succès', 'success');
         }, 100);
     },
 
     async generateQuote(quote, client, settings) {
-        const dateStr = quote.date || new Date().toLocaleDateString('fr-FR');
+        const config = (typeof App !== 'undefined') ? App.getCurrencyConfig() : { locale: 'fr-FR' };
+        const dateStr = quote.date || new Date().toLocaleDateString(config.locale);
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 30);
-        const validUntil = endDate.toLocaleDateString('fr-FR');
-        
-        const providerName = Auth.user?.company?.name || Auth.user?.email || 'Prestataire Numérique';
+        const validUntil = endDate.toLocaleDateString(config.locale);
+
+        const providerName = Auth.user?.company?.name || Auth.user?.email || i18n.t('pdf.provider') || 'Prestataire Numérique';
 
         const tableBody = [
             [
-                { text: 'Désignation', style: 'tableHeader', alignment: 'left' },
-                { text: 'Qté', style: 'tableHeader' },
-                { text: 'Prix Unitaire', style: 'tableHeader', alignment: 'right' },
-                { text: 'Total HT', style: 'tableHeader', alignment: 'right' }
+                { text: i18n.t('pdf.table.designation') || 'Désignation', style: 'tableHeader', alignment: 'left' },
+                { text: i18n.t('pdf.table.qty') || 'Qté', style: 'tableHeader' },
+                { text: i18n.t('pdf.table.unit_price') || 'Prix Unitaire', style: 'tableHeader', alignment: 'right' },
+                { text: i18n.t('pdf.table.total_ht') || 'Total HT', style: 'tableHeader', alignment: 'right' }
             ]
         ];
 
         quote.items.forEach(i => {
-            const desc = i.description || i.desc || 'Sans désignation';
+            const desc = i.description || i.desc || i18n.t('pdf.items_conform') || 'Sans désignation';
             const qty = i.quantity || 0;
             const price = i.unitPrice || i.price || 0;
             const total = qty * price;
@@ -114,13 +116,13 @@ const PDFGenerator = {
             content: [
                 {
                     columns: [
-                        { text: 'DEVIS', style: 'header' },
-                        { text: `N° ${quote.number || quote.id || 'BROUILLON'}`, style: 'quoteNumber' }
+                        { text: i18n.t('pdf.quote.title') || 'DEVIS', style: 'header' },
+                        { text: `${i18n.t('pdf.number') || 'N°'} ${quote.number || quote.id || 'BROUILLON'}`, style: 'quoteNumber' }
                     ]
                 },
                 {
                     columns: [
-                        { text: `Date d'émission: ${dateStr}\nValable jusqu'au: ${validUntil}`, style: 'small' },
+                        { text: `${i18n.t('pdf.date_issue') || 'Date d\'émission'}: ${dateStr}\n${i18n.t('pdf.valid_until') || 'Valable jusqu\'au'}: ${validUntil}`, style: 'small' },
                         { text: '' }
                     ],
                     margin: [0, 0, 0, 30]
@@ -130,7 +132,7 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: 'Prestataire:\n', bold: true, color: '#4b5563' },
+                                { text: `${i18n.t('pdf.provider') || 'Prestataire'}:\n`, bold: true, color: '#4b5563' },
                                 `${providerName}\n`,
                                 `${Auth.user?.email || ''}\n`
                             ]
@@ -138,8 +140,8 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: 'Client:\n', bold: true, color: '#4b5563' },
-                                `${client?.name || 'Client Inconnu'}\n`,
+                                { text: `${i18n.t('pdf.client') || 'Client'}:\n`, bold: true, color: '#4b5563' },
+                                `${client?.name || i18n.t('pdf.client_unknown') || 'Client Inconnu'}\n`,
                                 `${client?.company || ''}\n`,
                                 `${client?.address || ''}\n`,
                                 `${client?.email || ''}\n`,
@@ -167,11 +169,11 @@ const PDFGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: `TVA (${quote.taxRate || 0}%):`, style: 'totalLabel', border: [false,false,false,false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false,false,false,false] }],
-                                    [{ text: 'TOTAL TTC:', style: 'grandTotalLabel', border: [false,true,false,false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false,true,false,false] }]
+                                    [{ text: `${i18n.t('pdf.total.items') || 'Prestations HT'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${i18n.t('pdf.total.service') || 'Service & Gestion'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${i18n.t('pdf.total.subtotal') || 'Total HT'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${i18n.t('pdf.total.tax') || 'TVA'} (${quote.taxRate || 0}%):`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${i18n.t('pdf.total.ttc') || 'TOTAL TTC'}:`, style: 'grandTotalLabel', border: [false, true, false, false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false, true, false, false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -180,11 +182,11 @@ const PDFGenerator = {
                     margin: [0, 0, 0, 40]
                 },
                 {
-                    text: 'Instructions de Règlement & Bon pour accord',
+                    text: i18n.t('pdf.settlement.title') || 'Instructions de Règlement & Bon pour accord',
                     style: 'subheader'
                 },
                 {
-                    text: 'Ce document comporte deux instructions de règlement distinctes pour le prestataire et les frais de service.',
+                    text: i18n.t('pdf.settlement.desc') || 'Ce document comporte deux instructions de règlement distinctes pour le prestataire et les frais de service.',
                     style: 'small',
                     margin: [0, 0, 0, 10]
                 },
@@ -193,9 +195,9 @@ const PDFGenerator = {
                         {
                             width: '48%',
                             stack: [
-                                { text: `1. PART PRESTATAIRE (${settings.developerSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
-                                { text: `Destinataire : ${providerName}`, fontSize: 9, margin: [0, 5, 0, 0] },
-                                { text: 'Règlement direct sur compte.', fontSize: 9 }
+                                { text: `1. ${i18n.t('pdf.settlement.part_provider') || 'PART PRESTATAIRE'} (${settings.developerSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
+                                { text: `${i18n.t('pdf.settlement.recipient') || 'Destinataire'} : ${providerName}`, fontSize: 9, margin: [0, 5, 0, 0] },
+                                { text: i18n.t('pdf.settlement.direct') || 'Règlement direct sur compte.', fontSize: 9 }
                             ],
                             margin: [0, 0, 10, 0],
                             padding: [10, 10, 10, 10]
@@ -203,9 +205,9 @@ const PDFGenerator = {
                         {
                             width: '48%',
                             stack: [
-                                { text: `2. SERVICE SOLOPRICE (${settings.platformSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
-                                { text: `Destinataire : SoloPrice Pro`, fontSize: 9, margin: [0, 5, 0, 0] },
-                                { text: 'Paiement sécurisé en ligne exigé.', fontSize: 9 }
+                                { text: `2. ${i18n.t('pdf.settlement.part_service') || 'SERVICE SOLOPRICE'} (${settings.platformSplit}% HT)`, bold: true, color: '#10b981', fontSize: 10 },
+                                { text: `${i18n.t('pdf.settlement.recipient') || 'Destinataire'} : SoloPrice Pro`, fontSize: 9, margin: [0, 5, 0, 0] },
+                                { text: i18n.t('pdf.settlement.online') || 'Paiement sécurisé en ligne exigé.', fontSize: 9 }
                             ],
                             margin: [10, 0, 0, 0],
                             padding: [10, 10, 10, 10]
@@ -222,8 +224,8 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             stack: [
-                                { text: 'Signature du client', bold: true, alignment: 'center' },
-                                { text: 'Précédé de la mention "Bon pour accord"', fontSize: 8, alignment: 'center', margin: [0, 5, 0, 40] },
+                                { text: i18n.t('pdf.signature.client') || 'Signature du client', bold: true, alignment: 'center' },
+                                { text: i18n.t('pdf.signature.mention') || 'Précédé de la mention "Bon pour accord"', fontSize: 8, alignment: 'center', margin: [0, 5, 0, 40] },
                                 { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1, lineColor: '#d1d5db' }], alignment: 'center' }
                             ]
                         }
@@ -242,21 +244,22 @@ const PDFGenerator = {
     },
 
     async generateInvoice(quote, client, settings) {
-        const dateStr = new Date().toLocaleDateString('fr-FR');
-        const providerName = Auth.user?.company?.name || Auth.user?.email || 'Prestataire Numérique';
+        const config = (typeof App !== 'undefined') ? App.getCurrencyConfig() : { locale: 'fr-FR' };
+        const dateStr = new Date().toLocaleDateString(config.locale);
+        const providerName = Auth.user?.company?.name || Auth.user?.email || i18n.t('pdf.provider') || 'Prestataire Numérique';
 
         const tableBody = [
             [
-                { text: 'Désignation', style: 'tableHeader', alignment: 'left' },
-                { text: 'Qté', style: 'tableHeader' },
-                { text: 'Prix Unitaire', style: 'tableHeader', alignment: 'right' },
-                { text: 'Total HT', style: 'tableHeader', alignment: 'right' }
+                { text: i18n.t('pdf.table.designation') || 'Désignation', style: 'tableHeader', alignment: 'left' },
+                { text: i18n.t('pdf.table.qty') || 'Qté', style: 'tableHeader' },
+                { text: i18n.t('pdf.table.unit_price') || 'Prix Unitaire', style: 'tableHeader', alignment: 'right' },
+                { text: i18n.t('pdf.table.total_ht') || 'Total HT', style: 'tableHeader', alignment: 'right' }
             ]
         ];
 
         if (quote.items && quote.items.length > 0) {
             quote.items.forEach(i => {
-                const desc = i.description || i.desc || 'Prestation';
+                const desc = i.description || i.desc || i18n.t('pdf.items_conform') || 'Prestation';
                 const qty = i.quantity || 1;
                 const price = i.unitPrice || i.price || 0;
                 const total = qty * price;
@@ -270,7 +273,7 @@ const PDFGenerator = {
             });
         } else {
             tableBody.push([
-                { text: 'Prestations Réalisées conformes au devis', margin: [0, 5, 0, 5], colSpan: 3 },
+                { text: i18n.t('pdf.items_conform') || 'Prestations Réalisées conformes au devis', margin: [0, 5, 0, 5], colSpan: 3 },
                 {},
                 {},
                 { text: this._format(quote.subtotal || 0), alignment: 'right', margin: [0, 5, 0, 5] }
@@ -285,12 +288,12 @@ const PDFGenerator = {
             content: [
                 {
                     columns: [
-                        { text: 'FACTURE', style: 'header' },
-                        { text: `N° ${quote.number || quote.id || 'FAC-1001'}`, style: 'quoteNumber' }
+                        { text: i18n.t('pdf.invoice.title') || 'FACTURE', style: 'header' },
+                        { text: `${i18n.t('pdf.number') || 'N°'} ${quote.number || quote.id || 'FAC-1001'}`, style: 'quoteNumber' }
                     ]
                 },
                 {
-                    text: `Date d'émission: ${dateStr}${quote.id ? `\nRéférence: ${quote.id}` : ''}`,
+                    text: `${i18n.t('pdf.date_issue') || 'Date d\'émission'}: ${dateStr}${quote.id ? `\nRéférence: ${quote.id}` : ''}`,
                     style: 'small',
                     margin: [0, 0, 0, 30]
                 },
@@ -299,7 +302,7 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: 'Émetteur:\n', bold: true, color: '#4b5563' },
+                                { text: `${i18n.t('pdf.provider') || 'Émetteur'}:\n`, bold: true, color: '#4b5563' },
                                 `${providerName}\n`,
                                 `${Auth.user?.email || ''}\n`
                             ]
@@ -307,8 +310,8 @@ const PDFGenerator = {
                         {
                             width: '50%',
                             text: [
-                                { text: 'Facturé à:\n', bold: true, color: '#4b5563' },
-                                `${client?.name || 'Client Inconnu'}\n`,
+                                { text: `${i18n.t('pdf.client') || 'Facturé à'}:\n`, bold: true, color: '#4b5563' },
+                                `${client?.name || i18n.t('pdf.client_unknown') || 'Client Inconnu'}\n`,
                                 `${client?.company || ''}\n`,
                                 `${client?.address || ''}\n`,
                                 `${client?.email || ''}\n`
@@ -335,11 +338,11 @@ const PDFGenerator = {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Prestations HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'Service & Gestion:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'Total HT:', style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: `TVA (${quote.taxRate || 0}%):`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false, false, false, false] }],
-                                    [{ text: 'NET À PAYER:', style: 'grandTotalLabel', border: [false, true, false, false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false, true, false, false] }]
+                                    [{ text: `${i18n.t('pdf.total.items') || 'Prestations HT'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.itemsSubtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${i18n.t('pdf.total.service') || 'Service & Gestion'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.margin || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${i18n.t('pdf.total.subtotal') || 'Total HT'}:`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.subtotal || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${i18n.t('pdf.total.tax') || 'TVA'} (${quote.taxRate || 0}%):`, style: 'totalLabel', border: [false, false, false, false] }, { text: this._format(quote.tax || 0), style: 'totalValue', border: [false, false, false, false] }],
+                                    [{ text: `${i18n.t('pdf.total.net_to_pay') || 'NET À PAYER'}:`, style: 'grandTotalLabel', border: [false, true, false, false] }, { text: this._format(quote.total || 0), style: 'grandTotalValue', border: [false, true, false, false] }]
                                 ]
                             },
                             layout: 'noBorders'
@@ -348,12 +351,12 @@ const PDFGenerator = {
                     margin: [0, 0, 0, 40]
                 },
                 {
-                    text: 'Mentions Légales',
+                    text: i18n.t('pdf.legal.title') || 'Mentions Légales',
                     style: 'subheader'
                 },
                 {
-                    text: 'Pénalités de retard : 3 fois le taux d\'intérêt légal. Indemnité forfaitaire pour frais de recouvrement : 40 €.\n' +
-                          (quote.tax === 0 ? 'TVA non applicable, art. 293 B du CGI.' : ''),
+                    text: (i18n.t('pdf.legal.penalties', { amount: (typeof App !== 'undefined' ? App.formatCurrency(40) : '40 €') }) || 'Pénalités de retard : 3 fois le taux d\'intérêt légal. Indemnité forfaitaire pour frais de recouvrement : ' + (typeof App !== 'undefined' ? App.formatCurrency(40) : '40 €')) + '.\n' +
+                        (quote.tax === 0 ? (i18n.t('pdf.legal.no_tax') || 'TVA non applicable, art. 293 B du CGI.') : ''),
                     style: 'small'
                 }
             ],
@@ -369,15 +372,15 @@ const PDFGenerator = {
     },
 
     async generateRoadmap() {
-        if(typeof App !== 'undefined') App.showNotification('Fonction Roadmap (PDFMake) à configurer via DocDefinition', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Fonction Roadmap (PDFMake) à configurer via DocDefinition', 'info');
     },
 
     async generateRecipeBook(year, data) {
-         if(typeof App !== 'undefined') App.showNotification('Fonction Registre des Recettes (PDFMake) à configurer', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Fonction Registre des Recettes (PDFMake) à configurer', 'info');
     },
 
     async generatePurchaseLedger(year, data) {
-         if(typeof App !== 'undefined') App.showNotification('Fonction Registre des Achats (PDFMake) à configurer', 'info');
+        if (typeof App !== 'undefined') App.showNotification('Fonction Registre des Achats (PDFMake) à configurer', 'info');
     }
 };
 

@@ -17,27 +17,27 @@ const Scoper = {
         container.innerHTML = `
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Stratégie & Chiffrage</h1>
-                    <p class="page-subtitle">Définissez votre objectif de revenu et chiffrez vos prestations avec précision.</p>
+                    <h1 class="page-title">${i18n.t('scoper.title')}</h1>
+                    <p class="page-subtitle">${i18n.t('scoper.subtitle')}</p>
                 </div>
             </div>
 
             <div class="tabs-container" style="margin-bottom: 2rem;">
                 <div class="tabs-header scoper-nav" style="border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
                     <button class="tab-btn ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')" style="padding: 1rem; background: none; border: none; color: ${tab === 'objective' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'objective' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-bullseye"></i> Mon Objectif TJM
-                        <span style="font-size: 0.6rem; background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Offert</span>
+                        <i class="fas fa-bullseye"></i> ${i18n.t('scoper.tab.objective')}
+                        <span style="font-size: 0.6rem; background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">OFFERT</span>
                     </button>
                     <button class="tab-btn ${tab === 'project' ? 'active' : ''}" onclick="Scoper.render('project')" style="padding: 1rem; background: none; border: none; color: ${tab === 'project' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'project' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-calculator"></i> Chiffrage Projet 
+                        <i class="fas fa-calculator"></i> ${i18n.t('scoper.tab.project')} 
                     </button>
                     <button class="tab-btn ${tab === 'closing' ? 'active' : ''}" onclick="Scoper.render('closing')" style="padding: 1rem; background: none; border: none; color: ${tab === 'closing' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'closing' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-magic"></i> Stratégie de Closing
-                        ${!Storage.isExpert() ? '<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Expert</span>' : ''}
+                        <i class="fas fa-magic"></i> ${i18n.t('scoper.tab.closing')}
+                        ${!Storage.isExpert() ? `<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> ${i18n.t('hero.badge').replace('NOUVEAU : ', '')}</span>` : ''}
                     </button>
                     <button class="tab-btn ${tab === 'journal' ? 'active' : ''}" onclick="Scoper.render('journal')" style="padding: 1rem; background: none; border: none; color: ${tab === 'journal' ? 'var(--primary-light)' : 'var(--text-muted)'}; border-bottom: 2px solid ${tab === 'journal' ? 'var(--primary)' : 'transparent'}; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <i class="fas fa-journal-whills"></i> Journal de Bord
-                        ${!Storage.isExpert() ? '<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> Pack Expert</span>' : ''}
+                        <i class="fas fa-journal-whills"></i> ${i18n.t('scoper.tab.journal')}
+                        ${!Storage.isExpert() ? `<span style="font-size: 0.6rem; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;"><i class="fas fa-lock" style="font-size: 0.5rem; margin-right: 3px;"></i> ${i18n.t('hero.badge').replace('NOUVEAU : ', '')}</span>` : ''}
                     </button>
                 </div>
             </div>
@@ -85,14 +85,14 @@ const Scoper = {
             <div class="strategy-wizard" style="max-width: 100%; margin: 0 auto; width: 100%;">
                 <!-- Wizard Header / Steps -->
                 <div class="mobile-wizard-counter">
-                    Étape ${currentStep} / 5 : ${['PROFIL', 'REVENU', 'RYTHME', 'CHARGES', 'VERDICT'][currentStep - 1]}
+                    ${i18n.t('scoper.step.label')} ${currentStep} / 5 : ${[i18n.t('scoper.step.1'), i18n.t('scoper.step.2'), i18n.t('scoper.step.3'), i18n.t('scoper.step.4'), i18n.t('scoper.step.5')][currentStep - 1]}
                 </div>
                 <div class="wizard-steps" style="margin-bottom: 3rem; position: relative;">
                     <div style="position: absolute; top: 20px; left: 0; width: 100%; height: 2px; background: var(--border); z-index: 1;"></div>
                     <div style="position: absolute; top: 20px; left: 0; width: ${(currentStep - 1) * 25}%; height: 2px; background: var(--primary); z-index: 2; transition: width 0.3s ease;"></div>
                     
                     ${[1, 2, 3, 4, 5].map(s => {
-            const labels = ['PROFIL', 'REVENU', 'RYTHME', 'CHARGES', 'VERDICT'];
+            const labels = [i18n.t('scoper.step.1'), i18n.t('scoper.step.2'), i18n.t('scoper.step.3'), i18n.t('scoper.step.4'), i18n.t('scoper.step.5')];
             const icons = ['fa-user-tie', 'fa-money-bill-wave', 'fa-calendar-alt', 'fa-shield-alt', 'fa-flag-checkered'];
             const isActive = currentStep === s;
             const isDone = currentStep > s;
@@ -120,15 +120,15 @@ const Scoper = {
                     <div class="wizard-actions" style="display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="button-outline" ${currentStep === 1 ? 'disabled' : ''} onclick="Scoper.prevObjectiveStep()">
-                                Retour
+                                ${i18n.t('scoper.action.back')}
                             </button>
                             <button class="button-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2);" onclick="Scoper.resetObjective()">
-                                <i class="fas fa-undo"></i> Réinitialiser
+                                <i class="fas fa-undo"></i> ${i18n.t('scoper.action.reset')}
                             </button>
                         </div>
                         ${currentStep < 5 ? `
                             <button class="button-primary" onclick="Scoper.nextObjectiveStep()">
-                                Continuer <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                                ${i18n.t('scoper.action.continue')} <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                             </button>
                         ` : `
                             <div style="display: flex; gap: 1rem;">
@@ -136,7 +136,7 @@ const Scoper = {
                                     Coach de Vente Expert <i class="fas fa-magic" style="margin-left: 10px;"></i>
                                 </button>
                                 <button class="button-primary" onclick="Scoper.saveObjective()">
-                                    Adopter ce TJM <i class="fas fa-check" style="margin-left: 10px;"></i>
+                                    ${i18n.t('scoper.action.save')} <i class="fas fa-check" style="margin-left: 10px;"></i>
                                 </button>
                             </div>
                         `}
@@ -158,8 +158,8 @@ const Scoper = {
             case 1: // PROFIL
                 return `
                     <div class="step-header" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">C'est quoi votre métier ?</h2>
-                        <p class="text-muted">Cela nous aide à calibrer votre TJM par rapport au marché.</p>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.1')}</h2>
+                        <p class="text-muted">${i18n.t('scoper.wizard.desc.1')}</p>
                     </div>
                     <div class="sector-grid mobile-stack" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
                         ${[
@@ -199,8 +199,8 @@ const Scoper = {
             case 2: // REVENU (Ancien 1)
                 return `
                     <div class="step-header" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Cibler votre revenu net</h2>
-                        <p class="text-muted">Combien voulez-vous réellement toucher par mois, après avoir tout payé ?</p>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.2')}</h2>
+                        <p class="text-muted">${i18n.t('scoper.wizard.desc.2')}</p>
                     </div>
                     <div class="input-group">
                         <label class="form-label" style="font-size: 1.1rem;">Revenu Net Mensuel souhaité (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
@@ -211,8 +211,8 @@ const Scoper = {
             case 3: // RYTHME (Ancien 2)
                 return `
                     <div class="step-header" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Définir votre rythme</h2>
-                        <p class="text-muted">Un freelance ne facture pas 20 jours par mois. Prévoyez du temps pour la prospection et l'administratif.</p>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.3')}</h2>
+                        <p class="text-muted">${i18n.t('scoper.wizard.desc.3')}</p>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div class="input-group">
@@ -230,8 +230,8 @@ const Scoper = {
             case 4: // CHARGES (Ancien 3)
                 return `
                     <div class="step-header" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Provisionner charges & taxes</h2>
-                        <p class="text-muted">Le CA n'est pas votre revenu. Il faut payer l'État et vos outils.</p>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.4')}</h2>
+                        <p class="text-muted">${i18n.t('scoper.wizard.desc.4')}</p>
                     </div>
                     <div class="input-group">
                         <label class="form-label">Charges Fixes Mensuelles (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
@@ -255,8 +255,8 @@ const Scoper = {
 
                 return `
                     <div class="step-header" style="margin-bottom: 2rem; text-align: center;">
-                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Dashboard de Puissance Marché</h2>
-                        <p class="text-muted">Simulez votre impact financier et testez votre force de frappe.</p>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">${i18n.t('scoper.wizard.title.5')}</h2>
+                        <p class="text-muted">${i18n.t('scoper.wizard.desc.5')}</p>
                     </div>
 
     <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
@@ -266,30 +266,30 @@ const Scoper = {
             <!-- Market Power Gauge -->
             <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(255,255,255,0.02); position: relative; overflow: hidden;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--primary-light);">Market Power Score</span>
+                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--primary-light);">${i18n.t('scoper.market_power') || 'Market Power Score'}</span>
                     <span style="font-size: 1.2rem; font-weight: 900; color: var(--white);">${powerScore}/100</span>
                 </div>
                 <div style="height: 8px; background: var(--border); border-radius: 4px; position: relative;">
                     <div style="position: absolute; top: 0; left: 0; height: 100%; width: ${powerScore}%; background: linear-gradient(90deg, #f43f5e 0%, var(--primary) 100%); border-radius: 4px; transition: width 0.5s;"></div>
                 </div>
                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px;">
-                    ${powerScore > 70 ? '<strong>Prix Massif</strong> : Facile à vendre, volume élevé possible.' : (powerScore > 40 ? '<strong>Prix Équilibré</strong> : Nécessite une bonne preuve sociale.' : '<strong>Prix Premium</strong> : Demande une autorité d\'expert reconnue.')}
+                    ${powerScore > 70 ? `<strong>${i18n.t('scoper.power.high.title') || 'Prix Massif'}</strong> : ${i18n.t('scoper.power.high.desc') || 'Facile à vendre, volume élevé possible.'}` : (powerScore > 40 ? `<strong>${i18n.t('scoper.power.mid.title') || 'Prix Équilibré'}</strong> : ${i18n.t('scoper.power.mid.desc') || 'Nécessite une bonne preuve sociale.'}` : `<strong>${i18n.t('scoper.power.low.title') || 'Prix Premium'}</strong> : ${i18n.t('scoper.power.low.desc') || 'Demande une autorité d\'expert reconnue.'}`)}
                 </p>
             </div>
 
             <!-- Coaching de Vente EXPERT -->
             <div class="expert-teaser-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid #a855f7; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(124, 58, 237, 0.1)); position: relative; cursor: pointer; transition: all 0.3s ease;" onclick="Scoper.render('closing')">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">Coaching de Vente</span>
-                    <span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">PACK EXPERT</span>
+                    <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #c084fc;">${i18n.t('scoper.tab.closing')}</span>
+                    <span class="badge" style="background: #a855f7; color: white; font-size: 0.6rem;">${i18n.t('hero.badge').replace('NOUVEAU : ', '')}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div style="width: 45px; height: 45px; border-radius: 12px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; color: #c084fc;">
                         <i class="fas fa-magic" style="font-size: 1.2rem;"></i>
                     </div>
                     <div style="flex: 1;">
-                        <div style="font-weight: 700; color: white; font-size: 0.95rem;">Prêt pour le Closing ?</div>
-                        <div style="font-size: 0.75rem; color: #e9d5ff; opacity: 0.8;">Accédez à votre Arsenal de Vente personnalisé.</div>
+                        <div style="font-weight: 700; color: white; font-size: 0.95rem;">${i18n.t('scoper.closing_ready') || 'Prêt pour le Closing ?'}</div>
+                        <div style="font-size: 0.75rem; color: #e9d5ff; opacity: 0.8;">${i18n.t('scoper.closing_desc') || 'Accédez à votre Arsenal de Vente personnalisé.'}</div>
                     </div>
                     <i class="fas fa-chevron-right" style="color: #c084fc; opacity: 0.5;"></i>
                 </div>
@@ -299,7 +299,7 @@ const Scoper = {
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                 ${Object.entries(scenarios).map(([key, s]) => `
                                     <div onclick="Scoper.selectScenario('${key}')" style="cursor: pointer; padding: 1rem; border-radius: 12px; border: 2px solid ${activeScenario === key ? 'var(--primary)' : 'var(--border)'}; background: ${activeScenario === key ? 'var(--primary-glass)' : 'transparent'}; text-align: center; transition: all 0.2s;">
-                                        <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: ${activeScenario === key ? 'var(--primary-light)' : 'var(--text-muted)'};">${s.label}</div>
+                                        <div style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: ${activeScenario === key ? 'var(--primary-light)' : 'var(--text-muted)'};">${i18n.t(`scoper.scenario.${key}`) || s.label}</div>
                                         <div style="font-size: 1.1rem; font-weight: 900; margin: 4px 0;">${typeof App !== 'undefined' ? App.formatCurrency(s.tjm) : s.tjm + '€'}</div>
                                         <div style="font-size: 0.6rem; opacity: 0.7;">${typeof App !== 'undefined' ? App.formatCurrency(s.annual) : s.annual.toLocaleString() + '€'}/an</div>
                                     </div>
@@ -307,25 +307,25 @@ const Scoper = {
             </div>
 
             <div class="result-highlight glass-card" style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; text-align: center; border-radius: 20px;">
-                <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">PROJECTION REVENU ANNUEL</div>
-                <div style="font-size: 2.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${typeof App !== 'undefined' ? App.formatCurrency(currentAnnual) : currentAnnual.toLocaleString() + '€'}<span style="font-size: 0.9rem; font-weight: 400; opacity: 0.7; display: block;">Projection basée sur ${data.workingDays}j facturés / mois</span></div>
+                <div style="font-size: 0.8rem; color: var(--primary-light); font-weight: 700; margin-bottom: 5px; text-transform: uppercase;">${i18n.t('scoper.annual_projection') || 'PROJECTION REVENU ANNUEL'}</div>
+                <div style="font-size: 2.5rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--primary-glow);">${typeof App !== 'undefined' ? App.formatCurrency(currentAnnual) : currentAnnual.toLocaleString() + '€'}<span style="font-size: 0.9rem; font-weight: 400; opacity: 0.7; display: block;">${i18n.t('scoper.projection_desc').replace('{days}', data.workingDays) || `Projection basée sur ${data.workingDays}j facturés / mois`}</span></div>
             </div>
         </div>
 
         <!-- Col 2: Pourquoi passer au Chiffrage ? -->
         <div style="display: flex; flex-direction: column; gap: 1rem;">
             <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary-glass);">
-                <h3 style="font-size: 1rem; color: var(--primary-light); margin-bottom: 10px;"><i class="fas fa-rocket"></i> Suite Logique : Chiffrage Projet</h3>
+                <h3 style="font-size: 1rem; color: var(--primary-light); margin-bottom: 10px;"><i class="fas fa-rocket"></i> ${i18n.t('scoper.next_step') || 'Suite Logique : Chiffrage Projet'}</h3>
                 <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px;">
-                    Maintenant que vous avez votre <strong>TJM stratégique (${typeof App !== 'undefined' ? App.formatCurrency(currentTJM) : currentTJM + '€'})</strong>, il est crucial de vérifier s'il passe sur un contrat réel.
+                    ${i18n.t('scoper.next_step_desc').replace('{tjm}', (typeof App !== 'undefined' ? App.formatCurrency(currentTJM) : currentTJM + '€')) || `Maintenant que vous avez votre <strong>TJM stratégique (${typeof App !== 'undefined' ? App.formatCurrency(currentTJM) : currentTJM + '€'})</strong>, il est crucial de vérifier s'il passe sur un contrat réel.`}
                 </p>
                 <ul style="padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Vos prix couvrent-ils vos dépenses réelles ?</li>
-                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Combien reste-t-il vraiment dans votre poche ?</li>
-                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> Quel impact sur votre marge nette ?</li>
+                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> ${i18n.t('scoper.check.1') || 'Vos prix couvrent-ils vos dépenses réelles ?'}</li>
+                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> ${i18n.t('scoper.check.2') || 'Combien reste-t-il vraiment dans votre poche ?'}</li>
+                    <li style="font-size: 0.8rem; display: flex; align-items: start; gap: 8px;"><i class="fas fa-check-circle" style="color: var(--primary); margin-top: 3px;"></i> ${i18n.t('scoper.check.3') || 'Quel impact sur votre marge nette ?'}</li>
                 </ul>
                 <button class="button-primary" onclick="Scoper.render('project')" style="width: 100%; justify-content: center; padding: 12px;">
-                    Tester ce TJM sur un Projet <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+                    ${i18n.t('scoper.test_tjm') || 'Tester ce TJM sur un Projet'} <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                 </button>
             </div>
 
@@ -431,7 +431,7 @@ const Scoper = {
             indicator.innerHTML = '<i class="fas fa-sync fa-spin"></i> Synchronisation...';
             clearTimeout(this.saveTimeout);
             this.saveTimeout = setTimeout(() => {
-                indicator.innerHTML = '<i class="fas fa-check"></i> Enregistré en temps réel';
+                indicator.innerHTML = `<i class="fas fa-check"></i> ${i18n.t('notify.saved_realtime') || 'Enregistré en temps réel'}`;
                 setTimeout(() => { indicator.style.opacity = '0.5'; }, 1000);
             }, 500);
         }
@@ -444,26 +444,26 @@ const Scoper = {
 
         return [
             {
-                title: 'Positionnement Marché',
+                title: i18n.t('scoper.matrix.positioning') || 'Positionnement Marché',
                 desc: `${diag.title}. ${diag.desc} `,
                 color: diag.color,
                 icon: diag.icon
             },
             {
-                title: 'Argumentaire Valeur',
+                title: i18n.t('scoper.matrix.argument') || 'Argumentaire Valeur',
                 desc: this.getCoachingValue(sector, tjm),
                 color: 'var(--primary-light)',
                 icon: 'fa-lightbulb'
             },
             {
-                title: 'Cible Client Idéale',
+                title: i18n.t('scoper.matrix.target') || 'Cible Client Idéale',
                 desc: this.getCoachingTarget(sector, tjm),
                 color: 'var(--success)',
                 icon: 'fa-bullseye'
             },
             {
-                title: 'Levier d\'Optimisation',
-                desc: tjm > 800 ? 'Proposez du forfait pour masquer le TJM.' : 'Augmentez votre rythme de 2j pour baisser la pression.',
+                title: i18n.t('scoper.matrix.leverage') || 'Levier d\'Optimisation',
+                desc: tjm > 800 ? (i18n.t('scoper.leverage.high') || 'Proposez du forfait pour masquer le TJM.') : (i18n.t('scoper.leverage.low') || 'Augmentez votre rythme de 2j pour baisser la pression.'),
                 color: 'var(--warning)',
                 icon: 'fa-adjust'
             }
@@ -498,8 +498,8 @@ const Scoper = {
         content.innerHTML = `
     <div class="page-header">
         <div>
-            <h1 class="page-title">Chiffrage Projet</h1>
-            <p class="page-subtitle">Calculez le prix juste pour cette mission spécifique (Valeur & Risque).</p>
+            <h1 class="page-title">${i18n.t('scoper.tab.project')}</h1>
+            <p class="page-subtitle">${i18n.t('scoper.wizard.desc.5')}</p>
         </div>
     </div>
 
@@ -508,7 +508,7 @@ const Scoper = {
         <!-- Task List Input -->
         <div class="calculator-inputs" style="background: #0a0a0a; border: 1px solid var(--border); padding: 2rem; border-radius: var(--radius-lg);">
             <div class="section-header-inline" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h3 style="font-size: 1.2rem; font-weight: 700;">Décomposition du Projet</h3>
+                <h3 style="font-size: 1.2rem; font-weight: 700;">${i18n.t('scoper.decomposition') || 'Décomposition du Projet'}</h3>
                 <div style="display: flex; gap: 0.5rem;">
                     <button class="button-secondary small" onclick="Scoper.addTask()" title="Ajouter une ligne vide">
                         + Tâche
@@ -527,35 +527,34 @@ const Scoper = {
         <!-- Results & Analysis -->
         <div class="results-panel" style="background: #050505; border: 1px solid var(--primary-glass); padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow);">
             <div class="results-header" style="margin-bottom: 2rem;">
-                <h3 class="results-title" style="font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Analyse Financière</h3>
+                <h3 class="results-title" style="font-size: 1.1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">${i18n.t('dashboard.analysis') || 'Analyse Financière'}</h3>
             </div>
 
             <div class="result-cards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                 <div class="result-card primary" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--primary); padding: 1.2rem; border-radius: 12px; grid-column: span 2;">
-                    <div class="result-label" style="font-size: 0.8rem; color: var(--text-muted);">Total à Facturer (TTC)</div>
-                    <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}</div>
-                    <p class="text-xs text-muted">Budget estimé pour ce périmètre</p>
+                    <div class="result-value" id="scoper-total-price" style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">${typeof App !== 'undefined' ? App.formatCurrency(0) : '0 €'}</div>
+                    <p class="text-xs text-muted">${i18n.t('scoper.budget_estimated') || 'Budget estimé pour ce périmètre'}</p>
                     <div id="scoper-tax-info" style="font-size: 0.75rem; opacity: 0.7;">TVA: France (20.0%)</div>
                 </div>
 
                 <div class="result-card" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1rem; border-radius: 12px;">
-                    <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Temps Est.</div>
+                    <div class="result-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">${i18n.t('scoper.est_time') || 'Temps Est.'}</div>
                     <div class="result-value" id="scoper-total-time" style="font-size: 1.2rem; font-weight: 700;">0h</div>
                 </div>
 
                 <div class="stat-card" style="flex: 1; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);">
-                    <div class="result-label" style="font-size: 0.8rem;">TJM Réel Dégagé</div>
-                    <div class="result-value" id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-light);">0 ${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}/j</div>
+                    <div class="result-label" style="font-size: 0.8rem;">${i18n.t('scoper.actual_tjm') || 'TJM Réel Dégagé'}</div>
+                    <div class="result-value" id="scoper-actual-tjm" style="font-size: 1.2rem; font-weight: 700; color: var(--primary-light);">${typeof App !== 'undefined' ? App.formatCurrency(0) : '0 €'}/j</div>
                 </div>
             </div>
 
             <div class="breakdown-section" style="background: transparent; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                <h4 class="breakdown-title" style="margin-bottom: 1.5rem; font-weight: 600;">Stratégie & Rentabilité</h4>
+                <h4 class="breakdown-title" style="margin-bottom: 1.5rem; font-weight: 600;">${i18n.t('scoper.strat_profit') || 'Stratégie & Rentabilité'}</h4>
 
                 <div class="input-group">
-                    <label class="form-label">TJM Stratégique de Référence (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
+                    <label class="form-label">${i18n.t('scoper.ref_tjm') || 'TJM Stratégique de Référence'} (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
                     <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="border-color: var(--primary-light);">
-                        <p class="text-xs text-muted" style="margin-top: 4px;">Utilisez votre boussole définit à l'étape "Objectif".</p>
+                        <p class="text-xs text-muted" style="margin-top: 4px;">${i18n.t('scoper.ref_tjm_desc') || 'Utilisez votre boussole définit à l\'étape "Objectif".'}</p>
                 </div>
 
                 <div class="input-group" style="margin-top: 1.5rem;">
@@ -581,16 +580,16 @@ const Scoper = {
                 </div>
 
                 <div class="input-group">
-                    <label class="form-label">Marge de Sécurité (%)</label>
+                    <label class="form-label">${i18n.t('scoper.safety_margin') || 'Marge de Sécurité (%)'}</label>
                     <input type="number" id="scoper-buffer" class="form-input" value="20" onchange="Scoper.calculate()">
                 </div>
 
                 <div class="input-group" style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border);">
                     <label class="checkbox-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                         <input type="checkbox" id="scoper-hide-hours" ${this.settings.hideHours ? 'checked' : ''} onchange="Scoper.updateSettings('hideHours', this.checked)">
-                            <span style="font-size: 0.85rem; font-weight: 500;">Masquer le détail des heures sur le devis</span>
+                            <span style="font-size: 0.85rem; font-weight: 500;">${i18n.t('scoper.hide_hours') || 'Masquer le détail des heures sur le devis'}</span>
                     </label>
-                    <p class="text-xs text-muted" style="margin-top: 5px; margin-left: 25px;">Focus sur la valeur perçue.</p>
+                    <p class="text-xs text-muted" style="margin-top: 5px; margin-left: 25px;">${i18n.t('scoper.focus_value') || 'Focus sur la valeur perçue.'}</p>
                 </div>
 
                 <div id="scoper-profitability-indicator" style="margin-top: 1.5rem;">
@@ -602,7 +601,7 @@ const Scoper = {
 
             <div class="calculator-actions" style="margin-top: 2rem;">
                 <button class="button-primary full-width" id="btn-create-quote" style="padding: 1rem; font-size: 1rem;">
-                    Générer le Devis Officiel
+                    ${i18n.t('scoper.create_quote') || 'Générer le Devis Officiel'}
                 </button>
             </div>
         </div>
@@ -663,7 +662,7 @@ const Scoper = {
         Storage.set('sp_calculator_data', finalData);
         try {
             await Storage.saveCalculatorData(finalData);
-            console.log('[SCOPER] TJM objective synced to Supabase:', finalData.dailyRate + '€/j');
+            console.log('[SCOPER] TJM objective synced to Supabase:', finalData.dailyRate + (typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€') + '/j');
         } catch (e) {
             console.warn('[SCOPER] Backend sync warning (data saved locally):', e);
         }
@@ -676,15 +675,15 @@ const Scoper = {
                     <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
                         <i class="fas fa-flag-checkered" style="font-size: 2.5rem; color: white;"></i>
                     </div>
-                    <h2 style="font-size: 2rem; margin-bottom: 1rem;">Objectif Adopté !</h2>
-                    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 2rem;">Votre stratégie est maintenant scellée. Votre TJM de <strong>${typeof App !== 'undefined' ? App.formatCurrency(finalData.dailyRate) : finalData.dailyRate + '€'}/j</strong> servira de boussole pour tous vos chiffrages.</p>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem;">${i18n.t('scoper.success.title')}</h2>
+                    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 2rem;">${i18n.t('scoper.success.desc').replace('{tjm}', (typeof App !== 'undefined' ? App.formatCurrency(finalData.dailyRate) : finalData.dailyRate + '€') + '/j')}</p>
                     
                     <div style="display: flex; gap: 1rem; justify-content: center;">
                         <button class="button-primary" onclick="Scoper.render('project')" style="padding: 1rem 2rem; font-size: 1rem;">
-                            <i class="fas fa-calculator" style="margin-right: 10px;"></i> Tester sur un Projet (Pack PRO)
+                            <i class="fas fa-calculator" style="margin-right: 10px;"></i> ${i18n.t('scoper.tab.project')} (Pack PRO)
                         </button>
                         <button class="button-outline" onclick="App.navigateTo('dashboard')" style="padding: 1rem 2rem;">
-                            Retour au Dashboard
+                            ${i18n.t('nav.dashboard')}
                         </button>
                     </div>
                 </div>
@@ -702,7 +701,7 @@ const Scoper = {
             hint.scrollIntoView({ behavior: 'smooth' });
         }
 
-        App.showNotification('Stratégie TJM scellée avec succès !', 'success');
+        App.showNotification(i18n.t('notify.strategy_saved') || 'Stratégie TJM scellée avec succès !', 'success');
 
         // Refresh onboarding if needed
         if (typeof Onboarding !== 'undefined') {
@@ -753,10 +752,10 @@ const Scoper = {
         if (this.tasks.length === 0) {
             container.innerHTML = `
     <div class="empty-state" style="padding: 3rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: 12px; border: 2px dashed var(--border);">
-                    <p class="text-muted">Aucune tâche définie.</p>
+                    <p class="text-muted">${i18n.t('scoper.no_tasks') || 'Aucune tâche définie.'}</p>
                     <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
-                        <button class="button-primary small" onclick="Scoper.addTask()">+ Tâche Vide</button>
-                        <button class="button-secondary small" onclick="Scoper.showCatalogSelector()">+ Du Catalogue</button>
+                        <button class="button-primary small" onclick="Scoper.addTask()">+ ${i18n.t('scoper.add_empty') || 'Tâche Vide'}</button>
+                        <button class="button-secondary small" onclick="Scoper.showCatalogSelector()">+ ${i18n.t('scoper.from_catalog') || 'Du Catalogue'}</button>
                     </div>
                 </div >
     `;
@@ -773,26 +772,26 @@ const Scoper = {
             return `
     <div class="scoper-task-row" data-index="${index}">
                     <div class="task-main">
-                        <input type="text" placeholder="Nom de la prestation (ex: Design UI)" class="form-input task-name" value="${task.name}" onchange="Scoper.updateTask(${index}, 'name', this.value)">
+                        <input type="text" placeholder="${i18n.t('scoper.task_placeholder') || 'Nom de la prestation (ex: Design UI)'}" class="form-input task-name" value="${task.name}" onchange="Scoper.updateTask(${index}, 'name', this.value)">
                     </div>
                     
                     <div class="task-details">
                         <div class="time-inputs">
                             <div class="time-field">
-                                <label>Optimiste (h)</label>
+                                <label>${i18n.t('scoper.optimistic') || 'Optimiste'} (h)</label>
                                 <input type="number" class="form-input mini" value="${task.min}" step="0.5" onchange="Scoper.updateTask(${index}, 'min', this.value)">
                             </div>
                             <div class="time-field">
-                                <label>Réaliste (h)</label>
+                                <label>${i18n.t('scoper.realistic') || 'Réaliste'} (h)</label>
                                 <input type="number" class="form-input mini" value="${task.max}" step="0.5" onchange="Scoper.updateTask(${index}, 'max', this.value)">
                             </div>
                         </div>
 
                         <div class="price-override">
-                            <label>Prix Forfaitaire (€)</label>
+                            <label>${i18n.t('scoper.flat_price') || 'Prix Forfaitaire'} (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'})</label>
                             <input type="number" 
                                    class="form-input" 
-                                   placeholder="${Math.round(calculatedPrice)}€" 
+                                   placeholder="${Math.round(calculatedPrice)}" 
                                    value="${task.manualPrice !== null ? task.manualPrice : ''}" 
                                    onchange="Scoper.updateTask(${index}, 'manualPrice', this.value)">
                         </div>
@@ -856,7 +855,7 @@ const Scoper = {
         const pitaMultiplier = PricingEngine.getPitaIncentive(urgency, complexity, client);
         const impactPercent = Math.round((pitaMultiplier - 1) * 100);
         const pitaDisplay = document.getElementById('pita-multiplier-display');
-        if (pitaDisplay) pitaDisplay.textContent = `Impact: +${impactPercent}% `;
+        if (pitaDisplay) pitaDisplay.textContent = i18n.t('scoper.pita.impact', { percent: impactPercent }) || `Impact: +${impactPercent}% `;
 
         const finalTJM = tjm * pitaMultiplier;
 
@@ -929,18 +928,18 @@ const Scoper = {
 
         if (diff >= 50) {
             color = 'var(--success)';
-            status = 'PROJET RENTABLE';
-            advice = 'Votre TJM réel est au-dessus de votre objectif. C\'est une mission haute valeur.';
+            status = i18n.t('scoper.status.profitable') || 'PROJET RENTABLE';
+            advice = i18n.t('scoper.advice.profitable') || 'Votre TJM réel est au-dessus de votre objectif. C\'est une mission haute valeur.';
             icon = 'fa-rocket';
         } else if (diff <= -50) {
             color = 'var(--danger)';
-            status = 'ALERTE RENTABILITÉ';
-            advice = 'Vous êtes en dessous de votre boussole. Augmentez votre prix ou baissez le temps passé.';
+            status = i18n.t('scoper.status.warning') || 'ALERTE RENTABILITÉ';
+            advice = i18n.t('scoper.advice.warning') || 'Vous êtes en dessous de votre boussole. Augmentez votre prix ou baissez le temps passé.';
             icon = 'fa-exclamation-triangle';
         } else {
             color = 'var(--primary)';
-            status = 'OBJECTIF ALIGNÉ';
-            advice = 'Le projet respecte parfaitement votre stratégie financière.';
+            status = i18n.t('scoper.status.aligned') || 'OBJECTIF ALIGNÉ';
+            advice = i18n.t('scoper.advice.aligned') || 'Le projet respecte parfaitement votre stratégie financière.';
             icon = 'fa-check-circle';
         }
 
@@ -952,7 +951,7 @@ const Scoper = {
                 </div>
                 <div style="font-size: 0.85rem; line-height: 1.4; color: var(--white);">${advice}</div>
                 <div style="margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
-                    Écart : <strong style="color: ${diff >= 0 ? 'var(--success)' : 'var(--danger)'}">${diff >= 0 ? '+' : ''}${Math.round(diff)}€/j</strong> par rapport à l'objectif.
+                    ${i18n.t('scoper.gap') || 'Écart'} : <strong style="color: ${diff >= 0 ? 'var(--success)' : 'var(--danger)'}">${diff >= 0 ? '+' : ''}${Math.round(diff)}${sym}/j</strong> par rapport à l'objectif.
                 </div>
             </div>
         `;
@@ -1026,7 +1025,7 @@ const Scoper = {
     showCatalogSelector() {
         const services = Storage.getServices();
         if (services.length === 0) {
-            App.showNotification('Votre catalogue est vide. Ajoutez des services dans les Réglages.', 'info');
+            App.showNotification(i18n.t('scoper.catalog_empty') || 'Votre catalogue est vide. Ajoutez des services dans les Réglages.', 'info');
             return;
         }
 
@@ -1038,17 +1037,17 @@ const Scoper = {
         overlay.innerHTML = `
             <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header">
-                    <h3>Importer du Catalogue</h3>
+                    <h3>${i18n.t('scoper.from_catalog') || 'Importer du Catalogue'}</h3>
                     <button class="modal-close" onclick="document.getElementById('catalog-selector-overlay').remove()"></button>
                 </div>
                 <div class="modal-body" style="padding: 1rem 0;">
-                    <p class="text-sm text-muted" style="margin-bottom: 1.5rem;">Sélectionnez les prestations à ajouter à votre estimation.</p>
+                    <p class="text-sm text-muted" style="margin-bottom: 1.5rem;">${i18n.t('scoper.catalog_desc') || 'Sélectionnez les prestations à ajouter à votre estimation.'}</p>
                     <div class="catalog-list" style="max-height: 400px; overflow-y: auto; display: grid; gap: 0.5rem;">
                         ${services.map(s => `
                             <div class="catalog-item" onclick="Scoper.importService('${s.id}')" style="padding: 1rem; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
                                 <div>
                                     <div style="font-weight: 600;">${s.label}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">${s.category || 'Standard'}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">${s.category || (i18n.t('scoper.standard') || 'Standard')}</div>
                                 </div>
                                 <div style="font-weight: 700; color: var(--primary);">${App.formatCurrency(s.unitPrice)}</div>
                             </div>
@@ -1104,7 +1103,7 @@ const Scoper = {
         this.calculate();
 
         document.getElementById('catalog-selector-overlay')?.remove();
-        App.showNotification(`"${service.label}" importé.`, 'success');
+        App.showNotification(i18n.t('scoper.import_success', { label: service.label }) || `"${service.label}" importé.`, 'success');
     },
 
     generateRoadmapPDF() {
@@ -1133,10 +1132,10 @@ const Scoper = {
                     <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(168, 85, 247, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #a855f7;">
                         <i class="fas fa-magic" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Arsenal de Closing Expert</h2>
-                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.</p>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">${i18n.t('scoper.closing.arsenal') || 'Arsenal de Closing Expert'}</h2>
+                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">${i18n.t('scoper.closing.arsenal_desc') || 'Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.'}</p>
                     <button class="button-primary large" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none;" onclick="App.showUpgradeModal('premium_feature')">
-                         Passer au Pack EXPERT
+                         ${i18n.t('scoper.journal.mode_expert') || 'Passer au Pack EXPERT'}
                     </button>
                 </div>
             `;
@@ -1189,37 +1188,37 @@ const Scoper = {
             <div class="expert-closing-tab" style="animation: fadeIn 0.5s ease;">
                 <div class="expert-hero">
                     <div style="font-size: 0.75rem; font-weight: 800; color: #c084fc; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Closing Engineer Mode</div>
-                    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: white; letter-spacing: -1px;">Votre Arsenal de Vente</h1>
+                    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: white; letter-spacing: -1px;">${i18n.t('scoper.closing.title') || 'Votre Arsenal de Vente'}</h1>
                     <p style="color: #e9d5ff; font-size: 1rem; opacity: 0.85; margin-bottom: 0;">
-                        Stratégie personnalisée · <strong>${sectorLabel}</strong> → <strong>${targetLabel}</strong>
+                        ${i18n.t('scoper.closing.subtitle', { sector: sectorLabel, target: targetLabel }) || `Stratégie personnalisée · <strong>${sectorLabel}</strong> → <strong>${targetLabel}</strong>`}
                     </p>
 
                     ${!hasObjective ? `
                         <div class="no-objective-banner">
                             <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
-                            Aucun objectif TJM défini · <a onclick="Scoper.render('objective')" style="color: #fbbf24; cursor:pointer; text-decoration: underline;">Compléter l'Objectif TJM →</a>
+                            ${i18n.t('scoper.no_objective_warn') || 'Aucun objectif TJM défini'} · <a onclick="Scoper.render('objective')" style="color: #fbbf24; cursor:pointer; text-decoration: underline;">${i18n.t('scoper.complete_objective') || 'Compléter l\'Objectif TJM'} →</a>
                         </div>
                     ` : `
                         <div class="tjm-stats-row">
                             <div class="tjm-stat-pill primary">
                                 <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}</div>
-                                <div class="tjm-stat-label">TJM Objectif</div>
+                                <div class="tjm-stat-label">${i18n.t('scoper.ref_tjm_short') || 'TJM Objectif'}</div>
                             </div>
                             <div class="tjm-stat-pill">
                                 <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(monthlyNet) : monthlyNet.toLocaleString('fr-FR') + '€'}</div>
-                                <div class="tjm-stat-label">Salaire Net / mois</div>
+                                <div class="tjm-stat-label">${i18n.t('scoper.monthly_net') || 'Salaire Net / mois'}</div>
                             </div>
                             <div class="tjm-stat-pill">
                                 <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(revenueNeeded) : revenueNeeded.toLocaleString('fr-FR') + '€'}</div>
-                                <div class="tjm-stat-label">CA à Facturer</div>
+                                <div class="tjm-stat-label">${i18n.t('dashboard.total_ca') || 'CA à Facturer'}</div>
                             </div>
                             <div class="tjm-stat-pill">
                                 <div class="tjm-stat-value">${typeof App !== 'undefined' ? App.formatCurrency(taxAmount) : taxAmount.toLocaleString('fr-FR') + '€'}</div>
-                                <div class="tjm-stat-label">Charges / mois</div>
+                                <div class="tjm-stat-label">${i18n.t('scoper.charges_month') || 'Charges / mois'}</div>
                             </div>
                             <div class="tjm-stat-pill">
                                 <div class="tjm-stat-value">${data.workingDays || 15}j</div>
-                                <div class="tjm-stat-label">Jours Facturés</div>
+                                <div class="tjm-stat-label">${i18n.t('scoper.billed_days') || 'Jours Facturés'}</div>
                             </div>
                         </div>
                     `}
@@ -1230,15 +1229,15 @@ const Scoper = {
                         <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;">
                             <div style="width: 55px; height: 55px; border-radius: 15px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #a855f7;"><i class="fas fa-stethoscope" style="font-size: 1.8rem;"></i></div>
                             <div>
-                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">La Posture Dr. Expert</h3>
-                                <div style="font-size: 0.85rem; color: var(--text-muted);">Posez ces 3 questions pour matérialiser le coût du problème.</div>
+                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">${i18n.t('scoper.closing.dr_expert') || 'La Posture Dr. Expert'}</h3>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);">${i18n.t('scoper.closing.dr_expert_desc') || 'Posez ces 3 questions pour matérialiser le coût du problème.'}</div>
                             </div>
                         </div>
                         <div class="questions-list">
                             ${tactics.diagnostic.questions.map((q, i) => `<div class="diag-question"><span style="color: #a855f7; font-weight: 900; margin-right: 12px; font-style: italic;">Q${i + 1}</span>${q}</div>`).join('')}
                         </div>
                         <div style="margin-top: 2rem; padding: 1.2rem; background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent); border-radius: 16px; border-left: 4px solid #10b981;">
-                            <div style="font-size: 0.7rem; color: #10b981; font-weight: 800; text-transform: uppercase; margin-bottom: 6px;">L'Argument ROI Imbattable :</div>
+                            <div style="font-size: 0.7rem; color: #10b981; font-weight: 800; text-transform: uppercase; margin-bottom: 6px;">${i18n.t('scoper.roi.title') || 'L\'Argument ROI Imbattable :'}</div>
                             <div style="font-size: 1rem; font-weight: 700; color: white;">"${tactics.roi.argument}"</div>
                         </div>
                     </div>
@@ -1247,23 +1246,23 @@ const Scoper = {
                         <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;">
                             <div style="width: 55px; height: 55px; border-radius: 15px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #3b82f6;"><i class="fas fa-anchor" style="font-size: 1.8rem;"></i></div>
                             <div>
-                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">L'Ancrage de Puissance</h3>
-                                <div style="font-size: 0.85rem; color: var(--text-muted);">Utilisez le contraste pour rendre votre prix évident.</div>
+                                <h3 style="margin: 0; font-size: 1.4rem; color: white;">${i18n.t('scoper.anchoring.title') || 'L\'Ancrage de Puissance'}</h3>
+                                <div style="font-size: 0.85rem; color: var(--text-muted);">${i18n.t('scoper.anchoring.desc') || 'Utilisez le contraste pour rendre votre prix évident.'}</div>
                             </div>
                         </div>
                         <div style="background: rgba(0,0,0,0.3); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255,255,255,0.05);">
                             <div style="opacity: 0.3; transform: scale(0.9); margin-bottom: 1.5rem;">
-                                <div style="font-size: 0.75rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 5px;"><i class="fas fa-crown"></i> OPTION ELITE (Ancre)</div>
+                                <div style="font-size: 0.75rem; font-weight: 900; color: #a855f7; display: flex; align-items: center; gap: 5px;"><i class="fas fa-crown"></i> ${i18n.t('scoper.option.elite') || 'OPTION ELITE (Ancre)'}</div>
                                 <div style="font-size: 2.2rem; font-weight: 900; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(scenarios.elite.tjm) : scenarios.elite.tjm + '€'} <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
                             </div>
                             <div style="background: var(--primary-glass); border: 2px solid var(--primary); padding: 1.5rem; border-radius: 18px; position: relative;">
-                                <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase;">Votre Prix de Closing</div>
+                                <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase;">${i18n.t('scoper.closing.price_label') || 'Votre Prix de Closing'}</div>
                                 <div style="font-size: 2.5rem; font-weight: 900; color: white;">${typeof App !== 'undefined' ? App.formatCurrency(scenarios.security.tjm) : scenarios.security.tjm + '€'} <span style="font-size: 1rem; opacity: 0.6;">/ j</span></div>
-                                <div style="position: absolute; top: -12px; right: -12px; background: #10b981; color: white; font-size: 0.65rem; padding: 5px 12px; border-radius: 20px; font-weight: 900;">PRIX ACCEPTE</div>
+                                <div style="position: absolute; top: -12px; right: -12px; background: #10b981; color: white; font-size: 0.65rem; padding: 5px 12px; border-radius: 20px; font-weight: 900;">${i18n.t('scoper.price_accepted') || 'PRIX ACCEPTE'}</div>
                             </div>
                         </div>
                         <div style="margin-top: 2rem; padding: 1.2rem; background: rgba(59, 130, 246, 0.05); border-radius: 16px; border: 1px dashed rgba(59, 130, 246, 0.3);">
-                            <div style="font-size: 0.7rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">Logique Psychologique :</div>
+                            <div style="font-size: 0.7rem; color: #3b82f6; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">${i18n.t('scoper.psychology.title') || 'Logique Psychologique :'}</div>
                             <div style="font-size: 0.9rem; color: #bfdbfe; font-style: italic; line-height: 1.5;">"${tactics.anchoring.logic}"</div>
                         </div>
                     </div>
@@ -1271,19 +1270,19 @@ const Scoper = {
 
                 <div class="glass-card" style="padding: 3rem; border-radius: 35px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);">
                     <div style="text-align: center; margin-bottom: 3rem;">
-                        <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: white;">Simulateur d'Objections</h3>
-                        <p class="text-muted">Cliquez sur une objection pour simuler la réponse parfaite.</p>
+                        <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: white;">${i18n.t('scoper.objections.title') || 'Simulateur d\'Objections'}</h3>
+                        <p class="text-muted">${i18n.t('scoper.objections.desc') || 'Cliquez sur une objection pour simuler la réponse parfaite.'}</p>
                     </div>
                     <div class="mobile-stack" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
                         ${tactics.objections.map((obj, i) => `
                             <div class="objection-card" onclick="this.classList.toggle('active')">
-                                <div style="font-size: 0.7rem; font-weight: 900; color: #f43f5e; margin-bottom: 12px; text-transform: uppercase;">Objection Courante</div>
+                                <div style="font-size: 0.7rem; font-weight: 900; color: #f43f5e; margin-bottom: 12px; text-transform: uppercase;">${i18n.t('scoper.objection.hook_label') || 'Objection Courante'}</div>
                                 <div style="font-size: 1.15rem; font-weight: 800; color: white; line-height: 1.3;">"${obj.hook}"</div>
                                 <div class="rebuttal-box">
-                                    <div style="font-size: 0.7rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 8px;"><i class="fas fa-bolt"></i> Contre-Attaque</div>
+                                    <div style="font-size: 0.7rem; color: #10b981; font-weight: 900; text-transform: uppercase; margin-bottom: 8px;"><i class="fas fa-bolt"></i> ${i18n.t('scoper.objection.rebuttal_label') || 'Contre-Attaque'}</div>
                                     <div style="font-size: 0.9rem; color: #e9d5ff; line-height: 1.5; font-style: italic;">${obj.rebuttal}</div>
                                 </div>
-                                <div style="margin-top: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--text-muted);"><i class="fas fa-mouse-pointer" style="margin-right: 5px;"></i> CLIQUEZ POUR RÉVÉLER</div>
+                                <div style="margin-top: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--text-muted);"><i class="fas fa-mouse-pointer" style="margin-right: 5px;"></i> ${i18n.t('scoper.objection.click_reveal') || 'CLIQUEZ POUR RÉVÉLER'}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -1305,9 +1304,9 @@ const Scoper = {
                     <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: var(--primary);">
                         <i class="fas fa-shield-alt" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">Journal Haute Performance</h2>
-                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">Débloquez votre carnet de bord stratégique pour l'introspection et la maximisation de votre exécution (The ONE Thing).</p>
-                    <button class="cta-button" onclick="App.showUpgradeModal('premium_feature')">Passer en Mode EXPERT</button>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: white;">${i18n.t('scoper.journal.hp_title') || 'Journal Haute Performance'}</h2>
+                    <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 1.1rem;">${i18n.t('scoper.journal.hp_desc') || 'Débloquez votre carnet de bord stratégique pour l\'introspection et la maximisation de votre exécution (The ONE Thing).'}</p>
+                    <button class="cta-button" onclick="App.showUpgradeModal('premium_feature')">${i18n.t('scoper.journal.mode_expert') || 'Passer en Mode EXPERT'}</button>
                 </div>
             `;
             return;
@@ -1325,18 +1324,18 @@ const Scoper = {
                 <!-- Col 1: Carnet de Vie (The Real Journaling) -->
                 <div class="writing-col">
                     <div class="elite-card" style="height: 100%; display: flex; flex-direction: column;">
-                        <div class="elite-card-title"><i class="fas fa-pen-nib"></i> Carnet de Vie</div>
-                        <p class="text-xs text-muted" style="margin-bottom: 1.5rem;">Écrivez votre journée : avancements, réflexions, pensées. Sauvegarde automatique.</p>
+                        <div class="elite-card-title"><i class="fas fa-pen-nib"></i> ${i18n.t('scoper.journal.title') || 'Carnet de Vie'}</div>
+                        <p class="text-xs text-muted" style="margin-bottom: 1.5rem;">${i18n.t('scoper.journal.desc') || 'Écrivez votre journée : avancements, réflexions, pensées. Sauvegarde automatique.'}</p>
                         
                         <textarea class="hp-reflection-input" 
                                   style="flex: 1; min-height: 400px; resize: none; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; color: var(--text-light); font-size: 1rem; line-height: 1.6;"
-                                  placeholder="Aujourd'hui, j'ai..."
+                                  placeholder="${i18n.t('scoper.journal.placeholder') || 'Aujourd\'hui, j\'ai...'}"
                                   onchange="Scoper.updateJournalReflection(this.value)">${journal.reflection || ''}</textarea>
                         
                         <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                            <span class="text-xs text-muted"><i class="fas fa-cloud-upload-alt"></i> Synchronisé</span>
+                            <span class="text-xs text-muted"><i class="fas fa-cloud-upload-alt"></i> ${i18n.t('scoper.journal.synced') || 'Synchronisé'}</span>
                             <button class="button-primary small" onclick="Scoper.addJournalEntry('note', document.querySelector('.hp-reflection-input').value)">
-                                <i class="fas fa-plus"></i> Ajouter au Carnet de Route
+                                <i class="fas fa-plus"></i> ${i18n.t('scoper.journal.add_entry') || 'Ajouter au Carnet de Route'}
                             </button>
                         </div>
                     </div>
@@ -1346,22 +1345,22 @@ const Scoper = {
                 <div class="timeline-col">
                     <div class="elite-card" style="height: 100%; display: flex; flex-direction: column; max-height: 600px; overflow-y: auto;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <div class="elite-card-title"><i class="fas fa-book-journal-whills"></i> Carnet de Route</div>
+                            <div class="elite-card-title"><i class="fas fa-book-journal-whills"></i> ${i18n.t('scoper.journal.route') || 'Carnet de Route'}</div>
                             <div class="hp-log-actions">
-                                <button class="hp-log-btn victory" onclick="Scoper.addJournalEntry('victory')">+ Victoire</button>
-                                <button class="hp-log-btn lesson" onclick="Scoper.addJournalEntry('lesson')">+ Leçon</button>
+                                <button class="hp-log-btn victory" onclick="Scoper.addJournalEntry('victory')">+ ${i18n.t('scoper.journal.victory') || 'Victoire'}</button>
+                                <button class="hp-log-btn lesson" onclick="Scoper.addJournalEntry('lesson')">+ ${i18n.t('scoper.journal.lesson') || 'Leçon'}</button>
                             </div>
                         </div>
 
                         <div class="hp-timeline">
-                            ${journal.entries.length === 0 ? "<div class='hp-empty-timeline'>Aucun événement enregistré.</div>" : ""}
+                            ${journal.entries.length === 0 ? `<div class='hp-empty-timeline'>${i18n.t('scoper.journal.empty') || 'Aucun événement enregistré.'}</div>` : ""}
                             ${journal.entries.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 20).map(entry => {
             let badgeClass = "badge-note";
-            let badgeText = "Note";
+            let badgeText = i18n.t('scoper.journal.note') || "Note";
             let icon = "fa-sticky-note";
 
-            if (entry.type === "victory") { badgeClass = "victory-type"; badgeText = "Victoire"; icon = "fa-trophy"; }
-            if (entry.type === "lesson") { badgeClass = "lesson-type"; badgeText = "Leçon"; icon = "fa-lightbulb"; }
+            if (entry.type === "victory") { badgeClass = "victory-type"; badgeText = i18n.t('scoper.journal.victory') || "Victoire"; icon = "fa-trophy"; }
+            if (entry.type === "lesson") { badgeClass = "lesson-type"; badgeText = i18n.t('scoper.journal.lesson') || "Leçon"; icon = "fa-lightbulb"; }
 
             return `
                                 <div class="hp-timeline-entry ${badgeClass}" style="margin-bottom: 1.5rem; position: relative; padding-left: 2rem; border-left: 2px solid var(--border);">
@@ -1372,7 +1371,7 @@ const Scoper = {
                                             <span class="hp-timeline-date" style="color: var(--text-muted);">${entry.date ? new Date(entry.date).toLocaleDateString() + ' ' + new Date(entry.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
                                         </div>
                                         <div class="hp-timeline-text" style="color: var(--text-light); line-height: 1.5; white-space: pre-wrap;">${entry.text}</div>
-                                        <div class="hp-timeline-delete" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; margin-top: 0.8rem; text-align: right;" onclick="Scoper.removeJournalEntry('${entry.id}')"><i class="fas fa-trash-alt"></i> Supprimer</div>
+                                        <div class="hp-timeline-delete" style="cursor: pointer; color: #ef4444; font-size: 0.8rem; margin-top: 0.8rem; text-align: right;" onclick="Scoper.removeJournalEntry('${entry.id}')"><i class="fas fa-trash-alt"></i> ${i18n.t('scoper.journal.delete') || 'Supprimer'}</div>
                                     </div>
                                 </div>
                                 `;
@@ -1394,11 +1393,11 @@ const Scoper = {
         let label = 'note';
         let text = directText;
 
-        if (type === 'victory') { label = 'victoire'; }
-        if (type === 'lesson') { label = 'leçon'; }
+        if (type === 'victory') { label = i18n.t('scoper.journal.victory') || 'victoire'; }
+        if (type === 'lesson') { label = i18n.t('scoper.journal.lesson') || 'leçon'; }
 
         if (text === null) {
-            text = prompt(`Quelle ${label} ?`);
+            text = prompt(i18n.t('scoper.journal.prompt', { label }) || `Quelle ${label} ?`);
         }
 
         if (!text || text.trim() === '') return;
@@ -1422,7 +1421,7 @@ const Scoper = {
 
         Storage.saveJournal(journal);
         this.renderJournalTab();
-        App.showNotification(`${label.charAt(0).toUpperCase() + label.slice(1)} enregistrée.`, 'success');
+        App.showNotification(i18n.t('scoper.journal.entry_saved', { label: label.charAt(0).toUpperCase() + label.slice(1) }) || `${label.charAt(0).toUpperCase() + label.slice(1)} enregistrée.`, 'success');
     },
 
     removeJournalEntry(id) {
@@ -1437,7 +1436,7 @@ const Scoper = {
      * Réinitialise complètement l'objectif TJM
      */
     async resetObjective() {
-        if (!confirm('Voulez-vous vraiment réinitialiser votre stratégie TJM ? Toutes les données de l\'assistant seront effacées.')) return;
+        if (!confirm(i18n.t('scoper.reset_confirm') || 'Voulez-vous vraiment réinitialiser votre stratégie TJM ? Toutes les données de l\'assistant seront effacées.')) return;
 
         const defaultData = {
             monthlyRevenue: (typeof App !== 'undefined' && App.getCurrencyConfig) ? App.getCurrencyConfig().defaultRevenue : 3000,
@@ -1462,6 +1461,6 @@ const Scoper = {
         }
 
         this.render('objective');
-        App.showNotification('Stratégie réinitialisée.', 'info');
+        App.showNotification(i18n.t('scoper.reset_success') || 'Stratégie réinitialisée.', 'info');
     }
 };

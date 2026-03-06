@@ -1414,25 +1414,28 @@ const App = {
         return { currency, symbol, locale, defaultRevenue };
     },
 
-    // Formatage de devises internationalisé
+    // Internationalized currency formatting
     formatCurrency(amount, skipSymbol = false) {
         if (amount === undefined || amount === null || isNaN(amount)) amount = 0;
 
-        // Convert string to number if needed
         const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-
         const config = this.getCurrencyConfig();
 
-        // Format the number consistently
-        let formatted = Math.round(numAmount).toLocaleString(config.locale);
+        if (skipSymbol) {
+            return Math.round(numAmount).toLocaleString(config.locale);
+        }
 
-        if (skipSymbol) return formatted;
-
-        // Some locales put the symbol before (en-US), some after (fr-FR). 
-        // For consistency in our UI which often expects a specific layout, we'll manually append for now,
-        // or let Intl.NumberFormat do it fully if we prefer. 
-        // For now, retaining the old look but with dynamic symbol:
-        return `${formatted} ${config.symbol}`;
+        try {
+            return new Intl.NumberFormat(config.locale, {
+                style: 'currency',
+                currency: config.currency,
+                maximumFractionDigits: 0,
+                minimumFractionDigits: 0
+            }).format(numAmount);
+        } catch (e) {
+            // Fallback if Intl fails
+            return `${Math.round(numAmount).toLocaleString(config.locale)} ${config.symbol}`;
+        }
     },
 
     // Formatage de dates

@@ -33,6 +33,13 @@ function initCalculator() {
 
     // Run initial calculation
     calculatePrice();
+
+    // Listen for language changes to refresh formatting
+    if (typeof EventBus !== 'undefined') {
+        EventBus.on('language:changed', () => {
+            calculatePrice();
+        });
+    }
 }
 
 async function calculatePrice() {
@@ -87,7 +94,7 @@ async function calculatePrice() {
     if (dailyEl) dailyEl.textContent = `${Math.ceil(dailyRate)} ${sym}/j`;
 
     const annualEl = document.getElementById('annualRevenue');
-    if (annualEl) annualEl.textContent = typeof App !== 'undefined' ? App.formatCurrency(Math.ceil(annualRevenue)) : `${Math.ceil(annualRevenue).toLocaleString('fr-FR')} €`;
+    if (annualEl) annualEl.textContent = typeof App !== 'undefined' ? App.formatCurrency(Math.ceil(annualRevenue)) : Math.ceil(annualRevenue).toLocaleString() + ' ' + sym;
 
     // Update breakdown
     const taxAmount = revenueNeeded * rate;
@@ -107,7 +114,7 @@ async function calculatePrice() {
 
 function updateElement(id, value) {
     const el = document.getElementById(id);
-    if (el) el.textContent = typeof App !== 'undefined' ? App.formatCurrency(value) : `${value.toLocaleString('fr-FR')} €`;
+    if (el) el.textContent = typeof App !== 'undefined' ? App.formatCurrency(value) : value.toLocaleString() + ' ' + (typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€');
 }
 
 function saveCalculatorInputs(data) {

@@ -17,14 +17,14 @@ const Profile = {
 
         container.innerHTML = `
             <div class="page-header">
-                <h1 class="page-title">Mon Profil</h1>
-                <p class="page-subtitle">Gérez votre identité professionnelle et votre licence SoloPrice Pro.</p>
+                <h1 class="page-title">${i18n.t('profile.title') || 'Mon Profil'}</h1>
+                <p class="page-subtitle">${i18n.t('profile.subtitle') || 'Gérez votre identité professionnelle et votre licence SoloPrice Pro.'}</p>
             </div>
 
             <div class="profile-layout">
                 <div class="profile-section">
                     <div class="glass-card" style="padding: 2rem; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 2rem;">
-                        <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Photo de Profil</h2>
+                        <h2 class="section-title-small" style="margin-bottom: 1.5rem;">${i18n.t('profile.section.avatar') || 'Photo de Profil'}</h2>
                         <div class="avatar-upload-container" style="display: flex; gap: 2rem; align-items: center;">
                             <div id="avatar-preview" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background: var(--bg-sidebar); border: 2px solid var(--primary-glass); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                 ${user.user_metadata?.avatar_url ? `<img src="${user.user_metadata.avatar_url}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-user" style="font-size: 3rem; color: var(--text-muted);"></i>`}
@@ -32,27 +32,27 @@ const Profile = {
                             <div style="flex: 1;">
                                 <input type="file" id="avatar-input" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="Profile.handleAvatarUpload(event)">
                                 <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
-                                    <button type="button" class="button-primary small" onclick="document.getElementById('avatar-input').click()">Changer la photo</button>
-                                    ${user.user_metadata?.avatar_url ? `<button type="button" class="button-danger small" onclick="Profile.removeAvatar()">Supprimer</button>` : ''}
+                                    <button type="button" class="button-primary small" onclick="document.getElementById('avatar-input').click()">${i18n.t('profile.btn.change_photo') || 'Changer la photo'}</button>
+                                    ${user.user_metadata?.avatar_url ? `<button type="button" class="button-danger small" onclick="Profile.removeAvatar()">${i18n.t('profile.btn.remove') || 'Supprimer'}</button>` : ''}
                                 </div>
-                                <p class="text-xs text-muted">PNG, JPG ou WebP. Max 10 Mo. Cette photo sera visible dans l'écosystème SoloPrice.</p>
+                                <p class="text-xs text-muted">${i18n.t('profile.avatar_hint') || 'PNG, JPG ou WebP. Max 10 Mo. Cette photo sera visible dans l\'écosystème SoloPrice.'}</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="glass-card" style="padding: 2rem; border-radius: 20px; border: 1px solid var(--border);">
-                        <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Identité Professionnelle</h2>
+                        <h2 class="section-title-small" style="margin-bottom: 1.5rem;">${i18n.t('profile.section.identity') || 'Identité Professionnelle'}</h2>
                         <form id="company-form" onsubmit="Profile.save(event)">
                             <div class="form-grid">
                                 <div class="form-group">
-                                    <label class="form-label">Prénom *</label>
+                                    <label class="form-label">${i18n.t('profile.label.first_name') || 'Prénom'} *</label>
                                     <input type="text" name="first_name" id="prof-first-name" class="form-input"
                                         value="${user.user_metadata?.first_name || ''}"
                                         placeholder="Jean" required autocomplete="given-name">
                                     <span class="field-error" id="err-first-name" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Nom *</label>
+                                    <label class="form-label">${i18n.t('profile.label.last_name') || 'Nom'} *</label>
                                     <input type="text" name="last_name" id="prof-last-name" class="form-input"
                                         value="${user.user_metadata?.last_name || ''}"
                                         placeholder="Dupont" required autocomplete="family-name">
@@ -61,7 +61,7 @@ const Profile = {
 
                                 <!-- Country selector (drives company ID label) -->
                                 <div class="form-group full-width">
-                                    <label class="form-label">Pays / Région *</label>
+                                    <label class="form-label">${i18n.t('profile.label.country') || 'Pays / Région'} *</label>
                                     <select name="country" id="prof-country" class="form-input"
                                         onchange="Profile.onCountryChange(this.value)"
                                         style="cursor:pointer;">
@@ -86,27 +86,27 @@ const Profile = {
                                 </div>
 
                                 <div class="form-group full-width">
-                                    <label class="form-label">Nom Commercial / Entreprise</label>
+                                    <label class="form-label">${i18n.t('profile.label.company') || 'Nom Commercial / Entreprise'}</label>
                                     <input type="text" name="name" class="form-input"
                                         value="${company.name || user.user_metadata?.company_name || ''}"
                                         placeholder="Ex: Mon Agence, Jean Dupont Consulting…">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Email Professionnel *</label>
+                                    <label class="form-label">${i18n.t('profile.label.email_pro') || 'Email Professionnel'} *</label>
                                     <input type="email" name="email" id="prof-email" class="form-input"
                                         value="${company.email || user.email || ''}"
                                         placeholder="pro@email.com" required autocomplete="email">
                                     <span class="field-error" id="err-email" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Téléphone <span style="font-size:0.72rem;color:var(--text-muted);">(format international recommandé : +33…)</span></label>
+                                    <label class="form-label">${i18n.t('profile.label.phone') || 'Téléphone'} <span style="font-size:0.72rem;color:var(--text-muted);">${i18n.t('profile.label.phone_hint') || '(format international recommandé : +33…)'}</span></label>
                                     <input type="tel" name="phone" id="prof-phone" class="form-input"
                                         value="${company.phone || ''}"
                                         placeholder="+33 6 00 00 00 00" autocomplete="tel">
                                     <span class="field-error" id="err-phone" style="display:none;color:#ef4444;font-size:0.75rem;margin-top:4px;"></span>
                                 </div>
                                 <div class="form-group full-width">
-                                    <label class="form-label">Adresse Siège Social *</label>
+                                    <label class="form-label">${i18n.t('profile.label.address') || 'Adresse Siège Social'} *</label>
                                     <input type="text" name="address" class="form-input"
                                         value="${company.address || ''}"
                                         placeholder="12 rue de la Paix, 75001 Paris" required autocomplete="street-address">
@@ -114,7 +114,7 @@ const Profile = {
 
                                 <!-- Company registration number (label changes by country) -->
                                 <div class="form-group" id="reg-number-group">
-                                    <label class="form-label" id="reg-number-label">Numéro d'enregistrement</label>
+                                    <label class="form-label" id="reg-number-label">${i18n.t('profile.label.reg_number') || 'Numéro d\'enregistrement'}</label>
                                     <div style="position:relative;">
                                         <input type="text" name="siret" id="prof-siret" class="form-input"
                                             value="${company.siret || ''}"
@@ -128,13 +128,13 @@ const Profile = {
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">Mentions Légales (Pied de page)</label>
+                                    <label class="form-label">${i18n.t('profile.label.footer') || 'Mentions Légales (Pied de page)'}</label>
                                     <input type="text" name="footer_mentions" class="form-input"
                                         value="${company.footer_mentions || ''}"
                                         placeholder="Ex: TVA Intracom FR…">
                                 </div>
                                 <div class="form-group full-width">
-                                    <label class="form-label">Portfolio / Site Web</label>
+                                    <label class="form-label">${i18n.t('profile.label.website') || 'Portfolio / Site Web'}</label>
                                     <input type="url" name="portfolio" id="prof-portfolio" class="form-input"
                                         value="${company.portfolio || ''}"
                                         placeholder="https://votre-portfolio.com" autocomplete="url">
@@ -143,7 +143,7 @@ const Profile = {
 
                                 <div class="form-group full-width">
                                     <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
-                                        Logo de l'entreprise
+                                        ${i18n.t('profile.label.logo') || 'Logo de l\'entreprise'}
                                         ${!isPro ? `<span class="badge-premium" style="background: var(--primary-glass); color: var(--primary-light); font-size: 0.65rem; padding: 2px 8px; border-radius: 4px;">PRO</span>` : ''}
                                     </label>
                                     <div class="logo-upload-container" style="display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px dashed ${!isPro ? 'rgba(255,255,255,0.05)' : 'var(--border)'}; opacity: ${!isPro ? '0.7' : '1'};">
@@ -154,16 +154,16 @@ const Profile = {
                                             <input type="file" id="logo-input" accept="image/*" style="display: none;" onchange="Profile.handleLogoUpload(event)">
                                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                                 ${isPro ? `
-                                                    <button type="button" class="button-primary small" onclick="document.getElementById('logo-input').click()">Charger Logo</button>
-                                                    ${company.logo ? `<button type="button" class="button-danger small" onclick="Profile.removeLogo()">Supprimer</button>` : ''}
+                                                    <button type="button" class="button-primary small" onclick="document.getElementById('logo-input').click()">${i18n.t('profile.btn.load_logo') || 'Charger Logo'}</button>
+                                                    ${company.logo ? `<button type="button" class="button-danger small" onclick="Profile.removeLogo()">${i18n.t('profile.btn.remove') || 'Supprimer'}</button>` : ''}
                                                 ` : `
                                                     <button type="button" class="button-secondary small" onclick="App.showUpgradeModal()" style="background: rgba(16, 185, 129, 0.1); border-color: var(--primary-glass);">
-                                                        <i class="fas fa-lock" style="margin-right: 5px; font-size: 0.8rem;"></i> Débloquer le Logo
+                                                        <i class="fas fa-lock" style="margin-right: 5px; font-size: 0.8rem;"></i> ${i18n.t('profile.btn.unlock_logo') || 'Débloquer le Logo'}
                                                     </button>
                                                 `}
                                             </div>
                                             <p class="text-xs text-muted" style="margin-top: 0.5rem;">
-                                                ${isPro ? 'PNG or JPG. Max 10 Mo.' : 'L\'ajout de logo est réservé aux comptes PRO et EXPERT.'}
+                                                ${isPro ? 'PNG or JPG. Max 10 Mo.' : (i18n.t('profile.logo_hint') || 'L\'ajout de logo est réservé aux comptes PRO et EXPERT.')}
                                             </p>
                                             <input type="hidden" name="logo" id="logo-base64" value="${(isPro && company.logo) ? company.logo : ''}">
                                         </div>
@@ -173,24 +173,24 @@ const Profile = {
 
                             <div class="form-section-separator" style="margin: 2rem 0; border-top: 1px solid var(--border);"></div>
 
-                            <h2 class="section-title-small" style="margin-bottom: 1.5rem;">Coordonnées de Paiement</h2>
+                            <h2 class="section-title-small" style="margin-bottom: 1.5rem;">${i18n.t('profile.section.payment') || 'Coordonnées de Paiement'}</h2>
                             <p class="text-xs text-muted" style="margin-bottom: 1.5rem;">
-                                Ces informations seront affichées sur vos devis pour que vos clients puissent vous régler directement.
+                                ${i18n.t('profile.payment_hint') || 'Ces informations seront affichées sur vos devis pour que vos clients puissent vous régler directement.'}
                             </p>
                             <div class="form-grid">
                                 <div class="form-group full-width" style="margin-top: 1.5rem; padding: 1.5rem; border-radius: 16px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);">
                                     <label class="form-label" style="color: #3b82f6; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fab fa-paypal" style="font-size: 1.2rem;"></i> Email PayPal de réception <span style="background: #3b82f6; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: auto;">OBLIGATOIRE POUR DEVIS</span>
+                                        <i class="fab fa-paypal" style="font-size: 1.2rem;"></i> ${i18n.t('profile.label.paypal') || 'Email PayPal de réception'} <span style="background: #3b82f6; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; margin-left: auto;">${i18n.t('profile.label.paypal_required') || 'OBLIGATOIRE POUR DEVIS'}</span>
                                     </label>
                                     <input type="email" name="paypal_email" class="form-input" value="${company.paypal_email || ''}" placeholder="votre-email@paypal.com" style="background: rgba(255,255,255,0.05); border-color: rgba(59, 130, 246, 0.3); font-size: 1.1rem;">
                                     <p class="text-xs" style="margin-top: 0.75rem; color: #60a5fa; line-height: 1.4;">
-                                        <i class="fas fa-info-circle"></i> Cette adresse est utilisée pour recevoir vos acomptes directement.
+                                        <i class="fas fa-info-circle"></i> ${i18n.t('profile.paypal_hint') || 'Cette adresse est utilisée pour recevoir vos acomptes directement.'}
                                     </p>
                                 </div>
                             </div>
 
                             <div class="form-actions" style="margin-top: 2rem;">
-                                <button type="submit" class="button-primary full-width">Mettre à jour mon profil</button>
+                                <button type="submit" class="button-primary full-width">${i18n.t('profile.btn.update') || 'Mettre à jour mon profil'}</button>
                             </div>
                         </form>
                     </div>
@@ -201,24 +201,24 @@ const Profile = {
                                 <h3 style="margin: 0; font-size: 1.1rem; color: ${isPro ? 'var(--primary-light)' : 'var(--white)'};">
                                     ${(() => {
                 const tier = Storage.getTier();
-                if (tier === 'expert') return 'Pack SoloPrice EXPERT';
-                if (isPro) return 'Abonnement SoloPrice PRO';
-                return 'Compte Standard';
+                if (tier === 'expert') return i18n.t('profile.plan.expert') || 'Pack SoloPrice EXPERT';
+                if (isPro) return i18n.t('profile.plan.pro') || 'Abonnement SoloPrice PRO';
+                return i18n.t('profile.plan.standard') || 'Compte Standard';
             })()}
                                 </h3>
                                 <p style="font-size: 0.85rem; color: var(--text-muted); margin: 4px 0 0 0;">
                                     ${(() => {
-                if (!isPro) return 'Limite de 5 clients et 3 devis / mois.';
+                if (!isPro) return i18n.t('profile.plan.standard_hint') || 'Limite de 5 clients et 3 devis / mois.';
                 const status = Storage.getSubscriptionStatus();
-                if (status.isLifetime) return 'Accès Illimité (À vie)';
-                return `Expire le ${App.formatDate(status.expiryDate)} (${status.daysLeft} jours restants)`;
+                if (status.isLifetime) return i18n.t('profile.plan.lifetime') || 'Accès Illimité (À vie)';
+                return `${i18n.t('common.expires') || 'Expire le'} ${App.formatDate(status.expiryDate)} (${status.daysLeft} ${i18n.t('common.days_left') || 'jours restants'})`;
             })()}
                                 </p>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 ${isPro ? '<span class="pro-badge" style="padding: 4px 10px; font-size: 0.7rem;">ACTIF</span>' : ''}
                                 <button class="button-${isPro ? 'secondary' : 'primary'} small" onclick="App.showUpgradeModal()">
-                                    ${isPro ? 'Renouveler' : 'Upgrade'}
+                                    ${isPro ? (i18n.t('profile.btn.renew') || 'Renouveler') : (i18n.t('profile.btn.upgrade') || 'Upgrade')}
                                 </button>
                             </div>
                          </div>
@@ -244,13 +244,13 @@ const Profile = {
             group.style.display = 'none';
         } else {
             group.style.display = '';
-            label.textContent = country.regLabel + (country.verify ? ' *' : ' (optionnel)');
+            label.textContent = country.regLabel + (country.verify ? ` *` : ` (${i18n.t('profile.reg.optional') || 'optionnel'})`);
             if (country.pattern) {
                 hint.textContent = country.verify
-                    ? `Format exigé : ${country.pattern.replace(/[\^$]/g, '')}`
-                    : `Format attendu : ${country.pattern.replace(/[\^$]/g, '')}`;
+                    ? `${i18n.t('profile.reg.format_required') || 'Format exigé :'} ${country.pattern.replace(/[\^$]/g, '')}`
+                    : `${i18n.t('profile.reg.format_expected') || 'Format attendu :'} ${country.pattern.replace(/[\^$]/g, '')}`;
             } else {
-                hint.textContent = 'Format libre selon votre pays.';
+                hint.textContent = i18n.t('profile.reg.format_free') || 'Format libre selon votre pays.';
             }
             if (input) input.placeholder = country.regLabel || '';
             const statusEl = document.getElementById('siret-status');
@@ -265,7 +265,7 @@ const Profile = {
                 localStorage.setItem('sp_lang', lang);
                 const langLabels = { fr: 'Français 🇫🇷', en: 'English 🇬🇧', es: 'Español 🇪🇸' };
                 if (typeof App !== 'undefined' && App.showNotification) {
-                    App.showNotification(`Langue détectée : ${langLabels[lang] || lang}`, 'info');
+                    App.showNotification(`${i18n.t('profile.lang_detected') || 'Langue détectée :'} ${langLabels[lang] || lang}`, 'info');
                 }
             }
         }
@@ -297,7 +297,7 @@ const Profile = {
                 this._siretTimer = setTimeout(() => this.verifySiretApi(clean), 500);
             } else {
                 status.textContent = '';
-                if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Numéro SIRET invalide (clé de contrôle incorrecte).'; }
+                if (errEl) { errEl.style.display = 'block'; errEl.textContent = i18n.t('profile.error.siret_invalid') || 'Numéro SIRET invalide (clé de contrôle incorrecte).'; }
             }
         }
         // No indicator while still typing — avoids confusion
@@ -330,11 +330,11 @@ const Profile = {
                 // Auto-fill company name if empty
                 if (nameInput && !nameInput.value.trim() && data.name) {
                     nameInput.value = data.name;
-                    App.showNotification(`Entreprise trouvée : ${data.name}`, 'success');
+                    App.showNotification(`${i18n.t('profile.notify.company_found') || 'Entreprise trouvée :'} ${data.name}`, 'success');
                 }
             } else {
                 status.textContent = '';
-                if (errEl) { errEl.style.display = 'block'; errEl.textContent = data.message || 'SIRET introuvable dans la base INSEE.'; }
+                if (errEl) { errEl.style.display = 'block'; errEl.textContent = data.message || (i18n.t('profile.error.siret_not_found') || 'SIRET introuvable dans la base INSEE.'); }
             }
         } catch {
             status.textContent = '️';
@@ -343,9 +343,9 @@ const Profile = {
 
     // International validations
     validateName(val) {
-        if (!val || val.trim().length < 2) return 'Minimum 2 caractères.';
+        if (!val || val.trim().length < 2) return i18n.t('profile.error.name_min') || 'Minimum 2 caractères.';
         // Allow: letters (any script), spaces, hyphens, apostrophes
-        if (/[0-9<>{}[\]\\|]/.test(val)) return 'Le nom ne doit pas contenir de chiffres ou caractères spéciaux.';
+        if (/[0-9<>{}[\]\\|]/.test(val)) return i18n.t('profile.error.name_chars') || 'Le nom ne doit pas contenir de chiffres ou caractères spéciaux.';
         return null;
     },
 
@@ -354,14 +354,14 @@ const Profile = {
         const clean = val.replace(/[\s\-().]/g, '');
         // Accept +countrycode... or local 7-15 digits
         if (!/^(\+[1-9][0-9]{6,14}|[0-9]{7,15})$/.test(clean)) {
-            return 'Téléphone invalide. Format recommandé : +33 6 xx xx xx xx';
+            return i18n.t('profile.error.phone_invalid') || 'Téléphone invalide. Format recommandé : +33 6 xx xx xx xx';
         }
         return null;
     },
 
     validateUrl(val) {
         if (!val) return null; // Optional
-        try { new URL(val); return null; } catch { return 'URL invalide. Ex : https://votre-site.com'; }
+        try { new URL(val); return null; } catch { return i18n.t('profile.error.url_invalid') || 'URL invalide. Ex : https://votre-site.com'; }
     },
 
     showFieldError(id, msg) {
@@ -397,7 +397,7 @@ const Profile = {
         // Email validation (RFC-compliant)
         const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
         if (!email || !emailRegex.test(email)) {
-            this.showFieldError('err-email', "Format d'email invalide.");
+            this.showFieldError('err-email', i18n.t('profile.error.email_invalid') || "Format d'email invalide.");
             hasError = true;
         }
 
@@ -413,30 +413,30 @@ const Profile = {
         const countryObj = this.getCountry(country);
         if (countryObj.verify && siret) {
             if (!this.luhn(siret) || !/^[0-9]{14}$/.test(siret)) {
-                this.showFieldError('err-siret', 'Numéro SIRET invalide (14 chiffres, clé de contrôle).');
+                this.showFieldError('err-siret', i18n.t('profile.error.siret_invalid') || 'Numéro SIRET invalide (14 chiffres, clé de contrôle).');
                 hasError = true;
             }
             const statusEl = document.getElementById('siret-status');
             if (statusEl && statusEl.textContent === '') {
-                this.showFieldError('err-siret', 'Ce SIRET n\'est pas reconnu par la base INSEE.');
+                this.showFieldError('err-siret', i18n.t('profile.error.siret_not_found') || 'Ce SIRET n\'est pas reconnu par la base INSEE.');
                 hasError = true;
             }
         } else if (countryObj.pattern && siret) {
             const re = new RegExp(countryObj.pattern);
             if (!re.test(siret)) {
-                this.showFieldError('err-siret', `Format incorrect : ${countryObj.regLabel}`);
+                this.showFieldError('err-siret', `${i18n.t('profile.error.format_incorrect') || 'Format incorrect :'} ${countryObj.regLabel}`);
                 hasError = true;
             }
         }
 
         if (hasError) {
-            App.showNotification('Veuillez corriger les champs en erreur.', 'error');
+            App.showNotification(i18n.t('profile.error.fields') || 'Veuillez corriger les champs en erreur.', 'error');
             return;
         }
 
         // Country required
         if (!country) {
-            App.showNotification('Veuillez sélectionner votre pays.', 'error');
+            App.showNotification(i18n.t('profile.error.country_select') || 'Veuillez sélectionner votre pays.', 'error');
             return;
         }
 
@@ -456,7 +456,7 @@ const Profile = {
         try {
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
-            btn.textContent = 'Enregistrement…';
+            btn.textContent = i18n.t('profile.saving') || 'Enregistrement…';
             btn.disabled = true;
 
             // Handle Avatar Upload First
@@ -495,7 +495,7 @@ const Profile = {
             });
 
             App.renderUserInfo();
-            App.showNotification('Profil mis à jour avec succès !', 'success');
+            App.showNotification(i18n.t('profile.notify.updated') || 'Profil mis à jour avec succès !', 'success');
             this.render();
 
             btn.textContent = originalText;
@@ -510,7 +510,7 @@ const Profile = {
     handleAvatarUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
-        if (file.size > 10 * 1024 * 1024) { App.showNotification('Image trop lourde (10 Mo max)', 'error'); return; }
+        if (file.size > 10 * 1024 * 1024) { App.showNotification(i18n.t('common.error.image_too_large') || 'Image trop lourde (10 Mo max)', 'error'); return; }
 
         window.pendingAvatarFile = file;
         window.removeAvatarPending = false;
@@ -518,7 +518,7 @@ const Profile = {
         const reader = new FileReader();
         reader.onload = (event) => {
             document.getElementById('avatar-preview').innerHTML = `<img src="${event.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
-            App.showNotification("Photo sélectionnée. N'oubliez pas d'enregistrer.", 'info');
+            App.showNotification(i18n.t('profile.notify.avatar_selected') || "Photo sélectionnée. N'oubliez pas d'enregistrer.", 'info');
         };
         reader.readAsDataURL(file);
     },
@@ -527,18 +527,18 @@ const Profile = {
         window.pendingAvatarFile = null;
         window.removeAvatarPending = true;
         document.getElementById('avatar-preview').innerHTML = `<i class="fas fa-user" style="font-size: 3rem; color: var(--text-muted);"></i>`;
-        App.showNotification('Photo supprimée. Enregistrez pour confirmer.', 'info');
+        App.showNotification(i18n.t('profile.notify.avatar_removed') || 'Photo supprimée. Enregistrez pour confirmer.', 'info');
     },
 
     handleLogoUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
-        if (file.size > 10 * 1024 * 1024) { App.showNotification('Image trop lourde (10 Mo max)', 'error'); return; }
+        if (file.size > 10 * 1024 * 1024) { App.showNotification(i18n.t('common.error.image_too_large') || 'Image trop lourde (10 Mo max)', 'error'); return; }
         window.pendingLogoFile = file;
         const reader = new FileReader();
         reader.onload = (event) => {
             document.getElementById('logo-preview').innerHTML = `<img src="${event.target.result}" style="width:100%; height:100%; object-fit:contain;">`;
-            App.showNotification("Logo sélectionné. N'oubliez pas d'enregistrer.", 'info');
+            App.showNotification(i18n.t('profile.notify.logo_selected') || "Logo sélectionné. N'oubliez pas d'enregistrer.", 'info');
         };
         reader.readAsDataURL(file);
     },
@@ -548,7 +548,7 @@ const Profile = {
         const logoInput = document.getElementById('logo-base64');
         if (logoInput) logoInput.value = '';
         document.getElementById('logo-preview').innerHTML = '<i class="fas fa-image" style="font-size: 24px; color: #ccc;"></i>';
-        App.showNotification('Logo supprimé. Enregistrez pour confirmer.', 'info');
+        App.showNotification(i18n.t('profile.notify.logo_removed') || 'Logo supprimé. Enregistrez pour confirmer.', 'info');
     }
 };
 

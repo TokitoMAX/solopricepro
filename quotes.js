@@ -20,13 +20,13 @@ const Quotes = {
 
         container.innerHTML = `
             <div class="page-header">
-                <h1 class="page-title">Mes Documents</h1>
-                <p class="page-subtitle">Gérez vos devis, factures et documents commerciaux.</p>
+                <h1 class="page-title">${i18n.t('quotes.title')}</h1>
+                <p class="page-subtitle">${i18n.t('quotes.subtitle')}</p>
             </div>
 
             <div class="settings-tabs">
-                <button class="settings-tab" data-tab-id="quotes" onclick="Quotes.switchTab('quotes')">Devis</button>
-                <button class="settings-tab" data-tab-id="invoices" onclick="Quotes.switchTab('invoices')">Factures</button>
+                <button class="settings-tab" data-tab-id="quotes" onclick="Quotes.switchTab('quotes')">${i18n.t('quotes.tab.quotes')}</button>
+                <button class="settings-tab" data-tab-id="invoices" onclick="Quotes.switchTab('invoices')">${i18n.t('quotes.tab.invoices')}</button>
             </div>
 
             <div id="documents-dynamic-content" style="margin-top: 2rem;">
@@ -71,9 +71,9 @@ const Quotes = {
 
         container.innerHTML = `
             <div class="section-header-inline">
-                <h3 class="section-title-small">${quotes.length} Devis</h3>
+                <h3 class="section-title-small">${i18n.t('quotes.count').replace('{count}', quotes.length)}</h3>
                 <button class="button-primary small" onclick="Quotes.showAddForm()" ${!limits.canAddQuote ? 'disabled' : ''}>
-                    Nouveau Devis
+                    ${i18n.t('quotes.btn.new')}
                 </button>
             </div>
 
@@ -84,12 +84,12 @@ const Quotes = {
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Numéro</th>
-                                <th>Client</th>
-                                <th>Date</th>
-                                <th>Montant TTC</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
+                                <th>${i18n.t('quotes.table.number')}</th>
+                                <th>${i18n.t('quotes.table.client')}</th>
+                                <th>${i18n.t('quotes.table.date')}</th>
+                                <th>${i18n.t('quotes.table.amount')}</th>
+                                <th>${i18n.t('quotes.table.status')}</th>
+                                <th>${i18n.t('quotes.table.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -97,11 +97,11 @@ const Quotes = {
             const client = Storage.getClient(quote.clientId);
             return `
                                     <tr>
-                                        <td data-label="Numéro"><strong>${quote.number}</strong></td>
-                                        <td data-label="Client">${client?.name || 'Client supprimé'}</td>
-                                        <td data-label="Date">${App.formatDate(quote.createdAt)}</td>
-                                        <td data-label="Montant TTC">${App.formatCurrency(quote.total)}</td>
-                                        <td data-label="Statut">
+                                        <td data-label="${i18n.t('quotes.table.number')}"><strong>${quote.number}</strong></td>
+                                        <td data-label="${i18n.t('quotes.table.client')}">${client?.name || i18n.t('quotes.client_deleted')}</td>
+                                        <td data-label="${i18n.t('quotes.table.date')}">${App.formatDate(quote.createdAt)}</td>
+                                        <td data-label="${i18n.t('quotes.table.amount')}">${App.formatCurrency(quote.total)}</td>
+                                        <td data-label="${i18n.t('quotes.table.status')}">
                                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                                 <span class="status-badge status-${quote.status}">${this.getStatusLabel(quote.status)}</span>
                                                 ${(quote.status === 'accepted' || quote.status === 'paid') ? `
@@ -112,33 +112,33 @@ const Quotes = {
                                                 ` : ''}
                                             </div>
                                         </td>
-                                        <td data-label="Actions" class="actions-cell">
+                                        <td data-label="${i18n.t('quotes.table.actions')}" class="actions-cell">
                                             <div class="table-actions-dropdown">
                                                 <button class="button-secondary small action-trigger" onclick="event.stopPropagation(); Quotes.toggleActions('${quote.id}')">
-                                                    Actions <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>
+                                                    ${i18n.t('quotes.btn.actions')} <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>
                                                 </button>
                                                 <div id="actions-${quote.id}" class="actions-menu glass">
                                                     <div class="menu-section">
-                                                        <label>Essentiel</label>
-                                                        <button onclick="Quotes.edit('${quote.id}')"><i class="fas fa-edit"></i> Modifier</button>
-                                                        <button onclick="Quotes.downloadPDF('${quote.id}')"><i class="fas fa-file-pdf"></i> PDF / Aperçu</button>
-                                                        <button onclick="Quotes.fastSend('${quote.id}')"><i class="fas fa-paper-plane"></i> Envoyer par Email</button>
-                                                        <button onclick="Quotes.copyPublicLink('${quote.id}')" style="color: #3b82f6;"><i class="fas fa-link"></i> Copier Lien de Signature</button>
+                                                        <label>${i18n.t('quotes.menu.essential')}</label>
+                                                        <button onclick="Quotes.edit('${quote.id}')"><i class="fas fa-edit"></i> ${i18n.t('quotes.menu.edit')}</button>
+                                                        <button onclick="Quotes.downloadPDF('${quote.id}')"><i class="fas fa-file-pdf"></i> ${i18n.t('quotes.menu.pdf')}</button>
+                                                        <button onclick="Quotes.fastSend('${quote.id}')"><i class="fas fa-paper-plane"></i> ${i18n.t('quotes.menu.send')}</button>
+                                                        <button onclick="Quotes.copyPublicLink('${quote.id}')" style="color: #3b82f6;"><i class="fas fa-link"></i> ${i18n.t('quotes.menu.link')}</button>
                                                     </div>
                                                     
                                                     <div class="menu-section">
-                                                        <label>Flux & Validation</label>
-                                                        <button onclick="Quotes.openSignatureModal('${quote.id}')" style="color: #a855f7;"><i class="fas fa-pen-nib"></i> Signer en Présence</button>
+                                                        <label>${i18n.t('quotes.menu.flow')}</label>
+                                                        <button onclick="Quotes.openSignatureModal('${quote.id}')" style="color: #a855f7;"><i class="fas fa-pen-nib"></i> ${i18n.t('quotes.menu.sign')}</button>
                                                         <button class="${quote.status === 'accepted' ? 'text-success' : ''}" onclick="Quotes.convertToInvoice('${quote.id}')">
-                                                            <i class="fas fa-file-invoice-dollar"></i> Facturer (Virement)
+                                                            <i class="fas fa-file-invoice-dollar"></i> ${i18n.t('quotes.menu.invoice')}
                                                         </button>
-                                                        <button onclick="Quotes.changeStatus('${quote.id}')"><i class="fas fa-sync-alt"></i> Changer Statut</button>
+                                                        <button onclick="Quotes.changeStatus('${quote.id}')"><i class="fas fa-sync-alt"></i> ${i18n.t('quotes.menu.status')}</button>
                                                     </div>
 
                                                     <div class="menu-section">
-                                                        <label>Divers</label>
-                                                        <button onclick="Quotes.duplicate('${quote.id}')"><i class="fas fa-copy"></i> Dupliquer</button>
-                                                        <button onclick="Quotes.delete('${quote.id}')" class="text-danger"><i class="fas fa-trash-alt"></i> Supprimer</button>
+                                                        <label>${i18n.t('quotes.menu.misc')}</label>
+                                                        <button onclick="Quotes.duplicate('${quote.id}')"><i class="fas fa-copy"></i> ${i18n.t('quotes.menu.duplicate')}</button>
+                                                        <button onclick="Quotes.delete('${quote.id}')" class="text-danger"><i class="fas fa-trash-alt"></i> ${i18n.t('quotes.menu.delete')}</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -151,8 +151,8 @@ const Quotes = {
                 </div>
             ` : `
                 <div class="empty-state">
-                    <p>Aucun devis enregistré</p>
-                    <button class="button-primary" onclick="Quotes.showAddForm()">Créer mon premier devis</button>
+                    <p>${i18n.t('quotes.empty.text')}</p>
+                    <button class="button-primary" onclick="Quotes.showAddForm()">${i18n.t('quotes.empty.btn')}</button>
                 </div>
             `}
         `;
@@ -164,7 +164,7 @@ const Quotes = {
         const quote = Storage.getQuote(id);
         if (!quote) return;
 
-        if (confirm('Voulez-vous dupliquer ce devis (créer une copie) ?')) {
+        if (confirm(i18n.t('quotes.confirm.duplicate'))) {
             const newQuoteData = {
                 clientId: quote.clientId,
                 status: 'draft',
@@ -175,7 +175,7 @@ const Quotes = {
             };
 
             await Storage.addQuote(newQuoteData);
-            App.showNotification('Devis dupliqué (Sync Cloud).', 'success');
+            App.showNotification(i18n.t('quotes.notify.duplicated'), 'success');
             this.render();
         }
     },
@@ -190,7 +190,7 @@ const Quotes = {
 
         // Si aucun client n'existe, on redirige vers l'ajout de client
         if (clients.length === 0) {
-            if (confirm('Vous devez d\'abord créer un client pour établir un devis. Voulez-vous en créer un maintenant ?')) {
+            if (confirm(i18n.t('quotes.confirm.create_client'))) {
                 // Sauvegarder l'état pour revenir ici après la création du client
                 sessionStorage.setItem('sp_return_to_quote', 'true');
 
@@ -217,11 +217,11 @@ const Quotes = {
         if (draftItems && Array.isArray(draftItems) && draftItems.length > 0) {
             this.currentItems = draftItems;
             Storage.set('sp_draft_quote_items', null);
-            App.showNotification('Estimation importée avec succès !', 'success');
+            App.showNotification(i18n.t('quotes.notify.scoper_imported'), 'success');
         } else if (draftItem) {
             this.currentItems = [draftItem];
             Storage.set('sp_draft_quote_item', null);
-            App.showNotification('Tarif importé depuis le calculateur !', 'success');
+            App.showNotification(i18n.t('quotes.notify.calc_imported'), 'success');
         } else {
             this.currentItems = [{ description: '', quantity: 1, unitPrice: 0 }];
         }

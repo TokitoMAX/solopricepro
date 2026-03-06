@@ -51,19 +51,21 @@ const Dashboard = {
             // Sub-components
             const onboardingHtml = (typeof Onboarding !== 'undefined' && Onboarding.renderWidget) ? Onboarding.renderWidget() : '';
             const coachHtml = (typeof Coach !== 'undefined' && typeof App !== 'undefined' && App.isFeatureProGated) ?
-                (App.isFeatureProGated('coach') ? (typeof PremiumWall !== 'undefined' ? PremiumWall.renderTeaser('Coaching Stratégique', 'Obtenez des analyses automatiques sur votre cash dormant et vos objectifs de salairenet.', '') : '') : Coach.renderWidget()) : '';
+                (App.isFeatureProGated('coach') ? (typeof PremiumWall !== 'undefined' ? PremiumWall.renderTeaser(i18n.t('dashboard.coach.title') || 'Coaching Stratégique', i18n.t('dashboard.coach.desc') || 'Obtenez des analyses automatiques sur votre cash dormant et vos objectifs de salaire net.', '') : '') : Coach.renderWidget()) : '';
 
             const dailyFocusItems = (typeof App !== 'undefined' && App.getDailyFocus) ? App.getDailyFocus() : [];
+
+            const locale = (typeof App !== 'undefined') ? App.getCurrencyConfig().locale : 'fr-FR';
 
             // --- RENDER ---
             container.innerHTML = `
             <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; animation: slideInTop 0.6s ease-out;">
                 <div>
-                    <h1 class="logo-text" style="font-size: 2.8rem; margin-bottom: 0.25rem;">Control Tower</h1>
-                    <p class="page-subtitle" style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">Pilotez votre profitabilité en haute définition</p>
+                    <h1 class="logo-text" style="font-size: 2.8rem; margin-bottom: 0.25rem;">${i18n.t('dashboard.title')}</h1>
+                    <p class="page-subtitle" style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">${i18n.t('dashboard.subtitle')}</p>
                 </div>
                 <div class="dashboard-timer glass" style="font-size: 0.95rem; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 99px;">
-                    <i class="far fa-calendar-alt" style="margin-right: 8px; color: var(--primary);"></i> <span id="current-time-display">${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                    <i class="far fa-calendar-alt" style="margin-right: 8px; color: var(--primary);"></i> <span id="current-time-display">${new Date().toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                 </div>
             </div>
 
@@ -78,37 +80,37 @@ const Dashboard = {
                     <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);"></div>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; position: relative; z-index: 1;">
                         <div>
-                            <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">Salaire Net Encaissé</span>
+                            <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">${i18n.t('dashboard.net_income')}</span>
                             <div style="font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; color: var(--white); line-height: 1;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(currentNet) : currentNet}</div>
                             <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
-                                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--primary-light); border-radius: 8px; font-weight: 700; font-size: 0.75rem; padding: 6px 10px;">Vrai Net</span>
-                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Mois en cours</span>
+                                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--primary-light); border-radius: 8px; font-weight: 700; font-size: 0.75rem; padding: 6px 10px;">${i18n.t('dashboard.true_net')}</span>
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">${i18n.t('dashboard.current_month')}</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
-                            <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">Projection Fin de Mois</span>
+                            <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px;">${i18n.t('dashboard.projection')}</span>
                             <div style="font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: var(--primary-light); opacity: 0.9;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(projectedNet) : projectedNet}</div>
-                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-muted);">Est. via pipeline (${conversionRate * 100}%)</div>
+                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-muted);">${i18n.t('dashboard.est_pipeline')} (${conversionRate * 100}%)</div>
                         </div>
                     </div>
 
                     <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
                         <div style="display: flex; gap: 2.5rem;">
                             <div>
-                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">CA Total</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">${i18n.t('dashboard.total_ca')}</span>
                                 <span style="font-weight: 700; font-size: 1.1rem; color: white;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(stats.monthlyRevenue) : stats.monthlyRevenue}</span>
                             </div>
                             <div>
-                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">TVA + Social</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">${i18n.t('dashboard.tax_social')}</span>
                                 <span style="font-weight: 700; font-size: 1.1rem; color: #f59e0b;">-${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(provisionCharges) : provisionCharges}</span>
                             </div>
                             <div>
-                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Dépenses</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">${i18n.t('dashboard.expenses')}</span>
                                 <span style="font-weight: 700; font-size: 1.1rem; color: #ef4444;">-${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(totalExpenses) : totalExpenses}</span>
                             </div>
                         </div>
                         <button class="button-outline" onclick="App.navigateTo('expenses')" style="border-radius: 14px; font-size: 0.85rem; padding: 0.8rem 1.4rem; border-color: var(--glass-border-light); background: rgba(255,255,255,0.02); color: white; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.08)';" onmouseout="this.style.background='rgba(255,255,255,0.02)';">
-                            Trésorerie <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                            ${i18n.t('dashboard.treasury')} <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
                         </button>
                     </div>
                 </div>
@@ -126,10 +128,10 @@ const Dashboard = {
                         <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(99, 102, 241, 0.1); color: #6366f1; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
                             <i class="fas fa-filter"></i>
                         </div>
-                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 4px 10px; border-radius: 8px; font-weight: 600;">${quotes.filter(q => q.status === 'sent').length} devis</span>
+                        <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 4px 10px; border-radius: 8px; font-weight: 600;">${quotes.filter(q => q.status === 'sent').length} ${i18n.t('dashboard.quotes').toLowerCase()}</span>
                     </div>
                     <div>
-                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Pipeline en Attente</span>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">${i18n.t('dashboard.pending_pipeline')}</span>
                         <div style="font-size: 2.2rem; font-weight: 900; margin-top: 8px; color: white;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(pipelineValue) : pipelineValue}</div>
                     </div>
                 </div>
@@ -147,13 +149,13 @@ const Dashboard = {
                         </button>
                     </div>
                     <div>
-                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Objectif Mensuel</span>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">${i18n.t('dashboard.monthly_goal')}</span>
                         <div style="font-size: 2.2rem; font-weight: 900; margin-top: 8px; color: white;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(monthlyGoal) : monthlyGoal}</div>
                     </div>
                     <div style="margin-top: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; font-weight: 600;">
                             <span style="color: var(--primary-light);">${progress}%</span>
-                            <span style="color: var(--text-muted);">Reste: ${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(Math.max(0, monthlyGoal - stats.monthlyRevenue)) : (monthlyGoal - stats.monthlyRevenue)}</span>
+                            <span style="color: var(--text-muted);">${i18n.t('dashboard.remaining')}: ${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(Math.max(0, monthlyGoal - stats.monthlyRevenue)) : (monthlyGoal - stats.monthlyRevenue)}</span>
                         </div>
                         <div style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
                             <div style="height: 100%; width: ${progress}%; background: var(--gradient-premium); border-radius: 4px; box-shadow: 0 0 10px var(--primary-glass);"></div>
@@ -165,19 +167,19 @@ const Dashboard = {
                 <div class="bento-item glass-premium hover-lift tilt-card" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; position: relative; transition: transform 0.1s ease, box-shadow 0.3s ease;">
                     <div class="tilt-glare-wrapper"><div class="tilt-glare"></div></div>
                     <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);"></div>
-                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1.5rem; display: block; position: relative; z-index: 1;">Actions Rapides</span>
+                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1.5rem; display: block; position: relative; z-index: 1;">${i18n.t('dashboard.quick_actions')}</span>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1;">
                         <button onclick="App.navigateTo('scoper');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
-                            <i class="fas fa-magic" style="font-size: 1.2rem; color: var(--primary-light);"></i> Scoper
+                            <i class="fas fa-magic" style="font-size: 1.2rem; color: var(--primary-light);"></i> ${i18n.t('dashboard.scoper')}
                         </button>
                         <button onclick="App.navigateTo('quotes');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.1)'; this.style.borderColor='#6366f1';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
-                            <i class="fas fa-file-invoice" style="font-size: 1.2rem; color: #6366f1;"></i> Devis
+                            <i class="fas fa-file-invoice" style="font-size: 1.2rem; color: #6366f1;"></i> ${i18n.t('dashboard.quotes')}
                         </button>
                         <button onclick="App.navigateTo('network');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(245, 158, 11, 0.1)'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
-                            <i class="fas fa-users" style="font-size: 1.2rem; color: #f59e0b;"></i> Cercle
+                            <i class="fas fa-users" style="font-size: 1.2rem; color: #f59e0b;"></i> ${i18n.t('dashboard.network')}
                         </button>
                         <button onclick="App.navigateTo('settings');" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border-light); border-radius: 16px; padding: 1rem; color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='var(--glass-border-light)';">
-                            <i class="fas fa-cog" style="font-size: 1.2rem; color: var(--text-muted);"></i> Réglages
+                            <i class="fas fa-cog" style="font-size: 1.2rem; color: var(--text-muted);"></i> ${i18n.t('dashboard.settings')}
                         </button>
                     </div>
                 </div>
@@ -186,8 +188,8 @@ const Dashboard = {
                 <div class="bento-item glass-premium hover-lift" style="grid-column: span 12; padding: 2.5rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; transition: all 0.3s ease;">
                     <div style="position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);"></div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; position: relative; z-index: 1;">
-                        <h2 style="font-size: 1.1rem; font-weight: 800; color: white; margin: 0;">Flux de Documents Récents</h2>
-                        <button class="button-ghost small" onclick="App.navigateTo('quotes')" style="color: var(--primary-light); background: transparent; border: none; font-weight: 600; cursor: pointer;">Tout voir →</button>
+                        <h2 style="font-size: 1.1rem; font-weight: 800; color: white; margin: 0;">${i18n.t('dashboard.recent_docs')}</h2>
+                        <button class="button-ghost small" onclick="App.navigateTo('quotes')" style="color: var(--primary-light); background: transparent; border: none; font-weight: 600; cursor: pointer;">${i18n.t('dashboard.see_all')} →</button>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
@@ -218,8 +220,8 @@ const Dashboard = {
                     ${(recentQuotes.length === 0 && recentInvoices.length === 0) ? `
                         <div class="empty-state" style="text-align: center; padding: 3rem;">
                             <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📄</div>
-                            <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem;">Aucun document émis ce mois-ci.</p>
-                            <button class="cta-button" onclick="App.navigateTo('quotes')" style="padding: 0.8rem 2rem; font-size: 0.95rem; border-radius: 12px; border: none; cursor: pointer; background: var(--gradient-premium); color: white; font-weight: 600;">Créer mon premier devis</button>
+                            <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem;">${i18n.t('dashboard.no_docs')}</p>
+                            <button class="cta-button" onclick="App.navigateTo('quotes')" style="padding: 0.8rem 2rem; font-size: 0.95rem; border-radius: 12px; border: none; cursor: pointer; background: var(--gradient-premium); color: white; font-weight: 600;">${i18n.t('dashboard.create_first')}</button>
                         </div>
                     ` : ''}
                 </div>
@@ -242,9 +244,9 @@ const Dashboard = {
             if (container) {
                 container.innerHTML = `
                     <div style="padding: 2rem; text-align: center; background: rgba(239, 68, 68, 0.1); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2); margin-top: 2rem;">
-                        <h3 style="color: #ef4444; margin-bottom: 1rem;">Oups ! Un problème est survenu.</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Nous n'avons pas pu charger votre "Vue Stratégique" correctement.</p>
-                        <button class="button-primary" style="margin-top: 1.5rem;" onclick="window.location.reload()">Rafraîchir la page</button>
+                        <h3 style="color: #ef4444; margin-bottom: 1rem;">${i18n.t('dashboard.error_title')}</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">${i18n.t('dashboard.error_desc')}</p>
+                        <button class="button-primary" style="margin-top: 1.5rem;" onclick="window.location.reload()">${i18n.t('dashboard.refresh')}</button>
                     </div>
                 `;
             }
@@ -258,7 +260,7 @@ const Dashboard = {
         const calculatorData = Storage.get('sp_calculator_data') || { monthlyRevenue: defaultRev, workingDays: 15, hoursPerDay: 7, monthlyCharges: 500, taxRate: 22, sector: 'tech' };
         const currentGoal = calculatorData.monthlyRevenue || defaultRev;
 
-        const newGoal = prompt("Définissez votre nouvel objectif de Chiffre d'Affaires(CA) mensuel (" + (typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€') + ") : ", currentGoal);
+        const newGoal = prompt(`${i18n.t('dashboard.edit_goal_prompt')} (${typeof App !== 'undefined' ? App.getCurrencyConfig().symbol : '€'}) : `, currentGoal);
         if (newGoal !== null && newGoal.trim() !== '') {
             const parsedGoal = parseFloat(newGoal.replace(/[^0-9.,]/g, '').replace(',', '.'));
 
@@ -267,7 +269,7 @@ const Dashboard = {
                 Storage.set('sp_calculator_data', calculatorData);
 
                 if (typeof App !== 'undefined' && App.showNotification) {
-                    App.showNotification("Objectif mis à jour avec succès !", 'success');
+                    App.showNotification(i18n.t('dashboard.notify.goal_updated') || "Objectif mis à jour avec succès !", 'success');
                 }
 
                 this.render(); // Re-render the dashboard immediately
@@ -278,21 +280,13 @@ const Dashboard = {
                 }
             } else {
                 if (typeof App !== 'undefined' && App.showNotification) {
-                    App.showNotification("Montant invalide. L'objectif doit être un nombre supérieur à 0.", 'error');
+                    App.showNotification(i18n.t('dashboard.invalid_amount'), 'error');
                 }
             }
         }
     },
 
     getStatusLabel(status) {
-        const labels = {
-            draft: 'Brouillon',
-            sent: 'Envoyée',
-            paid: 'Payée',
-            overdue: 'En retard',
-            accepted: 'Accepté',
-            refused: 'Refusé'
-        };
-        return labels[status] || status;
+        return i18n.t(`status.${status}`) || status;
     }
 };
