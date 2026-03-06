@@ -198,7 +198,7 @@ const Expenses = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">${i18n.t('expenses.label.project') || 'Affectation (Projet)'}</label>
-                            <select name="projectId" class="form-input" style="background: rgba(255,255,255,0.05);">
+                            <select name="project_id" class="form-input" style="background: rgba(255,255,255,0.05);">
                                 <option value="">${i18n.t('expenses.project.structure') || 'Dépense de structure'}</option>
                                 ${quotes.map(q => {
             const client = Storage.getClient(q.clientId);
@@ -228,7 +228,7 @@ const Expenses = {
             description: formData.get('description'),
             amount: parseFloat(formData.get('amount')),
             category: formData.get('category'),
-            projectId: formData.get('projectId'),
+            project_id: formData.get('project_id'),
             date: formData.get('date')
         };
 
