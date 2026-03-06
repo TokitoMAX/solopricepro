@@ -4,10 +4,10 @@
 const Expenses = {
     getCategoryConfig(category) {
         const configs = {
-            'Logiciels': { icon: '💻', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.1)', label: i18n.t('expenses.cat.software') || 'Logiciels' },
-            'Materiel': { icon: '🏢', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', label: i18n.t('expenses.cat.hardware') || 'Materiel' },
-            'Marketing': { icon: '📣', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)', label: i18n.t('expenses.cat.marketing') || 'Marketing' },
-            'Formation': { icon: '🎓', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', label: i18n.t('expenses.cat.training') || 'Formation' },
+            'Logiciels': { icon: '✨', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.1)', label: i18n.t('expenses.cat.software') || 'Logiciels' },
+            'Materiel': { icon: '💻', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', label: i18n.t('expenses.cat.hardware') || 'Materiel' },
+            'Marketing': { icon: '🎯', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)', label: i18n.t('expenses.cat.marketing') || 'Marketing' },
+            'Formation': { icon: '🧠', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', label: i18n.t('expenses.cat.training') || 'Formation' },
             'Frais de Projet': { icon: '🛠️', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)', label: i18n.t('expenses.cat.project') || 'Frais de Projet' },
             'Autre': { icon: '📦', color: '#9ca3af', bg: 'rgba(156, 163, 175, 0.1)', label: i18n.t('expenses.cat.other') || 'Autre' }
         };
@@ -22,139 +22,152 @@ const Expenses = {
         const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
 
         // Treasury Context
-        const leads = (typeof Storage !== 'undefined' && typeof Storage.getLeads === 'function') ? Storage.getLeads() : [];
-        const quotes = (typeof Storage !== 'undefined' && typeof Storage.getQuotes === 'function') ? Storage.getQuotes() : [];
         const invoices = Storage.getInvoices() || [];
+
+        // Collected (Paid)
         const totalCollected = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + (i.total || 0), 0);
+
+        // Pending (Sent or Overdue)
+        const totalPending = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((sum, i) => sum + (i.total || 0), 0);
+
         const socialRate = (typeof TaxEngine !== 'undefined' && TaxEngine.getSocialRate) ? TaxEngine.getSocialRate() : 21.1;
         const provisionCharges = totalCollected * (socialRate / 100);
         const trueNet = totalCollected - provisionCharges - totalExpenses;
 
         container.innerHTML = `
-            <div class="page-header" style="margin-bottom: 2.5rem; animation: slideInTop 0.5s ease-out;">
+            <div class="page-header" style="margin-bottom: 3rem; animation: fadeIn 0.8s ease-out;">
                 <div>
-                    <h1 class="page-title" style="font-size: 2.2rem; font-weight: 900;">${i18n.t('expenses.title') || 'Gestion du Cash-flow'}</h1>
-                    <p class="page-subtitle" style="color: var(--text-muted);">${i18n.t('expenses.subtitle') || 'Suivez vos dépenses et votre profit net en temps réel.'}</p>
+                    <h1 class="page-title" style="font-size: 2.5rem; letter-spacing: -1px; font-weight: 900; background: linear-gradient(135deg, #fff 0%, #a5a5a5 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        ${i18n.t('expenses.title') || 'Gestion du Cash-flow'}
+                    </h1>
+                    <p class="page-subtitle" style="color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem;">
+                        ${i18n.t('expenses.subtitle') || 'Analysez votre rentabilité réelle et vos prévisions d\'encaissement.'}
+                    </p>
                 </div>
                 <div style="display: flex; gap: 1rem;">
-                    <button class="button-outline" onclick="App.exportPurchasesLedger()" style="border-radius: 12px; font-weight: 600;">
-                        <i class="fas fa-file-pdf" style="margin-right: 8px;"></i> ${i18n.t('expenses.export') || 'Exporter'}
+                    <button class="button-outline" onclick="App.exportPurchasesLedger()" style="border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);">
+                        <i class="fas fa-file-pdf" style="margin-right: 8px; opacity: 0.7;"></i> ${i18n.t('expenses.export') || 'Exporter'}
                     </button>
-                    <button class="button-primary" onclick="Expenses.showAddForm()" style="border-radius: 12px; font-weight: 700; background: var(--primary); border: none; box-shadow: 0 4px 12px var(--primary-glass);">
+                    <button class="button-primary" onclick="Expenses.showAddForm()" style="border-radius: 10px; padding: 0.8rem 1.5rem; font-weight: 700; background: #fff; color: #000; border: none; box-shadow: 0 10px 20px rgba(255,255,255,0.1);">
                         <i class="fas fa-plus" style="margin-right: 8px;"></i> ${i18n.t('expenses.new') || 'Nouvelle dépense'}
                     </button>
                 </div>
             </div>
 
-            <!-- TREASURY SUMMARY (QONTO STYLE) -->
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-                <div class="stat-card glass" style="border-left: 4px solid #10b981; padding: 1.5rem;">
-                    <span class="stat-label" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">${i18n.t('expenses.gross_collected') || 'Encaissé Brut'}</span>
-                    <div class="stat-value" style="font-size: 1.8rem; font-weight: 900; color: #10b981; margin-top: 8px;">+ ${App.formatCurrency(totalCollected)}</div>
+            <!-- TREASURY SUMMARY (LINEAR/ATTIO STYLE) -->
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 3rem;">
+                <div class="stat-card glass" style="border: 1px solid rgba(16, 185, 129, 0.2); padding: 1.8rem; background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);">
+                    <span class="stat-label" style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #10b981; letter-spacing: 1.5px; margin-bottom: 12px; display: block;">${i18n.t('expenses.gross_collected') || 'Encaissé Brut'}</span>
+                    <div class="stat-value" style="font-size: 2.2rem; font-weight: 900; color: #fff;">${App.formatCurrency(totalCollected)}</div>
+                    <div style="font-size: 0.8rem; color: #10b981; margin-top: 5px; font-weight: 600;">Factures payées</div>
                 </div>
-                <div class="stat-card glass" style="border-left: 4px solid #f59e0b; padding: 1.5rem;">
-                    <span class="stat-label" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">${i18n.t('expenses.social_provisions') || 'Provisions Sociales'}</span>
-                    <div class="stat-value" style="font-size: 1.8rem; font-weight: 900; color: #f59e0b; margin-top: 8px;">- ${App.formatCurrency(provisionCharges)}</div>
+
+                <div class="stat-card glass" style="border: 1px solid rgba(59, 130, 246, 0.2); padding: 1.8rem; background: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);">
+                    <span class="stat-label" style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #3b82f6; letter-spacing: 1.5px; margin-bottom: 12px; display: block;">CA en attente</span>
+                    <div class="stat-value" style="font-size: 2.2rem; font-weight: 900; color: #fff;">${App.formatCurrency(totalPending)}</div>
+                    <div style="font-size: 0.8rem; color: #3b82f6; margin-top: 5px; font-weight: 600;">Envoyé / En retard</div>
                 </div>
-                <div class="stat-card glass" style="border-left: 4px solid #ef4444; padding: 1.5rem;">
-                    <span class="stat-label" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">${i18n.t('expenses.total_expenses') || 'Total Dépenses'}</span>
-                    <div class="stat-value" style="font-size: 1.8rem; font-weight: 900; color: #ef4444; margin-top: 8px;">- ${App.formatCurrency(totalExpenses)}</div>
+
+                <div class="stat-card glass" style="border: 1px solid rgba(239, 68, 68, 0.2); padding: 1.8rem; background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, transparent 100%);">
+                    <span class="stat-label" style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #ef4444; letter-spacing: 1.5px; margin-bottom: 12px; display: block;">${i18n.t('expenses.total_expenses') || 'Total Dépenses'}</span>
+                    <div class="stat-value" style="font-size: 2.2rem; font-weight: 900; color: #fff;">- ${App.formatCurrency(totalExpenses)}</div>
+                    <div style="font-size: 0.8rem; color: #ef4444; margin-top: 5px; font-weight: 600;">Dépenses réelles</div>
                 </div>
-                <div class="stat-card glass" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 95, 70, 0.1)); border: 1px solid var(--primary-glass); padding: 1.5rem;">
-                    <span class="stat-label" style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--primary-light); letter-spacing: 1px;">${i18n.t('expenses.real_net_profit') || 'Profit Net Réel'}</span>
-                    <div class="stat-value" style="font-size: 1.8rem; font-weight: 900; color: white; margin-top: 8px;">${App.formatCurrency(trueNet)}</div>
+
+                <div class="stat-card glass" style="border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.8rem; background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent);">
+                    <span class="stat-label" style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #fff; letter-spacing: 1.5px; margin-bottom: 12px; display: block;">${i18n.t('expenses.real_net_profit') || 'Profit Net Réel'}</span>
+                    <div class="stat-value" style="font-size: 2.2rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.2);">${App.formatCurrency(trueNet)}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Après provisions (${socialRate}%)</div>
                 </div>
             </div>
-
-
 
             <div id="expense-form-container" style="margin-bottom: 2rem;"></div>
 
-            <div class="glass-card transaction-journal" style="padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light); animation: fadeInUp 0.6s ease-out;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h3 style="font-weight: 800; font-size: 1.1rem;">${i18n.t('expenses.journal_title') || 'Journal des Transactions'}</h3>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">${i18n.t('expenses.operations_count', { count: expenses.length }) || `${expenses.length} opération(s)`}</div>
+            <div class="transaction-journal" style="animation: fadeInUp 1s ease-out;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; padding: 0 0.5rem;">
+                    <div>
+                        <h3 style="font-weight: 900; font-size: 1.4rem; letter-spacing: -0.5px;">${i18n.t('expenses.journal_title') || 'Journal des Flux'}</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">Historique détaillé de vos transactions sortantes</p>
+                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; background: rgba(255,255,255,0.03); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                        ${i18n.t('expenses.operations_count', { count: expenses.length }) || `${expenses.length} OPÉRATION(S)`}
+                    </div>
                 </div>
 
-                <table class="data-table" style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
-                    <thead style="background: transparent;">
-                        <tr>
-                            <th style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800;">${i18n.t('expenses.header.operation') || 'Opération'}</th>
-                            <th style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800;">${i18n.t('expenses.header.category') || 'Catégorie'}</th>
-                            <th style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800;">${i18n.t('expenses.header.project') || 'Projet'}</th>
-                            <th style="padding: 1rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; text-align: right;">${i18n.t('expenses.header.amount') || 'Montant'}</th>
-                            <th style="padding: 1rem; text-align: right;"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${expenses.length > 0 ? expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => {
+                <div class="glass-card" style="padding: 0; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.01);">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <th style="padding: 1.2rem; color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Flux / Date</th>
+                                <th style="padding: 1.2rem; color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Catégorie</th>
+                                <th style="padding: 1.2rem; color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Projet lié</th>
+                                <th style="padding: 1.2rem; color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; text-align: right;">Montant</th>
+                                <th style="padding: 1.2rem; width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${expenses.length > 0 ? expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => {
             const cat = this.getCategoryConfig(e.category);
             return `
-                            <tr class="glass-row" style="transition: all 0.2s ease;">
-                                <td style="padding: 1.25rem; border-radius: 12px 0 0 12px;">
-                                    <div style="display: flex; align-items: center; gap: 1rem;">
-                                        <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                                            ${cat.icon}
+                                <tr class="glass-row" style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                                    <td style="padding: 1.2rem;">
+                                        <div style="display: flex; align-items: center; gap: 1.2rem;">
+                                            <div style="width: 42px; height: 42px; background: ${cat.bg}; color: ${cat.color}; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; border: 1px solid rgba(255,255,255,0.03);">
+                                                ${cat.icon}
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">${e.description}</div>
+                                                <div style="font-size: 0.75rem; color: var(--text-muted); weight: 500;">${App.formatDate(e.date)}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div style="font-weight: 700; color: white;">${e.description}</div>
-                                            <div style="font-size: 0.75rem; color: var(--text-muted);">${App.formatDate(e.date)}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style="padding: 1.25rem;">
-                                    <span class="badge" style="background: ${cat.bg}; color: ${cat.color}; border: 1px solid rgba(255,255,255,0.05); font-weight: 700; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem;">
-                                        ${cat.label || e.category}
-                                    </span>
-                                </td>
-                                <td style="padding: 1.25rem;">
-                                    ${e.projectId ? `
-                                        <div style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 0.8rem;">
-                                            <i class="fas fa-link" style="font-size: 0.7rem;"></i> ${Storage.getQuote(e.projectId)?.number || i18n.t('expenses.header.project') || 'Projet'}
-                                        </div>
-                                    ` : '<span style="color: var(--text-muted); font-size: 0.8rem; opacity: 0.5;">—</span>'}
-                                </td>
-                                <td style="padding: 1.25rem; text-align: right;">
-                                    <div style="font-weight: 800; color: #ef4444; font-size: 1.05rem;">-${App.formatCurrency(e.amount)}</div>
-                                </td>
-                                <td style="padding: 1.25rem; text-align: right; border-radius: 0 12px 12px 0;">
-                                    <button class="btn-icon" onclick="Expenses.delete('${e.id}')" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; transition: color 0.2s;">
-                                        <i class="far fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `}).join('') : `
-                            <tr>
-                                <td colspan="5" align="center" style="padding: 4rem; color: var(--text-muted); background: rgba(0,0,0,0.1); border-radius: 16px;">
-                                    <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;">🧘</div>
-                                    <div style="font-weight: 600;">${i18n.t('expenses.empty') || 'Aucune dépense détectée'}</div>
-                                    <div style="font-size: 0.85rem;">${i18n.t('expenses.empty_hint') || 'Utilisez le bouton "Nouvelle dépense" pour commencer.'}</div>
-                                </td>
-                            </tr>
-                        `}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td style="padding: 1.2rem;">
+                                        <span style="font-size: 0.8rem; font-weight: 600; color: ${cat.color}; background: ${cat.bg}; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.03);">
+                                            ${cat.label || e.category}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1.2rem;">
+                                        ${e.project_id ? `
+                                            <div style="display: flex; align-items: center; gap: 8px; color: #3b82f6; font-size: 0.8rem; font-weight: 600;">
+                                                <i class="fas fa-link" style="font-size: 0.7rem; opacity: 0.7;"></i> ${Storage.getQuote(e.project_id)?.number || 'Projet'}
+                                            </div>
+                                        ` : '<span style="color: var(--text-muted); font-size: 0.8rem; opacity: 0.3;">—</span>'}
+                                    </td>
+                                    <td style="padding: 1.2rem; text-align: right;">
+                                        <div style="font-weight: 800; color: #fff; font-size: 1.1rem;">- ${App.formatCurrency(e.amount)}</div>
+                                    </td>
+                                    <td style="padding: 1.2rem; text-align: center;">
+                                        <button class="btn-icon" onclick="Expenses.delete('${e.id}')" style="background: transparent; border: none; color: rgba(239, 68, 68, 0.4); cursor: pointer; transition: all 0.2s;">
+                                            <i class="far fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `}).join('') : `
+                                <tr>
+                                    <td colspan="5" align="center" style="padding: 6rem 2rem;">
+                                        <div style="font-size: 3rem; margin-bottom: 1.5rem; opacity: 0.2;">🌊</div>
+                                        <div style="font-weight: 800; font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem;">${i18n.t('expenses.empty') || 'Aucun mouvement de trésorerie'}</div>
+                                        <div style="font-size: 0.9rem; color: var(--text-muted); max-width: 300px;">${i18n.t('expenses.empty_hint') || 'Enregistrez vos achats pour calculer votre profit net réel.'}</div>
+                                    </td>
+                                </tr>
+                            `}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <style>
-                .glass-row:hover {
-                    background: rgba(255,255,255,0.03) !important;
-                    transform: translateX(4px);
+                .glass-row { transition: background 0.2s ease; cursor: default; }
+                .glass-row:hover { background: rgba(255,255,255,0.03) !important; }
+                .glass-row:hover .btn-icon { color: #ef4444 !important; transform: scale(1.1); }
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
-                .data-table th { border: none !important; }
-                .data-table td { border: none !important; }
-                .glass-row { background: rgba(255,255,255,0.01); }
-
-                /* Styles pour le Pipeline Kanban intégré */
-                .kanban-board {
-            <style>
-                .glass-row:hover {
-                    background: rgba(255,255,255,0.03) !important;
-                    transform: translateX(4px);
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
                 }
-                .data-table th { border: none !important; }
-                .data-table td { border: none !important; }
-                .glass-row { background: rgba(255,255,255,0.01); }
             </style>
         `;
     },
