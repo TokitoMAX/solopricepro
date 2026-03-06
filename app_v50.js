@@ -1001,21 +1001,19 @@ const App = {
         const modal = document.getElementById('upgrade-modal');
         if (!modal) return;
 
-        const messages = {
-            limit: 'Passez à la vitesse supérieure.',
-            pdf: 'Logo personnalisé & exports illimités.',
-            feature: 'Fonctionnalité réservée aux membres PRO.',
-            scoper_limit: 'Analyse illimitée réservée aux membres PRO.',
-            marketplace_limit: 'Limite de réponse atteinte (1/mois). Passez PRO pour débloquer le Radar.',
-            marketplace_automation: 'Automatisation réservée aux membres PRO.',
-            pdf_download: 'Téléchargements illimités et logo personnalisé réservés aux membres PRO.'
-        };
-
         const titleEl = modal.querySelector('.upgrade-title');
         const messageEl = modal.querySelector('.upgrade-message');
 
-        if (titleEl) titleEl.textContent = 'Accès SoloPrice PRO';
-        if (messageEl) messageEl.textContent = messages[reason] || messages.limit;
+        if (titleEl) {
+            titleEl.setAttribute('data-i18n', 'upgrade.title');
+            titleEl.textContent = i18n.t('upgrade.title');
+        }
+
+        if (messageEl) {
+            const reasonKey = `upgrade.msg.${reason}`;
+            messageEl.setAttribute('data-i18n', reasonKey);
+            messageEl.textContent = i18n.t(reasonKey) || i18n.t('upgrade.msg.limit');
+        }
 
         // Force display flex to override any potential inline style 'none'
         modal.style.display = 'flex';
@@ -1034,67 +1032,75 @@ const App = {
         const titleEl = modal.querySelector('.upgrade-title');
 
         if (step === 'comparison') {
-            titleEl.textContent = 'Accès SoloPrice PRO';
+            titleEl.innerHTML = i18n.t('upgrade.title').replace('PRO', '<span class="gradient-text">PRO</span>');
             container.innerHTML = `
+            <!-- ROI Calculator Prompt -->
+            <div style="grid-column: 1 / -1; background: rgba(var(--primary-rgb), 0.05); border: 1px solid var(--primary-glass); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 1.5rem;"></div>
+                <div style="font-size: 0.85rem; line-height: 1.4; color: var(--text-secondary);">
+                    ${i18n.t('upgrade.roi.desc')}
+                </div>
+            </div>
+
             <!-- Standard -->
             <div class="pricing-card-mini standard" onclick="App.closeModal()">
-                <div class="card-tier">STANDARD</div>
+                <div class="card-tier">${i18n.t('pricing.standard.name').toUpperCase()}</div>
                 <ul style="list-style: none; padding: 0; margin: 1.5rem 0; font-size: 0.85rem; color: var(--text-muted); text-align: left; display: flex; flex-direction: column; gap: 0.5rem;">
-                    <li><i class="fas fa-check-circle" style="color: var(--primary); margin-right: 8px;"></i> Marketplace : 1 réponse/mois</li>
-                    <li><i class="fas fa-minus" style="margin-right: 8px; opacity: 0.5;"></i> 5 Clients Actifs</li>
-                    <li><i class="fas fa-minus" style="margin-right: 8px; opacity: 0.5;"></i> 3 Devis par mois</li>
+                    <li><i class="fas fa-check-circle" style="color: var(--primary); margin-right: 8px;"></i> ${i18n.t('pricing.standard.feat1')}</li>
+                    <li><i class="fas fa-minus" style="margin-right: 8px; opacity: 0.5;"></i> ${i18n.t('pricing.standard.feat2')}</li>
+                    <li><i class="fas fa-minus" style="margin-right: 8px; opacity: 0.5;"></i> ${i18n.t('pricing.standard.feat3')}</li>
                 </ul>
-                <button class="button-secondary full-width" onclick="document.getElementById('upgrade-modal-v2').classList.remove('active')" style="padding: 0.8rem;">Rester en Standard</button>
+                <button class="button-secondary full-width" onclick="App.closeModal()" style="padding: 0.8rem;">${i18n.t('upgrade.standard.select')}</button>
             </div>
 
             <!-- Pro -->
             <div class="pricing-card-mini active pro" onclick="App.renderUpgradeStep('checkout', 'pro')">
-                <div class="card-badge">PRODUCTION ILLIMITÉE</div>
-                <div class="card-tier">SOLOPRICE PRO</div>
-                <div class="card-price">15€<span>/mois</span></div>
-                <div class="card-value-tag">Idéal pour produire sans limites</div>
+                <div class="card-badge">${i18n.t('pricing.pro.badge').toUpperCase()}</div>
+                <div class="card-tier">${i18n.t('pricing.pro.name').toUpperCase()}</div>
+                <div class="card-price">${i18n.t('pricing.pro.price')}€<span>${i18n.t('pricing.standard.period')}</span></div>
+                <div class="card-value-tag">${i18n.t('upgrade.pro.value')}</div>
                 <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> Tout du plan Standard</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Clients & Devis</strong> Illimités</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Pipeline Kanban</strong> & Trésorerie Nette</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Chiffrage Scoper</strong> & Dépenses</li>
-                    <li><i class="fas fa-check-circle"></i> PDF Factures avec <strong>votre Logo</strong></li>
-                    <li><i class="fas fa-check-circle"></i> Support Prioritaire</li>
+                    <li><i class="fas fa-check-circle"></i> ${i18n.t('feat.everything.standard')}</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('pricing.feat.unlimited')}</strong></li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('feat.kanban')}</strong> & ${i18n.t('dashboard.treasury')}</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('scoper.tab.project')}</strong> & ${i18n.t('dashboard.expenses')}</li>
+                    <li><i class="fas fa-check-circle"></i> PDF ${i18n.t('dashboard.quotes')} avec <strong>${i18n.t('pricing.feat.logo_pdf')}</strong></li>
+                    <li><i class="fas fa-check-circle"></i> ${i18n.t('feat.support')}</li>
                 </ul>
-                <button class="card-select-btn pro">Passer Pro</button>
+                <button class="card-select-btn pro">${i18n.t('upgrade.pro.select')}</button>
             </div>
 
             <!-- Expert -->
             <div class="pricing-card-mini active expert" onclick="App.renderUpgradeStep('checkout', 'expert')">
-                <div class="card-badge" style="background: #10b981;">TOUT INCLUS</div>
-                <div class="card-tier" style="color: #34d399;">PACK EXPERT</div>
-                <div class="card-price">29€<span>/mois</span></div>
-                <div class="card-value-tag">Pro + outils pour décrocher des missions</div>
+                <div class="card-badge" style="background: #10b981;">${i18n.t('upgrade.expert.badge')}</div>
+                <div class="card-tier" style="color: #34d399;">${i18n.t('pricing.expert.name').toUpperCase()}</div>
+                <div class="card-price">${i18n.t('pricing.expert.price')}€<span>${i18n.t('pricing.standard.period')}</span></div>
+                <div class="card-value-tag">${i18n.t('upgrade.expert.value')}</div>
                 <ul class="card-features-mini">
-                    <li><i class="fas fa-check-circle"></i> Tout du Pack Pro</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Marketplace illimitée</strong> — répondre à toutes les missions</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Journal de Bord</strong> — tracker humeur, focus & succès du jour</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Coach IA</strong> — analyses et conseils business personnalisés</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Profil visible</strong> dans le réseau de prestataires</li>
+                    <li><i class="fas fa-check-circle"></i> ${i18n.t('feat.everything.pro')}</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('pricing.expert.feat1')}</strong> — ${i18n.t('pricing.expert.feat1_desc')}</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('pricing.expert.feat2')}</strong> — ${i18n.t('pricing.expert.feat2_desc')}</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('pricing.expert.feat3')}</strong> — ${i18n.t('pricing.expert.feat3_desc')}</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>${i18n.t('pricing.expert.feat4')}</strong> ${i18n.t('pricing.expert.feat4_desc')}</li>
                 </ul>
-                <button class="card-select-btn expert" style="background: #10b981; color: white;">Devenir Expert</button>
+                <button class="card-select-btn expert" style="background: #10b981; color: white;">${i18n.t('upgrade.expert.select')}</button>
             </div>
         `;
         } else if (step === 'checkout') {
             const tier = typeof data === 'string' ? data : data.tier;
             const method = 'paypal'; // Force PayPal uniquement
-            const price = tier === 'pro' ? '15€' : '29€';
+            const price = tier === 'pro' ? i18n.t('pricing.pro.price') + '€' : i18n.t('pricing.expert.price') + '€';
 
             if (tier === 'standard') { App.closeModal(); return; }
 
-            titleEl.textContent = 'Activation Immédiate';
+            titleEl.textContent = i18n.t('upgrade.checkout.title');
             container.innerHTML = `
             <div class="checkout-view" style="width: 100%; text-align: left; padding: 0.5rem;">
                 <div class="checkout-summary" style="background: rgba(255,255,255,0.05); padding: 1.25rem; border-radius: 16px; margin-bottom: 2rem; border: 1px solid var(--border);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 style="margin: 0; font-size: 1rem;">SoloPrice ${tier.toUpperCase()}</h4>
-                            <span style="font-size: 0.8rem; color: var(--text-muted);">Abonnement via PayPal</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">${i18n.t('upgrade.checkout.sub_paypal')}</span>
                         </div>
                         <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary-light);">${price}</span>
                     </div>
@@ -1102,16 +1108,16 @@ const App = {
 
                 <div class="paypal-checkout-box">
                     <div id="paypal-live-badge" class="env-badge" style="display: none; margin-bottom: 1rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; width: fit-content; margin-inline: auto;">
-                        <i class="fas fa-check-circle"></i> MODE PRODUCTION (RÉEL)
+                        <i class="fas fa-check-circle"></i> ${i18n.t('upgrade.checkout.mode_live')}
                     </div>
                     <div id="paypal-button-container" class="paypal-button-mount">
                         <div class="fas fa-spinner fa-spin" style="font-size: 1.5rem; color: #0070ba;"></div>
                     </div>
-                    <p class="paypal-info-text text-muted" style="text-align: center; margin-top: 1rem;">Validation instantanée après paiement</p>
+                    <p class="paypal-info-text text-muted" style="text-align: center; margin-top: 1rem;">${i18n.t('upgrade.checkout.info')}</p>
                 </div>
                 
                 <button class="button-outline full-width" onclick="App.renderUpgradeStep('comparison')" style="margin-top: 1.5rem; border: none; color: var(--text-muted); font-size: 0.9rem;">
-                    <i class="fas fa-arrow-left"></i> Retour aux offres
+                    <i class="fas fa-arrow-left"></i> ${i18n.t('upgrade.checkout.back')}
                 </button>
             </div>
         `;
@@ -1144,7 +1150,7 @@ const App = {
                             return;
                         }
                         console.error(' [PAYPAL] SDK NOT LOADED after 5s!');
-                        container.innerHTML = '<p style="color:red; text-align:center; padding:1rem;">Erreur: Le service PayPal ne répond pas.<br><small>Désactivez votre bloqueur de pub.</small></p>';
+                        container.innerHTML = `<p style="color:red; text-align:center; padding:1rem;">${i18n.t('upgrade.checkout.error_sdk')}</p>`;
                         return;
                     }
 
@@ -1161,7 +1167,7 @@ const App = {
                             });
                         },
                         onApprove: async (data, actions) => {
-                            App.showNotification(` Activation de votre accès ${tier.toUpperCase()} ${isLive ? '' : '(Sandbox)'}...`, 'success');
+                            App.showNotification(i18n.t('upgrade.checkout.activating', { tier: tier.toUpperCase() }), 'success');
                             const user = Auth.getUser();
 
                             if (user) {
