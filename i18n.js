@@ -599,17 +599,21 @@ const i18n = {
         Object.entries(map).forEach(([id, text]) => {
             const el = document.getElementById(id);
             if (el) {
-                // Preserve the icon (first child) and update text node
-                const icon = el.querySelector('i');
-                if (icon) {
-                    // Replace text nodes only
+                // If there's a specific label span, update its text
+                const label = el.querySelector('.nav-label');
+                if (label) {
+                    label.textContent = text;
+                } else {
+                    // Legacy support: update text nodes
                     el.childNodes.forEach(node => {
                         if (node.nodeType === 3 && node.textContent.trim()) {
                             node.textContent = ' ' + text;
                         }
                     });
-                } else {
-                    el.textContent = text;
+                    // Fallback for simple links without structure
+                    if (!el.querySelector('i') && el.childNodes.length <= 1) {
+                        el.textContent = text;
+                    }
                 }
             }
         });

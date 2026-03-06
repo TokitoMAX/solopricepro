@@ -379,166 +379,186 @@
                 resultBox.classList.add('pulse-glow');
             }
         </script>
-        <div class="section-header">
-            <h2 class="section-title" data-i18n="pricing.title">Choisissez votre <span
-                    class="gradient-text">Puissance</span></h2>
-            <p class="section-subtitle" data-i18n="pricing.subtitle">Un investissement rentable dès votre premier devis.
-            </p>
-        </div>
-        <div class="pricing-grid"
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem; margin-top: 3rem; align-items: stretch; position: relative; perspective: 1200px; padding: 0 1rem;">
-            <div
-                style="position: absolute; top: 50%; left: 50%; width: 100vw; height: 100%; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 50%); transform: translate(-50%, -50%); pointer-events: none; z-index: -1;">
+        <section id="pricing" class="pricing-section section"
+            style="padding: 6rem 0; background: var(--dark-light); border-top: 1px solid var(--border);">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="pricing.title">Choisissez votre <span
+                        class="gradient-text">Puissance</span></h2>
+                <p class="section-subtitle" data-i18n="pricing.subtitle">Un investissement rentable dès votre premier
+                    devis.
+                </p>
             </div>
-            <!-- Standard -->
-            <div class="pricing-card glass-premium hover-lift tilt-card"
-                style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border-light); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: transform 0.1s ease, box-shadow 0.3s ease;">
-                <div class="tilt-glare-wrapper">
-                    <div class="tilt-glare"></div>
-                </div>
-                <div class="pricing-header"
-                    style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <h3 class="tier-name" data-i18n="pricing.standard.name"
-                        style="font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">
-                        Standard</h3>
-                    <div class="tier-price" data-i18n="pricing.standard.price"
-                        style="font-size: 3rem; font-weight: 800; color: #fff; line-height: 1;">0€<span class="period"
-                            data-i18n="pricing.standard.period"
-                            style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
-                </div>
-                <ul class="tier-features"
-                    style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
-                    <li data-i18n="feat.tjm"
-                        style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
-                            class="fas fa-check" style="color: var(--primary); margin-top: 4px;"></i> <span>Calculateur
-                            <strong>TJM Stratégique</strong></span>
-                    </li>
-                    <li data-i18n="feat.quotes"><i class="fas fa-check"></i> <strong>3 Devis</strong> et <strong>3
-                            Factures</strong> par mois</li>
-                    <li data-i18n="feat.clients"><i class="fas fa-check"></i> <strong>5 Clients</strong> actifs</li>
-                    <li data-i18n="feat.marketplace"><i class="fas fa-check"></i> <strong>Marketplace</strong> — voir
-                        les missions (1 réponse/mois)</li>
-                    <li data-i18n="feat.circle"><i class="fas fa-check"></i> <strong>Le Cercle</strong> — Clients &amp;
-                        Partenaires</li>
-                    <li data-i18n="feat.signature"><i class="fas fa-check"></i> <strong>Signature Électronique</strong>
-                        Client</li>
-                    <li class="disabled" data-i18n="feat.pipeline"><i class="fas fa-times"></i> Pipeline Cash-flow &amp;
-                        Trésorerie Nette</li>
-                    <li class="disabled" data-i18n="feat.scoper"><i class="fas fa-times"></i> Chiffrage Projet (Scoper)
-                    </li>
-                    <li class="disabled" data-i18n="feat.strategy"><i class="fas fa-times"></i> Stratégie &amp; Closing
-                    </li>
-                </ul>
-                <button class="pricing-button"
-                    onclick="Analytics.trackEvent('click_pricing_free'); handlePricingClick('register')"
-                    data-i18n="pricing.btn.free"
-                    style="width: 100%; padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
-                    onmouseover="this.style.background='rgba(255,255,255,0.1)'"
-                    onmouseout="this.style.background='rgba(255,255,255,0.05)'">Commencer
-                    Gratuitement</button>
-            </div>
-            <!-- Pro -->
-            <div class="pricing-card glass-premium popular hover-lift tilt-card"
-                style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--primary); background: rgba(16, 185, 129, 0.03); backdrop-filter: var(--bg-glass-blur); box-shadow: 0 0 40px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.1); display: flex; flex-direction: column; position: relative; z-index: 2; transition: transform 0.1s ease, box-shadow 0.3s ease;">
-                <div class="tilt-glare-wrapper" style="border-radius: 24px;">
-                    <div class="tilt-glare"></div>
-                </div>
-                <!-- Glowing corner effect -->
+            <div class="pricing-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem; margin-top: 3rem; align-items: stretch; position: relative; perspective: 1200px; padding: 0 1rem;">
                 <div
-                    style="position: absolute; top:0; right:0; width: 150px; height: 150px; background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.3), transparent 70%); border-radius: 0 24px 0 0; pointer-events: none;">
+                    style="position: absolute; top: 50%; left: 50%; width: 100vw; height: 100%; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 50%); transform: translate(-50%, -50%); pointer-events: none; z-index: -1;">
                 </div>
-                <div class="popular-badge" data-i18n="pricing.pro.badge"
-                    style="position: absolute; top: -15px; left: 50%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                    Recommandé - PRO</div>
+                <!-- Standard -->
+                <div class="pricing-card glass-premium hover-lift tilt-card"
+                    style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--glass-border-light); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                    <div class="tilt-glare-wrapper">
+                        <div class="tilt-glare"></div>
+                    </div>
+                    <div class="pricing-header"
+                        style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <h3 class="tier-name" data-i18n="pricing.standard.name"
+                            style="font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-muted); font-weight: 600;">
+                            Standard</h3>
+                        <div class="tier-price" data-i18n="pricing.standard.price"
+                            style="font-size: 3rem; font-weight: 800; color: #fff; line-height: 1;">0€<span
+                                class="period" data-i18n="pricing.standard.period"
+                                style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
+                    </div>
+                    <ul class="tier-features"
+                        style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
+                        <li data-i18n="feat.tjm"
+                            style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
+                                class="fas fa-check" style="color: var(--primary); margin-top: 4px;"></i>
+                            <span>Calculateur
+                                <strong>TJM Stratégique</strong></span>
+                        </li>
+                        <li data-i18n="feat.quotes"><i class="fas fa-check"></i> <strong>3 Devis</strong> et <strong>3
+                                Factures</strong> par mois</li>
+                        <li data-i18n="feat.clients"><i class="fas fa-check"></i> <strong>5 Clients</strong> actifs</li>
+                        <li data-i18n="feat.marketplace"><i class="fas fa-check"></i> <strong>Marketplace</strong> —
+                            voir
+                            les missions (1 réponse/mois)</li>
+                        <li data-i18n="feat.circle"><i class="fas fa-check"></i> <strong>Le Cercle</strong> — Clients
+                            &amp;
+                            Partenaires</li>
+                        <li data-i18n="feat.signature"><i class="fas fa-check"></i> <strong>Signature
+                                Électronique</strong>
+                            Client</li>
+                        <li class="disabled" data-i18n="feat.pipeline"><i class="fas fa-times"></i> Pipeline Cash-flow
+                            &amp;
+                            Trésorerie Nette</li>
+                        <li class="disabled" data-i18n="feat.scoper"><i class="fas fa-times"></i> Chiffrage Projet
+                            (Scoper)
+                        </li>
+                        <li class="disabled" data-i18n="feat.strategy"><i class="fas fa-times"></i> Stratégie &amp;
+                            Closing
+                        </li>
+                    </ul>
+                    <button class="pricing-button"
+                        onclick="Analytics.trackEvent('click_pricing_free'); handlePricingClick('register')"
+                        data-i18n="pricing.btn.free"
+                        style="width: 100%; padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
+                        onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                        onmouseout="this.style.background='rgba(255,255,255,0.05)'">Commencer
+                        Gratuitement</button>
+                </div>
+                <!-- Pro -->
+                <div class="pricing-card glass-premium popular hover-lift tilt-card"
+                    style="padding: 2.5rem; border-radius: 24px; border: 1px solid var(--primary); background: rgba(16, 185, 129, 0.03); backdrop-filter: var(--bg-glass-blur); box-shadow: 0 0 40px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.1); display: flex; flex-direction: column; position: relative; z-index: 2; transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                    <div class="tilt-glare-wrapper" style="border-radius: 24px;">
+                        <div class="tilt-glare"></div>
+                    </div>
+                    <!-- Glowing corner effect -->
+                    <div
+                        style="position: absolute; top:0; right:0; width: 150px; height: 150px; background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.3), transparent 70%); border-radius: 0 24px 0 0; pointer-events: none;">
+                    </div>
+                    <div class="popular-badge" data-i18n="pricing.pro.badge"
+                        style="position: absolute; top: -15px; left: 50%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: #fff; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                        Recommandé - PRO</div>
 
-                <div class="pricing-header"
-                    style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <h3 class="tier-name" data-i18n="pricing.pro.name"
-                        style="font-size: 1.5rem; margin-bottom: 0.2rem; color: #fff; font-weight: 700;">Pack PRO</h3>
-                    <div class="market-value" data-i18n="pricing.pro.market"
-                        style="font-size: 0.85rem; color: var(--primary-light); margin-bottom: 1rem; font-weight: 500;">
-                        Zéro limite opérationnelle</div>
-                    <div class="tier-price" data-i18n="pricing.pro.price"
-                        style="font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1;">15€<span
-                            class="period" data-i18n="pricing.standard.period"
-                            style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
+                    <div class="pricing-header"
+                        style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <h3 class="tier-name" data-i18n="pricing.pro.name"
+                            style="font-size: 1.5rem; margin-bottom: 0.2rem; color: #fff; font-weight: 700;">Pack PRO
+                        </h3>
+                        <div class="market-value" data-i18n="pricing.pro.market"
+                            style="font-size: 0.85rem; color: var(--primary-light); margin-bottom: 1rem; font-weight: 500;">
+                            Zéro limite opérationnelle</div>
+                        <div class="tier-price" data-i18n="pricing.pro.price"
+                            style="font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1;">15€<span
+                                class="period" data-i18n="pricing.standard.period"
+                                style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
+                    </div>
+                    <ul class="tier-features"
+                        style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
+                        <li data-i18n="feat.everything.standard"
+                            style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
+                                class="fas fa-check" style="color: var(--primary); margin-top: 4px;"></i> <span>Tout du
+                                plan
+                                Standard</span></li>
+                        <li data-i18n="feat.unlimited"><i class="fas fa-check"></i> <strong>Clients &amp; Devis</strong>
+                            Illimités</li>
+                        <li data-i18n="feat.kanban"><i class="fas fa-check"></i> <strong>Pipeline Kanban</strong>
+                            (Prospects
+                            → Encaissé)</li>
+                        <li data-i18n="feat.netcash"><i class="fas fa-check"></i> <strong>Trésorerie Nette
+                                Réelle</strong>
+                            (Brut − Charges)</li>
+                        <li data-i18n="feat.scoper"><i class="fas fa-check"></i> <strong>Chiffrage Projet</strong> +
+                            Prime
+                            de Risque</li>
+                        <li data-i18n="feat.expenses"><i class="fas fa-check"></i> <strong>Dépenses &amp;
+                                Charges</strong> —
+                            Registre complet</li>
+                        <li data-i18n="feat.logo"><i class="fas fa-check"></i> PDF Factures avec <strong>votre
+                                Logo</strong>
+                        </li>
+                        <li data-i18n="feat.support"><i class="fas fa-check"></i> Support Prioritaire</li>
+                    </ul>
+                    <button class="pricing-button button-primary"
+                        onclick="Analytics.trackEvent('click_pricing_pro'); handlePricingClick('pro')"
+                        data-i18n="pricing.btn.pro"
+                        style="width: 100%; padding: 1.2rem; border-radius: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-weight: 700; font-size: 1.05rem; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); border: none; cursor: pointer; transition: all 0.3s ease;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(16, 185, 129, 0.5)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(16, 185, 129, 0.4)';">Débloquer
+                        l'Illimité</button>
                 </div>
-                <ul class="tier-features"
-                    style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
-                    <li data-i18n="feat.everything.standard"
-                        style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
-                            class="fas fa-check" style="color: var(--primary); margin-top: 4px;"></i> <span>Tout du plan
-                            Standard</span></li>
-                    <li data-i18n="feat.unlimited"><i class="fas fa-check"></i> <strong>Clients &amp; Devis</strong>
-                        Illimités</li>
-                    <li data-i18n="feat.kanban"><i class="fas fa-check"></i> <strong>Pipeline Kanban</strong> (Prospects
-                        → Encaissé)</li>
-                    <li data-i18n="feat.netcash"><i class="fas fa-check"></i> <strong>Trésorerie Nette Réelle</strong>
-                        (Brut − Charges)</li>
-                    <li data-i18n="feat.scoper"><i class="fas fa-check"></i> <strong>Chiffrage Projet</strong> + Prime
-                        de Risque</li>
-                    <li data-i18n="feat.expenses"><i class="fas fa-check"></i> <strong>Dépenses &amp; Charges</strong> —
-                        Registre complet</li>
-                    <li data-i18n="feat.logo"><i class="fas fa-check"></i> PDF Factures avec <strong>votre Logo</strong>
-                    </li>
-                    <li data-i18n="feat.support"><i class="fas fa-check"></i> Support Prioritaire</li>
-                </ul>
-                <button class="pricing-button button-primary"
-                    onclick="Analytics.trackEvent('click_pricing_pro'); handlePricingClick('pro')"
-                    data-i18n="pricing.btn.pro"
-                    style="width: 100%; padding: 1.2rem; border-radius: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-weight: 700; font-size: 1.05rem; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); border: none; cursor: pointer; transition: all 0.3s ease;"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(16, 185, 129, 0.5)';"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(16, 185, 129, 0.4)';">Débloquer
-                    l'Illimité</button>
-            </div>
-            <!-- Expert -->
-            <div class="pricing-card glass-premium expert hover-lift tilt-card"
-                style="padding: 2.5rem; border-radius: 24px; border: 1px solid rgba(245, 158, 11, 0.3); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: transform 0.1s ease, box-shadow 0.3s ease;">
-                <div class="tilt-glare-wrapper">
-                    <div class="tilt-glare"></div>
-                </div>
-                <!-- Glowing corner effect -->
-                <div
-                    style="position: absolute; top:0; right:0; width: 120px; height: 120px; background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 70%); border-radius: 0 24px 0 0; pointer-events: none;">
-                </div>
+                <!-- Expert -->
+                <div class="pricing-card glass-premium expert hover-lift tilt-card"
+                    style="padding: 2.5rem; border-radius: 24px; border: 1px solid rgba(245, 158, 11, 0.3); background: rgba(255,255,255,0.01); backdrop-filter: var(--bg-glass-blur); display: flex; flex-direction: column; transition: transform 0.1s ease, box-shadow 0.3s ease;">
+                    <div class="tilt-glare-wrapper">
+                        <div class="tilt-glare"></div>
+                    </div>
+                    <!-- Glowing corner effect -->
+                    <div
+                        style="position: absolute; top:0; right:0; width: 120px; height: 120px; background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 70%); border-radius: 0 24px 0 0; pointer-events: none;">
+                    </div>
 
-                <div class="pricing-header"
-                    style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <h3 class="tier-name" data-i18n="pricing.expert.name"
-                        style="font-size: 1.3rem; margin-bottom: 0.2rem; color: #fff; font-weight: 700;">Pack EXPERT
-                    </h3>
-                    <div class="market-value" data-i18n="pricing.expert.market"
-                        style="font-size: 0.85rem; color: var(--warning); margin-bottom: 1rem; font-weight: 500;">
-                        Accélérateur de Croissance</div>
-                    <div class="tier-price" data-i18n="pricing.expert.price"
-                        style="font-size: 3rem; font-weight: 800; color: #fff; line-height: 1;">29€<span class="period"
-                            data-i18n="pricing.standard.period"
-                            style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
+                    <div class="pricing-header"
+                        style="margin-bottom: 2rem; text-align: left; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <h3 class="tier-name" data-i18n="pricing.expert.name"
+                            style="font-size: 1.3rem; margin-bottom: 0.2rem; color: #fff; font-weight: 700;">Pack EXPERT
+                        </h3>
+                        <div class="market-value" data-i18n="pricing.expert.market"
+                            style="font-size: 0.85rem; color: var(--warning); margin-bottom: 1rem; font-weight: 500;">
+                            Accélérateur de Croissance</div>
+                        <div class="tier-price" data-i18n="pricing.expert.price"
+                            style="font-size: 3rem; font-weight: 800; color: #fff; line-height: 1;">29€<span
+                                class="period" data-i18n="pricing.standard.period"
+                                style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mois</span></div>
+                    </div>
+                    <ul class="tier-features"
+                        style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
+                        <li data-i18n="feat.everything.pro"
+                            style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
+                                class="fas fa-check" style="color: var(--warning); margin-top: 4px;"></i> <span>Tout du
+                                Pack
+                                PRO</span></li>
+                        <li data-i18n="feat.marketplace.unlimited"><i class="fas fa-check"></i> <strong>Marketplace
+                                illimitée</strong> — répondre à toutes les missions</li>
+                        <li data-i18n="feat.journal"><i class="fas fa-check"></i> <strong>Journal de Bord</strong> —
+                            tracker
+                            humeur &amp; focus quotidien</li>
+                        <li data-i18n="feat.coach"><i class="fas fa-check"></i> <strong>Coach IA</strong> — analyses et
+                            conseils business personnalisés</li>
+                        <li data-i18n="feat.expert.rank"><i class="fas fa-check"></i> <strong>Profil visible</strong>
+                            dans
+                            le réseau de prestataires</li>
+                    </ul>
+                    <button class="pricing-button"
+                        onclick="Analytics.trackEvent('click_pricing_expert'); handlePricingClick('expert')"
+                        data-i18n="pricing.btn.expert"
+                        style="width: 100%; padding: 1rem; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--warning); font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
+                        onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'"
+                        onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'">Activer la
+                        Croissance</button>
                 </div>
-                <ul class="tier-features"
-                    style="flex: 1; list-style: none; padding: 0; margin: 0 0 2rem 0; display: flex; flex-direction: column; gap: 1rem;">
-                    <li data-i18n="feat.everything.pro"
-                        style="display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.95rem;"><i
-                            class="fas fa-check" style="color: var(--warning); margin-top: 4px;"></i> <span>Tout du Pack
-                            PRO</span></li>
-                    <li data-i18n="feat.marketplace.unlimited"><i class="fas fa-check"></i> <strong>Marketplace
-                            illimitée</strong> — répondre à toutes les missions</li>
-                    <li data-i18n="feat.journal"><i class="fas fa-check"></i> <strong>Journal de Bord</strong> — tracker
-                        humeur &amp; focus quotidien</li>
-                    <li data-i18n="feat.coach"><i class="fas fa-check"></i> <strong>Coach IA</strong> — analyses et
-                        conseils business personnalisés</li>
-                    <li data-i18n="feat.expert.rank"><i class="fas fa-check"></i> <strong>Profil visible</strong> dans
-                        le réseau de prestataires</li>
-                </ul>
-                <button class="pricing-button"
-                    onclick="Analytics.trackEvent('click_pricing_expert'); handlePricingClick('expert')"
-                    data-i18n="pricing.btn.expert"
-                    style="width: 100%; padding: 1rem; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--warning); font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
-                    onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'"
-                    onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'">Activer la
-                    Croissance</button>
             </div>
-        </div>
         </section>
 
         <footer class="landing-footer">
