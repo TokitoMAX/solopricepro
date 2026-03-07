@@ -269,11 +269,11 @@ const Scoper = {
                     <div style="display: flex; flex-direction: column; gap: 2rem; max-width: 600px; margin: 0 auto;">
                         <div>
                             <label style="display: block; font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Cible Spécifique (ex: CEOs de SaaS logistique, DRH...)</label>
-                            <input type="text" id="specificTarget" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0;" value="${data.specificTarget || ''}" placeholder="Cible que vous visez..." oninput="Scoper.autoSaveObjective()">
+                            <input type="text" id="specificTarget" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0; letter-spacing: 0; font-weight: 700;" value="${data.specificTarget || ''}" placeholder="Cible que vous visez..." oninput="Scoper.autoSaveObjective()">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Votre plus gros blocage en closing ?</label>
-                            <input type="text" id="mainObstacle" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0;" value="${data.mainObstacle || ''}" placeholder="Ex: Justifier mon prix, la relance..." oninput="Scoper.autoSaveObjective()">
+                            <input type="text" id="mainObstacle" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0; letter-spacing: 0; font-weight: 700;" value="${data.mainObstacle || ''}" placeholder="Ex: Justifier mon prix, la relance..." oninput="Scoper.autoSaveObjective()">
                         </div>
                     </div>
                 `;
@@ -1265,11 +1265,13 @@ const Scoper = {
                         </div>
                         <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
                             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Cible Spécifique</div>
-                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">${(data.specificTarget || this.currentClientSector).toUpperCase()}</div>
+                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">${(data.specificTarget || this.currentClientSector || 'ecommerce').toUpperCase()}</div>
                         </div>
                         <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
                             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Niveau Cible</div>
-                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">${PricingEngine.prospectLevelLogic[this.currentProspectLevel].label.split(' / ')[0]}</div>
+                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">
+                                ${this.currentProspectLevel && PricingEngine.prospectLevelLogic[this.currentProspectLevel] ? PricingEngine.prospectLevelLogic[this.currentProspectLevel].label.split(' / ')[0] : 'MANAGER'}
+                            </div>
                         </div>
                     </div>
                     
@@ -1514,15 +1516,17 @@ const Scoper = {
             hoursPerDay: 7,
             monthlyCharges: 500,
             taxRate: 22,
-            sector: null,
-            target: null,
+            sector: 'tech',
+            target: 'pme',
+            specificTarget: '',
+            mainObstacle: '',
             dailyRate: 0,
             hourlyRate: 0
         };
 
         this.currentObjectiveStep = 1;
-        this.currentClientSector = null;
-        this.currentProspectLevel = null;
+        this.currentClientSector = 'ecommerce';
+        this.currentProspectLevel = 'manager';
 
         Storage.set('sp_scoper_current_step', 1);
         Storage.set('sp_calculator_data', defaultData);
