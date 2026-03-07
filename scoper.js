@@ -289,7 +289,7 @@ const Scoper = {
                         <p class="text-muted" style="margin-top: 3rem; font-size: 0.9rem;">C'est votre base de calcul pour votre train de vie cible.</p>
                     </div>
                 `;
-            case 3: // RYTHME
+            case 4: // RYTHME
                 return `
                     <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
                         <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">${i18n.t('scoper.wizard.title.3')}</h2>
@@ -308,7 +308,7 @@ const Scoper = {
                         </div>
                     </div>
                 `;
-            case 4: // CHARGES
+            case 5: // CHARGES
                 return `
                     <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
                         <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">${i18n.t('scoper.wizard.title.4')}</h2>
@@ -641,8 +641,10 @@ const Scoper = {
                         </div>
                     </div>
 
+                    <div id="scoper-profitability-indicator" style="margin-bottom: 1.5rem;"></div>
+
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 2rem;">
-                         <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem;">Leviers de Prix</div>
+                         <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem;">Leviers de Prix & Stratégie</div>
                          
                          <div style="margin-bottom: 1.5rem;">
                             <label style="font-size: 0.8rem; font-weight: 700; color: white; display: block; margin-bottom: 0.5rem;">TJM de Référence</label>
@@ -1259,10 +1261,11 @@ const Scoper = {
                         <div style="flex: 1;">
                             <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;">SoloPrice AI • Stratège Personnel</div>
                             <h2 style="font-size: 1.5rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${aiPlan.message}</h2>
+                            ${data.mainObstacle ? `<div style="margin-top: 8px; font-size: 0.75rem; color: #ef4444; font-weight: 800;"><i class="fas fa-shield-exclamation"></i> DÉFI : ${data.mainObstacle}</div>` : ''}
                         </div>
                         <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Secteur Prospect</div>
-                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">${this.currentClientSector.toUpperCase()}</div>
+                            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Cible Spécifique</div>
+                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">${(data.specificTarget || this.currentClientSector).toUpperCase()}</div>
                         </div>
                         <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
                             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Niveau Cible</div>
@@ -1518,8 +1521,8 @@ const Scoper = {
         };
 
         this.currentObjectiveStep = 1;
-        this.currentClientSector = 'ecommerce';
-        this.currentProspectLevel = 'manager';
+        this.currentClientSector = null;
+        this.currentProspectLevel = null;
 
         Storage.set('sp_scoper_current_step', 1);
         Storage.set('sp_calculator_data', defaultData);
@@ -1535,6 +1538,12 @@ const Scoper = {
 
         this.render('objective');
         App.showNotification(i18n.t('scoper.reset_success') || 'Stratégie et Journal réinitialisés.', 'info');
+    },
+
+    saveObjective() {
+        this.autoSaveObjective();
+        App.showNotification(i18n.t('notify.saved_success') || "Objectif stratégique enregistré !", "success");
+        setTimeout(() => this.render('closing'), 1000);
     },
 
     /**
