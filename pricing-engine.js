@@ -199,7 +199,7 @@ const PricingEngine = {
      * Ingénierie de Vente Avancée - [EXPERT]
      * Génère un arsenal complet de vente personnalisé au secteur et à la cible.
      */
-    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0) {
+    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0, clientSector = 'ecommerce') {
         const targetTJM = scenarios.security.tjm;
         const aiPlan = this.getAIActionPlan(currentTJM > 0 ? currentTJM : targetTJM, targetTJM, sector);
         const sectorData = {
@@ -303,13 +303,43 @@ const PricingEngine = {
     },
 
     /**
+     * Mappage des enjeux par secteur client (SoloPrice AI)
+     */
+    clientSectorPainPoints: {
+        luxe: {
+            risk: "la dégradation de l'image de marque et l'expérience client irrégulière",
+            roi: "la préservation de l'exclusivité et l'augmentation du panier moyen"
+        },
+        btp: {
+            risk: "les retards de livraison et les surcoûts liés à une mauvaise coordination",
+            roi: "la sécurisation des marges et la fiabilité opérationnelle"
+        },
+        ecommerce: {
+            risk: "l'abandon de panier et l'augmentation faramineuse des coûts d'acquisition",
+            roi: "l'optimisation du taux de conversion et la LTV client"
+        },
+        formation: {
+            risk: "le désengagement des apprenants et le manque de crédibilité pédagogique",
+            roi: "le rayonnement de votre expertise et la scalabilité de votre savoir"
+        },
+        sante: {
+            risk: "les failles de conformité et l'inefficacité de la prise en charge",
+            roi: "la sécurité des données et le gain de temps pour les praticiens"
+        },
+        asso: {
+            risk: "la perte de confiance des donateurs et le manque de visibilité d'impact",
+            roi: "la maximisation des fonds collectés et l'engagement communautaire"
+        }
+    },
+
+    /**
      * Génère un script de présentation du devis (SoloPrice AI)
      */
     generateQuoteScript(data) {
         const sector = data.sector || 'tech';
+        const clientSector = data.clientSector || 'pme';
         const target = data.target || 'pme';
         const tjm = data.dailyRate || 500;
-        const gap = data.gap || 0;
 
         const intro = {
             tech: "En tant qu'expert technique, l'enjeu ici n'est pas seulement de livrer du code, mais de sécuriser votre infrastructure.",
@@ -320,6 +350,8 @@ const PricingEngine = {
             artisanat: "Mon intervention garantit une durabilité et une conformité aux plus hauts standards."
         }[sector] || "Mon expertise est dédiée à la réussite de votre projet.";
 
+        const clientFocus = this.clientSectorPainPoints[clientSector]?.roi || "votre avantage concurrentiel";
+
         return `
 Bonjour,
 
@@ -329,9 +361,9 @@ ${intro}
 
 Pour ce projet, mon TJM est de ${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}. 
 
-Ce tarif reflète l'expertise spécifique nécessaire pour répondre à vos enjeux de ${target === 'grands-comptes' ? 'scalabilité et de conformité' : 'croissance rapide'}.
+Ce tarif reflète l'expertise spécifique nécessaire pour répondre à vos enjeux de ${clientFocus}, particulièrement critiques dans le secteur ${clientSector.toUpperCase()}.
 
-L'objectif est de transformer cet investissement en ${data.roi || 'un levier de performance'} pour votre activité.
+L'objectif est de transformer cet investissement en un levier de performance durable pour votre activité.
 
 Je reste à votre disposition pour en discuter plus en détail.
         `.trim();
@@ -342,6 +374,8 @@ Je reste à votre disposition pour en discuter plus en détail.
      */
     generateValueFollowup(data) {
         const sector = data.sector || 'tech';
+        const clientSector = data.clientSector || 'ecommerce';
+
         const focus = {
             tech: "les risques liés à la dette technique",
             marketing: "le manque à gagner sur vos leads actuels",
@@ -351,14 +385,16 @@ Je reste à votre disposition pour en discuter plus en détail.
             artisanat: "les coûts de maintenance future"
         }[sector] || "la réussite de votre projet";
 
+        const clientRisk = this.clientSectorPainPoints[clientSector]?.risk || "la stagnation de votre projet";
+
         return `
 Bonjour,
 
 Je reviens vers vous concernant ma proposition.
 
-Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente représente un coût d'opportunité pour votre structure.
+Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente accentue ${clientRisk}, ce qui représente un coût d'opportunité réel pour votre structure.
 
-Mon objectif est de sécuriser ce point dès le lancement de notre collaboration.
+Mon objectif est de sécuriser ce point stratégique dès le lancement de notre collaboration.
 
 Avons-nous un créneau de 10 min cette semaine pour valider les prochaines étapes ?
         `.trim();
