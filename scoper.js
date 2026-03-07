@@ -7,6 +7,7 @@ const Scoper = {
         hideHours: true
     },
     currentClientSector: 'ecommerce',
+    currentProspectLevel: 'manager',
 
     render(tab = 'objective') {
         const container = document.getElementById('scoper-content');
@@ -431,6 +432,11 @@ const Scoper = {
 
     updateClientSector(sector) {
         this.currentClientSector = sector;
+        this.renderClosingTab();
+    },
+
+    updateProspectLevel(level) {
+        this.currentProspectLevel = level;
         this.renderClosingTab();
     },
 
@@ -1174,7 +1180,7 @@ const Scoper = {
         const scenarios = PricingEngine.getScenarios(results);
         const targetTJM = results.dailyRate;
         const powerScore = PricingEngine.getMarketPowerScore(targetTJM, sector);
-        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target, this.currentProjectTJM || 0, this.currentClientSector || 'ecommerce');
+        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target, this.currentProjectTJM || 0, this.currentClientSector || 'ecommerce', this.currentProspectLevel || 'manager');
 
         const aiPlan = tactics.aiPlan;
 
@@ -1253,17 +1259,34 @@ const Scoper = {
                         </div>
                     </div>
 
-                    <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Profil du Prospect (Secteur)</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            ${['ecommerce', 'btp', 'luxe', 'formation', 'sante', 'asso'].map(s => `
-                                <button onclick="Scoper.updateClientSector('${s}')" 
-                                    style="padding: 6px 14px; border-radius: 100px; border: 1px solid ${this.currentClientSector === s ? 'var(--primary)' : 'rgba(255,255,255,0.1)'}; 
-                                    background: ${this.currentClientSector === s ? 'var(--primary-glass)' : 'transparent'}; 
-                                    color: ${this.currentClientSector === s ? 'white' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
-                                    ${s.charAt(0).toUpperCase() + s.slice(1)}
-                                </button>
-                            `).join('')}
+                    <div style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Secteur du Prospect</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    ${['ecommerce', 'btp', 'luxe', 'formation', 'sante', 'asso'].map(s => `
+                                        <button onclick="Scoper.updateClientSector('${s}')" 
+                                            style="padding: 6px 14px; border-radius: 100px; border: 1px solid ${this.currentClientSector === s ? 'var(--primary)' : 'rgba(255,255,255,0.1)'}; 
+                                            background: ${this.currentClientSector === s ? 'var(--primary-glass)' : 'transparent'}; 
+                                            color: ${this.currentClientSector === s ? 'white' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                                            ${s.charAt(0).toUpperCase() + s.slice(1)}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Niveau d'Interlocuteur</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    ${Object.keys(PricingEngine.prospectLevelLogic).map(l => `
+                                        <button onclick="Scoper.updateProspectLevel('${l}')" 
+                                            style="padding: 6px 14px; border-radius: 100px; border: 1px solid ${this.currentProspectLevel === l ? 'var(--primary)' : 'rgba(255,255,255,0.1)'}; 
+                                            background: ${this.currentProspectLevel === l ? 'var(--primary-glass)' : 'transparent'}; 
+                                            color: ${this.currentProspectLevel === l ? 'white' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                                            ${PricingEngine.prospectLevelLogic[l].label.split(' / ')[0]}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -1555,6 +1578,7 @@ const Scoper = {
         const scriptData = {
             sector: data.sector,
             clientSector: this.currentClientSector || 'ecommerce',
+            prospectLevel: this.currentProspectLevel || 'manager',
             target: data.target,
             dailyRate: this.currentProjectTJM || data.dailyRate,
             gap: tactics.aiPlan.gap,

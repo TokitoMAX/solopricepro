@@ -199,7 +199,7 @@ const PricingEngine = {
      * Ingénierie de Vente Avancée - [EXPERT]
      * Génère un arsenal complet de vente personnalisé au secteur et à la cible.
      */
-    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0, clientSector = 'ecommerce') {
+    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0, clientSector = 'ecommerce', prospectLevel = 'manager') {
         const targetTJM = scenarios.security.tjm;
         const aiPlan = this.getAIActionPlan(currentTJM > 0 ? currentTJM : targetTJM, targetTJM, sector);
         const sectorData = {
@@ -333,12 +333,36 @@ const PricingEngine = {
     },
 
     /**
+     * Logique par niveau d'interlocuteur (SoloPrice AI)
+     */
+    prospectLevelLogic: {
+        ceo: {
+            label: "Exécutif / CEO",
+            hook: "votre vision stratégique et la croissance de votre structure",
+            vocabulary: ["levier de croissance", "impact sur le CA", "vision long-terme", "avantage concurrentiel"],
+            style: "Direct, axé résultats et ROI global."
+        },
+        manager: {
+            label: "Stratégique / Manager",
+            hook: "l'optimisation de vos process et la performance de votre équipe",
+            vocabulary: ["efficacité", "fluidité", "gestion des risques", "atteinte des objectifs"],
+            style: "Professionnel, axé process et fiabilité opérationnelle."
+        },
+        operating: {
+            label: "Opérationnel",
+            hook: "votre quotidien et la résolution de vos points de douleur techniques",
+            vocabulary: ["gain de temps", "simplicité", "fiabilité technique", "réduction du stress"],
+            style: "Pragmatique, axé sur l'usage et la résolution de problèmes immédiats."
+        }
+    },
+
+    /**
      * Génère un script de présentation du devis (SoloPrice AI)
      */
     generateQuoteScript(data) {
         const sector = data.sector || 'tech';
-        const clientSector = data.clientSector || 'pme';
-        const target = data.target || 'pme';
+        const clientSector = data.clientSector || 'ecommerce';
+        const prospectLevel = data.prospectLevel || 'manager';
         const tjm = data.dailyRate || 500;
 
         const intro = {
@@ -350,7 +374,8 @@ const PricingEngine = {
             artisanat: "Mon intervention garantit une durabilité et une conformité aux plus hauts standards."
         }[sector] || "Mon expertise est dédiée à la réussite de votre projet.";
 
-        const clientFocus = this.clientSectorPainPoints[clientSector]?.roi || "votre avantage concurrentiel";
+        const levelData = this.prospectLevelLogic[prospectLevel] || this.prospectLevelLogic.manager;
+        const clientFocus = this.clientSectorPainPoints[clientSector]?.roi || "votre performance";
 
         return `
 Bonjour,
@@ -361,9 +386,9 @@ ${intro}
 
 Pour ce projet, mon TJM est de ${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}. 
 
-Ce tarif reflète l'expertise spécifique nécessaire pour répondre à vos enjeux de ${clientFocus}, particulièrement critiques dans le secteur ${clientSector.toUpperCase()}.
+Ce tarif reflète l'expertise nécessaire pour adresser ${levelData.hook}, tout en sécurisant vos enjeux de ${clientFocus} propres au secteur ${clientSector.toUpperCase()}.
 
-L'objectif est de transformer cet investissement en un levier de performance durable pour votre activité.
+L'objectif est de transformer cet investissement en un ${levelData.vocabulary[0]} pour votre structure.
 
 Je reste à votre disposition pour en discuter plus en détail.
         `.trim();
@@ -375,6 +400,7 @@ Je reste à votre disposition pour en discuter plus en détail.
     generateValueFollowup(data) {
         const sector = data.sector || 'tech';
         const clientSector = data.clientSector || 'ecommerce';
+        const prospectLevel = data.prospectLevel || 'manager';
 
         const focus = {
             tech: "les risques liés à la dette technique",
@@ -385,6 +411,7 @@ Je reste à votre disposition pour en discuter plus en détail.
             artisanat: "les coûts de maintenance future"
         }[sector] || "la réussite de votre projet";
 
+        const levelData = this.prospectLevelLogic[prospectLevel] || this.prospectLevelLogic.manager;
         const clientRisk = this.clientSectorPainPoints[clientSector]?.risk || "la stagnation de votre projet";
 
         return `
@@ -392,9 +419,9 @@ Bonjour,
 
 Je reviens vers vous concernant ma proposition.
 
-Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente accentue ${clientRisk}, ce qui représente un coût d'opportunité réel pour votre structure.
+Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente accentue ${clientRisk}, ce qui retarde ${levelData.hook}.
 
-Mon objectif est de sécuriser ce point stratégique dès le lancement de notre collaboration.
+C'est un risque de ${levelData.vocabulary[2] || 'stagnation'} que nous pouvons mitiger dès le lancement de notre collaboration.
 
 Avons-nous un créneau de 10 min cette semaine pour valider les prochaines étapes ?
         `.trim();
