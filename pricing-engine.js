@@ -527,17 +527,19 @@ const PricingEngine = {
 
         const levelData = this.prospectLevelLogic[prospectLevel] || this.prospectLevelLogic.manager;
         const clientFocus = this.clientSectorPainPoints[clientSector]?.roi || "votre performance";
+        const targetText = data.specificTarget ? ` (spécifiquement pour les ${data.specificTarget})` : "";
+        const obstacleText = data.mainObstacle ? `\n\nJ'ai bien noté votre enjeu concernant "${data.mainObstacle}", c'est un point que nous sécuriserons en priorité.` : "";
 
         return `
 Bonjour,
 
-Suite à notre échange, je vous transmets ma proposition détaillée.
+Suite à notre échange, je vous transmets ma proposition détaillée${targetText}.
 
 ${intro}
 
 Pour ce projet, mon TJM est de ${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}. 
 
-Ce tarif reflète l'expertise nécessaire pour adresser ${levelData.hook}, tout en sécurisant vos enjeux de ${clientFocus} propres au secteur ${clientSector.toUpperCase()}.
+Ce tarif reflète l'expertise nécessaire pour adresser ${levelData.hook}, tout en sécurisant vos enjeux de ${clientFocus} propres au secteur ${clientSector.toUpperCase()}.${obstacleText}
 
 L'objectif est de transformer cet investissement en un ${levelData.vocabulary[0]} pour votre structure.
 
@@ -564,13 +566,14 @@ Je reste à votre disposition pour en discuter plus en détail.
 
         const levelData = this.prospectLevelLogic[prospectLevel] || this.prospectLevelLogic.manager;
         const clientRisk = this.clientSectorPainPoints[clientSector]?.risk || "la stagnation de votre projet";
+        const obstacleAdvice = data.mainObstacle ? `\n\nConcernant "${data.mainObstacle}", j'ai préparé une approche spécifique pour lever ce frein dès le démarrage.` : "";
 
         return `
 Bonjour,
 
 Je reviens vers vous concernant ma proposition.
 
-Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente accentue ${clientRisk}, ce qui retarde ${levelData.hook}.
+Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente accentue ${clientRisk}, ce qui retarde ${levelData.hook}.${obstacleAdvice}
 
 C'est un risque de ${levelData.vocabulary[2] || 'stagnation'} que nous pouvons mitiger dès le lancement de notre collaboration.
 

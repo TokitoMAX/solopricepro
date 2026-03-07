@@ -10,6 +10,7 @@ const Scoper = {
     currentProspectLevel: 'manager',
     currentArsenalLevel: 'intermediate',
     currentSalesPhase: 'preparation',
+    currentObjectiveStep: 1,
 
     render(tab = 'objective') {
         const container = document.getElementById('scoper-content');
@@ -94,6 +95,7 @@ const Scoper = {
         }
 
         const currentStep = this.currentObjectiveStep || 1;
+        const totalSteps = 6;
 
         content.innerHTML = `
             <style>
@@ -161,9 +163,16 @@ const Scoper = {
 
             <div class="wizard-container" style="animation: fadeIn 0.8s ease-out;">
                 <div class="wizard-progress">
-                    <div class="wizard-progress-bar" style="width: ${(currentStep - 1) * 25}%"></div>
-                    ${[1, 2, 3, 4, 5].map(s => {
-            const labels = [i18n.t('scoper.step.1'), i18n.t('scoper.step.2'), i18n.t('scoper.step.3'), i18n.t('scoper.step.4'), i18n.t('scoper.step.5')];
+                    <div class="wizard-progress-bar" style="width: ${(currentStep - 1) * 20}%"></div>
+                    ${[1, 2, 3, 4, 5, 6].map(s => {
+            const labels = [
+                i18n.t('scoper.step.1') || 'Profil',
+                'Briefing',
+                i18n.t('scoper.step.2') || 'Revenu',
+                i18n.t('scoper.step.3') || 'Rythme',
+                i18n.t('scoper.step.4') || 'Charges',
+                i18n.t('scoper.step.5') || 'Verdict'
+            ];
             const isActive = currentStep === s;
             const isDone = currentStep > s;
             return `
@@ -193,7 +202,7 @@ const Scoper = {
                              <button class="button-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.1); border-radius: 12px; padding: 1rem 1.5rem;" onclick="Scoper.resetObjective()">
                                 <i class="fas fa-power-off"></i>
                             </button>
-                            ${currentStep < 5 ? `
+                            ${currentStep < 6 ? `
                                 <button class="button-primary large" onclick="Scoper.nextObjectiveStep()" style="background: white; color: black; border: none; font-weight: 900; border-radius: 16px; padding: 1rem 3rem;">
                                     ${i18n.t('scoper.action.continue')} <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
                                 </button>
@@ -251,7 +260,24 @@ const Scoper = {
                         </div>
                     </div>
                 `;
-            case 2: // REVENU
+            case 2: // BRIEFING (NEW)
+                return `
+                    <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
+                        <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">Le Briefing de Réussite</h2>
+                        <p class="text-muted" style="font-size: 1.1rem;">Précisez votre terrain de jeu pour des conseils ultra-personnalisés.</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 2rem; max-width: 600px; margin: 0 auto;">
+                        <div>
+                            <label style="display: block; font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Cible Spécifique (ex: CEOs de SaaS logistique, DRH...)</label>
+                            <input type="text" id="specificTarget" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0;" value="${data.specificTarget || ''}" placeholder="Cible que vous visez..." oninput="Scoper.autoSaveObjective()">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Votre plus gros blocage en closing ?</label>
+                            <input type="text" id="mainObstacle" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0;" value="${data.mainObstacle || ''}" placeholder="Ex: Justifier mon prix, la relance..." oninput="Scoper.autoSaveObjective()">
+                        </div>
+                    </div>
+                `;
+            case 3: // REVENU
                 return `
                     <div class="step-header" style="text-align: center; margin-bottom: 4rem;">
                         <h2 style="font-size: 2.5rem; font-weight: 950; letter-spacing: -2px;">${i18n.t('scoper.wizard.title.2')}</h2>
@@ -301,7 +327,7 @@ const Scoper = {
                         </div>
                     </div>
                 `;
-            case 5: // VERDICT
+            case 6: // VERDICT
                 const results = PricingEngine.calculateObjective(data);
                 const scenarios = PricingEngine.getScenarios(results);
                 const activeScenario = this.selectedScenario || 'security';
@@ -403,7 +429,7 @@ const Scoper = {
         // Persist to Supabase (non-blocking)
         Storage.saveCalculatorData(merged).catch(e => console.warn('[SCOPER] Sync error:', e));
 
-        if (this.currentObjectiveStep < 5) {
+        if (this.currentObjectiveStep < 6) {
             this.currentObjectiveStep++;
             Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
             this.render('objective');
@@ -467,7 +493,9 @@ const Scoper = {
             workingDays: document.getElementById('workingDays') ? (parseFloat(document.getElementById('workingDays').value) || 1) : (currentData.workingDays || 1),
             hoursPerDay: document.getElementById('hoursPerDay') ? (parseFloat(document.getElementById('hoursPerDay').value) || 1) : (currentData.hoursPerDay || 1),
             monthlyCharges: document.getElementById('monthlyCharges') ? (parseFloat(document.getElementById('monthlyCharges').value) || 0) : (currentData.monthlyCharges || 0),
-            taxRate: document.getElementById('taxRate') ? (parseFloat(document.getElementById('taxRate').value) || 0) : (currentData.taxRate || 0)
+            taxRate: document.getElementById('taxRate') ? (parseFloat(document.getElementById('taxRate').value) || 0) : (currentData.taxRate || 0),
+            specificTarget: document.getElementById('specificTarget') ? document.getElementById('specificTarget').value : (currentData.specificTarget || ''),
+            mainObstacle: document.getElementById('mainObstacle') ? document.getElementById('mainObstacle').value : (currentData.mainObstacle || '')
         };
 
         // Recalculate rates on every auto-save to ensure other tabs (Project, Closing) are always up to date
@@ -1290,29 +1318,29 @@ const Scoper = {
 
                         <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: 24px; padding: 2rem;">
                             <h4 style="font-size: 0.7rem; font-weight: 950; color: #64748b; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px;">
-                                ${this.currentSalesPhase === 'diagnostic' ? 'Questions d\'Excavation' : 
-                                  this.currentSalesPhase === 'alignment' ? 'Argument Choc' :
-                                  this.currentSalesPhase === 'closing' ? 'Méthodes de Bouclage' : 'Checklist de Préparation'}
+                                ${this.currentSalesPhase === 'diagnostic' ? 'Questions d\'Excavation' :
+                this.currentSalesPhase === 'alignment' ? 'Argument Choc' :
+                    this.currentSalesPhase === 'closing' ? 'Méthodes de Bouclage' : 'Checklist de Préparation'}
                             </h4>
                             
-                            ${this.currentSalesPhase === 'diagnostic' ? 
-                                levelData.questions.map(q => `<div style="padding: 1rem; background: #000; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 0.8rem; font-size: 0.9rem; color: white; font-weight: 700;">"${q}"</div>`).join('') :
-                              this.currentSalesPhase === 'alignment' ?
-                                `<div style="font-size: 1.2rem; font-weight: 800; color: white; font-style: italic; line-height: 1.5;">"${levelData.argument}"</div>` :
-                              this.currentSalesPhase === 'closing' ?
-                                levelData.methods.map(m => `<div style="padding: 0.8rem 1.2rem; background: var(--primary-glass); border: 1px solid var(--primary-glass); border-radius: 10px; margin-bottom: 0.8rem; font-size: 0.85rem; color: white; font-weight: 800; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-circle"></i> ${m}</div>`).join('') :
-                                levelData.checklist.map(c => `<div style="margin-bottom: 0.8rem; font-size: 0.9rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check" style="color: var(--primary);"></i> ${c}</div>`).join('')
-                            }
+                            ${this.currentSalesPhase === 'diagnostic' ?
+                levelData.questions.map(q => `<div style="padding: 1rem; background: #000; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 0.8rem; font-size: 0.9rem; color: white; font-weight: 700;">"${q}"</div>`).join('') :
+                this.currentSalesPhase === 'alignment' ?
+                    `<div style="font-size: 1.2rem; font-weight: 800; color: white; font-style: italic; line-height: 1.5;">"${levelData.argument}"</div>` :
+                    this.currentSalesPhase === 'closing' ?
+                        levelData.methods.map(m => `<div style="padding: 0.8rem 1.2rem; background: var(--primary-glass); border: 1px solid var(--primary-glass); border-radius: 10px; margin-bottom: 0.8rem; font-size: 0.85rem; color: white; font-weight: 800; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-circle"></i> ${m}</div>`).join('') :
+                        levelData.checklist.map(c => `<div style="margin-bottom: 0.8rem; font-size: 0.9rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check" style="color: var(--primary);"></i> ${c}</div>`).join('')
+            }
                         </div>
                     </div>
 
                     <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
                         <p style="font-size: 0.85rem; color: #64748b; margin: 0;"><strong>Besoin de plus d'aide ?</strong> Utilisez les automations SoloPrice AI en haut de l'onglet.</p>
                         <div style="display: flex; gap: 1rem;">
-                            ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) > 0 ? 
-                                `<button onclick="Scoper.updateSalesPhase('${Object.keys(PricingEngine.salesLifecycle)[Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) - 1]}')" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">Pécédent</button>` : ''}
-                            ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) < 3 ? 
-                                `<button onclick="Scoper.updateSalesPhase('${Object.keys(PricingEngine.salesLifecycle)[Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) + 1]}')" style="background: var(--primary); border: none; color: white; padding: 10px 24px; border-radius: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px var(--primary-glass);">Phase Suivante</button>` : ''}
+                            ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) > 0 ?
+                `<button onclick="Scoper.updateSalesPhase('${Object.keys(PricingEngine.salesLifecycle)[Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) - 1]}')" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">Pécédent</button>` : ''}
+                            ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) < 3 ?
+                `<button onclick="Scoper.updateSalesPhase('${Object.keys(PricingEngine.salesLifecycle)[Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) + 1]}')" style="background: var(--primary); border: none; color: white; padding: 10px 24px; border-radius: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px var(--primary-glass);">Phase Suivante</button>` : ''}
                         </div>
                     </div>
                 </div>
@@ -1490,6 +1518,9 @@ const Scoper = {
         };
 
         this.currentObjectiveStep = 1;
+        this.currentClientSector = 'ecommerce';
+        this.currentProspectLevel = 'manager';
+
         Storage.set('sp_scoper_current_step', 1);
         Storage.set('sp_calculator_data', defaultData);
 
@@ -1517,6 +1548,8 @@ const Scoper = {
             sector: data.sector,
             clientSector: this.currentClientSector || 'ecommerce',
             prospectLevel: this.currentProspectLevel || 'manager',
+            specificTarget: data.specificTarget || '',
+            mainObstacle: data.mainObstacle || '',
             target: data.target,
             dailyRate: this.currentProjectTJM || data.dailyRate,
             gap: tactics.aiPlan.gap,
