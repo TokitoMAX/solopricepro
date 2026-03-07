@@ -1247,7 +1247,11 @@ const Scoper = {
         const scenarios = PricingEngine.getScenarios(results);
         const tactics = PricingEngine.getAdvancedSalesTactics(0, scenarios, sector, target, this.currentProjectTJM || 0, this.currentClientSector || 'ecommerce', this.currentProspectLevel || 'manager');
         const aiPlan = tactics.aiPlan;
-        const phase = PricingEngine.salesLifecycle[this.currentSalesPhase];
+
+        // Auto-select level based on user data
+        if (!this.currentArsenalLevel) this.currentArsenalLevel = 'expert';
+
+        const phase = PricingEngine.salesLifecycle[this.currentSalesPhase || 'preparation'];
         const levelData = phase.levels[this.currentArsenalLevel];
 
         if (!data.sector || !data.target) {
@@ -1319,8 +1323,7 @@ const Scoper = {
                     </div>
                 </div>
 
-                <!-- ARSENAL CONTROLS -->
-                <div class="level-selector">
+                <div class="level-selector" style="display: none;">
                     <button class="level-btn ${this.currentArsenalLevel === 'beginner' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('beginner')">DÉBUTANT</button>
                     <button class="level-btn ${this.currentArsenalLevel === 'intermediate' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('intermediate')">INTERMÉDIAIRE</button>
                     <button class="level-btn ${this.currentArsenalLevel === 'expert' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('expert')">EXPERT / CLOSER</button>
@@ -1334,25 +1337,27 @@ const Scoper = {
                         </button>
                     `).join('')}
                 </div>
+            </div>
 
+            <div class="masterclass-card" style="animation: fadeInUp 0.6s ease-out; background: var(--bg-card); border-radius: 32px; padding: 3rem; border: 1px solid var(--border);">
                 <!-- PHASE MASTERCLASS -->
-                <div class="masterclass-card">
+                <div class="phase-content">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem;">
                         <div>
-                            <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Phase ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) + 1} : ${phase.label}</div>
+                            <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Étape : ${phase.label}</div>
                             <h2 style="font-size: 2.2rem; font-weight: 950; color: white; margin: 0; letter-spacing: -1.5px;">${levelData.title}</h2>
                         </div>
-                        <div style="padding: 10px 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; font-size: 0.8rem; font-weight: 700; color: #94a3b8;">
-                            Arsenal Niveau ${this.currentArsenalLevel === 'expert' ? 'III' : this.currentArsenalLevel === 'intermediate' ? 'II' : 'I'}
+                        <div style="padding: 10px 20px; background: var(--primary-glass); border: 1px solid var(--primary); border-radius: 12px; font-size: 0.8rem; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-robot"></i> Stratégie IA Activée
                         </div>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 4rem;">
                         <div>
-                            <h4 style="font-size: 0.8rem; font-weight: 950; color: white; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px;">Conseils Stratégiques</h4>
+                            <h4 style="font-size: 0.8rem; font-weight: 950; color: white; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px;">Tactique Personnalisée</h4>
                             ${levelData.tips.map(tip => `
                                 <div class="tip-item">
-                                    <i class="fas fa-arrow-right"></i>
+                                    <i class="fas fa-check-circle" style="color: var(--primary);"></i>
                                     <span>${tip}</span>
                                 </div>
                             `).join('')}
