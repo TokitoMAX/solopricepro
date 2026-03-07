@@ -1326,7 +1326,7 @@ const Scoper = {
                         <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
                             <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Niveau Cible</div>
                             <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">
-                                ${this.currentProspectLevel && PricingEngine.prospectLevelLogic[this.currentProspectLevel] ? PricingEngine.prospectLevelLogic[this.currentProspectLevel].label.split(' / ')[0] : 'NON DÉFINI'}
+                                ${PricingEngine.prospectLevelLogic[this.currentProspectLevel] ? PricingEngine.prospectLevelLogic[this.currentProspectLevel].label.split(' / ')[0] : (PricingEngine.prospectLevelLogic[data.prospectLevel] ? PricingEngine.prospectLevelLogic[data.prospectLevel].label.split(' / ')[0] : 'Stratégique')}
                             </div>
                         </div>
                     </div>
@@ -1579,15 +1579,15 @@ const Scoper = {
             mainObstacle: '',
             dailyRate: 0,
             hourlyRate: 0,
-            clientSector: null,
-            prospectLevel: null,
+            clientSector: 'tech',
+            prospectLevel: 'manager',
             arsenalLevel: 'intermediate',
             salesPhase: 'preparation'
         };
 
         this.currentObjectiveStep = 1;
-        this.currentClientSector = null;
-        this.currentProspectLevel = null;
+        this.currentClientSector = 'tech';
+        this.currentProspectLevel = 'manager';
         this.currentArsenalLevel = 'intermediate';
         this.currentSalesPhase = 'preparation';
         this.currentProjectTJM = 0;
