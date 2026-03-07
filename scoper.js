@@ -275,6 +275,21 @@ const Scoper = {
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 2rem; max-width: 600px; margin: 0 auto;">
                         <div>
+                            <label style="display: block; font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Niveau de l'Interlocuteur</label>
+                            <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.02); padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                ${Object.entries(PricingEngine.prospectLevelLogic).map(([id, logic]) => `
+                                    <button class="level-pill ${data.prospectLevel === id ? 'active' : ''}" 
+                                            onclick="document.querySelectorAll('.level-pill').forEach(b => b.classList.remove('active')); this.classList.add('active'); Scoper.updateProspectLevel('${id}')"
+                                            style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: #64748b; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.3s;">
+                                        ${logic.label.split(' / ')[0]}
+                                    </button>
+                                `).join('')}
+                                <style>
+                                    .level-pill.active { background: #1e1e1e; color: white; border-color: rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+                                </style>
+                            </div>
+                        </div>
+                        <div>
                             <label style="display: block; font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Cible Spécifique (ex: CEOs de SaaS logistique, DRH...)</label>
                             <input type="text" id="specificTarget" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0; letter-spacing: 0; font-weight: 700;" value="${data.specificTarget || ''}" placeholder="Cible que vous visez..." oninput="Scoper.autoSaveObjective()">
                         </div>
@@ -1294,13 +1309,13 @@ const Scoper = {
 
             <div class="arsenal-container" style="animation: fadeInUp 0.6s ease-out;">
                 <!-- MISSION CONTROL HEADER -->
-                <div style="background: var(--bg-card); border-radius: 32px; padding: 2.5rem; border: 1px solid var(--border); margin-bottom: 2rem; border-left: 6px solid ${aiPlan.status === 'aligned' ? 'var(--primary)' : '#ef4444'};">
+                <div style="background: var(--bg-card); border-radius: 32px; padding: 2.5rem; border: 1px solid var(--border); margin-bottom: 2rem; border-left: 6px solid ${aiPlan.status === 'aligned' ? 'var(--primary)' : aiPlan.status === 'pending' ? '#64748b' : '#ef4444'};">
                     <div style="display: flex; gap: 2rem; align-items: center;">
-                        <div style="width: 60px; height: 60px; border-radius: 16px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem;">
-                            <i class="fas fa-brain"></i>
+                        <div style="width: 60px; height: 60px; border-radius: 16px; background: ${aiPlan.status === 'pending' ? 'rgba(255,255,255,0.05)' : 'var(--primary-glass)'}; display: flex; align-items: center; justify-content: center; color: ${aiPlan.status === 'pending' ? '#64748b' : 'var(--primary)'}; font-size: 1.5rem;">
+                            <i class="fas ${aiPlan.status === 'pending' ? 'fa-hourglass-start' : 'fa-brain'}"></i>
                         </div>
                         <div style="flex: 1;">
-                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;">SoloPrice AI • Stratège Personnel</div>
+                            <div style="font-size: 0.65rem; font-weight: 950; color: ${aiPlan.status === 'pending' ? '#64748b' : 'var(--primary)'}; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;">SoloPrice AI • Stratège Personnel</div>
                             <h2 style="font-size: 1.5rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${aiPlan.message}</h2>
                             ${data.mainObstacle ? `<div style="margin-top: 8px; font-size: 0.75rem; color: #ef4444; font-weight: 800;"><i class="fas fa-shield-exclamation"></i> DÉFI : ${data.mainObstacle}</div>` : ''}
                         </div>

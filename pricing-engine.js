@@ -149,6 +149,18 @@ const PricingEngine = {
      */
     getAIActionPlan(currentTJM, targetTJM, sector = 'tech') {
         const gap = targetTJM - currentTJM;
+
+        if (currentTJM <= 0) {
+            return {
+                status: 'pending',
+                message: "En attente de données : Définissez vos tâches dans l'onglet 'Chiffrage Projet' pour activer l'analyse.",
+                actions: [
+                    { type: 'setup', text: "Listez les livrables du projet pour calculer votre TJM réel.", icon: 'fa-list-ol' },
+                    { type: 'strategy', text: "Définissez votre périmètre pour que l'IA puisse détecter les zones de risque.", icon: 'fa-shield-halved' }
+                ]
+            };
+        }
+
         const gapPercent = Math.round((gap / currentTJM) * 100);
 
         if (gap <= 0) {
@@ -158,7 +170,7 @@ const PricingEngine = {
                 actions: [
                     { type: 'upsell', text: "Proposez une option 'Fast-Track' (+20%) pour une livraison 2x plus rapide.", icon: 'fa-bolt' },
                     { type: 'authority', text: "Sécurisez un témoignage vidéo dès la complétion pour votre 'Social Proof'.", icon: 'fa-video' },
-                    { type: 'retention', text: "Préparez une offre de maintenance récurrente pour stabiliser ce CA.", icon: 'fa-sync' }
+                    { type: 'retention', text: "Préparez une offer de maintenance récurrente pour stabiliser ce CA.", icon: 'fa-sync' }
                 ]
             };
         }
@@ -201,7 +213,7 @@ const PricingEngine = {
      */
     getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0, clientSector = 'ecommerce', prospectLevel = 'manager') {
         const targetTJM = scenarios.security.tjm;
-        const aiPlan = this.getAIActionPlan(currentTJM > 0 ? currentTJM : targetTJM, targetTJM, sector);
+        const aiPlan = this.getAIActionPlan(currentTJM, targetTJM, sector);
         const sectorData = {
             tech: {
                 focus: "Dette Technique & Perte de Marché",
