@@ -526,9 +526,10 @@ const PricingEngine = {
         }[sector] || "Mon expertise est dédiée à la réussite de votre projet.";
 
         const levelData = this.prospectLevelLogic[prospectLevel] || this.prospectLevelLogic.manager;
-        const clientFocus = this.clientSectorPainPoints[clientSector]?.roi || "votre performance";
+        const clientFocus = this.clientSectorPainPoints[clientSector]?.roi || "votre performance professionnelle";
         const targetText = data.specificTarget ? ` (spécifiquement pour les ${data.specificTarget})` : "";
-        const obstacleText = data.mainObstacle ? `\n\nJ'ai bien noté votre enjeu concernant "${data.mainObstacle}", c'est un point que nous sécuriserons en priorité.` : "";
+        const obstacleText = data.mainObstacle ? `\n\nJ'ai bien noté votre enjeu concernant "${data.mainObstacle}", c'est un point que nous sécuriserons en priorité pour garantir le succès de la mission.` : "";
+        const gapText = data.gap > 0 ? `\nNotez que ce tarif est un investissement stratégique calculé pour combler l'écart de performance identifié de ${Math.round(data.gap)}€.` : "";
 
         return `
 Bonjour,
@@ -539,9 +540,9 @@ ${intro}
 
 Pour ce projet, mon TJM est de ${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}. 
 
-Ce tarif reflète l'expertise nécessaire pour adresser ${levelData.hook}, tout en sécurisant vos enjeux de ${clientFocus} propres au secteur ${clientSector.toUpperCase()}.${obstacleText}
+Ce tarif reflète l'expertise nécessaire pour adresser ${levelData.hook}, tout en sécurisant vos enjeux de ${clientFocus} propres au secteur ${clientSector.toUpperCase()}.${obstacleText}${gapText}
 
-L'objectif est de transformer cet investissement en un ${levelData.vocabulary[0]} pour votre structure.
+L'objectif est de transformer cet investissement en un ${levelData.vocabulary ? levelData.vocabulary[0] : 'levier de succès'} pour votre structure.
 
 Je reste à votre disposition pour en discuter plus en détail.
         `.trim();
@@ -565,8 +566,8 @@ Je reste à votre disposition pour en discuter plus en détail.
         }[sector] || "la réussite de votre projet";
 
         const levelData = this.prospectLevelLogic[prospectLevel] || this.prospectLevelLogic.manager;
-        const clientRisk = this.clientSectorPainPoints[clientSector]?.risk || "la stagnation de votre projet";
-        const obstacleAdvice = data.mainObstacle ? `\n\nConcernant "${data.mainObstacle}", j'ai préparé une approche spécifique pour lever ce frein dès le démarrage.` : "";
+        const clientRisk = this.clientSectorPainPoints[clientSector]?.risk || "la stagnation de vos résultats";
+        const obstacleAdvice = data.mainObstacle ? `\n\nConcernant votre défi sur "${data.mainObstacle}", j'ai préparé une approche spécifique pour lever ce frein dès le démarrage.` : "";
 
         return `
 Bonjour,
@@ -575,7 +576,7 @@ Je reviens vers vous concernant ma proposition.
 
 Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente accentue ${clientRisk}, ce qui retarde ${levelData.hook}.${obstacleAdvice}
 
-C'est un risque de ${levelData.vocabulary[2] || 'stagnation'} que nous pouvons mitiger dès le lancement de notre collaboration.
+C'est un risque de ${levelData.vocabulary && levelData.vocabulary[2] ? levelData.vocabulary[2] : 'perte de vitesse'} que nous pouvons mitiger dès le lancement de notre collaboration.
 
 Avons-nous un créneau de 10 min cette semaine pour valider les prochaines étapes ?
         `.trim();

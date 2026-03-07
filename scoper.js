@@ -19,6 +19,13 @@ const Scoper = {
         const isPro = Storage.isPro();
         if (!this.currentObjectiveStep) this.currentObjectiveStep = Storage.get('sp_scoper_current_step') || 1;
 
+        // Load persisted settings if not already in memory
+        const data = Storage.get('sp_calculator_data') || {};
+        if (data.clientSector) this.currentClientSector = data.clientSector;
+        if (data.prospectLevel) this.currentProspectLevel = data.prospectLevel;
+        if (data.arsenalLevel) this.currentArsenalLevel = data.arsenalLevel;
+        if (data.salesPhase) this.currentSalesPhase = data.salesPhase;
+
         container.innerHTML = `
             <style>
                 .scoper-tabs-nav {
@@ -460,21 +467,33 @@ const Scoper = {
 
     updateClientSector(sector) {
         this.currentClientSector = sector;
+        const data = Storage.get('sp_calculator_data') || {};
+        data.clientSector = sector;
+        Storage.set('sp_calculator_data', data);
         this.renderClosingTab();
     },
 
     updateProspectLevel(level) {
         this.currentProspectLevel = level;
+        const data = Storage.get('sp_calculator_data') || {};
+        data.prospectLevel = level;
+        Storage.set('sp_calculator_data', data);
         this.renderClosingTab();
     },
 
     updateArsenalLevel(level) {
         this.currentArsenalLevel = level;
+        const data = Storage.get('sp_calculator_data') || {};
+        data.arsenalLevel = level;
+        Storage.set('sp_calculator_data', data);
         this.renderClosingTab();
     },
 
     updateSalesPhase(phase) {
         this.currentSalesPhase = phase;
+        const data = Storage.get('sp_calculator_data') || {};
+        data.salesPhase = phase;
+        Storage.set('sp_calculator_data', data);
         this.renderClosingTab();
     },
 
@@ -702,7 +721,7 @@ const Scoper = {
 
     getTJM() {
         const calcData = Storage.get('sp_calculator_data');
-        return calcData?.dailyRate || 400;
+        return this.currentProjectTJM || calcData?.dailyRate || 400;
     },
 
     loadObjectiveInputs() {
@@ -1539,12 +1558,20 @@ const Scoper = {
             specificTarget: '',
             mainObstacle: '',
             dailyRate: 0,
-            hourlyRate: 0
+            hourlyRate: 0,
+            clientSector: null,
+            prospectLevel: null,
+            arsenalLevel: 'intermediate',
+            salesPhase: 'preparation'
         };
 
         this.currentObjectiveStep = 1;
         this.currentClientSector = null;
         this.currentProspectLevel = null;
+        this.currentArsenalLevel = 'intermediate';
+        this.currentSalesPhase = 'preparation';
+        this.currentProjectTJM = 0;
+        this.tasks = [];
 
         Storage.set('sp_scoper_current_step', 1);
         Storage.set('sp_calculator_data', defaultData);
