@@ -647,7 +647,10 @@ const Scoper = {
                          <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem;">Leviers de Prix & Stratégie</div>
                          
                          <div style="margin-bottom: 1.5rem;">
-                            <label style="font-size: 0.8rem; font-weight: 700; color: white; display: block; margin-bottom: 0.5rem;">TJM de Référence</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <label style="font-size: 0.8rem; font-weight: 700; color: white; display: block;">TJM de Référence</label>
+                                <span style="font-size: 0.6rem; font-weight: 900; color: var(--primary); background: var(--primary-glass); padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;"><i class="fas fa-bullseye"></i> PILOTÉ PAR STRATÉGIE</span>
+                            </div>
                             <input type="number" id="scoper-tjm" class="form-input" value="${this.getTJM()}" onchange="Scoper.calculate()" style="background: #111; border-color: rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem;">
                          </div>
 
@@ -746,7 +749,11 @@ const Scoper = {
                         <i class="fas fa-flag-checkered" style="font-size: 2.5rem; color: white;"></i>
                     </div>
                     <h2 style="font-size: 2rem; margin-bottom: 1rem;">${i18n.t('scoper.success.title')}</h2>
-                    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 2rem;">${i18n.t('scoper.success.desc').replace('{tjm}', (typeof App !== 'undefined' ? App.formatCurrency(finalData.dailyRate) : finalData.dailyRate + '€') + '/j')}</p>
+                    <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 2rem;">
+                        <strong>Stratégie Activée !</strong> Ce tarif de 
+                        <span style="color: var(--primary); font-weight: 900;">${(typeof App !== 'undefined' ? App.formatCurrency(finalData.dailyRate) : finalData.dailyRate + '€')}</span> 
+                        pilote désormais votre chiffrage projet et vos conseils de closing.
+                    </p>
                     
                     <div style="display: flex; gap: 1rem; justify-content: center;">
                         <button class="button-primary" onclick="Scoper.render('project')" style="padding: 1rem 2rem; font-size: 1rem;">
@@ -1516,8 +1523,8 @@ const Scoper = {
             hoursPerDay: 7,
             monthlyCharges: 500,
             taxRate: 22,
-            sector: 'tech',
-            target: 'pme',
+            sector: null,
+            target: null,
             specificTarget: '',
             mainObstacle: '',
             dailyRate: 0,
@@ -1525,8 +1532,8 @@ const Scoper = {
         };
 
         this.currentObjectiveStep = 1;
-        this.currentClientSector = 'ecommerce';
-        this.currentProspectLevel = 'manager';
+        this.currentClientSector = null;
+        this.currentProspectLevel = null;
 
         Storage.set('sp_scoper_current_step', 1);
         Storage.set('sp_calculator_data', defaultData);
