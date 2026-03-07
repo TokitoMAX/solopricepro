@@ -8,6 +8,8 @@ const Scoper = {
     },
     currentClientSector: 'ecommerce',
     currentProspectLevel: 'manager',
+    currentArsenalLevel: 'intermediate',
+    currentSalesPhase: 'preparation',
 
     render(tab = 'objective') {
         const container = document.getElementById('scoper-content');
@@ -437,6 +439,16 @@ const Scoper = {
 
     updateProspectLevel(level) {
         this.currentProspectLevel = level;
+        this.renderClosingTab();
+    },
+
+    updateArsenalLevel(level) {
+        this.currentArsenalLevel = level;
+        this.renderClosingTab();
+    },
+
+    updateSalesPhase(phase) {
+        this.currentSalesPhase = phase;
         this.renderClosingTab();
     },
 
@@ -1158,14 +1170,14 @@ const Scoper = {
 
         if (!Storage.isExpert()) {
             content.innerHTML = `
-                <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.03); border-radius: 32px; backdrop-filter: blur(20px);">
-                    <div style="width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.05)); display: flex; align-items: center; justify-content: center; margin: 0 auto 2.5rem; color: #a855f7; box-shadow: 0 10px 40px rgba(168, 85, 247, 0.15);">
+                <div class="lock-screen glass-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 4rem 2rem; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.03); border-radius: 32px; backdrop-filter: blur(20px);">
+                    <div style="width: 80px; height: 80px; border-radius: 24px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; margin: 0 auto 2.5rem; color: var(--primary); box-shadow: 0 10px 40px var(--primary-glass);">
                         <i class="fas fa-magic" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h2 style="font-size: 2.4rem; margin-bottom: 1rem; color: white; font-weight: 800; letter-spacing: -1.5px;">${i18n.t('scoper.closing.arsenal') || 'Arsenal de Closing Expert'}</h2>
-                    <p class="text-muted" style="margin-bottom: 3rem; font-size: 1.15rem; line-height: 1.7; max-width: 450px; margin-left: auto; margin-right: auto;">${i18n.t('scoper.closing.arsenal_desc') || 'Débloquez les stratégies de vente les plus puissantes pour doubler votre taux de conversion et vendre au prix fort.'}</p>
-                    <button class="button-primary large hover-lift" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; padding: 1.4rem 3rem; font-weight: 800; border-radius: 16px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);" onclick="App.showUpgradeModal('premium_feature')">
-                         <i class="fas fa-crown" style="margin-right: 10px;"></i> ${i18n.t('scoper.journal.mode_expert') || 'Passer au Pack EXPERT'}
+                    <h2 style="font-size: 2.4rem; margin-bottom: 1rem; color: white; font-weight: 800; letter-spacing: -1.5px;">Arsenal de Closing Expert</h2>
+                    <p class="text-muted" style="margin-bottom: 3rem; font-size: 1.15rem; line-height: 1.7; max-width: 450px; margin-left: auto; margin-right: auto;">Accédez aux stratégies des meilleurs closers et transformez chaque devis en un contrat signé avec une marge maximale.</p>
+                    <button class="button-primary large hover-lift" style="padding: 1.4rem 3rem; font-weight: 800; border-radius: 16px;" onclick="App.showUpgradeModal('premium_feature')">
+                         <i class="fas fa-crown" style="margin-right: 10px;"></i> Passer au Pack EXPERT
                     </button>
                 </div>
             `;
@@ -1175,207 +1187,133 @@ const Scoper = {
         const data = Storage.get('sp_calculator_data') || {};
         const sector = data.sector || 'tech';
         const target = data.target || 'pme';
-
         const results = PricingEngine.calculateObjective(data);
         const scenarios = PricingEngine.getScenarios(results);
-        const targetTJM = results.dailyRate;
-        const powerScore = PricingEngine.getMarketPowerScore(targetTJM, sector);
-        const tactics = PricingEngine.getAdvancedSalesTactics(powerScore, scenarios, sector, target, this.currentProjectTJM || 0, this.currentClientSector || 'ecommerce', this.currentProspectLevel || 'manager');
-
+        const tactics = PricingEngine.getAdvancedSalesTactics(0, scenarios, sector, target, this.currentProjectTJM || 0, this.currentClientSector || 'ecommerce', this.currentProspectLevel || 'manager');
         const aiPlan = tactics.aiPlan;
+        const phase = PricingEngine.salesLifecycle[this.currentSalesPhase];
+        const levelData = phase.levels[this.currentArsenalLevel];
 
-        const sectorLabel = { tech: 'Tech & Web', design: 'Design & Branding', marketing: 'Marketing & Com', conseil: 'Conseil & Strat', media: 'Média & Vidéo', artisanat: 'Artisanat & Prod' }[sector] || sector;
-        const targetLabel = { tpe: 'TPE / Indépendants', pme: 'PME & Startups', 'grands-comptes': 'Grands Comptes' }[target] || target;
-
-        const hasObjective = results.dailyRate > 0;
-        const tjm = results.dailyRate;
-        const monthlyNet = parseFloat(data.monthlyRevenue) || 0;
-        const revenueNeeded = results.revenueNeeded;
-
-        if (!hasObjective) {
-            content.innerHTML = `
-                <div class="empty-state-v2" style="max-width: 800px; margin: 6rem auto; text-align: center; animation: fadeInDown 0.8s ease;">
-                    <div style="font-size: 5rem; margin-bottom: 2rem; opacity: 0.5;">🛰️</div>
-                    <h2 style="font-size: 2.8rem; font-weight: 900; color: white; letter-spacing: -2px; margin-bottom: 1rem;">Radar Stratégique Inactif</h2>
-                    <p style="font-size: 1.2rem; color: #a5b4fc; max-width: 500px; margin: 0 auto 3rem; line-height: 1.6; opacity: 0.8;">
-                        Votre arsenal de vente ne peut pas être calibré sans vos objectifs financiers. 
-                        <strong>Définissez votre TJM de sécurité pour activer l'IA de Closing.</strong>
-                    </p>
-                    <button class="button-primary large hover-lift" onclick="Scoper.render('objective')" style="background: white; color: black; border: none; padding: 1.2rem 2.5rem; font-weight: 800; border-radius: 14px;">
-                        <i class="fas fa-crosshairs" style="margin-right: 10px;"></i> Calibrer mon Objectif TJM
-                    </button>
-                </div>
-            `;
+        if (!results.dailyRate) {
+            content.innerHTML = `<div class="empty-state-v2" style="max-width: 800px; margin: 6rem auto; text-align: center;">🛰️ Radar Inactif. Définissez votre TJM d'abord.</div>`;
             return;
         }
 
         content.innerHTML = `
             <style>
-                .closing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
-                .closing-card { 
-                    background: #0a0a0a; border: 1px solid rgba(255,255,255,0.06); border-radius: 24px; 
-                    padding: 2.5rem; position: relative; overflow: hidden;
+                .arsenal-phase-btn {
+                    flex: 1; padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+                    border-radius: 16px; color: #64748b; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    text-align: center; font-weight: 700; font-size: 0.9rem;
                 }
-                .diag-question {
-                    padding: 1.2rem; background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px solid rgba(255,255,255,0.04);
-                    margin-bottom: 0.8rem; font-size: 0.95rem; line-height: 1.5; color: #94a3b8; transition: all 0.3s;
+                .arsenal-phase-btn.active {
+                    background: var(--primary-glass); border-color: var(--primary); color: white; transform: translateY(-3px); box-shadow: 0 10px 30px var(--primary-glass);
                 }
-                .diag-question:hover { border-color: var(--primary-glass); color: white; background: rgba(255,255,255,0.04); }
+                .arsenal-phase-btn i { display: block; font-size: 1.4rem; margin-bottom: 8px; opacity: 0.5; }
+                .arsenal-phase-btn.active i { opacity: 1; transform: scale(1.1); }
                 
-                .rebuttal-box {
-                    padding: 1.5rem; background: rgba(16, 185, 129, 0.03); border-radius: 16px; border-left: 4px solid var(--primary);
-                    margin-top: 1rem; font-size: 1rem; line-height: 1.6; color: #e2e8f0; font-style: italic;
-                }
+                .level-selector { display: flex; gap: 6px; background: #000; border: 1px solid rgba(255,255,255,0.05); padding: 4px; border-radius: 12px; margin-bottom: 2rem; }
+                .level-btn { flex: 1; padding: 8px; border-radius: 8px; border: none; background: transparent; color: #64748b; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+                .level-btn.active { background: rgba(255,255,255,0.05); color: white; }
                 
-                .method-step {
-                    display: flex; gap: 1rem; margin-bottom: 2rem;
-                }
-                .method-number {
-                    width: 32px; height: 32px; border-radius: 50%; background: var(--primary-glass); color: var(--primary);
-                    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
-                    border: 1px solid var(--primary-glass);
-                }
+                .masterclass-card { background: #0a0a0a; border: 1px solid var(--border); border-radius: 32px; padding: 3rem; position: relative; }
+                .tip-item { display: flex; gap: 1rem; margin-bottom: 1.5rem; color: #94a3b8; line-height: 1.6; }
+                .tip-item i { color: var(--primary); margin-top: 4px; }
             </style>
 
-            <div class="closing-container" style="animation: fadeInUp 0.8s ease-out;">
-                <div style="background: var(--bg-card); border-radius: 32px; padding: 3rem; border: 1px solid var(--border); margin-bottom: 2rem; position: relative; overflow: hidden;">
-                    <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; opacity: 0.03; color: var(--primary); transform: rotate(-15deg);">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div style="display: flex; gap: 2rem; align-items: center; position: relative; z-index: 2;">
-                        <div style="width: 80px; height: 80px; border-radius: 20px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 2rem; border: 1px solid var(--primary-glass);">
+            <div class="arsenal-container" style="animation: fadeInUp 0.6s ease-out;">
+                <!-- MISSION CONTROL HEADER -->
+                <div style="background: var(--bg-card); border-radius: 32px; padding: 2.5rem; border: 1px solid var(--border); margin-bottom: 2rem; border-left: 6px solid ${aiPlan.status === 'aligned' ? 'var(--primary)' : '#ef4444'};">
+                    <div style="display: flex; gap: 2rem; align-items: center;">
+                        <div style="width: 60px; height: 60px; border-radius: 16px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem;">
                             <i class="fas fa-brain"></i>
                         </div>
                         <div style="flex: 1;">
-                            <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">SoloPrice AI • Stratège Personnel</div>
-                            <h2 style="font-size: 1.8rem; font-weight: 950; color: white; margin: 0; letter-spacing: -1px;">${aiPlan.message}</h2>
+                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;">SoloPrice AI • Stratège Personnel</div>
+                            <h2 style="font-size: 1.5rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${aiPlan.message}</h2>
                         </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Écart de Performance</div>
-                            <div style="font-size: 1.5rem; font-weight: 950; color: ${aiPlan.status === 'aligned' ? 'var(--primary)' : '#ef4444'};">
-                                ${aiPlan.status === 'aligned' ? '<i class="fas fa-check-circle"></i> Aligné' : `+${aiPlan.gapPercent}%`}
-                            </div>
+                        <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Secteur Prospect</div>
+                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">${this.currentClientSector.toUpperCase()}</div>
                         </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                            <div>
-                                <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Secteur du Prospect</div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    ${['ecommerce', 'btp', 'luxe', 'formation', 'sante', 'asso'].map(s => `
-                                        <button onclick="Scoper.updateClientSector('${s}')" 
-                                            style="padding: 6px 14px; border-radius: 100px; border: 1px solid ${this.currentClientSector === s ? 'var(--primary)' : 'rgba(255,255,255,0.1)'}; 
-                                            background: ${this.currentClientSector === s ? 'var(--primary-glass)' : 'transparent'}; 
-                                            color: ${this.currentClientSector === s ? 'white' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
-                                            ${s.charAt(0).toUpperCase() + s.slice(1)}
-                                        </button>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.7rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Niveau d'Interlocuteur</div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    ${Object.keys(PricingEngine.prospectLevelLogic).map(l => `
-                                        <button onclick="Scoper.updateProspectLevel('${l}')" 
-                                            style="padding: 6px 14px; border-radius: 100px; border: 1px solid ${this.currentProspectLevel === l ? 'var(--primary)' : 'rgba(255,255,255,0.1)'}; 
-                                            background: ${this.currentProspectLevel === l ? 'var(--primary-glass)' : 'transparent'}; 
-                                            color: ${this.currentProspectLevel === l ? 'white' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
-                                            ${PricingEngine.prospectLevelLogic[l].label.split(' / ')[0]}
-                                        </button>
-                                    `).join('')}
-                                </div>
-                            </div>
+                        <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Niveau Cible</div>
+                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">${PricingEngine.prospectLevelLogic[this.currentProspectLevel].label.split(' / ')[0]}</div>
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
-                        ${aiPlan.actions.map(action => `
-                            <div class="ai-action-card" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; border-left: 3px solid var(--primary);">
-                                <div style="color: var(--primary); margin-bottom: 10px; font-size: 0.9rem;"><i class="fas ${action.icon}"></i></div>
-                                <div style="font-size: 0.9rem; color: white; line-height: 1.5; font-weight: 500;">${action.text}</div>
-                            </div>
-                        `).join('')}
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem; align-items: center; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <span style="font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Automations :</span>
+                        <button class="button-primary mini" style="background: var(--primary-glass); color: white; border: 1px solid var(--primary-glass);" onclick="Scoper.generateAIContent('quote')">Script Devis</button>
+                        <button class="button-primary mini" style="background: var(--primary-glass); color: white; border: 1px solid var(--primary-glass);" onclick="Scoper.generateAIContent('followup')">Relance Valeur</button>
                     </div>
-                    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 1rem; align-items: center;">
-                        <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Automations :</span>
-                        <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;" onclick="Scoper.generateAIContent('quote')">
-                            <i class="fas fa-file-invoice"></i> Script de Devis
+                </div>
+
+                <!-- ARSENAL CONTROLS -->
+                <div class="level-selector">
+                    <button class="level-btn ${this.currentArsenalLevel === 'beginner' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('beginner')">DÉBUTANT</button>
+                    <button class="level-btn ${this.currentArsenalLevel === 'intermediate' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('intermediate')">INTERMÉDIAIRE</button>
+                    <button class="level-btn ${this.currentArsenalLevel === 'expert' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('expert')">EXPERT / CLOSER</button>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    ${Object.keys(PricingEngine.salesLifecycle).map(pKey => `
+                        <button class="arsenal-phase-btn ${this.currentSalesPhase === pKey ? 'active' : ''}" onclick="Scoper.updateSalesPhase('${pKey}')">
+                            <i class="fas ${PricingEngine.salesLifecycle[pKey].icon}"></i>
+                            ${PricingEngine.salesLifecycle[pKey].label}
                         </button>
-                        <button class="button-primary mini" style="background: var(--primary-glass); color: var(--primary); border: 1px solid var(--primary-glass); padding: 5px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 8px;" onclick="Scoper.generateAIContent('followup')">
-                            <i class="fas fa-envelope"></i> Relance Valeur
-                        </button>
+                    `).join('')}
+                </div>
+
+                <!-- PHASE MASTERCLASS -->
+                <div class="masterclass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem;">
+                        <div>
+                            <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Phase ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) + 1} : ${phase.label}</div>
+                            <h2 style="font-size: 2.2rem; font-weight: 950; color: white; margin: 0; letter-spacing: -1.5px;">${levelData.title}</h2>
+                        </div>
+                        <div style="padding: 10px 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; font-size: 0.8rem; font-weight: 700; color: #94a3b8;">
+                            Arsenal Niveau ${this.currentArsenalLevel === 'expert' ? 'III' : this.currentArsenalLevel === 'intermediate' ? 'II' : 'I'}
+                        </div>
                     </div>
-                </div>
 
-                <div style="background: rgba(0,0,0,0.2); border-radius: 24px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 2rem; text-align: center;">
-                    <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem;">Processus de Vente Méthodique</div>
-                    <p class="text-muted" style="font-size: 1rem; max-width: 600px; margin: 0 auto;">Planifiez votre closing en 3 étapes basées sur votre objectif de <strong>${App.formatCurrency(targetTJM)}</strong>.</p>
-                </div>
-
-                <div class="closing-grid">
-                    <div class="closing-card">
-                        <div class="method-step">
-                            <div class="method-number">01</div>
-                            <div>
-                                <h3 style="font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 0.5rem;">Diagnostic de Valeur</h3>
-                                <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1.5rem;">Posez ces questions pour transformer le prix en investissement.</p>
-                                <div class="questions-list">
-                                    ${tactics.diagnostic.questions.slice(0, 3).map(q => `<div class="diag-question">${q}</div>`).join('')}
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 4rem;">
+                        <div>
+                            <h4 style="font-size: 0.8rem; font-weight: 950; color: white; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px;">Conseils Stratégiques</h4>
+                            ${levelData.tips.map(tip => `
+                                <div class="tip-item">
+                                    <i class="fas fa-arrow-right"></i>
+                                    <span>${tip}</span>
                                 </div>
-                            </div>
+                            `).join('')}
                         </div>
-                        
-                        <div style="margin-top: 2rem; padding: 1.5rem; background: var(--primary-glass); border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.1);">
-                            <div style="font-size: 0.65rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">L'argument ROI</div>
-                            <div style="font-size: 1rem; color: white; font-weight: 500; font-style: italic;">"${tactics.roi.argument}"</div>
+
+                        <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: 24px; padding: 2rem;">
+                            <h4 style="font-size: 0.7rem; font-weight: 950; color: #64748b; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px;">
+                                ${this.currentSalesPhase === 'diagnostic' ? 'Questions d\'Excavation' : 
+                                  this.currentSalesPhase === 'alignment' ? 'Argument Choc' :
+                                  this.currentSalesPhase === 'closing' ? 'Méthodes de Bouclage' : 'Checklist de Préparation'}
+                            </h4>
+                            
+                            ${this.currentSalesPhase === 'diagnostic' ? 
+                                levelData.questions.map(q => `<div style="padding: 1rem; background: #000; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 0.8rem; font-size: 0.9rem; color: white; font-weight: 700;">"${q}"</div>`).join('') :
+                              this.currentSalesPhase === 'alignment' ?
+                                `<div style="font-size: 1.2rem; font-weight: 800; color: white; font-style: italic; line-height: 1.5;">"${levelData.argument}"</div>` :
+                              this.currentSalesPhase === 'closing' ?
+                                levelData.methods.map(m => `<div style="padding: 0.8rem 1.2rem; background: var(--primary-glass); border: 1px solid var(--primary-glass); border-radius: 10px; margin-bottom: 0.8rem; font-size: 0.85rem; color: white; font-weight: 800; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-circle"></i> ${m}</div>`).join('') :
+                                levelData.checklist.map(c => `<div style="margin-bottom: 0.8rem; font-size: 0.9rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check" style="color: var(--primary);"></i> ${c}</div>`).join('')
+                            }
                         </div>
                     </div>
 
-                    <div class="closing-card">
-                        <div class="method-step">
-                            <div class="method-number">02</div>
-                            <div>
-                                <h3 style="font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 0.5rem;">Ancrage Stratégique</h3>
-                                <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1.5rem;">Technique du contraste pour valider votre TJM cible.</p>
-                            </div>
+                    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <p style="font-size: 0.85rem; color: #64748b; margin: 0;"><strong>Besoin de plus d'aide ?</strong> Utilisez les automations SoloPrice AI en haut de l'onglet.</p>
+                        <div style="display: flex; gap: 1rem;">
+                            ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) > 0 ? 
+                                `<button onclick="Scoper.updateSalesPhase('${Object.keys(PricingEngine.salesLifecycle)[Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) - 1]}')" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">Pécédent</button>` : ''}
+                            ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) < 3 ? 
+                                `<button onclick="Scoper.updateSalesPhase('${Object.keys(PricingEngine.salesLifecycle)[Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) + 1]}')" style="background: var(--primary); border: none; color: white; padding: 10px 24px; border-radius: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px var(--primary-glass);">Phase Suivante</button>` : ''}
                         </div>
-
-                        <div style="background: #000; border: 1px solid rgba(255,255,255,0.04); border-radius: 20px; padding: 2rem; margin-bottom: 1.5rem;">
-                             <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); opacity: 0.4;">
-                                <div style="font-size: 0.8rem; font-weight: 800; color: #94a3b8;">Référence Marché (Expert)</div>
-                                <div style="font-size: 0.95rem; font-weight: 900; color: white;">${App.formatCurrency(scenarios.elite.tjm)}/j</div>
-                             </div>
-                             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem;">
-                                <div>
-                                    <div style="font-size: 0.7rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Votre Proposition</div>
-                                    <div style="font-size: 2.2rem; font-weight: 950; color: white;">${App.formatCurrency(scenarios.security.tjm)}<span style="font-size: 1rem; font-weight: 500; opacity: 0.5;"> / jour</span></div>
-                                </div>
-                                <div style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 950; text-transform: uppercase;">Accepté</div>
-                             </div>
-                        </div>
-
-                        <div class="rebuttal-box" style="margin-top: 0; font-size: 0.95rem;">
-                            <div style="font-size: 0.65rem; color: var(--primary); font-weight: 950; text-transform: uppercase; margin-bottom: 8px;">Logique d'Acceptation</div>
-                            "${tactics.anchoring.logic}"
-                        </div>
-                    </div>
-                </div>
-
-                <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 32px; padding: 3rem;">
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                        <div class="method-number" style="background: #ef44441a; color: #ef4444; border-color: #ef44441a;">03</div>
-                        <h3 style="font-size: 1.2rem; font-weight: 800; color: white;">Traitement des Objections</h3>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-                        ${tactics.objections.map(obj => `
-                            <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 20px;">
-                                <div style="font-size: 1.1rem; font-weight: 800; color: white; margin-bottom: 1rem; line-height: 1.4;">"${obj.hook}"</div>
-                                <div class="rebuttal-box" style="font-size: 0.85rem; padding: 1rem;">${obj.rebuttal}</div>
-                            </div>
-                        `).join('')}
                     </div>
                 </div>
             </div>

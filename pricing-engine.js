@@ -357,6 +357,157 @@ const PricingEngine = {
     },
 
     /**
+     * Arsenal de Vente Professionnel - [MASTERCLASS]
+     * Contenu structuré par phase et par niveau d'expérience.
+     */
+    salesLifecycle: {
+        preparation: {
+            label: "Préparation",
+            icon: "fa-user-shield",
+            levels: {
+                beginner: {
+                    title: "Le Socle de Confiance",
+                    tips: [
+                        "Relisez votre étude de cas la plus proche pour gonfler votre certitude.",
+                        "Identifiez les 3 bénéfices majeurs que vous apportez au secteur choisi.",
+                        "Préparez une réponse claire à : 'Pourquoi vous et pas un autre ?'"
+                    ],
+                    checklist: ["Portfolio à jour", "Calculateur SoloPrice ouvert", "Sourire au téléphone"]
+                },
+                intermediate: {
+                    title: "Le Pré-Framing Stratégique",
+                    tips: [
+                        "Analysez le profil LinkedIn du prospect : quels sont ses succès récents ?",
+                        "Définissez votre 'Walk-Away Point' (le prix en dessous duquel vous dites non).",
+                        "Préparez 2 'Labels' (ex: Il semble que la sécurité soit votre priorité n°1)."
+                    ],
+                    checklist: ["Recherche prospect approfondie", "Backup technique prêt", "Notes de cadrage"]
+                },
+                expert: {
+                    title: "L'État de Flow & Autorité",
+                    tips: [
+                        "Détachement total du résultat : vous êtes là pour aider, pas pour vendre.",
+                        "Préparez votre 'Ancrage Elite' (le Pack 3x plus cher) pour l'effet de contraste.",
+                        "Anticipez le 'Non' : comment allez-vous l'utiliser comme levier de vérité ?"
+                    ],
+                    checklist: ["Mindset de détachement", "Contraste Elite prêt", "Tactiques d'empathie tactique"]
+                }
+            }
+        },
+        diagnostic: {
+            label: "Diagnostic",
+            icon: "fa-stethoscope",
+            levels: {
+                beginner: {
+                    title: "Écoute Active",
+                    tips: [
+                        "Laissez le client parler 70% du temps.",
+                        "Prenez des notes sur les mots exacts qu'il utilise pour qualifier son problème.",
+                        "Reformulez : 'Si je comprends bien, votre enjeu majeur est...'"
+                    ],
+                    questions: [
+                        "Quel est l'objectif n°1 du projet ?",
+                        "Qu'est-ce qui vous empêche d'y arriver aujourd'hui ?",
+                        "Qu'attendez-vous d'un partenaire comme moi ?"
+                    ]
+                },
+                intermediate: {
+                    title: "Excavation de Douleur",
+                    tips: [
+                        "Creusez avec le 'Pourquoi' (jusqu'à 3 fois).",
+                        "Identifiez l'impact personnel du problème sur l'interlocuteur.",
+                        "Cherchez la 'Deep Pain' : stress, perte de temps, pression hiérarchique."
+                    ],
+                    questions: [
+                        "Depuis combien de temps ce problème persiste-t-il ?",
+                        "Combien de CA perdez-vous chaque mois à cause de cette situation ?",
+                        "Si on ne règle rien maintenant, à quoi ressemble votre business dans 6 mois ?"
+                    ]
+                },
+                expert: {
+                    title: "L'IRM du Business",
+                    tips: [
+                        "Utilisez le silence pour laisser le client réaliser la gravité de son problème.",
+                        "Pratiquez l'Empathie Tactique : 'Il semble que vous ayez peur que ce projet échoue...'",
+                        "Validez le coût de l'inaction avant de parler de solution."
+                    ],
+                    questions: [
+                        "Quel budget avez-vous déjà 'jeté par la fenêtre' en essayant de régler ça ?",
+                        "Qu'est-ce qui se passe pour vous personnellement si cet objectif n'est pas atteint ?",
+                        "Est-ce qu'on règle le problème à la racine, ou on continue de mettre des pansements ?"
+                    ]
+                }
+            }
+        },
+        alignment: {
+            label: "Alignement",
+            icon: "fa-project-diagram",
+            levels: {
+                beginner: {
+                    title: "Pont de Valeur",
+                    tips: [
+                        "Liez chaque fonctionnalité à un bénéfice concret pour le client.",
+                        "Utilisez des preuves sociales (témoignages, logos).",
+                        "Restez simple : ne vous noyez pas dans la technique."
+                    ],
+                    argument: "Ma solution règle [Problème] et vous apporte [Résultat]."
+                },
+                intermediate: {
+                    title: "Translation Business",
+                    tips: [
+                        "Parlez de ROI, pas de coût. Montrez comment l'investissement se rentabilise.",
+                        "Créez une vision futuriste positive : 'Imaginez quand le système sera...'",
+                        "Positionnez-vous comme l'unique pont vers son objectif."
+                    ],
+                    argument: "Investir aujourd'hui sécurise un gain réel sur l'année."
+                },
+                expert: {
+                    title: "Le Contraste Stratégique",
+                    tips: [
+                        "Utilisez l'option 3 (Elite) pour rendre l'option 2 (Sécurité) évidente.",
+                        "Vendez le 'futur désiré', pas le processus.",
+                        "Gérez la psychologie : rendez l'achat gratifiant."
+                    ],
+                    argument: "L'Elite est une domination totale, la Sécurité est votre croissance sereine."
+                }
+            }
+        },
+        closing: {
+            label: "Closing",
+            icon: "fa-check-double",
+            levels: {
+                beginner: {
+                    title: "L'Invitation",
+                    tips: [
+                        "N'ayez pas peur de demander : 'Est-ce qu'on commence lundi ?'",
+                        "Validez les prochaines étapes concrètes.",
+                        "Remerciez pour la confiance."
+                    ],
+                    methods: ["Direct Close", "Next Step Close"]
+                },
+                intermediate: {
+                    title: "Le Bouclage Professionnel",
+                    tips: [
+                        "Utilisez le 'Summary Close' : récapitulez tous les bénéfices avant le prix.",
+                        "Adressez les objections de front.",
+                        "Obtenez un engagement ferme (Acompte)."
+                    ],
+                    methods: ["Summary Close", "Benefit Close", "Objection Reframe"]
+                },
+                expert: {
+                    title: "L'Engagement d'Élite",
+                    tips: [
+                        "L'Assumptive Close : parlez comme si le projet avait déjà commencé.",
+                        "Utilisez le silence après avoir annoncé le prix.",
+                        "Maitrisez les objections par la négociation (Labeling/Mirroring)."
+                    ],
+                    methods: ["Assumptive Close", "Tactical Empathy Close", "The Calibrated Question"]
+                }
+            }
+        }
+    },
+
+    /**
      * Génère un script de présentation du devis (SoloPrice AI)
      */
     generateQuoteScript(data) {
