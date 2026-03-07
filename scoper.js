@@ -1231,8 +1231,19 @@ const Scoper = {
         const phase = PricingEngine.salesLifecycle[this.currentSalesPhase];
         const levelData = phase.levels[this.currentArsenalLevel];
 
-        if (!results.dailyRate) {
-            content.innerHTML = `<div class="empty-state-v2" style="max-width: 800px; margin: 6rem auto; text-align: center;">🛰️ Radar Inactif. Définissez votre TJM d'abord.</div>`;
+        if (!results.dailyRate || results.dailyRate <= 0) {
+            content.innerHTML = `
+                <div class="empty-state-v2" style="max-width: 600px; margin: 6rem auto; text-align: center; padding: 4rem; background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.1); border-radius: 32px; animation: fadeIn 0.8s ease-out;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #4b5563;">
+                        <i class="fas fa-satellite-dish" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 1rem;">Radar de Closing Inactif</h3>
+                    <p class="text-muted" style="font-size: 1rem; margin-bottom: 2.5rem; line-height: 1.6;">L'IA de closing a besoin de votre <strong>Objectif TJM</strong> pour calibrer ses arguments et scripts de vente.</p>
+                    <button class="button-primary" onclick="Scoper.render('objective')" style="padding: 1rem 2.5rem; border-radius: 12px; font-weight: 800;">
+                        <i class="fas fa-crosshairs"></i> Définir mon Objectif
+                    </button>
+                </div>
+            `;
             return;
         }
 
