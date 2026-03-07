@@ -588,3 +588,5 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
     window.PricingEngine = PricingEngine;
 }
+
+window.Scoper = typeof Scoper !== 'undefined' ? Scoper : window.Scoper;

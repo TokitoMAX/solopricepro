@@ -1642,3 +1642,5 @@ const Scoper = {
         });
     }
 };
+
+window.Scoper = Scoper;
