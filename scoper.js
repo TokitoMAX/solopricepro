@@ -514,12 +514,7 @@ const Scoper = {
         if (this.activeTab === 'closing') this.renderClosingTab();
     },
 
-    checkStepCompletion() {
-        const data = Storage.get('sp_calculator_data') || {};
-        if (data.sector && data.target && this.currentObjectiveStep === 1) {
-            setTimeout(() => this.nextObjectiveStep(), 400);
-        }
-    },
+
 
     autoSaveObjective() {
         const currentData = Storage.get('sp_calculator_data') || {};
@@ -1371,7 +1366,7 @@ const Scoper = {
                             <div>
                                 <div style="font-size: 0.6rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">SoloPrice AI • Stratège de Défense</div>
                                 <h2 style="font-size: 1.2rem; font-weight: 900; color: white; margin: 0;">${aiPlan.message}</h2>
-                                <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Gap détecté : <span style="color: #ef4444; font-weight: 800;">${aiPlan.gapPercent}%</span> • Contexte : <span style="color: white; font-weight: 600;">${projectContext.keyTasks.join(', ') || 'Global'}</span></div>
+                                <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Gap détecté : <span style="color: #ef4444; font-weight: 800;">${aiPlan.status === 'pending' ? '--' : (aiPlan.gapPercent || 0)}%</span> • Contexte : <span style="color: white; font-weight: 600;">${projectContext.keyTasks.join(', ') || 'Global'}</span></div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 0.8rem;">
@@ -1432,12 +1427,18 @@ const Scoper = {
                         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem;">
                             <h4 style="font-size: 0.7rem; font-weight: 950; color: #64748b; text-transform: uppercase; margin-bottom: 1.2rem;">Action Items de Phase</h4>
                             <div class="action-check-list">
-                                ${(levelData.checklist || levelData.tips.slice(0, 3)).map((item, i) => `
+                                ${((levelData.checklist && levelData.checklist.length > 0) ? levelData.checklist : levelData.tips.slice(0, 3)).map((item, i) => {
+                const checkId = `check-${this.currentSalesPhase}-${i}`;
+                const isChecked = localStorage.getItem(`sp_closing_${checkId}`) === 'true';
+                return `
                                     <label class="check-list-item">
-                                        <input type="checkbox" id="check-${this.currentSalesPhase}-${i}">
-                                        <span class="check-list-title">${item.length > 40 ? item.slice(0, 37) + '...' : item}</span>
+                                        <input type="checkbox" id="${checkId}" 
+                                               ${isChecked ? 'checked' : ''} 
+                                               onchange="Scoper.toggleClosingAction('${checkId}')">
+                                        <span class="check-list-title" style="${isChecked ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${item.length > 40 ? item.slice(0, 37) + '...' : item}</span>
                                     </label>
-                                `).join('')}
+                                `;
+            }).join('')}
                             </div>
                         </div>
 
@@ -1450,10 +1451,16 @@ const Scoper = {
 
                         <div style="display: flex; gap: 0.8rem; margin-top: auto;">
                             ${activePhaseIndex > 0 ?
-                `<button onclick="Scoper.updateSalesPhase('${phaseKeys[activePhaseIndex - 1]}')" style="flex: 1; padding: 0.8rem; border-radius: 12px; background: var(--bg-sidebar); border: 1px solid var(--border); color: #94a3b8; font-weight: 700; cursor: pointer;">Pécédent</button>` : ''}
+                `<button onclick="Scoper.updateSalesPhase('${phaseKeys[activePhaseIndex - 1]}')" style="flex: 1; padding: 0.8rem; border-radius: 12px; background: var(--bg-sidebar); border: 1px solid var(--border); color: #94a3b8; font-weight: 700; cursor: pointer;">Précédent</button>` : ''}
                             ${activePhaseIndex < phaseKeys.length - 1 ?
-                `<button onclick="Scoper.updateSalesPhase('${phaseKeys[activePhaseIndex + 1]}')" style="flex: 2; padding: 0.8rem; border-radius: 12px; background: var(--primary); border: none; color: white; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px var(--primary-glass);">Suivant</button>` :
-                `<button onclick="App.navigateTo('quotes')" style="flex: 2; padding: 0.8rem; border-radius: 12px; background: var(--primary); border: none; color: white; font-weight: 800; cursor: pointer;">Finaliser le Devis</button>`}
+                `<button id="next-phase-btn" 
+                                        onclick="Scoper.updateSalesPhase('${phaseKeys[activePhaseIndex + 1]}')" 
+                                        style="flex: 2; padding: 0.8rem; border-radius: 12px; background: var(--primary); border: none; color: white; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px var(--primary-glass); transition: all 0.3s;"
+                                        disabled>Débloquer Phase Suivante</button>` :
+                `<button id="next-phase-btn" 
+                                        onclick="App.navigateTo('quotes')" 
+                                        style="flex: 2; padding: 0.8rem; border-radius: 12px; background: var(--primary); border: none; color: white; font-weight: 800; cursor: pointer;"
+                                        disabled>Finaliser le Devis</button>`}
                         </div>
                     </div>
                 </div>

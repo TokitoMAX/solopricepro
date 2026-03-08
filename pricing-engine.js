@@ -153,7 +153,8 @@ const PricingEngine = {
         if (currentTJM <= 0) {
             return {
                 status: 'pending',
-                message: "En attente de données : Définissez vos tâches dans l'onglet 'Chiffrage Projet' pour activer l'analyse.",
+                gapPercent: 0,
+                message: "Analyse en attente : Listez vos livrables dans 'Chiffrage Projet'.",
                 actions: [
                     { type: 'setup', text: "Listez les livrables du projet pour calculer votre TJM réel.", icon: 'fa-list-ol' },
                     { type: 'strategy', text: "Définissez votre périmètre pour que l'IA puisse détecter les zones de risque.", icon: 'fa-shield-halved' }
@@ -166,11 +167,12 @@ const PricingEngine = {
         if (gap <= 0) {
             return {
                 status: 'aligned',
-                message: "Excellent ! Votre projet est aligné ou supérieur à votre objectif financier.",
+                gapPercent: 0,
+                message: "Position d'Autorité : Votre projet est aligné sur vos ambitions financières.",
                 actions: [
-                    { type: 'upsell', text: "Proposez une option 'Fast-Track' (+20%) pour une livraison 2x plus rapide.", icon: 'fa-bolt' },
-                    { type: 'authority', text: "Sécurisez un témoignage vidéo dès la complétion pour votre 'Social Proof'.", icon: 'fa-video' },
-                    { type: 'retention', text: "Préparez une offer de maintenance récurrente pour stabiliser ce CA.", icon: 'fa-sync' }
+                    { type: 'upsell', text: "Proposez une option 'Accélération Stratégique' (+25%) pour une priorité absolue.", icon: 'fa-bolt' },
+                    { type: 'authority', text: "Sollicitez un témoignage d'impact dès que la valeur est perçue.", icon: 'fa-video' },
+                    { type: 'retention', text: "Structurez déjà le prochain lot de valeur pour fidéliser ce partenaire.", icon: 'fa-sync' }
                 ]
             };
         }
