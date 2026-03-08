@@ -176,7 +176,7 @@ const PricingEngine = {
             return {
                 status: 'pending',
                 gapPercent: 0,
-                message: "Analyse en attente : Listez vos livrables dans 'Le Blueprint'.",
+                message: "Analyse en attente : Listez vos livrables dans 'Chiffrage Projet'.",
                 actions: [
                     { type: 'setup', text: "Listez les livrables du projet pour calculer votre TJM réel.", icon: 'fa-list-ol' },
                     { type: 'strategy', text: "Définissez votre périmètre pour que l'IA puisse détecter les zones de risque.", icon: 'fa-shield-halved' }

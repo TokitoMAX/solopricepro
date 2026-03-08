@@ -1846,7 +1846,7 @@ const Scoper = {
 
         // Refresh UI & Phase Unlock
         App.navigateTo('scoper', 'closing');
-        App.showNotification("Action validée & ajoutée au Retex !", "success");
+        App.showNotification("Action validée & ajoutée au Journal !", "success");
     },
 
     updateROIMiniCalc() {
