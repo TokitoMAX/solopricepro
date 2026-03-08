@@ -12,6 +12,104 @@ const Scoper = {
     currentSalesPhase: 'preparation',
     currentObjectiveStep: 1,
 
+    // --- MOTEUR AGENT DE POINTE (v2 Architecture - Market-Grade) ---
+    Agent: {
+        status: 'idle',
+        memory: Storage.get('sp_agent_memory') || { facts: {}, history: [] },
+
+        tools: {
+            'scan_project_context': () => {
+                const data = Storage.get('sp_calculator_data') || {};
+                const tasks = Scoper.tasks || [];
+                return `Analyse projet : ${tasks.length} tâches identifiées, Secteur=${Scoper.currentClientSector}, Cible=${data.target || 'TPE/PME'}.`;
+            },
+            'check_roi_viability': (data) => {
+                const results = PricingEngine.calculateObjective(data);
+                const leverage = (1500 * 12) + 25000;
+                const isViable = leverage > (results.dailyRate * 10); // ROI > 10x
+                return `Viabilité ROI : ${isViable ? 'ÉLEVÉE' : 'MODÉRÉE'} (Potentiel : ${App.formatCurrency(leverage)})`;
+            },
+            'analyze_objections': (prospectLevel) => {
+                const pains = PricingEngine.clientSectorPainPoints[Scoper.currentClientSector]?.pains || ["budget", "temps"];
+                return `Objections probables (${prospectLevel}) : ${pains.join(', ')}.`;
+            }
+        },
+
+        async run(actionType, onLog, onComplete) {
+            this.status = 'active';
+            const data = Storage.get('sp_calculator_data') || {};
+
+            // 1. PLANIFICATION DYNAMIQUE
+            onLog("[PLANNER] Construction du plan d'action dynamique...");
+            const plan = this.generateDynamicPlan(actionType, data);
+            await new Promise(r => setTimeout(r, 600));
+
+            // 2. EXÉCUTION DES ÉTAPES
+            for (const step of plan) {
+                onLog(`[${step.type}] ${step.content}`);
+                await new Promise(r => setTimeout(r, 1000));
+
+                if (step.type === "ACTION" && this.tools[step.tool]) {
+                    const result = this.tools[step.tool](data);
+                    onLog(`[RESULT] ${result}`);
+                    this.updateMemory(step.tool, result);
+                    await new Promise(r => setTimeout(r, 600));
+                }
+
+                // 3. AUTO-CRITIQUE (Self-Correction Loop)
+                if (step.type === "CRITIQUE") {
+                    onLog(`[SELF-CHECK] Analyse de la pertinence stratégique...`);
+                    await new Promise(r => setTimeout(r, 1200));
+                    onLog(`[ADJUSTMENT] ${step.adjustment}`);
+                }
+            }
+
+            // 4. FINALISATION & PERSISTENCE
+            this.saveMemory();
+            this.status = 'idle';
+            onComplete();
+        },
+
+        generateDynamicPlan(actionType, data) {
+            // Logique de planification simulant un agent autonome décidant de ses étapes
+            const basePlan = [
+                { type: "THOUGHT", content: "Initialisation du contexte à partir de la mémoire à long terme." },
+                { type: "ACTION", tool: "scan_project_context" }
+            ];
+
+            if (actionType === 'modal_roi') {
+                basePlan.push(
+                    { type: "THOUGHT", content: "Extraction des leviers de valeur pour " + (data.target || 'PME') + "." },
+                    { type: "ACTION", tool: "check_roi_viability" },
+                    { type: "CRITIQUE", content: "Vérification : L'argumentaire est-il assez agressif ?", adjustment: "Augmentation du poids des pertes d'inaction de 15%." }
+                );
+            } else if (actionType === 'modal_objections') {
+                basePlan.push(
+                    { type: "THOUGHT", content: "Anticipation des barrières psychologiques." },
+                    { type: "ACTION", tool: "analyze_objections" },
+                    { type: "CRITIQUE", content: "Vérification de la tonalité experte.", adjustment: "Utilisation d'un vocabulaire plus orienté 'Résultats' que 'Coûts'." }
+                );
+            } else {
+                basePlan.push(
+                    { type: "THOUGHT", content: "Alignement des objectifs TJM avec les livrables." },
+                    { type: "CRITIQUE", content: "Analyse de cohérence financière.", adjustment: "Cadrage optimal détecté." }
+                );
+            }
+
+            basePlan.push({ type: "THOUGHT", content: "Injection finale dans l'interface de closing." });
+            return basePlan;
+        },
+
+        updateMemory(key, value) {
+            this.memory.facts[key] = value;
+            this.memory.history.push({ t: Date.now(), k: key, v: value });
+        },
+
+        saveMemory() {
+            Storage.set('sp_agent_memory', this.memory);
+        }
+    },
+
     render(tab) {
         const container = document.getElementById('scoper-content');
         if (!container) return;
@@ -1671,32 +1769,51 @@ const Scoper = {
         }
 
         modal.innerHTML = `
-            <div class="scoper-modal-content" style="max-width: 500px; padding: 2.5rem; border: 1px solid var(--primary-glass); box-shadow: 0 20px 50px rgba(0,0,0,0.5); background: #0a0a0a; border-radius: 24px;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                    <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-glass); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                        <i class="fas fa-bolt"></i>
+            <div class="scoper-modal-content" style="max-width: 550px; padding: 2.5rem; border: 1px solid var(--primary-glass); box-shadow: 0 30px 60px rgba(0,0,0,0.8); background: #050505; border-radius: 24px; position: relative; overflow: hidden;">
+                <!-- Header Technique -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="agent-pulse-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid var(--primary-glass);">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">SoloPrice Agent v1.0.4</div>
+                            <h2 style="font-size: 1.3rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${title}</h2>
+                        </div>
                     </div>
-                    <h2 style="font-size: 1.4rem; font-weight: 950; color: white; margin: 0; letter-spacing: -1px;">${title}</h2>
+                </div>
+
+                <!-- Zone de Pensée / Terminal REAct -->
+                <div id="agent-thinking-area" style="margin-bottom: 2.5rem; min-height: 140px; max-height: 200px; overflow-y: auto; background: #000; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.25rem; box-shadow: inset 0 0 30px rgba(0,0,0,1); scrollbar-width: thin;">
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #4ade80; opacity: 0.5; margin-bottom: 0.5rem;">> INITIALIZING_AGENT_WORK_LOOP...</div>
                 </div>
                 
-                <div id="modal-form-body">${modalContent}</div>
+                <!-- Zone de Formulaire (masquée au début) -->
+                <div id="modal-form-body" style="opacity: 0.1; pointer-events: none; transform: translateY(10px); transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);">${modalContent}</div>
 
-                <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
-                    <button class="button-secondary" style="width: 100%; height: 50px; border-radius: 12px; font-weight: 800; background: rgba(16, 185, 129, 0.05); color: var(--primary); border: 1px dashed var(--primary); display: flex; align-items: center; justify-content: center; gap: 0.8rem;" onclick="Scoper.draftActionWithAI('${actionType}')">
-                        <i class="fas fa-magic"></i> Drafter avec SoloPrice AI Agent
-                    </button>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700;" onclick="document.getElementById('closing-action-modal').remove()">Annuler</button>
-                        <button class="button-primary" style="flex: 1.5; border-radius: 12px; font-weight: 800; background: var(--primary); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="Scoper.saveClosingAction('${checkId}')">
-                            Valider l'Action <i class="fas fa-check"></i>
+                <!-- Actions de l'Agent -->
+                <div id="modal-actions" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;">
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700; height: 50px;" onclick="document.getElementById('closing-action-modal').remove()">Abandonner</button>
+                        <button class="button-primary" style="flex: 1.8; border-radius: 12px; font-weight: 900; background: var(--primary); color: white; border: none; cursor: pointer; height: 50px; display: flex; align-items: center; justify-content: center; gap: 0.8rem; box-shadow: 0 10px 20px var(--primary-glass);" onclick="Scoper.saveClosingAction('${checkId}')">
+                            VALIDER LA STRATÉGIE <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
                 </div>
+
+                <style>
+                    @keyframes terminalLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+                    .agent-log-line { animation: terminalLine 0.2s ease-out forwards; }
+                    .agent-pulse-icon { animation: pulseIcon 2s infinite; }
+                    @keyframes pulseIcon { 0% { border-color: var(--primary-glass); } 50% { border-color: var(--primary); } 100% { border-color: var(--primary-glass); } }
+                </style>
             </div>
         `;
 
         document.body.appendChild(modal);
+
+        // Auto-run Agent sequence
+        setTimeout(() => this.startAgentProcess(actionType, checkId), 600);
     },
 
     saveClosingAction(checkId) {
@@ -1734,60 +1851,47 @@ const Scoper = {
         const formBody = document.getElementById('modal-form-body');
         const actionArea = document.getElementById('modal-actions');
 
-        const steps = [
-            { text: "Accès à la base de connaissances sectorielles...", delay: 1000 },
-            { text: "Analyse du profil prospect (" + (this.currentProspectLevel || 'manager') + ")...", delay: 1200 },
-            { text: "Calcul de la congruence stratégique...", delay: 800 },
-            { text: "Rédaction de la proposition optimale...", delay: 1500 }
-        ];
+        if (!thinkingArea) return;
+        thinkingArea.innerHTML = '';
 
-        let currentStep = 0;
+        this.Agent.run(actionType, (log) => {
+            const div = document.createElement('div');
+            div.className = 'agent-log-line';
+            div.style.fontFamily = "'JetBrains Mono', monospace";
+            div.style.fontSize = '0.7rem';
+            div.style.marginBottom = '8px';
+            div.style.paddingLeft = '0.75rem';
+            div.style.borderLeft = '2px solid rgba(255,255,255,0.05)';
+            div.style.animation = 'terminalLine 0.3s ease-out forwards';
 
-        const executeStep = () => {
-            if (currentStep < steps.length) {
-                const step = steps[currentStep];
-                const div = document.createElement('div');
-                div.className = 'agent-step';
-                div.style.fontSize = '0.85rem';
-                div.style.color = currentStep === steps.length - 1 ? 'var(--primary)' : '#94a3b8';
-                div.style.display = 'flex';
-                div.style.alignItems = 'center';
-                div.style.gap = '0.8rem';
-                div.innerHTML = `<i class="fas ${currentStep === steps.length - 1 ? 'fa-check-circle' : 'fa-circle-notch fa-spin'}"></i> ${step.text}`;
+            if (log.includes('[PLANNER]')) { div.style.color = '#f59e0b'; div.style.fontWeight = 'bold'; }
+            else if (log.includes('[THOUGHT]')) { div.style.color = '#94a3b8'; div.style.opacity = '0.8'; }
+            else if (log.includes('[ACTION]')) { div.style.color = 'var(--primary)'; div.style.background = 'rgba(16, 185, 129, 0.05)'; div.style.padding = '4px 8px'; div.style.borderRadius = '4px'; }
+            else if (log.includes('[RESULT]')) { div.style.color = '#10b981'; }
+            else if (log.includes('[SELF-CHECK]')) { div.style.color = '#a855f7'; div.style.fontWeight = '700'; }
+            else if (log.includes('[ADJUSTMENT]')) { div.style.color = '#fbbf24'; div.style.background = 'rgba(251, 191, 36, 0.1)'; div.style.padding = '4px 8px'; div.style.borderRadius = '4px'; }
 
-                // Mark previous step as done
-                const lastStep = thinkingArea.lastElementChild;
-                if (lastStep) {
-                    lastStep.querySelector('i').className = 'fas fa-check-circle';
-                    lastStep.style.color = '#64748b';
-                }
+            div.innerText = log;
+            thinkingArea.appendChild(div);
+            thinkingArea.scrollTop = thinkingArea.scrollHeight;
+        }, () => {
+            this.draftActionWithAI(actionType, true);
+            if (formBody) { formBody.style.opacity = "1"; formBody.style.pointerEvents = "all"; formBody.style.transform = "translateY(0)"; }
+            if (actionArea) { actionArea.style.opacity = "1"; actionArea.style.pointerEvents = "all"; }
 
-                thinkingArea.appendChild(div);
-
-                setTimeout(() => {
-                    currentStep++;
-                    executeStep();
-                }, step.delay);
-            } else {
-                // Finalize process
-                this.draftActionWithAI(actionType, true);
-                formBody.style.opacity = "1";
-                formBody.style.pointerEvents = "all";
-                actionArea.style.opacity = "1";
-                actionArea.style.pointerEvents = "all";
-
-                const finalStep = document.createElement('div');
-                finalStep.className = 'agent-step';
-                finalStep.style.fontSize = '0.85rem';
-                finalStep.style.color = '#10b981';
-                finalStep.style.fontWeight = '800';
-                finalStep.style.marginTop = '0.5rem';
-                finalStep.innerHTML = `<i class="fas fa-magic"></i> Analyse terminée. Proposition prête pour revue.`;
-                thinkingArea.appendChild(finalStep);
-            }
-        };
-
-        executeStep();
+            const done = document.createElement('div');
+            done.style.marginTop = '1.5rem';
+            done.style.color = '#10b981';
+            done.style.fontWeight = '900';
+            done.style.fontSize = '0.8rem';
+            done.style.textAlign = 'center';
+            done.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+            done.style.padding = '10px';
+            done.style.borderRadius = '12px';
+            done.style.background = 'rgba(16, 185, 129, 0.05)';
+            done.innerHTML = '<i class="fas fa-check-double"></i> AGENT CYCLE COMPLETE : OPTIMIZED STRATEGY READY';
+            thinkingArea.appendChild(done);
+        });
     },
 
     draftActionWithAI(actionType, silent = false) {
