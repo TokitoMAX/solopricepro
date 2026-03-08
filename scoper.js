@@ -44,6 +44,18 @@ const Scoper = {
                     font-size: 0.65rem; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; 
                     padding: 2px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 950; letter-spacing: 1px;
                 }
+
+                .scoper-modal-overlay {
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+                    display: flex; align-items: center; justify-content: center; z-index: 9999;
+                    animation: fadeIn 0.3s ease;
+                }
+                .scoper-modal-content {
+                    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
             </style>
 
             <div class="page-header" style="text-align: center; margin-bottom: 4rem;">
@@ -52,17 +64,17 @@ const Scoper = {
             </div>
 
             <div class="scoper-tabs-nav">
-                <div class="scoper-tab-link ${tab === 'objective' ? 'active' : ''}" onclick="Scoper.render('objective')">
+                <div class="scoper-tab-link ${tab === 'objective' ? 'active' : ''}" onclick="App.navigateTo('scoper', 'objective')">
                     <i class="fas fa-crosshairs"></i> ${i18n.t('scoper.tab.objective')}
                 </div>
-                <div class="scoper-tab-link ${tab === 'project' ? 'active' : ''}" onclick="Scoper.render('project')">
+                <div class="scoper-tab-link ${tab === 'project' ? 'active' : ''}" onclick="App.navigateTo('scoper', 'project')">
                     <i class="fas fa-layer-group"></i> ${i18n.t('scoper.tab.project')}
                 </div>
-                <div class="scoper-tab-link ${tab === 'closing' ? 'active' : ''}" onclick="Scoper.render('closing')">
+                <div class="scoper-tab-link ${tab === 'closing' ? 'active' : ''}" onclick="App.navigateTo('scoper', 'closing')">
                     <i class="fas fa-magic"></i> ${i18n.t('scoper.tab.closing')}
                     ${!Storage.isExpert() ? `<span class="expert-lock-badge"><i class="fas fa-lock" style="font-size: 0.6rem;"></i></span>` : ''}
                 </div>
-                <div class="scoper-tab-link ${tab === 'journal' ? 'active' : ''}" onclick="Scoper.render('journal')">
+                <div class="scoper-tab-link ${tab === 'journal' ? 'active' : ''}" onclick="App.navigateTo('scoper', 'journal')">
                     <i class="fas fa-bolt"></i> ${i18n.t('scoper.tab.journal')}
                     ${!Storage.isExpert() ? `<span class="expert-lock-badge"><i class="fas fa-lock" style="font-size: 0.6rem;"></i></span>` : ''}
                 </div>

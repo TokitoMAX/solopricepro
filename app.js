@@ -301,7 +301,7 @@ const App = {
         }
         if (page === 'expenses' && typeof Expenses !== 'undefined') Expenses.render();
         if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();
-        if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render();
+        if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render(args[0] || 'objective');
         if (page === 'profile' && typeof Profile !== 'undefined') Profile.render();
         if (page === 'settings' && typeof Settings !== 'undefined') Settings.render();
         if (page === 'services' && typeof Services !== 'undefined') {
