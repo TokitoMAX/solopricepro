@@ -12,10 +12,10 @@ const Scoper = {
     currentSalesPhase: 'preparation',
     currentObjectiveStep: 1,
 
-    // --- MOTEUR AGENT DE POINTE (v2 Architecture - Market-Grade) ---
-    Agent: {
+    // --- PILOTAGE STRATÉGIQUE (Workflow Support Logic) ---
+    StrategicPilot: {
         status: 'idle',
-        memory: Storage.get('sp_agent_memory') || { facts: {}, history: [] },
+        memory: Storage.get('sp_pilot_memory') || { facts: {}, history: [] },
 
         tools: {
             'scan_project_context': () => {
@@ -112,7 +112,7 @@ const Scoper = {
         },
 
         saveMemory() {
-            Storage.set('sp_agent_memory', this.memory);
+            Storage.set('sp_pilot_memory', this.memory);
         }
     },
 
@@ -172,17 +172,17 @@ const Scoper = {
 
             <div class="scoper-tabs-nav">
                 <div class="scoper-tab-link ${tab === 'objective' ? 'active' : ''}" onclick="App.navigateTo('scoper', 'objective')">
-                    <i class="fas fa-crosshairs"></i> ${i18n.t('scoper.tab.objective')}
+                    <i class="fas fa-compass"></i> ${i18n.t('scoper.tab.objective')}
                 </div>
                 <div class="scoper-tab-link ${tab === 'project' ? 'active' : ''}" onclick="App.navigateTo('scoper', 'project')">
-                    <i class="fas fa-layer-group"></i> ${i18n.t('scoper.tab.project')}
+                    <i class="fas fa-diagram-project"></i> ${i18n.t('scoper.tab.project')}
                 </div>
                 <div class="scoper-tab-link ${tab === 'closing' ? 'active' : ''}" onclick="App.navigateTo('scoper', 'closing')">
-                    <i class="fas fa-magic"></i> ${i18n.t('scoper.tab.closing')}
+                    <i class="fas fa-scale-balanced"></i> ${i18n.t('scoper.tab.closing')}
                     ${!Storage.isExpert() ? `<span class="expert-lock-badge"><i class="fas fa-lock" style="font-size: 0.6rem;"></i></span>` : ''}
                 </div>
                 <div class="scoper-tab-link ${tab === 'journal' ? 'active' : ''}" onclick="App.navigateTo('scoper', 'journal')">
-                    <i class="fas fa-bolt"></i> ${i18n.t('scoper.tab.journal')}
+                    <i class="fas fa-book-open"></i> ${i18n.t('scoper.tab.journal')}
                     ${!Storage.isExpert() ? `<span class="expert-lock-badge"><i class="fas fa-lock" style="font-size: 0.6rem;"></i></span>` : ''}
                 </div>
             </div>
@@ -1386,6 +1386,9 @@ const Scoper = {
         const aiPlan = tactics.aiPlan;
         const projectContext = tactics.projectContext;
 
+        // Integration Logic: Find the highest priced task (Main Value Driver)
+        const mainValueDriver = this.tasks.length > 0 ? [...this.tasks].sort((a, b) => (b.calculatedPrice || 0) - (a.calculatedPrice || 0))[0] : null;
+
         if (!this.currentSalesPhase) this.currentSalesPhase = 'preparation';
         if (!this.currentArsenalLevel) this.currentArsenalLevel = 'expert';
 
@@ -1471,16 +1474,16 @@ const Scoper = {
                                 <i class="fas fa-shield-check"></i>
                             </div>
                             <div>
-                                <div style="font-size: 0.6rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">SoloPrice AI • Stratège de Défense</div>
+                                <div style="font-size: 0.6rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">Pilotage Stratégique • Support Décisionnel</div>
                                 <h2 style="font-size: 1.2rem; font-weight: 900; color: white; margin: 0;">${aiPlan.message}</h2>
-                                <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Gap détecté : <span style="color: #ef4444; font-weight: 800;">${aiPlan.status === 'pending' ? '--' : (aiPlan.gapPercent || 0)}%</span> • Contexte : <span style="color: white; font-weight: 600;">${projectContext.keyTasks.join(', ') || 'Global'}</span></div>
+                                <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Gap détecté : <span style="color: #ef4444; font-weight: 800;">${aiPlan.status === 'pending' ? '--' : (aiPlan.gapPercent || 0)}%</span> • Focus Valeur : <span style="color: white; font-weight: 600;">${mainValueDriver ? mainValueDriver.name : (projectContext.keyTasks[0] || 'Global')}</span></div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 0.8rem;">
-                            <button class="button-primary mini" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="Scoper.generateAIContent('quote')">
+                            <button class="button-primary mini" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="Scoper.generateStrategicContent('quote')">
                                 <i class="fas fa-file-invoice"></i> Script Devis
                             </button>
-                            <button class="button-primary mini" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="Scoper.generateAIContent('followup')">
+                            <button class="button-primary mini" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="Scoper.generateStrategicContent('followup')">
                                 <i class="fas fa-reply-all"></i> Relance Valeur
                             </button>
                         </div>
@@ -1783,7 +1786,7 @@ const Scoper = {
                             <i class="fas fa-terminal"></i>
                         </div>
                         <div>
-                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">SoloPrice Agent v1.0.4</div>
+                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">Support de Pilotage v1.0.4</div>
                             <h2 style="font-size: 1.3rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${title}</h2>
                         </div>
                     </div>
@@ -1791,7 +1794,7 @@ const Scoper = {
 
                 <!-- Zone de Pensée / Terminal REAct -->
                 <div id="agent-thinking-area" style="margin-bottom: 2.5rem; min-height: 140px; max-height: 200px; overflow-y: auto; background: #000; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.25rem; box-shadow: inset 0 0 30px rgba(0,0,0,1); scrollbar-width: thin;">
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #4ade80; opacity: 0.5; margin-bottom: 0.5rem;">> INITIALIZING_AGENT_WORK_LOOP...</div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #4ade80; opacity: 0.5; margin-bottom: 0.5rem;">> ANALYSING_WORKFLOW_CONTINUITY...</div>
                 </div>
                 
                 <!-- Zone de Formulaire (masquée au début) -->
@@ -1838,9 +1841,12 @@ const Scoper = {
         const modal = document.getElementById('closing-action-modal');
         if (modal) modal.remove();
 
+        // Integration Logic: Pre-populate Journal/Retex
+        this.addJournalEntry('note', `Action Stratégique validée : ${checkId}\nContexte : ${textInput ? textInput.value : ''}\nValeur associée : ${valInput ? valInput.value : ''}`, true);
+
         // Refresh UI & Phase Unlock
         App.navigateTo('scoper', 'closing');
-        App.showNotification("Action validée avec succès !", "success");
+        App.showNotification("Action validée & ajoutée au Retex !", "success");
     },
 
     updateROIMiniCalc() {
@@ -1862,7 +1868,7 @@ const Scoper = {
         if (!thinkingArea) return;
         thinkingArea.innerHTML = '';
 
-        this.Agent.run(actionType, (log) => {
+        this.StrategicPilot.run(actionType, (log) => {
             const div = document.createElement('div');
             div.className = 'agent-log-line';
             div.style.fontFamily = "'JetBrains Mono', monospace";
@@ -1897,7 +1903,7 @@ const Scoper = {
             done.style.padding = '10px';
             done.style.borderRadius = '12px';
             done.style.background = 'rgba(16, 185, 129, 0.05)';
-            done.innerHTML = '<i class="fas fa-check-double"></i> AGENT CYCLE COMPLETE : OPTIMIZED STRATEGY READY';
+            done.innerHTML = '<i class="fas fa-check-double"></i> CYCLE D\'ACCOMPAGNEMENT TERMINÉ : CONSEILS PRÊTS';
             thinkingArea.appendChild(done);
         });
     },
@@ -1962,7 +1968,7 @@ const Scoper = {
         this.render('closing');
     },
 
-    generateAIContent(type) {
+    generateStrategicContent(type) {
         const data = Storage.get('sp_calculator_data') || {};
         const results = PricingEngine.calculateObjective(data);
         const scenarios = PricingEngine.getScenarios(results);
@@ -1981,10 +1987,10 @@ const Scoper = {
         let title = "";
 
         if (type === 'quote') {
-            title = "Script de Présentation du Devis";
+            title = "Script d'Accompagnement : Présentation du Devis";
             content = PricingEngine.generateQuoteScript(fullContext);
         } else if (type === 'followup') {
-            title = "Relance Basée sur la Valeur";
+            title = "Relance Stratégique : Focus Valeur";
             content = PricingEngine.generateValueFollowup(fullContext);
         } else if (type === 'objections') {
             title = "Arsenal de Réponse aux Objections";
@@ -2000,10 +2006,10 @@ const Scoper = {
             <div class="scoper-modal-content" style="max-width: 600px; padding: 2.5rem; border: 1px solid var(--primary-glass); background: #0a0a0a; border-radius: 24px;">
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
                     <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-glass); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                        <i class="fas fa-robot"></i>
+                        <i class="fas fa-shield-halved"></i>
                     </div>
                     <div>
-                        <div style="font-size: 0.6rem; font-weight: 950; color: var(--primary); text-transform: uppercase;">SoloPrice AI Agent</div>
+                        <div style="font-size: 0.6rem; font-weight: 950; color: var(--primary); text-transform: uppercase;">Support de Pilotage Stratégique</div>
                         <h2 style="font-size: 1.4rem; font-weight: 950; color: white; margin: 0;">${title}</h2>
                     </div>
                 </div>
@@ -2013,7 +2019,7 @@ const Scoper = {
                 <div style="display: flex; gap: 1rem;">
                     <button class="button-secondary" style="flex: 1; border-radius: 12px;" onclick="this.closest('.scoper-modal-overlay').remove()">Fermer</button>
                     <button class="button-primary" style="flex: 2; border-radius: 12px; font-weight: 800; background: var(--primary); color: white; border: none;" onclick="navigator.clipboard.writeText(document.getElementById('ai-generated-text').value); App.showNotification('Copié dans le presse-papier !', 'success')">
-                        Copier le Draft <i class="fas fa-copy"></i>
+                        Copier le Support <i class="fas fa-copy"></i>
                     </button>
                 </div>
             </div>
@@ -2250,14 +2256,14 @@ const Scoper = {
             content = PricingEngine.generateValueFollowup(scriptData);
         }
 
-        this.showAIModal(title, content);
+        this.showSupportModal(title, content);
     },
 
     /**
-     * Affiche une modale premium pour le contenu IA
+     * Affiche une modale de Support Stratégique
      */
-    showAIModal(title, content) {
-        const modalId = 'scoper-ai-modal';
+    showSupportModal(title, content) {
+        const modalId = 'scoper-support-modal';
         let modal = document.getElementById(modalId);
 
         if (!modal) {
@@ -2295,31 +2301,31 @@ const Scoper = {
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary-glass); color: var(--primary); display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-robot"></i>
+                                <i class="fas fa-shield-halved"></i>
                             </div>
-                            <h3 id="ai-modal-title" style="margin: 0; font-size: 1.2rem; font-weight: 800; color: white;">SoloPrice AI</h3>
+                            <h3 id="support-modal-title" style="margin: 0; font-size: 1.2rem; font-weight: 800; color: white;">Support Stratégique</h3>
                         </div>
-                        <button class="close-modal" onclick="document.getElementById('scoper-ai-modal').style.display='none'">&times;</button>
+                        <button class="close-modal" onclick="document.getElementById('scoper-support-modal').style.display='none'">&times;</button>
                     </div>
-                    <div id="ai-modal-body" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; color: #e2e8f0; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 2rem; max-height: 400px; overflow-y: auto; font-family: 'Inter', sans-serif;"></div>
+                    <div id="support-modal-body" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; color: #e2e8f0; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; margin-bottom: 2rem; max-height: 400px; overflow-y: auto; font-family: 'Inter', sans-serif;"></div>
                     <div style="display: flex; gap: 1rem;">
-                        <button class="button-primary" style="flex: 1;" onclick="Scoper.copyAIContent()">
+                        <button class="button-primary" style="flex: 1;" onclick="Scoper.copySupportContent()">
                             <i class="fas fa-copy"></i> Copier le texte
                         </button>
-                        <button class="button-secondary" style="flex: 1;" onclick="document.getElementById('scoper-ai-modal').style.display='none'">Fermer</button>
+                        <button class="button-secondary" style="flex: 1;" onclick="document.getElementById('scoper-support-modal').style.display='none'">Fermer</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
         }
 
-        document.getElementById('ai-modal-title').textContent = title;
-        document.getElementById('ai-modal-body').textContent = content;
+        document.getElementById('support-modal-title').textContent = title;
+        document.getElementById('support-modal-body').textContent = content;
         modal.style.display = 'flex';
     },
 
-    copyAIContent() {
-        const content = document.getElementById('ai-modal-body').textContent;
+    copySupportContent() {
+        const content = document.getElementById('support-modal-body').textContent;
         navigator.clipboard.writeText(content).then(() => {
             App.showNotification("Texte copié dans le presse-papier !", "success");
         });

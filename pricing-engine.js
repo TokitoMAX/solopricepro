@@ -166,17 +166,17 @@ const PricingEngine = {
     },
 
     /**
-     * Analyse de l'Action Assistée par IA (SoloPrice AI)
+     * Analyse de l'Action Stratégique (Support de Pilotage)
      * Génère un plan d'action pour atteindre l'objectif TJM.
      */
-    getAIActionPlan(currentTJM, targetTJM, sector = 'tech') {
+    getStrategicActionPlan(currentTJM, targetTJM, sector = 'tech') {
         const gap = targetTJM - currentTJM;
 
         if (currentTJM <= 0) {
             return {
                 status: 'pending',
                 gapPercent: 0,
-                message: "Analyse en attente : Listez vos livrables dans 'Chiffrage Projet'.",
+                message: "Analyse en attente : Listez vos livrables dans 'Le Blueprint'.",
                 actions: [
                     { type: 'setup', text: "Listez les livrables du projet pour calculer votre TJM réel.", icon: 'fa-list-ol' },
                     { type: 'strategy', text: "Définissez votre périmètre pour que l'IA puisse détecter les zones de risque.", icon: 'fa-shield-halved' }
@@ -257,7 +257,7 @@ const PricingEngine = {
      */
     getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0, clientSector = 'ecommerce', prospectLevel = 'manager', tasks = []) {
         const targetTJM = scenarios.security.tjm;
-        const aiPlan = this.getAIActionPlan(currentTJM, targetTJM, sector);
+        const aiPlan = this.getStrategicActionPlan(currentTJM, targetTJM, sector);
         const projectContext = this.getProjectDiagnostic(tasks);
 
         const sectorData = {
