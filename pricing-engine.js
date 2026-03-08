@@ -665,6 +665,35 @@ C'est un risque de ${levelData.vocabulary && levelData.vocabulary[2] ? levelData
 
 Avons-nous un créneau de 10 min cette semaine pour valider les prochaines étapes ?
         `.trim();
+    },
+
+    generateResearchDraft(data) {
+        const sector = data.sector || 'tech';
+        const target = data.target || 'pme';
+        const specific = data.specificTarget || 'le client';
+
+        return `
+ANALYSE PRÉ - APPEL(${specific.toUpperCase()}) :
+        1. Enjeux Sectoriels: Pour une ${target.toUpperCase()} en ${sector.toUpperCase()}, le défi majeur actuel est le coût d'acquisition et la rétention.
+        2. Angle d'Attaque : Se positionner non pas comme un prestataire, mais comme un partenaire de croissance ${sector}.
+        3. Point de Vigilance: Vérifier qui est le décisionnaire réel(Directeur vs Exécutif).
+
+DRAFT DE CADRAGE:
+        "D'après mon analyse de votre marché, vous faites face à un gap de [KPI]. L'objectif de notre échange est de valider si ma solution peut combler ce gap sous 90 jours."
+            `.trim();
+    },
+
+    generateROIDetailedArgument(data, loss, gain) {
+        const total = (loss * 12) + gain;
+        return `
+ARGUMENTAIRE ROI(Retour sur Investissement) :
+
+Sur une période de 12 mois, l'inaction face à votre problème actuel représente un coût masqué de ${total}€.
+            - Pertes directes évitées: ${loss * 12}€ / an.
+                - Gain de performance projeté: ${gain}€ / an.
+
+Mon accompagnement s'autofinance au bout de [X] mois, transformant cette dépense en un levier pur de rentabilité.
+            `.trim();
     }
 };
 

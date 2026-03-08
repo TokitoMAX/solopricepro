@@ -1681,11 +1681,17 @@ const Scoper = {
                 
                 <div id="modal-form-body">${modalContent}</div>
 
-                <div style="display: flex; gap: 1rem; margin-top: 3rem;">
-                    <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700;" onclick="document.getElementById('closing-action-modal').remove()">Annuler</button>
-                    <button class="button-primary" style="flex: 1.5; border-radius: 12px; font-weight: 800; background: var(--primary); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="Scoper.saveClosingAction('${checkId}')">
-                        Valider l'Action <i class="fas fa-check"></i>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
+                    <button class="button-secondary" style="width: 100%; height: 50px; border-radius: 12px; font-weight: 800; background: rgba(16, 185, 129, 0.05); color: var(--primary); border: 1px dashed var(--primary); display: flex; align-items: center; justify-content: center; gap: 0.8rem;" onclick="Scoper.draftActionWithAI('${actionType}')">
+                        <i class="fas fa-magic"></i> Drafter avec SoloPrice AI Agent
                     </button>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700;" onclick="document.getElementById('closing-action-modal').remove()">Annuler</button>
+                        <button class="button-primary" style="flex: 1.5; border-radius: 12px; font-weight: 800; background: var(--primary); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="Scoper.saveClosingAction('${checkId}')">
+                            Valider l'Action <i class="fas fa-check"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1721,6 +1727,131 @@ const Scoper = {
         const totalValue = (loss * 12) + gain;
         if (resultEl) resultEl.innerText = App.formatCurrency(totalValue);
         if (hiddenInput) hiddenInput.value = totalValue;
+    },
+
+    draftActionWithAI(actionType) {
+        const data = Storage.get('sp_calculator_data') || {};
+        const results = PricingEngine.calculateObjective(data);
+        const fullContext = {
+            ...data,
+            dailyRate: this.currentProjectTJM || results.dailyRate,
+            tasks: this.tasks,
+            clientSector: this.currentClientSector || 'ecommerce'
+        };
+
+        let draft = "";
+        const textInput = document.getElementById('action-input-text');
+        const valInput = document.getElementById('action-input-val');
+
+        switch (actionType) {
+            case 'modal_research':
+            case 'modal_framing':
+                draft = PricingEngine.generateResearchDraft(fullContext);
+                if (textInput) textInput.value = draft;
+                break;
+            case 'modal_reserve':
+            case 'modal_pricing':
+                const reserve = Math.round(fullContext.dailyRate * 0.85);
+                if (valInput) valInput.value = reserve;
+                App.showNotification(`Agent IA : Suggestion à 85% de l'objectif.`);
+                break;
+            case 'modal_pains':
+                const tactics = PricingEngine.getAdvancedSalesTactics(0, {}, data.sector, data.target, fullContext.dailyRate, fullContext.clientSector, 'manager', this.tasks);
+                draft = tactics.diagnostic.questions.join('\n');
+                if (textInput) textInput.value = draft;
+                break;
+            case 'modal_roi':
+                const argument = PricingEngine.generateROIDetailedArgument(fullContext, 1000, 15000);
+                if (textInput) textInput.value = argument;
+                const lossInput = document.getElementById('roi-loss');
+                const gainInput = document.getElementById('roi-gain');
+                if (lossInput) lossInput.value = 1500;
+                if (gainInput) gainInput.value = 20000;
+                this.updateROIMiniCalc();
+                break;
+            case 'modal_anchoring':
+                draft = `Ancrage suggéré :\n- Option Elite (Domination) : ${scenarios.elite.tjm}€ / j\n- Option Confort (Croissance) : ${scenarios.security.tjm}€ / j\n\nLogique : Présenter l'Elite comme le standard de qualité pour rendre l'option Sécurité indispensable.`;
+                if (textInput) textInput.value = draft;
+                break;
+            case 'modal_objections':
+                draft = "Recadrage IA : 'Je comprends votre hésitation. Cependant, le coût de l'inaction sur la croissance de votre secteur est estimé à plus de 15% de CA annuel. Voulez-vous vraiment risquer cela ?'";
+                if (textInput) textInput.value = draft;
+                break;
+            case 'modal_terms':
+                if (document.getElementById('term-1')) document.getElementById('term-1').checked = true;
+                if (document.getElementById('term-2')) document.getElementById('term-2').checked = true;
+                App.showNotification("Agent IA : Conditions standard activées pour sécuriser votre projet.");
+                break;
+            default:
+                draft = "Agent IA : Proposition de base générée. Prêt pour validation.";
+                if (textInput) textInput.value = draft;
+        }
+
+        App.showNotification("L'Agent IA a généré une base. Éditez-la avant de valider.", "info");
+    },
+
+    updateSalesPhase(phase) {
+        this.currentSalesPhase = phase;
+        this.render('closing');
+    },
+
+    generateAIContent(type) {
+        const data = Storage.get('sp_calculator_data') || {};
+        const results = PricingEngine.calculateObjective(data);
+        const scenarios = PricingEngine.getScenarios(results);
+
+        // Context enrichment
+        const fullContext = {
+            ...data,
+            dailyRate: this.currentProjectTJM || results.dailyRate,
+            gap: (this.currentProjectTJM || results.dailyRate) - results.dailyRate,
+            tasks: this.tasks,
+            prospectLevel: this.currentProspectLevel || 'manager',
+            clientSector: this.currentClientSector || 'ecommerce'
+        };
+
+        let content = "";
+        let title = "";
+
+        if (type === 'quote') {
+            title = "Script de Présentation du Devis";
+            content = PricingEngine.generateQuoteScript(fullContext);
+        } else if (type === 'followup') {
+            title = "Relance Basée sur la Valeur";
+            content = PricingEngine.generateValueFollowup(fullContext);
+        } else if (type === 'objections') {
+            title = "Arsenal de Réponse aux Objections";
+            const tactics = PricingEngine.getAdvancedSalesTactics(0, scenarios, data.sector, data.target, fullContext.dailyRate, fullContext.clientSector, fullContext.prospectLevel, this.tasks);
+            content = tactics.objections.map(o => `POUR : "${o.hook}"\nDITES : "${o.rebuttal}"`).join('\n\n');
+        }
+
+        // Show in a dedicated modal
+        const modal = document.createElement('div');
+        modal.className = 'scoper-modal-overlay';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="scoper-modal-content" style="max-width: 600px; padding: 2.5rem; border: 1px solid var(--primary-glass); background: #0a0a0a; border-radius: 24px;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-glass); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.6rem; font-weight: 950; color: var(--primary); text-transform: uppercase;">SoloPrice AI Agent</div>
+                        <h2 style="font-size: 1.4rem; font-weight: 950; color: white; margin: 0;">${title}</h2>
+                    </div>
+                </div>
+                
+                <textarea id="ai-generated-text" style="width: 100%; height: 300px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; color: #e2e8f0; font-family: inherit; font-size: 0.95rem; line-height: 1.6; resize: none; margin-bottom: 2rem;">${content}</textarea>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="button-secondary" style="flex: 1; border-radius: 12px;" onclick="this.closest('.scoper-modal-overlay').remove()">Fermer</button>
+                    <button class="button-primary" style="flex: 2; border-radius: 12px; font-weight: 800; background: var(--primary); color: white; border: none;" onclick="navigator.clipboard.writeText(document.getElementById('ai-generated-text').value); App.showNotification('Copié dans le presse-papier !', 'success')">
+                        Copier le Draft <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
     },
 
     /**
