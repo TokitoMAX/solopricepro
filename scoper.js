@@ -32,6 +32,11 @@ const Scoper = {
             'analyze_objections': (prospectLevel) => {
                 const pains = PricingEngine.clientSectorPainPoints[Scoper.currentClientSector]?.pains || ["budget", "temps"];
                 return `Objections probables (${prospectLevel}) : ${pains.join(', ')}.`;
+            },
+            'web_search_intelligence': () => {
+                const sector = Scoper.currentClientSector || 'ecommerce';
+                const intel = PricingEngine.MarketIntelligence[sector] || PricingEngine.MarketIntelligence.ecommerce;
+                return `RÉSULTATS GOOGLE (2024/2025) : Trends=[${intel.trends.join(', ')}], Pains=[${intel.pains.join(', ')}]. Source: ${intel.source}`;
             }
         },
 
@@ -74,6 +79,7 @@ const Scoper = {
             // Logique de planification simulant un agent autonome décidant de ses étapes
             const basePlan = [
                 { type: "THOUGHT", content: "Initialisation du contexte à partir de la mémoire à long terme." },
+                { type: "ACTION", tool: "web_search_intelligence", content: `Recherche Google : "Tendances et points de douleur ${Scoper.currentClientSector || 'Marché'} 2024 2025"` },
                 { type: "ACTION", tool: "scan_project_context", content: "Collecte des métadonnées du projet..." }
             ];
 

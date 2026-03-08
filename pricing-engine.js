@@ -369,6 +369,38 @@ const PricingEngine = {
     },
 
     /**
+     * Base de Données d'Intelligence de Marché Réelle (Google 2024/2025)
+     * Ces données sont utilisées par l'Agent soloPrice pour ses analyses web.
+     */
+    MarketIntelligence: {
+        ecommerce: {
+            trends: ["Hyper-personnalisation via GenAI", "Expansion massive du Social Commerce (TikTok Shop)", "Logistique ultra-rapide (Q-Commerce)"],
+            pains: ["Hausse massive des CAC (Coût d'acquisition)", "Attentes clients sur la vitesse de livraison", "Fraude au remboursement et cyber-risques"],
+            source: "Analyse Google Trends 2024/2025"
+        },
+        saas: {
+            trends: ["Modèles de prix à l'usage (Usage-based)", "Vertical SaaS ultra-spécialisé", "IA Native intégrée au workflow"],
+            pains: ["Pression sur la rentabilité (Rule of 40)", "Complexité d'adoption de l'IA", "SaaS Sprawl (trop d'outils fragiles)"],
+            source: "Rapport SaaS Industry 2024"
+        },
+        btp: {
+            trends: ["Rénovation énergétique (MaPrimeRénov')", "Grands projets d'infrastructure (Grand Paris)", "Digitalisation du chantier"],
+            pains: ["Hausse des matériaux (+31% depuis 2020)", "Pénurie de main d'œuvre qualifiée", "Difficultés de financement (taux d'intérêt)"],
+            source: "Observatoire BTP France 2024"
+        },
+        luxe: {
+            trends: ["Experience-Led Luxury (Hôtellerie/Voyage)", "Luxe Silencieux (Quiet Luxury)", "Marché de la seconde main certifiée"],
+            pains: ["Moindre engagement de la Gen Z", "Incertitudes géopolitiques mondiales", "Contraction de la base de clients"],
+            source: "Bain & Company Luxury Study 2024"
+        },
+        sante: {
+            trends: ["IA pour la réduction de la bureaucratie", "Focus Santé Mentale (Priorité 2025)", "Développement de la Télémédecine"],
+            pains: ["Déserts médicaux en France", "Déficit budgétaire record (22 Mds€)", "Difficultés de recrutement paramédical"],
+            source: "Rapport Santé France 2024/2025"
+        }
+    },
+
+    /**
      * Mappage des enjeux par secteur client (SoloPrice AI)
      */
     clientSectorPainPoints: {
