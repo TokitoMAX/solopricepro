@@ -1260,13 +1260,18 @@ const Scoper = {
         const target = data.target || 'pme';
         const results = PricingEngine.calculateObjective(data);
         const scenarios = PricingEngine.getScenarios(results);
-        const tactics = PricingEngine.getAdvancedSalesTactics(0, scenarios, sector, target, this.currentProjectTJM || 0, this.currentClientSector || 'ecommerce', this.currentProspectLevel || 'manager');
-        const aiPlan = tactics.aiPlan;
 
-        // Auto-select level based on user data
+        // Pass tasks for context-aware tactics
+        const tactics = PricingEngine.getAdvancedSalesTactics(0, scenarios, sector, target, this.currentProjectTJM || 0, this.currentClientSector || 'ecommerce', this.currentProspectLevel || 'manager', this.tasks);
+        const aiPlan = tactics.aiPlan;
+        const projectContext = tactics.projectContext;
+
+        if (!this.currentSalesPhase) this.currentSalesPhase = 'preparation';
         if (!this.currentArsenalLevel) this.currentArsenalLevel = 'expert';
 
-        const phase = PricingEngine.salesLifecycle[this.currentSalesPhase || 'preparation'];
+        const phaseKeys = Object.keys(PricingEngine.salesLifecycle);
+        const activePhaseIndex = phaseKeys.indexOf(this.currentSalesPhase);
+        const phase = PricingEngine.salesLifecycle[this.currentSalesPhase];
         const levelData = phase.levels[this.currentArsenalLevel];
 
         if (!data.sector || !data.target) {
@@ -1287,122 +1292,166 @@ const Scoper = {
 
         content.innerHTML = `
             <style>
-                .arsenal-phase-btn {
-                    flex: 1; padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
-                    border-radius: 16px; color: #64748b; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                    text-align: center; font-weight: 700; font-size: 0.9rem;
+                .closing-roadmap {
+                    display: flex; justify-content: space-between; position: relative; margin-bottom: 3rem; padding: 0 1rem;
                 }
-                .arsenal-phase-btn.active {
-                    background: var(--primary-glass); border-color: var(--primary); color: white; transform: translateY(-3px); box-shadow: 0 10px 30px var(--primary-glass);
+                .closing-roadmap::before {
+                    content: ''; position: absolute; top: 22px; left: 0; right: 0; height: 2px;
+                    background: rgba(255,255,255,0.05); z-index: 0;
                 }
-                .arsenal-phase-btn i { display: block; font-size: 1.4rem; margin-bottom: 8px; opacity: 0.5; }
-                .arsenal-phase-btn.active i { opacity: 1; transform: scale(1.1); }
+                .roadmap-line-progress {
+                    position: absolute; top: 22px; left: 0; height: 2px;
+                    background: var(--primary); z-index: 1; transition: width 0.5s ease;
+                    width: ${(activePhaseIndex / (phaseKeys.length - 1)) * 100}%;
+                }
+                .roadmap-step {
+                    position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 80px; cursor: pointer;
+                }
+                .step-dot {
+                    width: 44px; height: 44px; border-radius: 50%; background: #1a1a1a;
+                    border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;
+                    color: #64748b; font-size: 1.1rem; transition: all 0.3s; margin-bottom: 10px;
+                }
+                .roadmap-step.active .step-dot {
+                    background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 0 20px var(--primary-glass);
+                }
+                .roadmap-step.completed .step-dot {
+                    background: var(--primary-glass); border-color: var(--primary); color: var(--primary);
+                }
+                .step-label {
+                    font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 1px; text-align: center;
+                }
+                .roadmap-step.active .step-label { color: white; }
+
+                .masterclass-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem; }
+                .tactics-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 2rem; }
+                .sidebar-panel { display: flex; flex-direction: column; gap: 1.5rem; }
                 
-                .level-selector { display: flex; gap: 6px; background: #000; border: 1px solid rgba(255,255,255,0.05); padding: 4px; border-radius: 12px; margin-bottom: 2rem; }
-                .level-btn { flex: 1; padding: 8px; border-radius: 8px; border: none; background: transparent; color: #64748b; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.2s; }
-                .level-btn.active { background: rgba(255,255,255,0.05); color: white; }
-                
-                .masterclass-card { background: #0a0a0a; border: 1px solid var(--border); border-radius: 32px; padding: 3rem; position: relative; }
-                .tip-item { display: flex; gap: 1rem; margin-bottom: 1.5rem; color: #94a3b8; line-height: 1.6; }
-                .tip-item i { color: var(--primary); margin-top: 4px; }
+                .check-list-item {
+                    display: flex; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid transparent;
+                    border-radius: 12px; transition: all 0.2s; cursor: pointer; margin-bottom: 0.5rem;
+                }
+                .check-list-item:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+                .check-list-item input { margin-top: 3px; accent-color: var(--primary); width: 18px; height: 18px; }
+                .check-list-title { font-weight: 600; font-size: 0.95rem; color: #e2e8f0; }
+
+                @media (max-width: 992px) {
+                    .masterclass-grid { grid-template-columns: 1fr; }
+                }
             </style>
 
             <div class="arsenal-container" style="animation: fadeInUp 0.6s ease-out;">
-                <!-- MISSION CONTROL HEADER -->
-                <div style="background: var(--bg-card); border-radius: 32px; padding: 2.5rem; border: 1px solid var(--border); margin-bottom: 2rem; border-left: 6px solid ${aiPlan.status === 'aligned' ? 'var(--primary)' : aiPlan.status === 'pending' ? '#64748b' : '#ef4444'};">
-                    <div style="display: flex; gap: 2rem; align-items: center;">
-                        <div style="width: 60px; height: 60px; border-radius: 16px; background: ${aiPlan.status === 'pending' ? 'rgba(255,255,255,0.05)' : 'var(--primary-glass)'}; display: flex; align-items: center; justify-content: center; color: ${aiPlan.status === 'pending' ? '#64748b' : 'var(--primary)'}; font-size: 1.5rem;">
-                            <i class="fas ${aiPlan.status === 'pending' ? 'fa-hourglass-start' : 'fa-brain'}"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-size: 0.65rem; font-weight: 950; color: ${aiPlan.status === 'pending' ? '#64748b' : 'var(--primary)'}; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;">SoloPrice AI • Stratège Personnel</div>
-                            <h2 style="font-size: 1.5rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${aiPlan.message}</h2>
-                            ${data.mainObstacle ? `<div style="margin-top: 8px; font-size: 0.75rem; color: #ef4444; font-weight: 800;"><i class="fas fa-shield-exclamation"></i> DÉFI : ${data.mainObstacle}</div>` : ''}
-                        </div>
-                        <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Cible Spécifique</div>
-                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">${(data.specificTarget || this.currentClientSector || 'Non défini').toUpperCase()}</div>
-                        </div>
-                        <div style="text-align: center; padding: 0 1.5rem; border-left: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Niveau Cible</div>
-                            <div style="font-size: 0.9rem; font-weight: 900; color: white; margin-top: 4px;">
-                                ${PricingEngine.prospectLevelLogic[this.currentProspectLevel] ? PricingEngine.prospectLevelLogic[this.currentProspectLevel].label.split(' / ')[0] : (PricingEngine.prospectLevelLogic[data.prospectLevel] ? PricingEngine.prospectLevelLogic[data.prospectLevel].label.split(' / ')[0] : 'Stratégique')}
+                <!-- NEW VISUAL ROADMAP -->
+                <div class="closing-roadmap">
+                    <div class="roadmap-line-progress"></div>
+                    ${phaseKeys.map((pKey, idx) => {
+            const pData = PricingEngine.salesLifecycle[pKey];
+            const isActive = this.currentSalesPhase === pKey;
+            const isCompleted = idx < activePhaseIndex;
+            return `
+                            <div class="roadmap-step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" onclick="Scoper.updateSalesPhase('${pKey}')">
+                                <div class="step-dot">
+                                    <i class="fas ${isCompleted ? 'fa-check' : pData.icon}"></i>
+                                </div>
+                                <div class="step-label">${pData.label}</div>
+                            </div>
+                        `;
+        }).join('')}
+                </div>
+
+                <!-- AI INTELLIGENCE HEADER -->
+                <div style="background: var(--bg-card); border-radius: 24px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 2rem; border-left: 6px solid ${aiPlan.status === 'aligned' ? 'var(--success)' : '#ef4444'};">
+                    <div style="display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 1.2rem; align-items: center;">
+                            <div style="width: 50px; height: 50px; border-radius: 12px; background: var(--primary-glass); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.3rem;">
+                                <i class="fas fa-shield-check"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.6rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">SoloPrice AI • Stratège de Défense</div>
+                                <h2 style="font-size: 1.2rem; font-weight: 900; color: white; margin: 0;">${aiPlan.message}</h2>
+                                <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Gap détecté : <span style="color: #ef4444; font-weight: 800;">${aiPlan.gapPercent}%</span> • Contexte : <span style="color: white; font-weight: 600;">${projectContext.keyTasks.join(', ') || 'Global'}</span></div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div style="margin-top: 2rem; display: flex; gap: 1rem; align-items: center; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                        <span style="font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Automations :</span>
-                        <button class="button-primary mini" style="background: var(--primary-glass); color: white; border: 1px solid var(--primary-glass);" onclick="Scoper.generateAIContent('quote')">Script Devis</button>
-                        <button class="button-primary mini" style="background: var(--primary-glass); color: white; border: 1px solid var(--primary-glass);" onclick="Scoper.generateAIContent('followup')">Relance Valeur</button>
-                    </div>
-                </div>
-
-                <div class="level-selector" style="display: none;">
-                    <button class="level-btn ${this.currentArsenalLevel === 'beginner' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('beginner')">DÉBUTANT</button>
-                    <button class="level-btn ${this.currentArsenalLevel === 'intermediate' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('intermediate')">INTERMÉDIAIRE</button>
-                    <button class="level-btn ${this.currentArsenalLevel === 'expert' ? 'active' : ''}" onclick="Scoper.updateArsenalLevel('expert')">EXPERT / CLOSER</button>
-                </div>
-
-                <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                    ${Object.keys(PricingEngine.salesLifecycle).map(pKey => `
-                        <button class="arsenal-phase-btn ${this.currentSalesPhase === pKey ? 'active' : ''}" onclick="Scoper.updateSalesPhase('${pKey}')">
-                            <i class="fas ${PricingEngine.salesLifecycle[pKey].icon}"></i>
-                            ${PricingEngine.salesLifecycle[pKey].label}
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-
-            <div class="masterclass-card" style="animation: fadeInUp 0.6s ease-out; background: var(--bg-card); border-radius: 32px; padding: 3rem; border: 1px solid var(--border);">
-                <!-- PHASE MASTERCLASS -->
-                <div class="phase-content">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem;">
-                        <div>
-                            <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">Étape : ${phase.label}</div>
-                            <h2 style="font-size: 2.2rem; font-weight: 950; color: white; margin: 0; letter-spacing: -1.5px;">${levelData.title}</h2>
-                        </div>
-                        <div style="padding: 10px 20px; background: var(--primary-glass); border: 1px solid var(--primary); border-radius: 12px; font-size: 0.8rem; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-robot"></i> Stratégie IA Activée
+                        <div style="display: flex; gap: 0.8rem;">
+                            <button class="button-primary mini" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="Scoper.generateAIContent('quote')">
+                                <i class="fas fa-file-invoice"></i> Script Devis
+                            </button>
+                            <button class="button-primary mini" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="Scoper.generateAIContent('followup')">
+                                <i class="fas fa-reply-all"></i> Relance Valeur
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 4rem;">
-                        <div>
-                            <h4 style="font-size: 0.8rem; font-weight: 950; color: white; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px;">Tactique Personnalisée</h4>
+                <div class="masterclass-grid">
+                    <!-- MAIN TACTICS PANEL -->
+                    <div class="tactics-panel">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                            <div>
+                                <div style="font-size: 0.7rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px;">Phase ${activePhaseIndex + 1} / 4</div>
+                                <h2 style="font-size: 1.8rem; font-weight: 950; color: white; margin: 0; letter-spacing: -1px;">${levelData.title}</h2>
+                            </div>
+                             <div style="padding: 6px 14px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 8px; font-size: 0.7rem; color: #94a3b8;">
+                                <i class="fas fa-user-tie"></i> Profil : ${tactics.subtitle.split(' face ')[0].split(' profil ')[1]}
+                             </div>
+                        </div>
+
+                        <div style="margin-bottom: 2.5rem;">
+                            <h4 style="font-size: 0.75rem; font-weight: 950; color: #64748b; text-transform: uppercase; margin-bottom: 1.2rem; letter-spacing: 1px;">Tactique de Terrain</h4>
                             ${levelData.tips.map(tip => `
-                                <div class="tip-item">
-                                    <i class="fas fa-check-circle" style="color: var(--primary);"></i>
+                                <div class="tip-item" style="display: flex; gap: 1rem; margin-bottom: 1rem; color: #94a3b8; line-height: 1.5; font-size: 0.95rem;">
+                                    <i class="fas fa-bolt" style="color: var(--primary); margin-top: 4px;"></i>
                                     <span>${tip}</span>
                                 </div>
                             `).join('')}
                         </div>
 
-                        <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: 24px; padding: 2rem;">
-                            <h4 style="font-size: 0.7rem; font-weight: 950; color: #64748b; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px;">
-                                ${this.currentSalesPhase === 'diagnostic' ? 'Questions d\'Excavation' :
-                this.currentSalesPhase === 'alignment' ? 'Argument Choc' :
-                    this.currentSalesPhase === 'closing' ? 'Méthodes de Bouclage' : 'Checklist de Préparation'}
+                        <div style="padding: 1.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 16px;">
+                            <h4 style="font-size: 0.75rem; font-weight: 950; color: white; text-transform: uppercase; margin-bottom: 1rem; display: flex; justify-content: space-between;">
+                                <span>${this.currentSalesPhase === 'diagnostic' ? 'Questions d\'Impact' :
+                this.currentSalesPhase === 'alignment' ? 'Argument ROI' :
+                    this.currentSalesPhase === 'closing' ? 'Techniques de Bouclage' : 'Points de Vérification'}</span>
+                                <i class="fas fa-atom" style="color: var(--primary);"></i>
                             </h4>
                             
                             ${this.currentSalesPhase === 'diagnostic' ?
-                levelData.questions.map(q => `<div style="padding: 1rem; background: #000; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 0.8rem; font-size: 0.9rem; color: white; font-weight: 700;">"${q}"</div>`).join('') :
+                levelData.questions.map(q => `<div style="padding: 1rem; background: #111; border-radius: 10px; margin-bottom: 0.6rem; font-size: 0.9rem; color: white; font-weight: 600; border-left: 3px solid var(--primary);">"${q}"</div>`).join('') :
                 this.currentSalesPhase === 'alignment' ?
-                    `<div style="font-size: 1.2rem; font-weight: 800; color: white; font-style: italic; line-height: 1.5;">"${levelData.argument}"</div>` :
+                    `<div style="font-size: 1.1rem; font-weight: 700; color: white; font-style: italic; line-height: 1.5; border-left: 3px solid var(--primary); padding-left: 1rem;">"${levelData.argument}"</div>` :
                     this.currentSalesPhase === 'closing' ?
-                        levelData.methods.map(m => `<div style="padding: 0.8rem 1.2rem; background: var(--primary-glass); border: 1px solid var(--primary-glass); border-radius: 10px; margin-bottom: 0.8rem; font-size: 0.85rem; color: white; font-weight: 800; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-circle"></i> ${m}</div>`).join('') :
-                        levelData.checklist.map(c => `<div style="margin-bottom: 0.8rem; font-size: 0.9rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check" style="color: var(--primary);"></i> ${c}</div>`).join('')
+                        levelData.methods.map(m => `<div style="padding: 0.8rem 1.2rem; background: var(--primary-glass); border-radius: 8px; margin-bottom: 0.6rem; font-size: 0.85rem; color: white; font-weight: 800; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-double"></i> ${m}</div>`).join('') :
+                        levelData.checklist.map(c => `<div style="margin-bottom: 0.6rem; font-size: 0.9rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;"><i class="fas fa-square" style="color: #333;"></i> ${c}</div>`).join('')
             }
                         </div>
                     </div>
 
-                    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
-                        <p style="font-size: 0.85rem; color: #64748b; margin: 0;"><strong>Besoin de plus d'aide ?</strong> Utilisez les automations SoloPrice AI en haut de l'onglet.</p>
-                        <div style="display: flex; gap: 1rem;">
-                            ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) > 0 ?
-                `<button onclick="Scoper.updateSalesPhase('${Object.keys(PricingEngine.salesLifecycle)[Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) - 1]}')" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">Pécédent</button>` : ''}
-                            ${Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) < 3 ?
-                `<button onclick="Scoper.updateSalesPhase('${Object.keys(PricingEngine.salesLifecycle)[Object.keys(PricingEngine.salesLifecycle).indexOf(this.currentSalesPhase) + 1]}')" style="background: var(--primary); border: none; color: white; padding: 10px 24px; border-radius: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px var(--primary-glass);">Phase Suivante</button>` : ''}
+                    <!-- SIDEBAR ACTION PANEL -->
+                    <div class="sidebar-panel">
+                        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem;">
+                            <h4 style="font-size: 0.7rem; font-weight: 950; color: #64748b; text-transform: uppercase; margin-bottom: 1.2rem;">Action Items de Phase</h4>
+                            <div class="action-check-list">
+                                ${(levelData.checklist || levelData.tips.slice(0, 3)).map((item, i) => `
+                                    <label class="check-list-item">
+                                        <input type="checkbox" id="check-${this.currentSalesPhase}-${i}">
+                                        <span class="check-list-title">${item.length > 40 ? item.slice(0, 37) + '...' : item}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div style="background: ${aiPlan.status === 'aligned' ? 'var(--primary-glass)' : 'rgba(239, 68, 68, 0.05)'}; border: 1px solid ${aiPlan.status === 'aligned' ? 'var(--primary)' : 'rgba(239, 68, 68, 0.2)'}; border-radius: 20px; padding: 1.5rem;">
+                            <h4 style="font-size: 0.7rem; font-weight: 950; color: ${aiPlan.status === 'aligned' ? 'white' : '#ef4444'}; text-transform: uppercase; margin-bottom: 0.8rem;">Défense de Rentabilité</h4>
+                            <p style="font-size: 0.85rem; color: #e2e8f0; line-height: 1.5; margin-bottom: 0;">
+                                ${aiPlan.actions && aiPlan.actions.length > 0 ? aiPlan.actions[0].text : 'Votre TJM est aligné. Focalisez sur la livraison.'}
+                            </p>
+                        </div>
+
+                        <div style="display: flex; gap: 0.8rem; margin-top: auto;">
+                            ${activePhaseIndex > 0 ?
+                `<button onclick="Scoper.updateSalesPhase('${phaseKeys[activePhaseIndex - 1]}')" style="flex: 1; padding: 0.8rem; border-radius: 12px; background: var(--bg-sidebar); border: 1px solid var(--border); color: #94a3b8; font-weight: 700; cursor: pointer;">Pécédent</button>` : ''}
+                            ${activePhaseIndex < phaseKeys.length - 1 ?
+                `<button onclick="Scoper.updateSalesPhase('${phaseKeys[activePhaseIndex + 1]}')" style="flex: 2; padding: 0.8rem; border-radius: 12px; background: var(--primary); border: none; color: white; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px var(--primary-glass);">Suivant</button>` :
+                `<button onclick="App.navigateTo('quotes')" style="flex: 2; padding: 0.8rem; border-radius: 12px; background: var(--primary); border: none; color: white; font-weight: 800; cursor: pointer;">Finaliser le Devis</button>`}
                         </div>
                     </div>
                 </div>

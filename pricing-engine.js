@@ -196,24 +196,46 @@ const PricingEngine = {
     },
 
     /**
-     * Calcule le "Facteur PITA" (Pain In The Ass) - [PRO]
-     * @param {number} urgency - 1 à 5
-     * @param {number} complexity - 1 à 5
-     * @param {number} clientDiff - 1 à 5
-     * @returns {number} - Multiplicateur (ex: 1.15 pour +15%)
+     * Diagnostic de projet basé sur les tâches - [PRO]
+     * Extrait le contexte des tâches pour personnaliser les conseils.
      */
-    getPitaIncentive(urgency = 1, complexity = 1, clientDiff = 1) {
-        const points = (urgency - 1) + (complexity - 1) + (clientDiff - 1);
-        return 1 + (points * 0.05);
+    getProjectDiagnostic(tasks = []) {
+        const keywords = {
+            tech: ['dev', 'code', 'bug', 'api', 'back', 'front', 'data', 'mobile', 'web', 'app', 'infrastructure', 'logiciel', 'saas'],
+            marketing: ['seo', 'sea', 'ads', 'lead', 'puchase', 'conversion', 'trafic', 'réseaux', 'contenu', 'stratégie'],
+            design: ['ux', 'ui', 'logo', 'charte', 'maquette', 'visuel', 'interface', 'framer', 'figma'],
+            conseil: ['audit', 'accompagnement', 'mentor', 'formation', 'process', 'optimisation', 'stratégie'],
+            artisanat: ['pose', 'travaux', 'chantier', 'rénovation', 'dépannage', 'installation'],
+            media: ['vidéo', 'photo', 'montage', 'shooting', 'podcast', 'tournage']
+        };
+
+        const taskContext = {
+            totalTasks: tasks.length,
+            detectedSectors: new Set(),
+            keyTasks: tasks.slice(0, 3).map(t => t.name)
+        };
+
+        tasks.forEach(task => {
+            const name = task.name.toLowerCase();
+            for (const [sector, terms] of Object.entries(keywords)) {
+                if (terms.some(term => name.includes(term))) {
+                    taskContext.detectedSectors.add(sector);
+                }
+            }
+        });
+
+        return taskContext;
     },
 
     /**
      * Ingénierie de Vente Avancée - [EXPERT]
      * Génère un arsenal complet de vente personnalisé au secteur et à la cible.
      */
-    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0, clientSector = 'ecommerce', prospectLevel = 'manager') {
+    getAdvancedSalesTactics(score, scenarios, sector = 'tech', target = 'pme', currentTJM = 0, clientSector = 'ecommerce', prospectLevel = 'manager', tasks = []) {
         const targetTJM = scenarios.security.tjm;
         const aiPlan = this.getAIActionPlan(currentTJM, targetTJM, sector);
+        const projectContext = this.getProjectDiagnostic(tasks);
+
         const sectorData = {
             tech: {
                 focus: "Dette Technique & Perte de Marché",
@@ -271,7 +293,14 @@ const PricingEngine = {
             }
         };
 
-        const currentSector = sectorData[sector] || sectorData.tech;
+        // Use detected sector if available and valid
+        let activeSector = sector;
+        if (projectContext.detectedSectors.size > 0) {
+            const detected = Array.from(projectContext.detectedSectors)[0];
+            if (sectorData[detected]) activeSector = detected;
+        }
+
+        const currentSector = sectorData[activeSector] || sectorData.tech;
         const targetLabel = { 'tpe': 'Indépendant/TPE', 'pme': 'PME/Startup', 'grands-comptes': 'Grand Compte/Institution' }[target] || 'PME';
 
         const securityTJM = scenarios.security.tjm;
@@ -279,7 +308,7 @@ const PricingEngine = {
 
         return {
             title: "Arsenal de Closing Expert",
-            subtitle: `Stratégie optimisée pour un profil ${sector.toUpperCase()} face à un ${targetLabel}`,
+            subtitle: `Stratégie optimisée pour un profil ${activeSector.toUpperCase()} face à un ${targetLabel}`,
             diagnostic: {
                 title: "La Posture Dr. Expert",
                 description: "Ne vendez pas, diagnostiquez. Posez ces 3 questions pour que le client réalise le coût de son problème.",
@@ -310,7 +339,8 @@ const PricingEngine = {
                     rebuttal: `Misez sur l'expertise : 'Exact, on trouve toujours moins cher que ${typeof App !== 'undefined' ? App.formatCurrency(securityTJM) : securityTJM + '€'}. Mais quel est le prix d'un projet qui doit être refait dans un an parce qu'il n'était pas assez robuste ?'`
                 }
             ],
-            aiPlan: aiPlan
+            aiPlan: aiPlan,
+            projectContext: projectContext
         };
     },
 
