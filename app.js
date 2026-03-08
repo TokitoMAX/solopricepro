@@ -209,18 +209,22 @@ const App = {
             this.currentPage = page;
             localStorage.setItem('sp_last_page', page);
 
+            // Determiner l'onglet (priorité: argument > localStorage)
+            let tab = (args.length > 0 && args[0]) ? args[0] : localStorage.getItem(`sp_last_tab_${page}`);
+
             // Update URL Hash without triggering hashchange
             this.updatingHashManually = true;
             let hash = `page=${page}`;
-            if (args.length > 0 && typeof args[0] === 'string') {
-                hash += `&tab=${args[0]}`;
-                localStorage.setItem(`sp_last_tab_${page}`, args[0]);
+            if (tab) {
+                hash += `&tab=${tab}`;
+                localStorage.setItem(`sp_last_tab_${page}`, tab);
             }
             window.location.hash = hash;
             setTimeout(() => this.updatingHashManually = false, 100);
 
             // Render specific page content with args
-            this.renderPageContent(page, ...args);
+            // On s'assure que l'onglet est passé en premier argument du rendu
+            this.renderPageContent(page, tab, ...args.slice(1));
 
             // Mettre à jour l'état actif de la navigation
             document.querySelectorAll('[data-nav]').forEach(link => {
