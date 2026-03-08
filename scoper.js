@@ -12,8 +12,8 @@ const Scoper = {
     currentSalesPhase: 'preparation',
     currentObjectiveStep: 1,
 
-    // --- PILOTAGE STRATÉGIQUE (Workflow Support Logic) ---
-    StrategicPilot: {
+    // --- SYSTÈME DE SUPPORT (Functional Logic) ---
+    SupportSystem: {
         status: 'idle',
         memory: Storage.get('sp_pilot_memory') || { facts: {}, history: [] },
 
@@ -76,7 +76,7 @@ const Scoper = {
         },
 
         generateDynamicPlan(actionType, data) {
-            // Logique de planification simulant un agent autonome décidant de ses étapes
+            // Logique de planification simulant un support autonome décidant de ses étapes
             const basePlan = [
                 { type: "THOUGHT", content: "Initialisation du contexte à partir de la mémoire à long terme." },
                 { type: "ACTION", tool: "web_search_intelligence", content: `Recherche Google : "Tendances et points de douleur ${Scoper.currentClientSector || 'Marché'} 2024 2025"` },
@@ -1745,7 +1745,7 @@ const Scoper = {
                             <div style="font-size: 0.75rem; color: var(--primary); font-weight: 800; margin-bottom: 0.5rem;">VOTRE CONTRE-ATTAQUE :</div>
                             <div style="color: white; font-size: 0.9rem; line-height: 1.5;">"Je comprends. Si on ne fait rien, quel sera le coût de [Risque Secteur] pour vous dans 6 mois ?"</div>
                         </div>
-                        <button onclick="Scoper.generateAIContent('objections')" class="button-secondary mini" style="width: 100%;">Générer plus de réponses IA</button>
+                        <button onclick="Scoper.generateAIContent('objections')" class="button-secondary mini" style="width: 100%;">Générer plus de réponses Support</button>
                     </div>
                 `;
                 break;
@@ -1792,15 +1792,17 @@ const Scoper = {
                     </div>
                 </div>
 
-                <!-- Zone de Pensée / Terminal REAct -->
-                <div id="agent-thinking-area" style="margin-bottom: 2.5rem; min-height: 140px; max-height: 200px; overflow-y: auto; background: #000; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.25rem; box-shadow: inset 0 0 30px rgba(0,0,0,1); scrollbar-width: thin;">
-                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #4ade80; opacity: 0.5; margin-bottom: 0.5rem;">> ANALYSING_WORKFLOW_CONTINUITY...</div>
+                <!-- Zone d'Analyse -->
+                <div id="support-analysis-area" style="margin-bottom: 2.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                    <div style="font-size: 0.9rem; color: #10b981; font-weight: 800;">
+                        <i class="fas fa-circle-notch fa-spin" style="margin-right: 10px;"></i> ANALYSE DU FLUX EN COURS...
+                    </div>
                 </div>
                 
                 <!-- Zone de Formulaire (masquée au début) -->
                 <div id="modal-form-body" style="opacity: 0.1; pointer-events: none; transform: translateY(10px); transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);">${modalContent}</div>
 
-                <!-- Actions de l'Agent -->
+                <!-- Actions de Support -->
                 <div id="modal-actions" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;">
                     <div style="display: flex; gap: 1rem;">
                         <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700; height: 50px;" onclick="document.getElementById('closing-action-modal').remove()">Abandonner</button>
@@ -1823,8 +1825,8 @@ const Scoper = {
 
         document.body.appendChild(modal);
 
-        // Auto-run Agent sequence
-        setTimeout(() => this.startAgentProcess(actionType, checkId), 600);
+        // Auto-run Support analysis
+        setTimeout(() => this.runSupportAnalysis(actionType, checkId), 800);
     },
 
     saveClosingAction(checkId) {
@@ -1860,51 +1862,18 @@ const Scoper = {
         if (hiddenInput) hiddenInput.value = totalValue;
     },
 
-    startAgentProcess(actionType, checkId) {
-        const thinkingArea = document.getElementById('agent-thinking-area');
+    runSupportAnalysis(actionType, checkId) {
+        const analysisArea = document.getElementById('support-analysis-area');
         const formBody = document.getElementById('modal-form-body');
         const actionArea = document.getElementById('modal-actions');
 
-        if (!thinkingArea) return;
-        thinkingArea.innerHTML = '';
-
-        this.StrategicPilot.run(actionType, (log) => {
-            const div = document.createElement('div');
-            div.className = 'agent-log-line';
-            div.style.fontFamily = "'JetBrains Mono', monospace";
-            div.style.fontSize = '0.7rem';
-            div.style.marginBottom = '8px';
-            div.style.paddingLeft = '0.75rem';
-            div.style.borderLeft = '2px solid rgba(255,255,255,0.05)';
-            div.style.animation = 'terminalLine 0.3s ease-out forwards';
-
-            if (log.includes('[PLANNER]')) { div.style.color = '#f59e0b'; div.style.fontWeight = 'bold'; }
-            else if (log.includes('[THOUGHT]')) { div.style.color = '#94a3b8'; div.style.opacity = '0.8'; }
-            else if (log.includes('[ACTION]')) { div.style.color = 'var(--primary)'; div.style.background = 'rgba(16, 185, 129, 0.05)'; div.style.padding = '4px 8px'; div.style.borderRadius = '4px'; }
-            else if (log.includes('[RESULT]')) { div.style.color = '#10b981'; }
-            else if (log.includes('[SELF-CHECK]')) { div.style.color = '#a855f7'; div.style.fontWeight = '700'; }
-            else if (log.includes('[ADJUSTMENT]')) { div.style.color = '#fbbf24'; div.style.background = 'rgba(251, 191, 36, 0.1)'; div.style.padding = '4px 8px'; div.style.borderRadius = '4px'; }
-
-            div.innerText = log;
-            thinkingArea.appendChild(div);
-            thinkingArea.scrollTop = thinkingArea.scrollHeight;
-        }, () => {
+        this.SupportSystem.run(actionType, () => { }, () => {
+            if (analysisArea) {
+                analysisArea.innerHTML = '<div style="color: #10b981; font-weight: 800;"><i class="fas fa-check-circle"></i> ANALYSE TERMINÉE : CONSEILS DISPONIBLES</div>';
+            }
             this.draftActionWithAI(actionType, true);
             if (formBody) { formBody.style.opacity = "1"; formBody.style.pointerEvents = "all"; formBody.style.transform = "translateY(0)"; }
             if (actionArea) { actionArea.style.opacity = "1"; actionArea.style.pointerEvents = "all"; }
-
-            const done = document.createElement('div');
-            done.style.marginTop = '1.5rem';
-            done.style.color = '#10b981';
-            done.style.fontWeight = '900';
-            done.style.fontSize = '0.8rem';
-            done.style.textAlign = 'center';
-            done.style.border = '1px solid rgba(16, 185, 129, 0.2)';
-            done.style.padding = '10px';
-            done.style.borderRadius = '12px';
-            done.style.background = 'rgba(16, 185, 129, 0.05)';
-            done.innerHTML = '<i class="fas fa-check-double"></i> CYCLE D\'ACCOMPAGNEMENT TERMINÉ : CONSEILS PRÊTS';
-            thinkingArea.appendChild(done);
         });
     },
 
@@ -1960,7 +1929,7 @@ const Scoper = {
                 if (textInput) textInput.value = draft;
         }
 
-        if (!silent) App.showNotification("Draft IA généré.", "info");
+        if (!silent) App.showNotification("Draft Support généré.", "info");
     },
 
     updateSalesPhase(phase) {
@@ -2227,7 +2196,7 @@ const Scoper = {
     },
 
     /**
-     * Génère et affiche le contenu IA
+     * Génère et affiche le contenu de Support Stratégique
      */
     generateAIContent(type) {
         const data = Storage.get('sp_calculator_data') || {};

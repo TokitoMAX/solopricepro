@@ -111,7 +111,7 @@ const Coach = {
                             ✨
                         </div>
                         <div>
-                            <h2 style="font-size: 1.15rem; font-weight: 800; color: white; margin: 0; letter-spacing: -0.5px;">Solo Coach IA</h2>
+                            <h2 style="font-size: 1.15rem; font-weight: 800; color: white; margin: 0; letter-spacing: -0.5px;">Support Stratégique</h2>
                             <p style="font-size: 0.8rem; color: var(--primary-light); margin: 0; display: flex; align-items: center; gap: 6px; font-weight: 500;">
                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--primary-light); display: inline-block; animation: pulse-ring 2s infinite;"></span>
                                 Analyse en temps réel

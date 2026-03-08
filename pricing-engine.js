@@ -179,7 +179,7 @@ const PricingEngine = {
                 message: "Analyse en attente : Listez vos livrables dans 'Chiffrage Projet'.",
                 actions: [
                     { type: 'setup', text: "Listez les livrables du projet pour calculer votre TJM réel.", icon: 'fa-list-ol' },
-                    { type: 'strategy', text: "Définissez votre périmètre pour que l'IA puisse détecter les zones de risque.", icon: 'fa-shield-halved' }
+                    { type: 'strategy', text: "Définissez votre périmètre pour détecter les zones de risque.", icon: 'fa-shield-halved' }
                 ]
             };
         }
@@ -370,7 +370,7 @@ const PricingEngine = {
 
     /**
      * Base de Données d'Intelligence de Marché Réelle (Google 2024/2025)
-     * Ces données sont utilisées par l'Agent soloPrice pour ses analyses web.
+     * Ces données sont utilisées pour les analyses de marché.
      */
     MarketIntelligence: {
         ecommerce: {
@@ -379,8 +379,8 @@ const PricingEngine = {
             source: "Analyse Google Trends 2024/2025"
         },
         saas: {
-            trends: ["Modèles de prix à l'usage (Usage-based)", "Vertical SaaS ultra-spécialisé", "IA Native intégrée au workflow"],
-            pains: ["Pression sur la rentabilité (Rule of 40)", "Complexité d'adoption de l'IA", "SaaS Sprawl (trop d'outils fragiles)"],
+            trends: ["Modèles de prix à l'usage (Usage-based)", "Vertical SaaS ultra-spécialisé", "Stratégie native intégrée au workflow"],
+            pains: ["Pression sur la rentabilité (Rule of 40)", "Complexité d'adoption des nouveaux outils", "SaaS Sprawl (trop d'outils fragiles)"],
             source: "Rapport SaaS Industry 2024"
         },
         btp: {
@@ -394,14 +394,14 @@ const PricingEngine = {
             source: "Bain & Company Luxury Study 2024"
         },
         sante: {
-            trends: ["IA pour la réduction de la bureaucratie", "Focus Santé Mentale (Priorité 2025)", "Développement de la Télémédecine"],
+            trends: ["Digitalisation pour la réduction de la bureaucratie", "Focus Santé Mentale (Priorité 2025)", "Développement de la Télémédecine"],
             pains: ["Déserts médicaux en France", "Déficit budgétaire record (22 Mds€)", "Difficultés de recrutement paramédical"],
             source: "Rapport Santé France 2024/2025"
         }
     },
 
     /**
-     * Mappage des enjeux par secteur client (SoloPrice AI)
+     * Mappage des enjeux par secteur client (Support de Pilotage)
      */
     clientSectorPainPoints: {
         luxe: {
@@ -431,7 +431,7 @@ const PricingEngine = {
     },
 
     /**
-     * Logique par niveau d'interlocuteur (SoloPrice AI)
+     * Logique par niveau d'interlocuteur (Support de Pilotage)
      */
     prospectLevelLogic: {
         ceo: {
@@ -625,7 +625,7 @@ const PricingEngine = {
     },
 
     /**
-     * Génère un script de présentation du devis (SoloPrice AI)
+     * Génère un script de présentation du devis (Support de Pilotage)
      */
     generateQuoteScript(data) {
         const sector = data.sector || 'tech';
@@ -666,7 +666,7 @@ Je reste à votre disposition pour en discuter plus en détail.
     },
 
     /**
-     * Génère un mail de relance basé sur la valeur (SoloPrice AI)
+     * Génère un mail de relance basé sur la valeur (Support de Pilotage)
      */
     generateValueFollowup(data) {
         const sector = data.sector || 'tech';

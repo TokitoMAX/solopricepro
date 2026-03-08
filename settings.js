@@ -251,7 +251,7 @@ const Settings = {
                 <div class="glass" style="padding: 2rem; border-radius: 16px; border: 1px dashed var(--border); text-align: center;">
                     <div style="font-size: 2rem; margin-bottom: 1rem;"></div>
                     <h3 style="margin-bottom: 0.5rem;">${i18n.t('settings.standard.title') || 'Vous utilisez la version Standard (Gratuite)'}</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${i18n.t('settings.standard.hint') || 'Passez à PRO ou EXPERT pour débloquer l\'illimité et le coaching IA.'}</p>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${i18n.t('settings.standard.hint') || 'Passez à PRO ou EXPERT pour débloquer l\'illimité et le coaching stratégique.'}</p>
                     <button class="button-primary" onclick="App.showUpgradeModal()">${i18n.t('settings.btn.view_offers') || 'Voir les offres'}</button>
                 </div>
             `;

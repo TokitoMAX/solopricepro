@@ -791,7 +791,7 @@ const App = {
                 <div class="card-value-tag">${i18n.t('upgrade.expert.value')}</div>
                 <ul class="card-features-mini">
                     <li><i class="fas fa-check-circle"></i> <strong>Scripts de Négociation</strong></li>
-                    <li><i class="fas fa-check-circle"></i> <strong>Arguments de Vente</strong> (IA)</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Arguments de Vente</strong> (Support)</li>
                     <li><i class="fas fa-check-circle"></i> Market Power Analyzer</li>
                     <li><i class="fas fa-check-circle"></i> ${i18n.t('feat.signature').replace('<strong>', '').replace('</strong>', '')}</li>
                 </ul>
