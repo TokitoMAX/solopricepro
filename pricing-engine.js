@@ -717,12 +717,15 @@ DRAFT DE CADRAGE:
 
     generateROIDetailedArgument(data, loss, gain) {
         const total = (loss * 12) + gain;
+        const risks = data.highRiskTasks && data.highRiskTasks.length > 0
+            ? `\n\nNotamment sur des points critiques comme ${data.highRiskTasks.slice(0, 2).join(' et ')}.`
+            : "";
         return `
-ARGUMENTAIRE ROI(Retour sur Investissement) :
+ARGUMENTAIRE ROI (Retour sur Investissement) :
 
 Sur une période de 12 mois, l'inaction face à votre problème actuel représente un coût masqué de ${total}€.
-            - Pertes directes évitées: ${loss * 12}€ / an.
-                - Gain de performance projeté: ${gain}€ / an.
+            - Pertes directes évitées : ${loss * 12}€ / an.
+            - Gain de performance projeté : ${gain}€ / an.${risks}
 
 Mon accompagnement s'autofinance au bout de [X] mois, transformant cette dépense en un levier pur de rentabilité.
             `.trim();

@@ -1601,17 +1601,24 @@ const Scoper = {
         const nextBtn = document.getElementById('next-phase-btn');
         if (!nextBtn) return;
 
-        const phaseData = PricingEngine.salesLifecycle[this.currentSalesPhase];
+        const phaseData = (PricingEngine.salesLifecycle && PricingEngine.salesLifecycle[this.currentSalesPhase]) ? PricingEngine.salesLifecycle[this.currentSalesPhase] : null;
         if (!phaseData || !phaseData.levels || !phaseData.levels.intermediate) return;
 
-        const checklist = phaseData.levels.intermediate.checklist;
+        const checklist = phaseData.levels.intermediate.checklist || [];
         const allChecked = checklist.every(item => localStorage.getItem(`sp_closing_${item.id}`) === 'true');
 
         nextBtn.disabled = !allChecked;
         nextBtn.style.opacity = allChecked ? '1' : '0.5';
-        nextBtn.innerHTML = allChecked ?
-            (this.currentSalesPhase === 'closing' ? 'Finaliser le Devis <i class="fas fa-arrow-right"></i>' : 'Passer à la Phase Suivante <i class="fas fa-chevron-right"></i>') :
-            'Actions Requises pour Continuer';
+
+        if (allChecked) {
+            nextBtn.classList.add('pulse-primary');
+            nextBtn.innerHTML = this.currentSalesPhase === 'closing' ?
+                'Finaliser le Devis <i class="fas fa-check-double"></i>' :
+                'Passer à la Phase Suivante <i class="fas fa-arrow-right"></i>';
+        } else {
+            nextBtn.classList.remove('pulse-primary');
+            nextBtn.innerHTML = 'Actions en cours...';
+        }
     },
 
     openClosingActionModal(checkId, actionType) {
@@ -1808,6 +1815,8 @@ const Scoper = {
                 </div>
 
                 <style>
+                    @keyframes pulse-primary { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+                    .pulse-primary { animation: pulse-primary 2s infinite; }
                     @keyframes terminalLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
                     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
                     .agent-log-line { animation: terminalLine 0.2s ease-out forwards; }
@@ -1868,10 +1877,14 @@ const Scoper = {
     draftActionWithAI(actionType, silent = false) {
         const data = Storage.get('sp_calculator_data') || {};
         const results = PricingEngine.calculateObjective(data);
+        const tasks = this.tasks || [];
+        const highRiskTasks = tasks.filter(t => t.complexity === 'high' || t.isPita).map(t => t.label);
+
         const fullContext = {
             ...data,
             dailyRate: this.currentProjectTJM || results.dailyRate,
-            tasks: this.tasks,
+            tasks: tasks,
+            highRiskTasks: highRiskTasks,
             clientSector: this.currentClientSector || 'ecommerce'
         };
 
