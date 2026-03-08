@@ -537,25 +537,25 @@ const App = {
                 } else console.warn('️ Marketplace module not ready');
             }
             if (page === 'kanban') {
-                if (typeof Kanban !== 'undefined' && Kanban.render) Kanban.render();
+                if (typeof Kanban !== 'undefined' && Kanban.render) Kanban.render(...args);
                 else console.warn('️ Kanban module not ready');
             }
             if (page === 'scoper') {
-                if (typeof Scoper !== 'undefined' && Scoper.render) Scoper.render();
+                if (typeof Scoper !== 'undefined' && Scoper.render) Scoper.render(...args);
                 else console.warn('️ Scoper module not ready');
             }
             if (page === 'profile') {
-                if (typeof Profile !== 'undefined' && Profile.render) Profile.render();
+                if (typeof Profile !== 'undefined' && Profile.render) Profile.render(...args);
                 else console.warn('️ Profile module not ready');
             }
             if (page === 'settings') {
-                if (typeof Settings !== 'undefined' && Settings.render) Settings.render();
+                if (typeof Settings !== 'undefined' && Settings.render) Settings.render(...args);
                 else console.warn('️ Settings module not ready');
             }
             if (page === 'expenses') {
                 if (typeof Expenses !== 'undefined' && Expenses.render) {
                     this.checkFreemiumLimits();
-                    Expenses.render();
+                    Expenses.render(...args);
                 }
                 else console.warn('️ Expenses module not ready');
             }
