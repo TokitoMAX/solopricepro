@@ -100,6 +100,28 @@ const PricingEngine = {
         return values[sector] || values.tech;
     },
 
+    /**
+     * Calcule l'incitation PITA (Pain In The Ass)
+     * @param {number} urgency - Niveau d'urgence (1-5)
+     * @param {number} complexity - Niveau de complexité (1-5)
+     * @param {number} client - Niveau de difficulté client (1-5)
+     * @returns {Object} - Multiplicateur et pourcentage d'impact
+     */
+    getPitaIncentive(urgency = 1, complexity = 1, client = 1) {
+        // Formule : Chaque point au-dessus de 1 ajoute un poids
+        // Poids maximal théorique : (5-1) * 3 = 12 points
+        // On considère que chaque point de "douleur" ajoute ~8.33% (100/12)
+        const totalPain = (parseInt(urgency) - 1) + (parseInt(complexity) - 1) + (parseInt(client) - 1);
+        const impactPercent = Math.min(100, totalPain * 8); // Plafonné à 100% pour rester "réaliste"
+        const multiplier = 1 + (impactPercent / 100);
+
+        return {
+            multiplier: multiplier,
+            percent: impactPercent
+        };
+    },
+
+
     getCoachingTarget(sector, tjm) {
         if (tjm > 700) return 'Scale-ups, Grands Comptes et PME en forte croissance.';
         if (tjm > 400) return 'PME installées et agences en sous-traitance.';

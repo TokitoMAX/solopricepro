@@ -299,6 +299,7 @@ const Scoper = {
                             <input type="text" id="mainObstacle" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0; letter-spacing: 0; font-weight: 700;" value="${data.mainObstacle || ''}" placeholder="Ex: Justifier mon prix, la relance..." oninput="Scoper.autoSaveObjective()">
                         </div>
                     </div>
+
                 `;
             case 3: // REVENU
                 return `
@@ -489,14 +490,7 @@ const Scoper = {
         if (this.activeTab === 'closing') this.renderClosingTab();
     },
 
-    updateProspectLevel(level) {
-        this.currentProspectLevel = level;
-        const data = Storage.get('sp_calculator_data') || {};
-        data.prospectLevel = level;
-        Storage.set('sp_calculator_data', data);
-        if (this.activeTab === 'closing') this.renderClosingTab();
-        else this.autoSaveObjective();
-    },
+
 
     updateArsenalLevel(level) {
         this.currentArsenalLevel = level;
@@ -715,8 +709,11 @@ const Scoper = {
                                 <input type="range" id="scoper-pita-urgency" min="1" max="5" value="1" oninput="Scoper.calculate()" style="grid-column: span 2; width: 100%;">
                                 <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 5px;">Complexité</div>
                                 <input type="range" id="scoper-pita-complexity" min="1" max="5" value="1" oninput="Scoper.calculate()" style="grid-column: span 2; width: 100%;">
+                                <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 5px;">Client (PITA)</div>
+                                <input type="range" id="scoper-pita-client" min="1" max="5" value="1" oninput="Scoper.calculate()" style="grid-column: span 2; width: 100%;">
                             </div>
                          </div>
+
 
                          <div style="margin-bottom: 1.5rem;">
                             <label style="font-size: 0.8rem; font-weight: 700; color: white; display: block; margin-bottom: 0.5rem;">Marge Sécurité (%)</label>
@@ -981,12 +978,12 @@ const Scoper = {
         const complexity = parseInt(document.getElementById('scoper-pita-complexity')?.value) || 1;
         const client = parseInt(document.getElementById('scoper-pita-client')?.value) || 1;
 
-        const pitaMultiplier = PricingEngine.getPitaIncentive(urgency, complexity, client);
-        const impactPercent = Math.round((pitaMultiplier - 1) * 100);
+        const pitaResult = PricingEngine.getPitaIncentive(urgency, complexity, client);
+        const impactPercent = pitaResult.percent;
         const pitaDisplay = document.getElementById('pita-multiplier-display');
-        if (pitaDisplay) pitaDisplay.textContent = i18n.t('scoper.pita.impact', { percent: impactPercent }) || `Impact: +${impactPercent}% `;
+        if (pitaDisplay) pitaDisplay.textContent = i18n.t('scoper.pita.impact', { percent: impactPercent }) || `Impact: +${impactPercent}%`;
 
-        const finalTJM = tjm * pitaMultiplier;
+        const finalTJM = tjm * pitaResult.multiplier;
 
         let totalHoursInternal = 0;
         let totalCalculatedHT = 0;
