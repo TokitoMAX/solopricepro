@@ -1729,7 +1729,68 @@ const Scoper = {
         if (hiddenInput) hiddenInput.value = totalValue;
     },
 
-    draftActionWithAI(actionType) {
+    startAgentProcess(actionType, checkId) {
+        const thinkingArea = document.getElementById('agent-thinking-area');
+        const formBody = document.getElementById('modal-form-body');
+        const actionArea = document.getElementById('modal-actions');
+
+        const steps = [
+            { text: "Accès à la base de connaissances sectorielles...", delay: 1000 },
+            { text: "Analyse du profil prospect (" + (this.currentProspectLevel || 'manager') + ")...", delay: 1200 },
+            { text: "Calcul de la congruence stratégique...", delay: 800 },
+            { text: "Rédaction de la proposition optimale...", delay: 1500 }
+        ];
+
+        let currentStep = 0;
+
+        const executeStep = () => {
+            if (currentStep < steps.length) {
+                const step = steps[currentStep];
+                const div = document.createElement('div');
+                div.className = 'agent-step';
+                div.style.fontSize = '0.85rem';
+                div.style.color = currentStep === steps.length - 1 ? 'var(--primary)' : '#94a3b8';
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.gap = '0.8rem';
+                div.innerHTML = `<i class="fas ${currentStep === steps.length - 1 ? 'fa-check-circle' : 'fa-circle-notch fa-spin'}"></i> ${step.text}`;
+
+                // Mark previous step as done
+                const lastStep = thinkingArea.lastElementChild;
+                if (lastStep) {
+                    lastStep.querySelector('i').className = 'fas fa-check-circle';
+                    lastStep.style.color = '#64748b';
+                }
+
+                thinkingArea.appendChild(div);
+
+                setTimeout(() => {
+                    currentStep++;
+                    executeStep();
+                }, step.delay);
+            } else {
+                // Finalize process
+                this.draftActionWithAI(actionType, true);
+                formBody.style.opacity = "1";
+                formBody.style.pointerEvents = "all";
+                actionArea.style.opacity = "1";
+                actionArea.style.pointerEvents = "all";
+
+                const finalStep = document.createElement('div');
+                finalStep.className = 'agent-step';
+                finalStep.style.fontSize = '0.85rem';
+                finalStep.style.color = '#10b981';
+                finalStep.style.fontWeight = '800';
+                finalStep.style.marginTop = '0.5rem';
+                finalStep.innerHTML = `<i class="fas fa-magic"></i> Analyse terminée. Proposition prête pour revue.`;
+                thinkingArea.appendChild(finalStep);
+            }
+        };
+
+        executeStep();
+    },
+
+    draftActionWithAI(actionType, silent = false) {
         const data = Storage.get('sp_calculator_data') || {};
         const results = PricingEngine.calculateObjective(data);
         const fullContext = {
@@ -1753,7 +1814,6 @@ const Scoper = {
             case 'modal_pricing':
                 const reserve = Math.round(fullContext.dailyRate * 0.85);
                 if (valInput) valInput.value = reserve;
-                App.showNotification(`Agent IA : Suggestion à 85% de l'objectif.`);
                 break;
             case 'modal_pains':
                 const tactics = PricingEngine.getAdvancedSalesTactics(0, {}, data.sector, data.target, fullContext.dailyRate, fullContext.clientSector, 'manager', this.tasks);
@@ -1761,33 +1821,28 @@ const Scoper = {
                 if (textInput) textInput.value = draft;
                 break;
             case 'modal_roi':
-                const argument = PricingEngine.generateROIDetailedArgument(fullContext, 1000, 15000);
+                const argument = PricingEngine.generateROIDetailedArgument(fullContext, 1500, 25000);
                 if (textInput) textInput.value = argument;
                 const lossInput = document.getElementById('roi-loss');
                 const gainInput = document.getElementById('roi-gain');
                 if (lossInput) lossInput.value = 1500;
-                if (gainInput) gainInput.value = 20000;
+                if (gainInput) gainInput.value = 25000;
                 this.updateROIMiniCalc();
                 break;
             case 'modal_anchoring':
-                draft = `Ancrage suggéré :\n- Option Elite (Domination) : ${scenarios.elite.tjm}€ / j\n- Option Confort (Croissance) : ${scenarios.security.tjm}€ / j\n\nLogique : Présenter l'Elite comme le standard de qualité pour rendre l'option Sécurité indispensable.`;
-                if (textInput) textInput.value = draft;
-                break;
-            case 'modal_objections':
-                draft = "Recadrage IA : 'Je comprends votre hésitation. Cependant, le coût de l'inaction sur la croissance de votre secteur est estimé à plus de 15% de CA annuel. Voulez-vous vraiment risquer cela ?'";
+                draft = `Ancrage suggéré :\n- Option Elite : ${Math.round(fullContext.dailyRate * 1.5)}€/j\n- Option Confort : ${fullContext.dailyRate}€/j\n\nLogique : Créer un contraste de valeur.`;
                 if (textInput) textInput.value = draft;
                 break;
             case 'modal_terms':
                 if (document.getElementById('term-1')) document.getElementById('term-1').checked = true;
                 if (document.getElementById('term-2')) document.getElementById('term-2').checked = true;
-                App.showNotification("Agent IA : Conditions standard activées pour sécuriser votre projet.");
                 break;
             default:
-                draft = "Agent IA : Proposition de base générée. Prêt pour validation.";
+                draft = "Analyse terminée. Stratégie validée.";
                 if (textInput) textInput.value = draft;
         }
 
-        App.showNotification("L'Agent IA a généré une base. Éditez-la avant de valider.", "info");
+        if (!silent) App.showNotification("Draft IA généré.", "info");
     },
 
     updateSalesPhase(phase) {
