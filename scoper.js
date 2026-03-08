@@ -1783,27 +1783,22 @@ const Scoper = {
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div class="agent-pulse-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid var(--primary-glass);">
-                            <i class="fas fa-terminal"></i>
+                            <i class="fas fa-lightbulb"></i>
                         </div>
                         <div>
-                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">Support de Pilotage v1.0.4</div>
+                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">Guide Stratégique</div>
                             <h2 style="font-size: 1.3rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${title}</h2>
                         </div>
                     </div>
                 </div>
 
-                <!-- Zone d'Analyse -->
-                <div id="support-analysis-area" style="margin-bottom: 2.5rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 12px; padding: 1.5rem; text-align: center;">
-                    <div style="font-size: 0.9rem; color: #10b981; font-weight: 800;">
-                        <i class="fas fa-circle-notch fa-spin" style="margin-right: 10px;"></i> ANALYSE DU FLUX EN COURS...
-                    </div>
-                </div>
+
                 
-                <!-- Zone de Formulaire (masquée au début) -->
-                <div id="modal-form-body" style="opacity: 0.1; pointer-events: none; transform: translateY(10px); transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);">${modalContent}</div>
+                <!-- Zone de Formulaire -->
+                <div id="modal-form-body" style="opacity: 1; transform: translateY(0); transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);">${modalContent}</div>
 
                 <!-- Actions de Support -->
-                <div id="modal-actions" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;">
+                <div id="modal-actions" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; opacity: 1; transition: opacity 0.5s ease;">
                     <div style="display: flex; gap: 1rem;">
                         <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700; height: 50px;" onclick="document.getElementById('closing-action-modal').remove()">Abandonner</button>
                         <button class="button-primary" style="flex: 1.8; border-radius: 12px; font-weight: 900; background: var(--primary); color: white; border: none; cursor: pointer; height: 50px; display: flex; align-items: center; justify-content: center; gap: 0.8rem; box-shadow: 0 10px 20px var(--primary-glass);" onclick="Scoper.saveClosingAction('${checkId}')">
@@ -1825,8 +1820,8 @@ const Scoper = {
 
         document.body.appendChild(modal);
 
-        // Auto-run Support analysis
-        setTimeout(() => this.runSupportAnalysis(actionType, checkId), 800);
+        // Instant trigger of Support logic (silent/background)
+        this.runSupportAnalysis(actionType, checkId);
     },
 
     saveClosingAction(checkId) {
@@ -1863,17 +1858,10 @@ const Scoper = {
     },
 
     runSupportAnalysis(actionType, checkId) {
-        const analysisArea = document.getElementById('support-analysis-area');
-        const formBody = document.getElementById('modal-form-body');
-        const actionArea = document.getElementById('modal-actions');
-
+        // Silent background data injection if needed
         this.SupportSystem.run(actionType, () => { }, () => {
-            if (analysisArea) {
-                analysisArea.innerHTML = '<div style="color: #10b981; font-weight: 800;"><i class="fas fa-check-circle"></i> ANALYSE TERMINÉE : CONSEILS DISPONIBLES</div>';
-            }
+            // Background draft generation
             this.draftActionWithAI(actionType, true);
-            if (formBody) { formBody.style.opacity = "1"; formBody.style.pointerEvents = "all"; formBody.style.transform = "translateY(0)"; }
-            if (actionArea) { actionArea.style.opacity = "1"; actionArea.style.pointerEvents = "all"; }
         });
     },
 
