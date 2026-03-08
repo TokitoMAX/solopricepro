@@ -1533,7 +1533,22 @@ const Scoper = {
                     </div>
                 `;
                 break;
+            case 'modal_framing':
+                title = "Script d'Ouverture (Framing)";
+                const opening = `Il semble que votre enjeu majeur soit ${PricingEngine.clientSectorPainPoints[data.clientSector || 'tech']?.risk || 'la performance'}. L'objectif aujourd'hui est de voir si mon approche peut sécuriser ce point précisément.`;
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Le cadrage définit qui mène l'entretien. Utilisez ce script pour démarrer :</p>
+                        <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--primary-glass); border-radius: 12px; padding: 1.5rem; color: white; font-style: italic; line-height: 1.6; margin-bottom: 1.5rem; position: relative;">
+                            ${opening}
+                            <button onclick="navigator.clipboard.writeText('${opening.replace(/'/g, "\\'")}'); App.showNotification('Script copié !')" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: var(--primary); cursor: pointer;"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #64748b;">Note : Le script s'adapte automatiquement au secteur de votre client.</p>
+                    </div>
+                `;
+                break;
             case 'modal_pricing':
+            case 'modal_reserve':
                 title = "Définition du Prix de Réserve";
                 modalContent = `
                     <div style="margin-bottom: 1.5rem;">
@@ -1554,6 +1569,94 @@ const Scoper = {
                         <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Identifiez les 'Deep Pains' : stress, perte de temps, pression hiérarchique.</p>
                         <label style="display: block; font-size: 0.75rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Douleur principale identifiée :</label>
                         <textarea id="action-input-text" placeholder="Ex: Risque son poste si le projet prend du retard, Perte de 50k€/mois..." style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; height: 100px; font-family: inherit; font-size: 0.9rem; outline: none;"></textarea>
+                    </div>
+                `;
+                break;
+            case 'modal_budget':
+                title = "Validation du Budget Client";
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Ne donnez jamais votre prix avant de connaître le leur (ou leur capacité).</p>
+                        <div style="padding: 1rem; background: rgba(255,165,0,0.1); border-radius: 10px; border-left: 4px solid orange; margin-bottom: 1.5rem; font-size: 0.85rem; color: #e2e8f0;">
+                            "Avez-vous déjà alloué une enveloppe budgétaire pour résoudre ce problème ?"
+                        </div>
+                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Budget estimé ou validé :</label>
+                        <input type="number" id="action-input-val" placeholder="En € TTC" style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; font-size: 1.2rem; font-weight: 700; outline: none;">
+                    </div>
+                `;
+                break;
+            case 'modal_roi':
+                title = "Calculateur ROI Impact";
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Chiffrez le gain pour justifier l'investissement.</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Perte actuelle / mois</label>
+                                <input type="number" id="roi-loss" class="form-input" value="1000" oninput="Scoper.updateROIMiniCalc()">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Gain espéré / an</label>
+                                <input type="number" id="roi-gain" class="form-input" value="12000" oninput="Scoper.updateROIMiniCalc()">
+                            </div>
+                        </div>
+                        <div style="background: var(--primary-glass); padding: 1rem; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.7rem; color: white; opacity: 0.8;">VALEUR CRÉÉE (12 mois)</div>
+                            <div id="roi-result" style="font-size: 1.8rem; font-weight: 900; color: white;">24 000€</div>
+                        </div>
+                        <input type="hidden" id="action-input-val">
+                    </div>
+                `;
+                setTimeout(() => this.updateROIMiniCalc(), 200);
+                break;
+            case 'modal_anchoring':
+                title = "Comparateur d'Ancrage visuel";
+                const scenarios = PricingEngine.getScenarios(PricingEngine.calculateObjective(data));
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Présentez l'option Elite en premier pour ancrer le prix haut.</p>
+                        <div style="display: flex; gap: 1rem;">
+                            <div style="flex: 1; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; text-align: center; opacity: 0.6;">
+                                <div style="font-size: 0.6rem; color: #64748b;">OPTION SÉCURITÉ</div>
+                                <div style="font-size: 1.2rem; font-weight: 800; color: white;">${scenarios.security.tjm}€ / j</div>
+                            </div>
+                            <div style="flex: 1; padding: 1rem; background: var(--primary-glass); border: 2px solid var(--primary); border-radius: 12px; text-align: center;">
+                                <div style="font-size: 0.6rem; color: white;">OPTION ELITE (ANCRE)</div>
+                                <div style="font-size: 1.2rem; font-weight: 800; color: white;">${scenarios.elite.tjm}€ / j</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1.5rem; font-style: italic;">"L'option Elite assure une domination totale, la Sécurité est votre base de croissance saine."</p>
+                    </div>
+                `;
+                break;
+            case 'modal_objections':
+                title = "Guide Anti-Objections";
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1rem;">Face à "C'est trop cher" :</p>
+                        <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                            <div style="font-size: 0.75rem; color: var(--primary); font-weight: 800; margin-bottom: 0.5rem;">VOTRE CONTRE-ATTAQUE :</div>
+                            <div style="color: white; font-size: 0.9rem; line-height: 1.5;">"Je comprends. Si on ne fait rien, quel sera le coût de [Risque Secteur] pour vous dans 6 mois ?"</div>
+                        </div>
+                        <button onclick="Scoper.generateAIContent('objections')" class="button-secondary mini" style="width: 100%;">Générer plus de réponses IA</button>
+                    </div>
+                `;
+                break;
+            case 'modal_terms':
+                title = "Validation des Conditions";
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <label class="check-list-item">
+                                <input type="checkbox" id="term-1"> <span style="color: white;">Acompte de 30% ou 50% validé</span>
+                            </label>
+                            <label class="check-list-item">
+                                <input type="checkbox" id="term-2"> <span style="color: white;">Dates de livraison bloquées</span>
+                            </label>
+                            <label class="check-list-item">
+                                <input type="checkbox" id="term-3"> <span style="color: white;">Périmètre (Scope) figé</span>
+                            </label>
+                        </div>
                     </div>
                 `;
                 break;
@@ -1607,6 +1710,17 @@ const Scoper = {
         // Refresh UI & Phase Unlock
         App.navigateTo('scoper', 'closing');
         App.showNotification("Action validée avec succès !", "success");
+    },
+
+    updateROIMiniCalc() {
+        const loss = parseFloat(document.getElementById('roi-loss')?.value) || 0;
+        const gain = parseFloat(document.getElementById('roi-gain')?.value) || 0;
+        const resultEl = document.getElementById('roi-result');
+        const hiddenInput = document.getElementById('action-input-val');
+
+        const totalValue = (loss * 12) + gain;
+        if (resultEl) resultEl.innerText = App.formatCurrency(totalValue);
+        if (hiddenInput) hiddenInput.value = totalValue;
     },
 
     /**
