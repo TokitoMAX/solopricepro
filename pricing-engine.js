@@ -380,21 +380,21 @@ const PricingEngine = {
     prospectLevelLogic: {
         ceo: {
             label: "Exécutif / CEO",
-            hook: "votre vision stratégique et la croissance de votre structure",
-            vocabulary: ["levier de croissance", "impact sur le CA", "vision long-terme", "avantage concurrentiel"],
-            style: "Direct, axé résultats et ROI global."
+            hook: "votre vision stratégique, votre croissance et votre avantage concurrentiel",
+            vocabulary: ["levier de croissance", "impact sur l'EBITDA", "vision long-terme", "domination du marché", "ROI stratégique"],
+            style: "Direct, axé sur les résultats macro et la valeur business globale."
         },
         manager: {
             label: "Stratégique / Manager",
-            hook: "l'optimisation de vos process et la performance de votre équipe",
-            vocabulary: ["efficacité", "fluidité", "gestion des risques", "atteinte des objectifs"],
-            style: "Professionnel, axé process et fiabilité opérationnelle."
+            hook: "l'optimisation de vos processus, la fiabilité technique et la performance d'équipe",
+            vocabulary: ["efficacité opérationnelle", "gestion des risques", "fiabilité", "livraison continue", "KPIs de performance"],
+            style: "Professionnel, axé sur la fiabilité, les process et le respect des objectifs."
         },
         operating: {
             label: "Opérationnel",
-            hook: "votre quotidien et la résolution de vos points de douleur techniques",
-            vocabulary: ["gain de temps", "simplicité", "fiabilité technique", "réduction du stress"],
-            style: "Pragmatique, axé sur l'usage et la résolution de problèmes immédiats."
+            hook: "votre quotidien, votre sérénité et la résolution de vos points de douleur immédiats",
+            vocabulary: ["gain de temps", "simplicité", "fiabilité technique", "réduction du stress", "livrables impeccables"],
+            style: "Pragmatique, axé sur l'usage, la rapidité et la résolution de problèmes réels."
         }
     },
 
@@ -410,29 +410,29 @@ const PricingEngine = {
                 beginner: {
                     title: "Le Socle de Confiance",
                     tips: [
-                        "Relisez votre étude de cas la plus proche pour gonfler votre certitude.",
-                        "Identifiez les 3 bénéfices majeurs que vous apportez au secteur choisi.",
-                        "Préparez une réponse claire à : 'Pourquoi vous et pas un autre ?'"
+                        "Démontrez votre certitude : relisez vos succès passés avant l'appel.",
+                        "Identifiez la valeur métier (Business Value) spécifique à ce client.",
+                        "Soyez prêt à expliquer votre 'Pourquoi' en moins de 30 secondes."
                     ],
-                    checklist: ["Portfolio à jour", "Calculateur SoloPrice ouvert", "Sourire au téléphone"]
+                    checklist: ["Portfolio sectoriel prêt", "SoloPrice Pro configuré", "Mindset de Consultant"]
                 },
                 intermediate: {
-                    title: "Le Pré-Framing Stratégique",
+                    title: "Le Cadrage Stratégique",
                     tips: [
-                        "Analysez le profil LinkedIn du prospect : quels sont ses succès récents ?",
-                        "Définissez votre 'Walk-Away Point' (le prix en dessous duquel vous dites non).",
-                        "Préparez 2 'Labels' (ex: Il semble que la sécurité soit votre priorité n°1)."
+                        "Analysez le profil du prospect : quels sont ses enjeux actuels ?",
+                        "Définissez votre 'Prix de Réserve' (ne descendez JAMAIS en dessous).",
+                        "Préparez vos 'Labels' (ex: Il semble que le délai soit votre risque n°1)."
                     ],
-                    checklist: ["Recherche prospect approfondie", "Backup technique prêt", "Notes de cadrage"]
+                    checklist: ["Étude du prospect finie", "Arguments de différenciation", "Plan de cadrage"]
                 },
                 expert: {
-                    title: "L'État de Flow & Autorité",
+                    title: "L'Autorité d'Élite",
                     tips: [
-                        "Détachement total du résultat : vous êtes là pour aider, pas pour vendre.",
-                        "Préparez votre 'Ancrage Elite' (le Pack 3x plus cher) pour l'effet de contraste.",
-                        "Anticipez le 'Non' : comment allez-vous l'utiliser comme levier de vérité ?"
+                        "Détachement total : vous n'avez pas besoin de ce contrat, vous voulez l'aider.",
+                        "Préparez l'Ancrage de Puissance (une option 3-5x plus chère).",
+                        "Mindset 'Challenger' : préparez-vous à dire non si l'alignement n'est pas là."
                     ],
-                    checklist: ["Mindset de détachement", "Contraste Elite prêt", "Tactiques d'empathie tactique"]
+                    checklist: ["Mindset de détachement", "Contraste Elite prêt", "Tactiques d'Empathie Tactique"]
                 }
             }
         },

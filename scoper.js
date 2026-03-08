@@ -16,6 +16,7 @@ const Scoper = {
         const container = document.getElementById('scoper-content');
         if (!container) return;
 
+        this.activeTab = tab;
         const isPro = Storage.isPro();
         if (!this.currentObjectiveStep) this.currentObjectiveStep = Storage.get('sp_scoper_current_step') || 1;
 
@@ -193,7 +194,7 @@ const Scoper = {
 
                 <div class="wizard-card">
                     <div id="step-save-indicator" style="position: absolute; top: 2rem; right: 3rem; font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; pointer-events: none;">
-                        <i class="fas fa-shield-check"></i> Securing Data
+                        <i class="fas fa-shield-check"></i> Sauvegarde en cours
                     </div>
                     
                     <div id="step-form-container">
@@ -251,7 +252,7 @@ const Scoper = {
                     </div>
 
                     <div style="margin-top: 4rem;">
-                        <h3 style="font-size: 0.8rem; font-weight: 950; text-transform: uppercase; letter-spacing: 2px; color: #4b5563; text-align: center; margin-bottom: 1.5rem;">Client Type</h3>
+                        <h3 style="font-size: 0.8rem; font-weight: 950; text-transform: uppercase; letter-spacing: 2px; color: #4b5563; text-align: center; margin-bottom: 1.5rem;">Profil du Client</h3>
                         <div class="target-grid">
                             ${[
                         { id: 'tpe', label: 'TPE / Freelance', icon: 'fa-user' },
@@ -485,7 +486,7 @@ const Scoper = {
         const data = Storage.get('sp_calculator_data') || {};
         data.clientSector = sector;
         Storage.set('sp_calculator_data', data);
-        this.renderClosingTab();
+        if (this.activeTab === 'closing') this.renderClosingTab();
     },
 
     updateProspectLevel(level) {
@@ -493,7 +494,8 @@ const Scoper = {
         const data = Storage.get('sp_calculator_data') || {};
         data.prospectLevel = level;
         Storage.set('sp_calculator_data', data);
-        this.renderClosingTab();
+        if (this.activeTab === 'closing') this.renderClosingTab();
+        else this.autoSaveObjective();
     },
 
     updateArsenalLevel(level) {
@@ -501,7 +503,7 @@ const Scoper = {
         const data = Storage.get('sp_calculator_data') || {};
         data.arsenalLevel = level;
         Storage.set('sp_calculator_data', data);
-        this.renderClosingTab();
+        if (this.activeTab === 'closing') this.renderClosingTab();
     },
 
     updateSalesPhase(phase) {
@@ -509,7 +511,7 @@ const Scoper = {
         const data = Storage.get('sp_calculator_data') || {};
         data.salesPhase = phase;
         Storage.set('sp_calculator_data', data);
-        this.renderClosingTab();
+        if (this.activeTab === 'closing') this.renderClosingTab();
     },
 
     checkStepCompletion() {
