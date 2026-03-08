@@ -46,7 +46,7 @@ const Scoper = {
 
             // 2. EXÉCUTION DES ÉTAPES
             for (const step of plan) {
-                onLog(`[${step.type}] ${step.content}`);
+                onLog(`[${step.type}] ${step.content || step.tool}`);
                 await new Promise(r => setTimeout(r, 1000));
 
                 if (step.type === "ACTION" && this.tools[step.tool]) {
@@ -74,19 +74,19 @@ const Scoper = {
             // Logique de planification simulant un agent autonome décidant de ses étapes
             const basePlan = [
                 { type: "THOUGHT", content: "Initialisation du contexte à partir de la mémoire à long terme." },
-                { type: "ACTION", tool: "scan_project_context" }
+                { type: "ACTION", tool: "scan_project_context", content: "Collecte des métadonnées du projet..." }
             ];
 
             if (actionType === 'modal_roi') {
                 basePlan.push(
                     { type: "THOUGHT", content: "Extraction des leviers de valeur pour " + (data.target || 'PME') + "." },
-                    { type: "ACTION", tool: "check_roi_viability" },
+                    { type: "ACTION", tool: "check_roi_viability", content: "Calcul de corrélation Valeur/TJM..." },
                     { type: "CRITIQUE", content: "Vérification : L'argumentaire est-il assez agressif ?", adjustment: "Augmentation du poids des pertes d'inaction de 15%." }
                 );
             } else if (actionType === 'modal_objections') {
                 basePlan.push(
                     { type: "THOUGHT", content: "Anticipation des barrières psychologiques." },
-                    { type: "ACTION", tool: "analyze_objections" },
+                    { type: "ACTION", tool: "analyze_objections", content: "Scan des motifs de refus standard..." },
                     { type: "CRITIQUE", content: "Vérification de la tonalité experte.", adjustment: "Utilisation d'un vocabulaire plus orienté 'Résultats' que 'Coûts'." }
                 );
             } else {
@@ -1803,7 +1803,9 @@ const Scoper = {
 
                 <style>
                     @keyframes terminalLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+                    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
                     .agent-log-line { animation: terminalLine 0.2s ease-out forwards; }
+                    .agent-log-line:last-child::after { content: '_'; animation: blink 1s step-end infinite; margin-left: 4px; color: var(--primary); }
                     .agent-pulse-icon { animation: pulseIcon 2s infinite; }
                     @keyframes pulseIcon { 0% { border-color: var(--primary-glass); } 50% { border-color: var(--primary); } 100% { border-color: var(--primary-glass); } }
                 </style>
