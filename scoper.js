@@ -423,7 +423,7 @@ const Scoper = {
     goToObjectiveStep(step) {
         this.currentObjectiveStep = step;
         Storage.set('sp_scoper_current_step', step);
-        this.render('objective');
+        App.navigateTo('scoper', 'objective');
     },
 
     nextObjectiveStep() {
@@ -455,7 +455,7 @@ const Scoper = {
         if (this.currentObjectiveStep < 6) {
             this.currentObjectiveStep++;
             Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
-            this.render('objective');
+            App.navigateTo('scoper', 'objective');
         }
     },
 
@@ -463,7 +463,7 @@ const Scoper = {
         if (this.currentObjectiveStep > 1) {
             this.currentObjectiveStep--;
             Storage.set('sp_scoper_current_step', this.currentObjectiveStep);
-            this.render('objective');
+            App.navigateTo('scoper', 'objective');
         }
     },
 
@@ -1608,7 +1608,7 @@ const Scoper = {
         if (modal) modal.remove();
 
         // Refresh UI & Phase Unlock
-        this.renderClosingTab();
+        App.navigateTo('scoper', 'closing');
         App.showNotification("Action validée avec succès !", "success");
     },
 
@@ -1796,18 +1796,12 @@ const Scoper = {
         this.tasks = [];
 
         Storage.set('sp_scoper_current_step', 1);
-        Storage.set('sp_calculator_data', defaultData);
-
+        this.currentObjectiveStep = 1;
+        this.activeTab = 'objective'; // New line from instruction
         // Nettoyage complet du journal également
         Storage.set('sp_journal', { mood: 'focus', energy: 7, entries: [], daily_focus: '', reflection: '', habits: {} });
 
-        try {
-            await Storage.saveCalculatorData(defaultData);
-        } catch (e) {
-            console.warn('[SCOPER] Reset sync warning:', e);
-        }
-
-        this.render('objective');
+        App.navigateTo('scoper', 'objective'); // Replaced this.render('objective')
         App.showNotification(i18n.t('scoper.reset_success') || 'Stratégie et Journal réinitialisés.', 'info');
     },
 
