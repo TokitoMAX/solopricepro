@@ -276,21 +276,6 @@ const Scoper = {
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 2rem; max-width: 600px; margin: 0 auto;">
                         <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Niveau de l'Interlocuteur</label>
-                            <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.02); padding: 5px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                ${Object.entries(PricingEngine.prospectLevelLogic).map(([id, logic]) => `
-                                    <button class="level-pill ${data.prospectLevel === id ? 'active' : ''}" 
-                                            onclick="document.querySelectorAll('.level-pill').forEach(b => b.classList.remove('active')); this.classList.add('active'); Scoper.updateProspectLevel('${id}')"
-                                            style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: #64748b; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.3s;">
-                                        ${logic.label.split(' / ')[0]}
-                                    </button>
-                                `).join('')}
-                                <style>
-                                    .level-pill.active { background: #1e1e1e; color: white; border-color: rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-                                </style>
-                            </div>
-                        </div>
-                        <div>
                             <label style="display: block; font-size: 0.7rem; font-weight: 950; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Cible Spécifique (ex: CEOs de SaaS logistique, DRH...)</label>
                             <input type="text" id="specificTarget" class="form-input-premium" style="font-size: 1.5rem; text-align: left; padding: 0.5rem 0; letter-spacing: 0; font-weight: 700;" value="${data.specificTarget || ''}" placeholder="Cible que vous visez..." oninput="Scoper.autoSaveObjective()">
                         </div>
@@ -513,7 +498,29 @@ const Scoper = {
         Storage.set('sp_calculator_data', data);
         if (this.activeTab === 'closing') this.renderClosingTab();
     },
+    updateClientSector(sector) {
+        this.currentClientSector = sector;
+        const data = Storage.get('sp_calculator_data') || {};
+        data.clientSector = sector;
+        Storage.set('sp_calculator_data', data);
+        if (this.activeTab === 'closing') this.renderClosingTab();
+    },
 
+    updateArsenalLevel(level) {
+        this.currentArsenalLevel = level;
+        const data = Storage.get('sp_calculator_data') || {};
+        data.arsenalLevel = level;
+        Storage.set('sp_calculator_data', data);
+        if (this.activeTab === 'closing') this.renderClosingTab();
+    },
+
+    updateSalesPhase(phase) {
+        this.currentSalesPhase = phase;
+        const data = Storage.get('sp_calculator_data') || {};
+        data.salesPhase = phase;
+        Storage.set('sp_calculator_data', data);
+        if (this.activeTab === 'closing') this.renderClosingTab();
+    },
 
 
     autoSaveObjective() {
@@ -1466,6 +1473,35 @@ const Scoper = {
                 </div>
             </div>
         `;
+
+        // Logic check after render
+        setTimeout(() => this.checkPhaseUnlock(), 100);
+    },
+
+    toggleClosingAction(id) {
+        const cb = document.getElementById(id);
+        if (cb) {
+            localStorage.setItem(`sp_closing_${id}`, cb.checked);
+            const label = cb.nextElementSibling;
+            if (label) {
+                label.style.textDecoration = cb.checked ? 'line-through' : 'none';
+                label.style.opacity = cb.checked ? '0.5' : '1';
+            }
+        }
+        this.checkPhaseUnlock();
+    },
+
+    checkPhaseUnlock() {
+        const checkboxes = document.querySelectorAll('.action-check-list input[type="checkbox"]');
+        const nextBtn = document.getElementById('next-phase-btn');
+        if (!nextBtn) return;
+
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        nextBtn.disabled = !allChecked;
+        nextBtn.style.opacity = allChecked ? '1' : '0.5';
+        nextBtn.innerHTML = allChecked ?
+            (this.currentSalesPhase === 'closing' ? 'Finaliser le Devis <i class="fas fa-arrow-right"></i>' : 'Passer à la Phase Suivante <i class="fas fa-chevron-right"></i>') :
+            'Action Requis pour Continuer';
     },
 
     /**
