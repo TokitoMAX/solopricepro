@@ -12,9 +12,12 @@ const Scoper = {
     currentSalesPhase: 'preparation',
     currentObjectiveStep: 1,
 
-    render(tab = 'objective') {
+    render(tab) {
         const container = document.getElementById('scoper-content');
         if (!container) return;
+
+        // Fallback progressif : argument > activeTab (mémoire) > localStorage > 'objective'
+        if (!tab) tab = this.activeTab || localStorage.getItem('sp_last_tab_scoper') || 'objective';
 
         this.activeTab = tab;
         const isPro = Storage.isPro();
@@ -400,7 +403,7 @@ const Scoper = {
                                 `).join('')}
                             </div>
 
-                            <div onclick="Scoper.render('project')" style="margin-top: 1rem; cursor: pointer; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 20px; padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+                            <div onclick="App.navigateTo('scoper', 'project')" style="margin-top: 1rem; cursor: pointer; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 20px; padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
                                 <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #10b981;">
                                     <i class="fas fa-rocket"></i>
                                 </div>
@@ -806,7 +809,7 @@ const Scoper = {
                     </p>
                     
                     <div style="display: flex; gap: 1rem; justify-content: center;">
-                        <button class="button-primary" onclick="Scoper.render('project')" style="padding: 1rem 2rem; font-size: 1rem;">
+                        <button class="button-primary" onclick="App.navigateTo('scoper', 'project')" style="padding: 1rem 2rem; font-size: 1rem;">
                             <i class="fas fa-calculator" style="margin-right: 10px;"></i> ${i18n.t('scoper.tab.project')} (Pack PRO)
                         </button>
                         <button class="button-outline" onclick="App.navigateTo('dashboard')" style="padding: 1rem 2rem;">
@@ -1811,7 +1814,7 @@ const Scoper = {
     saveObjective() {
         this.autoSaveObjective();
         App.showNotification(i18n.t('notify.saved_success') || "Objectif stratégique enregistré !", "success");
-        setTimeout(() => this.render('closing'), 1000);
+        setTimeout(() => App.navigateTo('scoper', 'closing'), 1000);
     },
 
     /**

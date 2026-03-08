@@ -209,8 +209,15 @@ const App = {
             this.currentPage = page;
             localStorage.setItem('sp_last_page', page);
 
-            // Determiner l'onglet (priorité: argument > localStorage)
-            let tab = (args.length > 0 && args[0]) ? args[0] : localStorage.getItem(`sp_last_tab_${page}`);
+            // Determiner l'onglet (priorité: argument > localStorage > default)
+            const defaultTabs = {
+                'scoper': 'objective',
+                'network': 'clients',
+                'quotes': 'quotes',
+                'settings': 'billing',
+                'marketplace': 'browse'
+            };
+            let tab = (args.length > 0 && args[0]) ? args[0] : (localStorage.getItem(`sp_last_tab_${page}`) || defaultTabs[page]);
 
             // Update URL Hash without triggering hashchange
             this.updatingHashManually = true;
@@ -305,7 +312,7 @@ const App = {
         }
         if (page === 'expenses' && typeof Expenses !== 'undefined') Expenses.render();
         if (page === 'kanban' && typeof Kanban !== 'undefined') Kanban.render();
-        if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render(args[0] || 'objective');
+        if (page === 'scoper' && typeof Scoper !== 'undefined') Scoper.render(args[0]);
         if (page === 'profile' && typeof Profile !== 'undefined') Profile.render();
         if (page === 'settings' && typeof Settings !== 'undefined') Settings.render();
         if (page === 'services' && typeof Services !== 'undefined') {

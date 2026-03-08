@@ -10,10 +10,14 @@ const Quotes = {
     },
 
 
-    render(containerId = 'quotes-content', tabId = 'quotes') {
+    render(containerId = 'quotes-content', tabId) {
         this.lastContainerId = containerId;
         const container = document.getElementById(containerId);
         if (!container) return;
+
+        // Fallback intelligent
+        if (!tabId) tabId = this.activeTab || localStorage.getItem('sp_last_tab_quotes') || 'quotes';
+        this.activeTab = tabId;
 
         const quotes = Storage.getQuotes();
         const limits = App.checkFreemiumLimits();

@@ -50,9 +50,13 @@ const Network = {
         this.render();
     },
 
-    render(tabId = 'clients') {
+    render(tabId) {
         const container = document.getElementById('network-content');
         if (!container) return;
+
+        // Fallback intelligent
+        if (!tabId) tabId = this.activeTab || localStorage.getItem('sp_last_tab_network') || 'clients';
+        this.activeTab = tabId;
 
         const isAdmin = this.isAdmin();
 
