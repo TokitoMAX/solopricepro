@@ -425,7 +425,11 @@ const PricingEngine = {
                         "Définissez votre 'Prix de Réserve' (ne descendez JAMAIS en dessous).",
                         "Préparez vos 'Labels' (ex: Il semble que le délai soit votre risque n°1)."
                     ],
-                    checklist: ["Étude du prospect finie", "Arguments de différenciation", "Plan de cadrage"]
+                    checklist: [
+                        { id: 'prep_profile', label: "Étude du prospect finie", action: 'modal_research', icon: 'fa-search' },
+                        { id: 'prep_reserve', label: "Prix de réserve défini", action: 'modal_pricing', icon: 'fa-hand-holding-usd' },
+                        { id: 'prep_labels', label: "Plan de cadrage prêt", action: 'modal_framing', icon: 'fa-clipboard-list' }
+                    ]
                 },
                 expert: {
                     title: "L'Autorité d'Élite",
@@ -461,6 +465,11 @@ const PricingEngine = {
                         "Creusez avec le 'Pourquoi' (jusqu'à 3 fois).",
                         "Identifiez l'impact personnel du problème sur l'interlocuteur.",
                         "Cherchez la 'Deep Pain' : stress, perte de temps, pression hiérarchique."
+                    ],
+                    checklist: [
+                        { id: 'diag_pains', label: "Douleurs identifiées", action: 'modal_pains', icon: 'fa-heart-broken' },
+                        { id: 'diag_budget', label: "Budget validé", action: 'modal_budget', icon: 'fa-coins' },
+                        { id: 'diag_impact', label: "Impact ROI chiffré", action: 'modal_roi', icon: 'fa-chart-line' }
                     ],
                     questions: [
                         "Depuis combien de temps ce problème persiste-t-il ?",
@@ -503,6 +512,11 @@ const PricingEngine = {
                         "Créez une vision futuriste positive : 'Imaginez quand le système sera...'",
                         "Positionnez-vous comme l'unique pont vers son objectif."
                     ],
+                    checklist: [
+                        { id: 'align_solution', label: "Solution validée", action: 'modal_solution', icon: 'fa-check-circle' },
+                        { id: 'align_anchoring', label: "Ancrage prix effectué", action: 'modal_anchoring', icon: 'fa-anchor' },
+                        { id: 'align_agreement', label: "Accord de principe", action: 'modal_agreement', icon: 'fa-handshake' }
+                    ],
                     argument: "Investir aujourd'hui sécurise un gain réel sur l'année."
                 },
                 expert: {
@@ -535,6 +549,11 @@ const PricingEngine = {
                         "Utilisez le 'Summary Close' : récapitulez tous les bénéfices avant le prix.",
                         "Adressez les objections de front.",
                         "Obtenez un engagement ferme (Acompte)."
+                    ],
+                    checklist: [
+                        { id: 'close_objections', label: "Objections levées", action: 'modal_objections', icon: 'fa-shield-alt' },
+                        { id: 'close_terms', label: "Conditions validées", action: 'modal_terms', icon: 'fa-file-signature' },
+                        { id: 'close_kickoff', label: "Plan de démarrage prêt", action: 'modal_kickoff', icon: 'fa-rocket' }
                     ],
                     methods: ["Summary Close", "Benefit Close", "Objection Reframe"]
                 },

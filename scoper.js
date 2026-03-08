@@ -1433,17 +1433,28 @@ const Scoper = {
                     <div class="sidebar-panel">
                         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem;">
                             <h4 style="font-size: 0.7rem; font-weight: 950; color: #64748b; text-transform: uppercase; margin-bottom: 1.2rem;">Action Items de Phase</h4>
-                            <div class="action-check-list">
-                                ${((levelData.checklist && levelData.checklist.length > 0) ? levelData.checklist : levelData.tips.slice(0, 3)).map((item, i) => {
-                const checkId = `check-${this.currentSalesPhase}-${i}`;
+                            <div class="action-check-list" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                                ${((levelData.checklist && levelData.checklist.length > 0) ? levelData.checklist : []).map((item, i) => {
+                const checkId = item.id || `check-${this.currentSalesPhase}-${i}`;
                 const isChecked = localStorage.getItem(`sp_closing_${checkId}`) === 'true';
+                const actionIcon = item.icon || 'fa-bolt';
                 return `
-                                    <label class="check-list-item">
-                                        <input type="checkbox" id="${checkId}" 
-                                               ${isChecked ? 'checked' : ''} 
-                                               onchange="Scoper.toggleClosingAction('${checkId}')">
-                                        <span class="check-list-title" style="${isChecked ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${item.length > 40 ? item.slice(0, 37) + '...' : item}</span>
-                                    </label>
+                                    <div class="action-item-card" style="background: rgba(255,255,255,0.03); border: 1px solid ${isChecked ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; border-radius: 12px; padding: 1rem; transition: all 0.3s; position: relative; overflow: hidden;">
+                                        <div style="display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1;">
+                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: ${isChecked ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; color: ${isChecked ? 'white' : '#64748b'}; display: flex; align-items: center; justify-content: center; transition: all 0.3s;">
+                                                <i class="fas ${isChecked ? 'fa-check' : actionIcon}"></i>
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <div style="font-size: 0.85rem; font-weight: 700; color: ${isChecked ? 'white' : '#e2e8f0'}; margin-bottom: 2px;">${item.label}</div>
+                                                <div style="font-size: 0.7rem; color: #64748b;">${isChecked ? 'Action complétée' : 'Action requise pour valider'}</div>
+                                            </div>
+                                            <button onclick="Scoper.openClosingActionModal('${checkId}', '${item.action}')" 
+                                                    style="padding: 0.5rem 0.8rem; border-radius: 8px; background: ${isChecked ? 'rgba(255,255,255,0.05)' : 'var(--primary-glass)'}; border: 1px solid ${isChecked ? 'transparent' : 'var(--primary)'}; color: ${isChecked ? '#94a3b8' : 'white'}; font-size: 0.7rem; font-weight: 800; cursor: pointer; transition: all 0.3s;">
+                                                ${isChecked ? 'Modifier' : 'Exécuter'}
+                                            </button>
+                                        </div>
+                                        ${isChecked ? `<div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary);"></div>` : ''}
+                                    </div>
                                 `;
             }).join('')}
                             </div>
@@ -1479,29 +1490,127 @@ const Scoper = {
     },
 
     toggleClosingAction(id) {
-        const cb = document.getElementById(id);
-        if (cb) {
-            localStorage.setItem(`sp_closing_${id}`, cb.checked);
-            const label = cb.nextElementSibling;
-            if (label) {
-                label.style.textDecoration = cb.checked ? 'line-through' : 'none';
-                label.style.opacity = cb.checked ? '0.5' : '1';
-            }
-        }
-        this.checkPhaseUnlock();
+        // Obsolete in the new system as we force modal actions
+        this.openClosingActionModal(id, 'default');
     },
 
     checkPhaseUnlock() {
-        const checkboxes = document.querySelectorAll('.action-check-list input[type="checkbox"]');
         const nextBtn = document.getElementById('next-phase-btn');
         if (!nextBtn) return;
 
-        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        const phaseData = PricingEngine.salesLifecycle[this.currentSalesPhase];
+        if (!phaseData || !phaseData.levels || !phaseData.levels.intermediate) return;
+
+        const checklist = phaseData.levels.intermediate.checklist;
+        const allChecked = checklist.every(item => localStorage.getItem(`sp_closing_${item.id}`) === 'true');
+
         nextBtn.disabled = !allChecked;
         nextBtn.style.opacity = allChecked ? '1' : '0.5';
         nextBtn.innerHTML = allChecked ?
             (this.currentSalesPhase === 'closing' ? 'Finaliser le Devis <i class="fas fa-arrow-right"></i>' : 'Passer à la Phase Suivante <i class="fas fa-chevron-right"></i>') :
-            'Action Requis pour Continuer';
+            'Actions Requises pour Continuer';
+    },
+
+    openClosingActionModal(checkId, actionType) {
+        const modal = document.createElement('div');
+        modal.id = 'closing-action-modal';
+        modal.className = 'scoper-modal-overlay';
+        modal.style.display = 'flex';
+
+        let modalContent = '';
+        let title = '';
+
+        const data = Storage.get('sp_calculator_data') || {};
+
+        switch (actionType) {
+            case 'modal_research':
+                title = "Étude Stratégique du Prospect";
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1rem;">Lancer une recherche LinkedIn pour identifier les enjeux réels :</p>
+                        <button onclick="window.open('https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(data.specificTarget || 'Decision Maker')}', '_blank')" 
+                                style="width: 100%; padding: 1rem; border-radius: 12px; background: #0077b5; color: white; border: none; font-weight: 800; cursor: pointer; margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i class="fab fa-linkedin"></i> Rechercher sur LinkedIn
+                        </button>
+                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Quels sont les 3 points clés identifiés ?</label>
+                        <textarea id="action-input-text" placeholder="Ex: Viennent de lever 2M€, Recrutent 10 devs, Focus sur l'UX..." style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; height: 100px; font-family: inherit; font-size: 0.9rem; outline: none; focus: border-color: var(--primary);"></textarea>
+                    </div>
+                `;
+                break;
+            case 'modal_pricing':
+                title = "Définition du Prix de Réserve";
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">C'est le montant EN DESSOUS DUQUEL vous ne devez jamais descendre pour ce projet.</p>
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem;">Votre TJM Objectif</div>
+                            <div style="font-size: 2rem; font-weight: 900; color: white;">${Math.round(data.dailyRate || 0)}€</div>
+                        </div>
+                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Votre Prix de Réserve pour ce projet :</label>
+                        <input type="number" id="action-input-val" placeholder="En € / jour" style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; font-size: 1.2rem; font-weight: 700; outline: none;">
+                    </div>
+                `;
+                break;
+            case 'modal_pains':
+                title = "Diagnostic des Douleurs";
+                modalContent = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Identifiez les 'Deep Pains' : stress, perte de temps, pression hiérarchique.</p>
+                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Douleur principale identifiée :</label>
+                        <textarea id="action-input-text" placeholder="Ex: Risque son poste si le projet prend du retard, Perte de 50k€/mois..." style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; height: 100px; font-family: inherit; font-size: 0.9rem; outline: none;"></textarea>
+                    </div>
+                `;
+                break;
+            default:
+                title = "Validation Mentale";
+                modalContent = `
+                    <div style="text-align: center; padding: 1rem 0;">
+                        <p style="font-size: 1rem; color: white; line-height: 1.6;">Avez-vous réellement effectué cette action avec le niveau de rigueur requis ?</p>
+                        <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 1rem;">Votre succès en closing dépend de votre honnêteté envers vous-même.</p>
+                    </div>
+                `;
+        }
+
+        modal.innerHTML = `
+            <div class="scoper-modal-content" style="max-width: 500px; padding: 2.5rem; border: 1px solid var(--primary-glass); box-shadow: 0 20px 50px rgba(0,0,0,0.5); background: #0a0a0a; border-radius: 24px;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-glass); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h2 style="font-size: 1.4rem; font-weight: 950; color: white; margin: 0; letter-spacing: -1px;">${title}</h2>
+                </div>
+                
+                <div id="modal-form-body">${modalContent}</div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 3rem;">
+                    <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700;" onclick="document.getElementById('closing-action-modal').remove()">Annuler</button>
+                    <button class="button-primary" style="flex: 1.5; border-radius: 12px; font-weight: 800; background: var(--primary); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="Scoper.saveClosingAction('${checkId}')">
+                        Valider l'Action <i class="fas fa-check"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    },
+
+    saveClosingAction(checkId) {
+        // Enregistrer le succès
+        localStorage.setItem(`sp_closing_${checkId}`, 'true');
+
+        // Logique optionnelle de sauvegarde des données saisies (extensible)
+        const textInput = document.getElementById('action-input-text');
+        const valInput = document.getElementById('action-input-val');
+        if (textInput) Storage.set(`sp_closing_data_${checkId}`, textInput.value);
+        if (valInput) Storage.set(`sp_closing_data_${checkId}`, valInput.value);
+
+        // Fermer la modal
+        const modal = document.getElementById('closing-action-modal');
+        if (modal) modal.remove();
+
+        // Refresh UI & Phase Unlock
+        this.renderClosingTab();
+        App.showNotification("Action validée avec succès !", "success");
     },
 
     /**
