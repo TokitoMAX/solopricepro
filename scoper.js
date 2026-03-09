@@ -1540,23 +1540,36 @@ const Scoper = {
                                 ${((levelData.checklist && levelData.checklist.length > 0) ? levelData.checklist : []).map((item, i) => {
                 const checkId = item.id || `check-${this.currentSalesPhase}-${i}`;
                 const isChecked = localStorage.getItem(`sp_closing_${checkId}`) === 'true';
+
+                // New: Check for "In Progress" status
+                const steps = item.steps || [];
+                const checkedStepsCount = steps.filter((_, idx) => localStorage.getItem(`sp_closing_step_${checkId}_${idx}`) === 'true').length;
+                const isInProgress = !isChecked && checkedStepsCount > 0;
+
                 const actionIcon = item.icon || 'fa-bolt';
+                const statusColor = isChecked ? 'var(--primary)' : (isInProgress ? '#f59e0b' : 'rgba(255,255,255,0.05)');
+                const borderColor = isChecked ? 'var(--primary-glass)' : (isInProgress ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255,255,255,0.05)');
+                const labelColor = isChecked ? 'white' : (isInProgress ? '#fcd34d' : '#e2e8f0');
+
                 return `
-                                    <div class="action-item-card" style="background: rgba(255,255,255,0.03); border: 1px solid ${isChecked ? 'var(--primary-glass)' : 'rgba(255,255,255,0.05)'}; border-radius: 12px; padding: 1rem; transition: all 0.3s; position: relative; overflow: hidden;">
+                                    <div class="action-item-card" style="background: ${isInProgress ? 'rgba(245, 158, 11, 0.03)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${borderColor}; border-radius: 12px; padding: 1rem; transition: all 0.3s; position: relative; overflow: hidden;">
                                         <div style="display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1;">
-                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: ${isChecked ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}; color: ${isChecked ? 'white' : '#64748b'}; display: flex; align-items: center; justify-content: center; transition: all 0.3s;">
-                                                <i class="fas ${isChecked ? 'fa-check' : actionIcon}"></i>
+                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: ${statusColor}; color: ${isChecked || isInProgress ? 'white' : '#64748b'}; display: flex; align-items: center; justify-content: center; transition: all 0.3s;">
+                                                <i class="fas ${isChecked ? 'fa-check' : (isInProgress ? 'fa-spinner fa-spin' : actionIcon)}"></i>
                                             </div>
                                             <div style="flex: 1;">
-                                                <div style="font-size: 0.85rem; font-weight: 700; color: ${isChecked ? 'white' : '#e2e8f0'}; margin-bottom: 2px;">${item.label}</div>
-                                                <div style="font-size: 0.7rem; color: #64748b;">${isChecked ? 'Action complétée' : 'Action requise pour valider'}</div>
+                                                <div style="font-size: 0.85rem; font-weight: 700; color: ${labelColor}; margin-bottom: 2px;">${item.label}</div>
+                                                <div style="font-size: 0.7rem; color: #64748b;">
+                                                    ${isChecked ? 'Action complétée' : (isInProgress ? `En cours : ${checkedStepsCount}/${steps.length} étapes` : 'Action requise pour valider')}
+                                                </div>
                                             </div>
                                             <button onclick="Scoper.openClosingActionModal('${checkId}', '${item.action}')" 
                                                     style="padding: 0.5rem 0.8rem; border-radius: 8px; background: ${isChecked ? 'rgba(255,255,255,0.05)' : 'var(--primary-glass)'}; border: 1px solid ${isChecked ? 'transparent' : 'var(--primary)'}; color: ${isChecked ? '#94a3b8' : 'white'}; font-size: 0.7rem; font-weight: 800; cursor: pointer; transition: all 0.3s;">
-                                                ${isChecked ? 'Modifier' : 'Exécuter'}
+                                                ${isChecked ? 'Modifier' : (isInProgress ? 'Reprendre' : 'Exécuter')}
                                             </button>
                                         </div>
                                         ${isChecked ? `<div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary);"></div>` : ''}
+                                        ${isInProgress ? `<div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #f59e0b;"></div>` : ''}
                                     </div>
                                 `;
             }).join('')}
@@ -1804,12 +1817,17 @@ const Scoper = {
                     <div style="margin-bottom: 2rem;">
                         <div style="font-size: 0.65rem; font-weight: 950; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1.2rem;">Étapes de Cadrage</div>
                         <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                            ${checklistItem.steps.map((step, i) => `
-                                <label class="step-checkbox-v2">
-                                    <input type="checkbox" class="step-checkbox">
-                                    <span style="font-size: 0.9rem; color: #e2e8f0; font-weight: 500;">${step}</span>
-                                </label>
-                            `).join('')}
+                            ${checklistItem.steps.map((step, i) => {
+                    const stepId = `sp_closing_step_${checkId}_${i}`;
+                    const isStepChecked = localStorage.getItem(stepId) === 'true';
+                    return `
+                                    <label class="step-checkbox-v2">
+                                        <input type="checkbox" class="step-checkbox" ${isStepChecked ? 'checked' : ''} 
+                                               onchange="localStorage.setItem('${stepId}', this.checked); Scoper.updateModalButtonState('${checkId}')">
+                                        <span style="font-size: 0.9rem; color: #e2e8f0; font-weight: 500;">${step}</span>
+                                    </label>
+                                `;
+                }).join('')}
                         </div>
                     </div>
                 `;
@@ -1859,8 +1877,8 @@ const Scoper = {
                 <!-- Footer Actions -->
                 <div style="padding: 2rem 2.5rem; background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.03); display: flex; gap: 1.2rem; align-items: center;">
                     <button class="button-secondary" style="flex: 1; border-radius: 16px; font-weight: 700; height: 56px; border: 1px solid rgba(255,255,255,0.05); background: transparent;" onclick="document.getElementById('closing-action-modal').remove()">Annuler</button>
-                    <button class="button-primary pulse-primary" style="flex: 2; border-radius: 16px; font-weight: 950; background: var(--primary); color: white; border: none; cursor: pointer; height: 56px; display: flex; align-items: center; justify-content: center; gap: 0.8rem; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3); font-size: 0.95rem; letter-spacing: 0.5px;" onclick="Scoper.saveClosingAction('${checkId}')">
-                        SÉCURISER L'ÉTAPE <i class="fas fa-check-circle"></i>
+                    <button id="modal-save-btn" class="button-primary" style="flex: 2; border-radius: 16px; font-weight: 950; background: var(--primary); color: white; border: none; cursor: pointer; height: 56px; display: flex; align-items: center; justify-content: center; gap: 0.8rem; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3); font-size: 0.95rem; letter-spacing: 0.5px;" onclick="Scoper.saveClosingAction('${checkId}')">
+                        ENREGISTRER <i class="fas fa-save"></i>
                     </button>
                 </div>
 
@@ -1886,13 +1904,38 @@ const Scoper = {
 
         document.body.appendChild(modal);
 
+        // Set initial button state based on checkboxes
+        this.updateModalButtonState(checkId);
+
         // Instant trigger of Support logic (silent/background)
         this.runSupportAnalysis(actionType, checkId);
     },
 
+    updateModalButtonState(checkId) {
+        const btn = document.getElementById('modal-save-btn');
+        if (!btn) return;
+
+        const checkboxes = document.querySelectorAll('.step-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        const total = checkboxes.length;
+
+        if (allChecked && total > 0) {
+            btn.innerHTML = 'VALIDER & SÉCURISER <i class="fas fa-check-circle"></i>';
+            btn.classList.add('pulse-primary');
+            btn.style.background = 'var(--primary)';
+        } else {
+            btn.innerHTML = `ENREGISTRER LES PROGRÈS <i class="fas fa-save"></i>`;
+            btn.classList.remove('pulse-primary');
+            btn.style.background = 'rgba(255,255,255,0.1)';
+        }
+    },
+
     saveClosingAction(checkId) {
-        // Enregistrer le succès
-        localStorage.setItem(`sp_closing_${checkId}`, 'true');
+        // Enregistrer le succès UNIQUEMENT si tout est coché
+        const checkboxes = document.querySelectorAll('.step-checkbox');
+        const allChecked = checkboxes.length > 0 ? Array.from(checkboxes).every(cb => cb.checked) : true;
+
+        localStorage.setItem(`sp_closing_${checkId}`, allChecked ? 'true' : 'false');
 
         // Logique de sauvegarde des données (Inputs spécifiques + Notes générales)
         const textInput = document.getElementById('action-input-text');
