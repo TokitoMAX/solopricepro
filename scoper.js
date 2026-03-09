@@ -1486,6 +1486,9 @@ const Scoper = {
                             <button class="button-primary mini" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="Scoper.generateStrategicContent('followup')">
                                 <i class="fas fa-reply-all"></i> Relance Valeur
                             </button>
+                            <button class="button-secondary mini" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);" onclick="Scoper.resetStrategicActions()">
+                                <i class="fas fa-undo"></i> Réinitialiser
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1637,6 +1640,26 @@ const Scoper = {
             nextBtn.classList.remove('pulse-primary');
             nextBtn.innerHTML = `Actions à finir (${completedCount}/${totalCount}) <i class="fas fa-lock" style="margin-left: 8px; font-size: 0.8rem; opacity: 0.6;"></i>`;
         }
+    },
+
+    resetStrategicActions() {
+        if (!confirm("Voulez-vous vraiment réinitialiser toutes les actions stratégiques de cette mission ? Vos notes dans le journal resteront intactes.")) return;
+
+        // Scan all keys and remove those related to closing progress
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('sp_closing_')) {
+                keysToRemove.push(key);
+            }
+        }
+
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+
+        // Return to preparation phase to force a clean restart
+        this.currentSalesPhase = 'preparation';
+        App.showNotification("Stratégie réinitialisée. Repartons sur de bonnes bases.", "success");
+        this.renderClosingTab();
     },
 
     openClosingActionModal(checkId, actionType) {
