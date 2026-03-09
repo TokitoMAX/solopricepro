@@ -1605,7 +1605,9 @@ const Scoper = {
         if (!phaseData || !phaseData.levels || !phaseData.levels.intermediate) return;
 
         const checklist = phaseData.levels.intermediate.checklist || [];
-        const allChecked = checklist.every(item => localStorage.getItem(`sp_closing_${item.id}`) === 'true');
+        const completedCount = checklist.filter(item => localStorage.getItem(`sp_closing_${item.id}`) === 'true').length;
+        const totalCount = checklist.length;
+        const allChecked = completedCount === totalCount && totalCount > 0;
 
         nextBtn.disabled = !allChecked;
         nextBtn.style.opacity = allChecked ? '1' : '0.5';
@@ -1617,7 +1619,7 @@ const Scoper = {
                 'Passer à la Phase Suivante <i class="fas fa-arrow-right"></i>';
         } else {
             nextBtn.classList.remove('pulse-primary');
-            nextBtn.innerHTML = 'Actions en cours...';
+            nextBtn.innerHTML = `Actions à finir (${completedCount}/${totalCount}) <i class="fas fa-lock" style="margin-left: 8px; font-size: 0.8rem; opacity: 0.6;"></i>`;
         }
     },
 
