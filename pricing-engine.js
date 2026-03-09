@@ -547,67 +547,55 @@ const PricingEngine = {
                     ]
                 },
                 intermediate: {
-                    title: "Excavation de Douleur",
+                    title: "Excavation de Douleur (70/30)",
                     tips: [
-                        "Creusez avec le 'Pourquoi' (jusqu'à 3 fois).",
-                        "Identifiez l'impact personnel du problème sur l'interlocuteur.",
-                        "Cherchez la 'Deep Pain' : stress, perte de temps, pression hiérarchique."
+                        "Loi Elite : dédiez 70% du temps à creuser le problème et ses conséquences.",
+                        "Identifiez la 'Deep Pain' : ce qui empêche votre interlocuteur de dormir.",
+                        "Ne proposez JAMAIS de solution avant que le client n'ait quantifié sa douleur."
                     ],
                     checklist: [
                         {
                             id: 'diag_pains',
-                            label: "Douleurs identifiées",
+                            label: "Douleurs quantifiées",
                             action: 'modal_pains',
                             icon: 'fa-heart-broken',
-                            clues: "La douleur n'est pas technique, elle est business ou psychologique.",
+                            clues: "Si le client ne peut pas chiffrer son problème, il n'achètera pas votre solution.",
                             steps: [
-                                "Identifier l'impact financier n°1",
-                                "Identifier le stress personnel de l'interlocuteur",
-                                "Valider que le client reconnaît la gravité du problème"
+                                "Identifier l'impact financier n°1 (perte réelle)",
+                                "Faire avouer le stress personnel de l'interlocuteur",
+                                "Valider l'urgence : 'Pourquoi régler ça maintenant ?'"
                             ]
                         },
                         {
                             id: 'diag_budget',
-                            label: "Budget validé",
+                            label: "Enveloppe stratégique",
                             action: 'modal_budget',
                             icon: 'fa-coins',
-                            clues: "Parlez de budget le plus tôt possible pour éviter les fausses pistes.",
+                            clues: "Le budget n'est pas un prix, c'est une capacité d'investissement pour régler un problème.",
                             steps: [
-                                "Demander si une enveloppe a déjà été allouée",
-                                "Vérifier la capacité de décision de l'interlocuteur",
-                                "Donner une fourchette pour tester la réaction"
-                            ]
-                        },
-                        {
-                            id: 'diag_impact',
-                            label: "Impact ROI chiffré",
-                            action: 'modal_roi',
-                            icon: 'fa-chart-line',
-                            clues: "Le ROI est votre meilleure arme contre l'objection de prix.",
-                            steps: [
-                                "Estimer le coût annuel de l'inaction",
-                                "Calculer le bénéfice potentiel du succès",
-                                "Faire dire au client qu'il est d'accord sur ces chiffres"
+                                "Vérifier si le coût de l'inaction est supérieur à votre prix",
+                                "Demander qui d'autre doit valider ce montant",
+                                "Tester une fourchette Elite pour observer la réaction"
                             ]
                         }
                     ],
                     questions: [
-                        "Depuis combien de temps ce problème persiste-t-il ?",
                         "Combien de CA perdez-vous chaque mois à cause de cette situation ?",
-                        "Si on ne règle rien maintenant, à quoi ressemble votre business dans 6 mois ?"
+                        "Si on ne fait rien, à quoi ressemble votre business dans 6 mois ?",
+                        "Qu'est-ce qui se passe pour vous si ce projet n'aboutit pas ?"
                     ]
                 },
                 expert: {
-                    title: "L'IRM du Business",
+                    title: "Le Diagnostic d'Élite",
                     tips: [
-                        "Utilisez le silence pour laisser le client réaliser la gravité de son problème.",
-                        "Pratiquez l'Empathie Tactique : 'Il semble que vous ayez peur que ce projet échoue...'",
-                        "Validez le coût de l'inaction avant de parler de solution."
+                        "Détachement total : soyez prêt à disqualifier le prospect s'il n'est pas sérieux.",
+                        "Désactivez l'alarme de vente : ne vendez rien, diagnostiquez comme un chirurgien.",
+                        "Le silence est votre arme : laissez-le réaliser le vide sans vous."
                     ],
                     questions: [
-                        "Quel budget avez-vous déjà 'jeté par la fenêtre' en essayant de régler ça ?",
-                        "Qu'est-ce qui se passe pour vous personnellement si cet objectif n'est pas atteint ?",
-                        "Est-ce qu'on règle le problème à la racine, ou on continue de mettre des pansements ?"
+                        "Pourquoi m'avoir appelé moi précisément aujourd'hui ?",
+                        "Est-ce un problème qu'on règle à la racine ou on met encore un pansement ?",
+                        "Honnêtement, qu'est-ce qui se passe si on ne travaille pas ensemble ?"
                     ]
                 }
             }
@@ -697,27 +685,27 @@ const PricingEngine = {
                     methods: ["Direct Close", "Next Step Close"]
                 },
                 intermediate: {
-                    title: "Le Bouclage Professionnel",
+                    title: "Orchestration de la Décision",
                     tips: [
-                        "Utilisez le 'Summary Close' : récapitulez tous les bénéfices avant le prix.",
-                        "Adressez les objections de front.",
-                        "Obtenez un engagement ferme (Acompte)."
+                        "Ne 'clozez' pas : guidez le vers la solution évidente.",
+                        "Alarme de Vente : si le client recule, revenez au problème (Diagnostic).",
+                        "Summary Close : récapitulez SA douleur avant de proposer VOTRE remède."
                     ],
                     checklist: [
-                        { id: 'close_objections', label: "Objections levées", action: 'modal_objections', icon: 'fa-shield-alt' },
-                        { id: 'close_terms', label: "Conditions validées", action: 'modal_terms', icon: 'fa-file-signature' },
-                        { id: 'close_kickoff', label: "Plan de démarrage prêt", action: 'modal_kickoff', icon: 'fa-rocket' }
+                        { id: 'close_objections', label: "Alarmes de vente levées", action: 'modal_objections', icon: 'fa-shield-alt' },
+                        { id: 'close_terms', label: "Accord de collaboration", action: 'modal_terms', icon: 'fa-file-signature' },
+                        { id: 'close_kickoff', label: "Victoire Client définie", action: 'modal_kickoff', icon: 'fa-rocket' }
                     ],
-                    methods: ["Summary Close", "Benefit Close", "Objection Reframe"]
+                    methods: ["Summary of Pains", "Prescription Close", "The Safety Mirror"]
                 },
                 expert: {
-                    title: "L'Engagement d'Élite",
+                    title: "L'Engagement d'Élite (Sans Pression)",
                     tips: [
-                        "L'Assumptive Close : parlez comme si le projet avait déjà commencé.",
-                        "Utilisez le silence après avoir annoncé le prix.",
-                        "Maitrisez les objections par la négociation (Labeling/Mirroring)."
+                        "Détachement Prospect : 'Si ce n'est pas le bon moment, je préfère qu'on ne le fasse pas.'",
+                        "L'autorité tranquille : vous êtes le prix, pas l'inverse.",
+                        "Transformez le 'Oui' en un engagement d'action immédiat."
                     ],
-                    methods: ["Assumptive Close", "Tactical Empathy Close", "The Calibrated Question"]
+                    methods: ["Detached Commitment", "The Disqualification Close", "Post-Sale Reinforcement"]
                 }
             }
         }
@@ -746,22 +734,23 @@ const PricingEngine = {
         const targetText = data.specificTarget ? ` (spécifiquement pour les ${data.specificTarget})` : "";
         const obstacleText = data.mainObstacle ? `\n\nJ'ai bien noté votre enjeu concernant "${data.mainObstacle}", c'est un point que nous sécuriserons en priorité pour garantir le succès de la mission.` : "";
         const gapText = data.gap > 0 ? `\nNotez que ce tarif est un investissement stratégique calculé pour combler l'écart de performance identifié de ${Math.round(data.gap)}€.` : "";
+        const sym = typeof App !== 'undefined' ? App.getCurrencyConfig()?.symbol : '€';
 
         return `
-Bonjour,
+[ORCHESTRATION DE LA DÉCISION - SCRIPT D'APPEL]
+Posture : Expert-Conseil Détaché (Vous n'avez pas besoin du contrat, vous voulez régler un problème).
 
-Suite à notre échange, je vous transmets ma proposition détaillée${targetText}.
+1. L'OUVERTURE (Désactivation de l'alarme de vente) :
+"D'après mes analyses ${clientFocus}${targetText}, l'enjeu ici dépasse largement l'aspect technique. ${intro}"
 
-${intro}
+2. LE DIAGNOSTIC RAPPELÉ (Le coût de l'inaction) :${obstacleText}
+"Nous avons vu que ce point bloque votre croissance. Notez que ce tarif est un investissement stratégique calculé pour combler l'écart de performance identifié de ${Math.round(data.gap || 0)}${sym}."
 
-Pour ce projet, mon TJM est de ${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + '€'}. 
+3. LA PRESCRIPTION (L'Ancrage) :
+"Pour sécuriser ce résultat et adresser ${levelData.hook}, l'investissement est de ${typeof App !== 'undefined' ? App.formatCurrency(tjm) : tjm + sym} par jour. Cela garantit une transformation réelle en un ${levelData.vocabulary ? levelData.vocabulary[0] : 'levier de succès'}."
 
-Ce tarif reflète l'expertise nécessaire pour adresser ${levelData.hook}, tout en sécurisant vos enjeux de ${clientFocus} propres au secteur ${clientSector.toUpperCase()}.${obstacleText}${gapText}
-
-L'objectif est de transformer cet investissement en un ${levelData.vocabulary ? levelData.vocabulary[0] : 'levier de succès'} pour votre structure.
-
-Je reste à votre disposition pour en discuter plus en détail.
-        `.trim();
+4. L'AVENIR (Guider la décision) :
+"Si ce plan d'action vous semble être le pont évident vers votre objectif, nous pouvons bloquer les dates. Sinon, qu'est-ce qui vous semble encore à clarifier ?"`.trim();
     },
 
     /**
@@ -783,19 +772,20 @@ Je reste à votre disposition pour en discuter plus en détail.
 
         const levelData = this.prospectLevelLogic[prospectLevel] || this.prospectLevelLogic.manager;
         const clientRisk = this.clientSectorPainPoints[clientSector]?.risk || "la stagnation de vos résultats";
-        const obstacleAdvice = data.mainObstacle ? `\n\nConcernant votre défi sur "${data.mainObstacle}", j'ai préparé une approche spécifique pour lever ce frein dès le démarrage.` : "";
+        const obstacleAdvice = data.mainObstacle ? `\n\nPS : Sur votre point concernant "${data.mainObstacle}", j'ai identifié un levier spécifique pour débloquer la situation.` : "";
 
         return `
+[RELANCE DE VALEUR - STYLE LEMLIST]
+Sujet : Question rapide / ${clientSector.toUpperCase()}
+
 Bonjour,
 
-Je reviens vers vous concernant ma proposition.
+Je repense à notre échange sur ${clientRisk}. En analysant ${focus}, j'ai une idée supplémentaire pour sécuriser votre ${levelData.hook}.
 
-Au-delà de l'aspect budgétaire, j'ai repensé à notre discussion sur ${focus}. Chaque semaine d'attente accentue ${clientRisk}, ce qui retarde ${levelData.hook}.${obstacleAdvice}
+Est-ce que vous souhaitez que je vous envoie une note rapide sur ce point précis avant votre décision ?
 
-C'est un risque de ${levelData.vocabulary && levelData.vocabulary[2] ? levelData.vocabulary[2] : 'perte de vitesse'} que nous pouvons mitiger dès le lancement de notre collaboration.
-
-Avons-nous un créneau de 10 min cette semaine pour valider les prochaines étapes ?
-        `.trim();
+Belle journée,
+${obstacleAdvice}`.trim();
     },
 
     generateResearchDraft(data) {
