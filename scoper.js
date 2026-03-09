@@ -1976,9 +1976,9 @@ const Scoper = {
             this.addJournalEntry('note', journalContent.trim(), true);
         }
 
-        // Refresh UI & Phase Unlock
-        App.navigateTo('scoper', 'closing');
-        App.showNotification("Action validée & ajoutée au Journal !", "success");
+        // Refresh ONLY the necessary scoper components, not the whole App.navigateTo
+        this.renderSalesLifecycle();
+        this.checkPhaseUnlock();
     },
 
     updateROIMiniCalc() {
@@ -2231,7 +2231,7 @@ const Scoper = {
         Storage.saveJournal(journal);
     },
 
-    addJournalEntry(type, directText = null) {
+    addJournalEntry(type, directText = null, silent = false) {
         let label = 'note';
         let text = directText;
 
@@ -2262,8 +2262,11 @@ const Scoper = {
         }
 
         Storage.saveJournal(journal);
-        this.renderJournalTab();
-        App.showNotification(i18n.t('scoper.journal.entry_saved', { label: label.charAt(0).toUpperCase() + label.slice(1) }) || `${label.charAt(0).toUpperCase() + label.slice(1)} enregistrée.`, 'success');
+
+        if (!silent) {
+            this.renderJournalTab();
+            App.showNotification(i18n.t('scoper.journal.entry_saved', { label: label.charAt(0).toUpperCase() + label.slice(1) }) || `${label.charAt(0).toUpperCase() + label.slice(1)} enregistrée.`, 'success');
+        }
     },
 
     removeJournalEntry(id) {
