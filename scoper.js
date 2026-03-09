@@ -1977,7 +1977,7 @@ const Scoper = {
         }
 
         // Refresh ONLY the necessary scoper components, not the whole App.navigateTo
-        this.renderSalesLifecycle();
+        this.renderClosingTab();
         this.checkPhaseUnlock();
     },
 
