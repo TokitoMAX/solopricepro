@@ -1905,11 +1905,24 @@ const Scoper = {
         const modal = document.getElementById('closing-action-modal');
         if (modal) modal.remove();
 
-        // Integration Logic: Pre-populate Journal
-        let journalContent = `Action Stratégique validée : ${checkId}\n`;
-        if (textInput && textInput.value) journalContent += `Détails : ${textInput.value}\n`;
-        if (valInput && valInput.value) journalContent += `Valeur/Chiffre : ${valInput.value}\n`;
-        if (finalNotes && finalNotes.value) journalContent += `Conclusions : ${finalNotes.value}`;
+        // Integration Logic: Pre-populate Journal with human-readable labels
+        const phaseData = (PricingEngine.salesLifecycle && PricingEngine.salesLifecycle[this.currentSalesPhase]) ? PricingEngine.salesLifecycle[this.currentSalesPhase] : null;
+        let actionLabel = checkId;
+        if (phaseData && phaseData.levels && phaseData.levels.intermediate) {
+            const item = phaseData.levels.intermediate.checklist.find(i => i.id === checkId);
+            if (item) actionLabel = item.label;
+        }
+
+        let journalContent = `📌 STRATÉGIE : ${actionLabel}\n`;
+        if (finalNotes && finalNotes.value) {
+            journalContent += `\n${finalNotes.value}`;
+        } else if (textInput && textInput.value) {
+            journalContent += `\n${textInput.value}`;
+        }
+
+        if (valInput && valInput.value) {
+            journalContent += `\n\nValeur cible : ${valInput.value} €`;
+        }
 
         this.addJournalEntry('note', journalContent.trim(), true);
 
