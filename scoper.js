@@ -1641,14 +1641,12 @@ const Scoper = {
             case 'modal_research':
                 title = "Étude Stratégique du Prospect";
                 modalContent = `
-                    <div style="margin-bottom: 1.5rem;">
-                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1rem;">Lancer une recherche LinkedIn pour identifier les enjeux réels :</p>
+                    <div style="margin-bottom: 0.5rem;">
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Utilisez ce levier pour identifier les enjeux réels avant l'échange :</p>
                         <button onclick="window.open('https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(data.specificTarget || 'Decision Maker')}', '_blank')" 
-                                style="width: 100%; padding: 1rem; border-radius: 12px; background: #0077b5; color: white; border: none; font-weight: 800; cursor: pointer; margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                            <i class="fab fa-linkedin"></i> Rechercher sur LinkedIn
+                                style="width: 100%; padding: 1.2rem; border-radius: 16px; background: linear-gradient(135deg, #0077b5, #005a87); color: white; border: none; font-weight: 800; cursor: pointer; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem; box-shadow: 0 10px 20px rgba(0, 119, 181, 0.2); transition: all 0.3s ease;">
+                            <i class="fab fa-linkedin"></i> Explorer le Profil LinkedIn
                         </button>
-                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Quels sont les 3 points clés identifiés ?</label>
-                        <textarea id="action-input-text" placeholder="Ex: Viennent de lever 2M€, Recrutent 10 devs, Focus sur l'UX..." style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; height: 100px; font-family: inherit; font-size: 0.9rem; outline: none; focus: border-color: var(--primary);"></textarea>
                     </div>
                 `;
                 break;
@@ -1684,11 +1682,7 @@ const Scoper = {
             case 'modal_pains':
                 title = "Diagnostic des Douleurs";
                 modalContent = `
-                    <div style="margin-bottom: 1.5rem;">
-                        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Identifiez les 'Deep Pains' : stress, perte de temps, pression hiérarchique.</p>
-                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: white; margin-bottom: 0.8rem;">Douleur principale identifiée :</label>
-                        <textarea id="action-input-text" placeholder="Ex: Risque son poste si le projet prend du retard, Perte de 50k€/mois..." style="width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; height: 100px; font-family: inherit; font-size: 0.9rem; outline: none;"></textarea>
-                    </div>
+                    <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Ne restez pas en surface. Identifiez la 'Deep Pain' : stress, perte de temps ou pression hiérarchique.</p>
                 `;
                 break;
             case 'modal_budget':
@@ -1805,13 +1799,13 @@ const Scoper = {
 
             if (checklistItem.steps && checklistItem.steps.length > 0) {
                 guidingContent += `
-                    <div style="margin-bottom: 1.5rem;">
-                        <div style="font-size: 0.65rem; font-weight: 950; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Actions Précises à Réaliser</div>
-                        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                    <div style="margin-bottom: 2rem;">
+                        <div style="font-size: 0.65rem; font-weight: 950; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1.2rem;">Étapes de Cadrage</div>
+                        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
                             ${checklistItem.steps.map((step, i) => `
-                                <label style="display: flex; align-items: center; gap: 10px; padding: 0.8rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
-                                    <input type="checkbox" class="step-checkbox" style="accent-color: var(--primary); width: 16px; height: 16px;">
-                                    <span style="font-size: 0.85rem; color: white;">${step}</span>
+                                <label class="step-checkbox-v2">
+                                    <input type="checkbox" class="step-checkbox">
+                                    <span style="font-size: 0.9rem; color: #e2e8f0; font-weight: 500;">${step}</span>
                                 </label>
                             `).join('')}
                         </div>
@@ -1821,50 +1815,69 @@ const Scoper = {
         }
 
         modal.innerHTML = `
-            <div class="scoper-modal-content" style="max-width: 550px; padding: 2.5rem; border: 1px solid var(--primary-glass); box-shadow: 0 30px 60px rgba(0,0,0,0.8); background: #050505; border-radius: 24px; position: relative; overflow: hidden;">
-                <!-- Header -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div class="agent-pulse-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid var(--primary-glass);">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">Action de Cadrage</div>
-                            <h2 style="font-size: 1.3rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${title}</h2>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Zone de Guidage -->
-                ${guidingContent}
+            <div class="scoper-modal-content" style="max-width: 580px; padding: 0; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 40px 100px rgba(0,0,0,0.9); background: #080808; border-radius: 32px; position: relative; overflow: hidden; display: flex; flex-direction: column;">
                 
-                <!-- Zone de Formulaire -->
-                <div id="modal-form-body" style="opacity: 1; transform: translateY(0); transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);">${modalContent}</div>
-
-                <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
-                    <label style="display: block; font-size: 0.65rem; font-weight: 950; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem;">Notes & Observations de l'Action</label>
-                    <textarea id="action-notes-final" placeholder="Notez ici vos conclusions pour cette action..." style="width: 100%; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; height: 80px; font-family: inherit; font-size: 0.85rem; outline: none; transition: border-color 0.3s;"></textarea>
+                <!-- Premium Header Banner -->
+                <div style="padding: 2.5rem 2.5rem 1.5rem; background: linear-gradient(to bottom, rgba(16, 185, 129, 0.05), transparent); display: flex; align-items: flex-start; gap: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                    <div class="agent-pulse-icon" style="flex-shrink: 0; width: 64px; height: 64px; border-radius: 20px; background: rgba(16, 185, 129, 0.08); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 1px solid rgba(16, 185, 129, 0.2); box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.1);">
+                        <i class="fas fa-chess-knight"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.4rem; opacity: 0.8;">Pilotage Stratégique</div>
+                        <h2 style="font-size: 1.6rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.8px; line-height: 1.2;">${title}</h2>
+                    </div>
                 </div>
 
-                <!-- Actions de Support -->
-                <div id="modal-actions" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; opacity: 1; transition: opacity 0.5s ease;">
-                    <div style="display: flex; gap: 1rem;">
-                        <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700; height: 50px;" onclick="document.getElementById('closing-action-modal').remove()">Abandonner</button>
-                        <button class="button-primary" style="flex: 1.8; border-radius: 12px; font-weight: 900; background: var(--primary); color: white; border: none; cursor: pointer; height: 50px; display: flex; align-items: center; justify-content: center; gap: 0.8rem; box-shadow: 0 10px 20px var(--primary-glass);" onclick="Scoper.saveClosingAction('${checkId}')">
-                            CONFIRMER L'ACTION <i class="fas fa-check"></i>
-                        </button>
+                <!-- Scrollable Body -->
+                <div class="scoper-modal-body" style="padding: 2.5rem; max-height: 60vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;">
+                    
+                    <!-- Guidance Section -->
+                    ${guidingContent ? `
+                        <div class="modal-section-v2">
+                            ${guidingContent}
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Specific Form Section -->
+                    <div id="modal-form-body" style="margin-top: 1.5rem;">
+                        <div style="font-size: 0.65rem; font-weight: 950; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Cœur de l'Action</div>
+                        ${modalContent}
                     </div>
+
+                    <!-- Consolidated Strategic Notes -->
+                    <div style="margin-top: 2.5rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <label style="font-size: 0.65rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Tableau de Bord de l'Action</label>
+                            <span style="font-size: 0.65rem; color: #4ade80; font-weight: 700;"><i class="fas fa-shield-alt"></i> Auto-save actif</span>
+                        </div>
+                        <textarea id="action-notes-final" placeholder="Consignez ici vos conclusions stratégiques. Ces notes seront ajoutées à votre Journal de Bord pour l'analyse PDF finale..." style="width: 100%; background: transparent; border: none; padding: 0; color: white; height: 120px; font-family: inherit; font-size: 0.95rem; line-height: 1.6; outline: none; resize: none;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div style="padding: 2rem 2.5rem; background: rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.03); display: flex; gap: 1.2rem; align-items: center;">
+                    <button class="button-secondary" style="flex: 1; border-radius: 16px; font-weight: 700; height: 56px; border: 1px solid rgba(255,255,255,0.05); background: transparent;" onclick="document.getElementById('closing-action-modal').remove()">Annuler</button>
+                    <button class="button-primary pulse-primary" style="flex: 2; border-radius: 16px; font-weight: 950; background: var(--primary); color: white; border: none; cursor: pointer; height: 56px; display: flex; align-items: center; justify-content: center; gap: 0.8rem; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3); font-size: 0.95rem; letter-spacing: 0.5px;" onclick="Scoper.saveClosingAction('${checkId}')">
+                        SÉCURISER L'ÉTAPE <i class="fas fa-check-circle"></i>
+                    </button>
                 </div>
 
                 <style>
-                    @keyframes pulse-primary { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
-                    .pulse-primary { animation: pulse-primary 2s infinite; }
-                    @keyframes terminalLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
-                    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-                    .agent-log-line { animation: terminalLine 0.2s ease-out forwards; }
-                    .agent-log-line:last-child::after { content: '_'; animation: blink 1s step-end infinite; margin-left: 4px; color: var(--primary); }
-                    .agent-pulse-icon { animation: pulseIcon 2s infinite; }
-                    @keyframes pulseIcon { 0% { border-color: var(--primary-glass); } 50% { border-color: var(--primary); } 100% { border-color: var(--primary-glass); } }
+                    .modal-section-v2 { position: relative; }
+                    .step-checkbox-v2 { display: flex; align-items: center; gap: 14px; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 0.8rem; }
+                    .step-checkbox-v2:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); transform: translateX(4px); }
+                    .step-checkbox-v2 input:checked + span { color: #4ade80; text-decoration: line-through; opacity: 0.6; }
+                    .step-checkbox-v2 input { width: 20px; height: 20px; border-radius: 6px; accent-color: var(--primary); }
+                    
+                    @keyframes pulse-primary { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+                    .pulse-primary { animation: pulse-primary 3s infinite; }
+                    
+                    .agent-pulse-icon { animation: floatIcon 4s ease-in-out infinite; }
+                    @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+                    
+                    .scoper-modal-body::-webkit-scrollbar { width: 6px; }
+                    .scoper-modal-body::-webkit-scrollbar-track { background: transparent; }
+                    .scoper-modal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
                 </style>
             </div>
         `;
@@ -1883,7 +1896,7 @@ const Scoper = {
         const textInput = document.getElementById('action-input-text');
         const valInput = document.getElementById('action-input-val');
         const finalNotes = document.getElementById('action-notes-final');
-        
+
         if (textInput) Storage.set(`sp_closing_data_text_${checkId}`, textInput.value);
         if (valInput) Storage.set(`sp_closing_data_val_${checkId}`, valInput.value);
         if (finalNotes) Storage.set(`sp_closing_data_notes_${checkId}`, finalNotes.value);
