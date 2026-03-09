@@ -1631,6 +1631,11 @@ const Scoper = {
         let title = '';
 
         const data = Storage.get('sp_calculator_data') || {};
+        const phaseData = (PricingEngine.salesLifecycle && PricingEngine.salesLifecycle[this.currentSalesPhase]) ? PricingEngine.salesLifecycle[this.currentSalesPhase] : null;
+        let checklistItem = null;
+        if (phaseData && phaseData.levels && phaseData.levels.intermediate) {
+            checklistItem = phaseData.levels.intermediate.checklist.find(item => item.id === checkId);
+        }
 
         switch (actionType) {
             case 'modal_research':
@@ -1784,32 +1789,69 @@ const Scoper = {
                 `;
         }
 
+        // --- ENHANCED FRAMING (Clues & Steps) ---
+        let guidingContent = '';
+        if (checklistItem) {
+            if (checklistItem.clues) {
+                guidingContent += `
+                    <div style="padding: 1rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 12px; margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-lightbulb"></i> Indice Stratégique
+                        </div>
+                        <p style="font-size: 0.85rem; color: #e2e8f0; line-height: 1.5; margin: 0;">${checklistItem.clues}</p>
+                    </div>
+                `;
+            }
+
+            if (checklistItem.steps && checklistItem.steps.length > 0) {
+                guidingContent += `
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.65rem; font-weight: 950; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Actions Précises à Réaliser</div>
+                        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                            ${checklistItem.steps.map((step, i) => `
+                                <label style="display: flex; align-items: center; gap: 10px; padding: 0.8rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                                    <input type="checkbox" class="step-checkbox" style="accent-color: var(--primary); width: 16px; height: 16px;">
+                                    <span style="font-size: 0.85rem; color: white;">${step}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         modal.innerHTML = `
             <div class="scoper-modal-content" style="max-width: 550px; padding: 2.5rem; border: 1px solid var(--primary-glass); box-shadow: 0 30px 60px rgba(0,0,0,0.8); background: #050505; border-radius: 24px; position: relative; overflow: hidden;">
-                <!-- Header Technique -->
+                <!-- Header -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div class="agent-pulse-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid var(--primary-glass);">
-                            <i class="fas fa-lightbulb"></i>
+                            <i class="fas fa-bolt"></i>
                         </div>
                         <div>
-                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">Guide Stratégique</div>
+                            <div style="font-size: 0.65rem; font-weight: 950; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;">Action de Cadrage</div>
                             <h2 style="font-size: 1.3rem; font-weight: 950; color: white; margin: 0; letter-spacing: -0.5px;">${title}</h2>
                         </div>
                     </div>
                 </div>
 
-
+                <!-- Zone de Guidage -->
+                ${guidingContent}
                 
                 <!-- Zone de Formulaire -->
                 <div id="modal-form-body" style="opacity: 1; transform: translateY(0); transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);">${modalContent}</div>
+
+                <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
+                    <label style="display: block; font-size: 0.65rem; font-weight: 950; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem;">Notes & Observations de l'Action</label>
+                    <textarea id="action-notes-final" placeholder="Notez ici vos conclusions pour cette action..." style="width: 100%; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white; height: 80px; font-family: inherit; font-size: 0.85rem; outline: none; transition: border-color 0.3s;"></textarea>
+                </div>
 
                 <!-- Actions de Support -->
                 <div id="modal-actions" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; opacity: 1; transition: opacity 0.5s ease;">
                     <div style="display: flex; gap: 1rem;">
                         <button class="button-secondary" style="flex: 1; border-radius: 12px; font-weight: 700; height: 50px;" onclick="document.getElementById('closing-action-modal').remove()">Abandonner</button>
                         <button class="button-primary" style="flex: 1.8; border-radius: 12px; font-weight: 900; background: var(--primary); color: white; border: none; cursor: pointer; height: 50px; display: flex; align-items: center; justify-content: center; gap: 0.8rem; box-shadow: 0 10px 20px var(--primary-glass);" onclick="Scoper.saveClosingAction('${checkId}')">
-                            VALIDER LA STRATÉGIE <i class="fas fa-arrow-right"></i>
+                            CONFIRMER L'ACTION <i class="fas fa-check"></i>
                         </button>
                     </div>
                 </div>
@@ -1837,18 +1879,26 @@ const Scoper = {
         // Enregistrer le succès
         localStorage.setItem(`sp_closing_${checkId}`, 'true');
 
-        // Logique optionnelle de sauvegarde des données saisies (extensible)
+        // Logique de sauvegarde des données (Inputs spécifiques + Notes générales)
         const textInput = document.getElementById('action-input-text');
         const valInput = document.getElementById('action-input-val');
-        if (textInput) Storage.set(`sp_closing_data_${checkId}`, textInput.value);
-        if (valInput) Storage.set(`sp_closing_data_${checkId}`, valInput.value);
+        const finalNotes = document.getElementById('action-notes-final');
+        
+        if (textInput) Storage.set(`sp_closing_data_text_${checkId}`, textInput.value);
+        if (valInput) Storage.set(`sp_closing_data_val_${checkId}`, valInput.value);
+        if (finalNotes) Storage.set(`sp_closing_data_notes_${checkId}`, finalNotes.value);
 
         // Fermer la modal
         const modal = document.getElementById('closing-action-modal');
         if (modal) modal.remove();
 
-        // Integration Logic: Pre-populate Journal/Retex
-        this.addJournalEntry('note', `Action Stratégique validée : ${checkId}\nContexte : ${textInput ? textInput.value : ''}\nValeur associée : ${valInput ? valInput.value : ''}`, true);
+        // Integration Logic: Pre-populate Journal
+        let journalContent = `Action Stratégique validée : ${checkId}\n`;
+        if (textInput && textInput.value) journalContent += `Détails : ${textInput.value}\n`;
+        if (valInput && valInput.value) journalContent += `Valeur/Chiffre : ${valInput.value}\n`;
+        if (finalNotes && finalNotes.value) journalContent += `Conclusions : ${finalNotes.value}`;
+
+        this.addJournalEntry('note', journalContent.trim(), true);
 
         // Refresh UI & Phase Unlock
         App.navigateTo('scoper', 'closing');

@@ -480,9 +480,42 @@ const PricingEngine = {
                         "Préparez vos 'Labels' (ex: Il semble que le délai soit votre risque n°1)."
                     ],
                     checklist: [
-                        { id: 'prep_profile', label: "Étude du prospect finie", action: 'modal_research', icon: 'fa-search' },
-                        { id: 'prep_reserve', label: "Prix de réserve défini", action: 'modal_pricing', icon: 'fa-hand-holding-usd' },
-                        { id: 'prep_labels', label: "Plan de cadrage prêt", action: 'modal_framing', icon: 'fa-clipboard-list' }
+                        {
+                            id: 'prep_profile',
+                            label: "Étude du prospect finie",
+                            action: 'modal_research',
+                            icon: 'fa-search',
+                            clues: "Cherchez des signaux de croissance (recrutement, levée de fonds) ou de friction (avis clients, tech stack vieillissante).",
+                            steps: [
+                                "Parcourir le profil LinkedIn (Activité, Expériences)",
+                                "Vérifier l'actualité de l'entreprise (Google News / Site Officiel)",
+                                "Identifier 1 enjeu concret à citer dès l'ouverture"
+                            ]
+                        },
+                        {
+                            id: 'prep_reserve',
+                            label: "Prix de réserve défini",
+                            action: 'modal_pricing',
+                            icon: 'fa-hand-holding-usd',
+                            clues: "Votre prix de réserve est la limite mentale qui vous protège des mauvaises affaires.",
+                            steps: [
+                                "Calculer le temps minimal incompressible",
+                                "Additionner vos frais fixes spécifiques au projet",
+                                "Définir le montant 'Stop' (en dessous de X, je dis non)"
+                            ]
+                        },
+                        {
+                            id: 'prep_labels',
+                            label: "Plan de cadrage prêt",
+                            action: 'modal_framing',
+                            icon: 'fa-clipboard-list',
+                            clues: "Un bon cadrage empêche le client de prendre le contrôle de l'entretien par le bas.",
+                            steps: [
+                                "Adapter le script d'ouverture au secteur",
+                                "Préparer 2 'Labels' d'empathie tactique",
+                                "Valider l'ordre du jour avec le client dès le début"
+                            ]
+                        }
                     ]
                 },
                 expert: {
@@ -521,9 +554,42 @@ const PricingEngine = {
                         "Cherchez la 'Deep Pain' : stress, perte de temps, pression hiérarchique."
                     ],
                     checklist: [
-                        { id: 'diag_pains', label: "Douleurs identifiées", action: 'modal_pains', icon: 'fa-heart-broken' },
-                        { id: 'diag_budget', label: "Budget validé", action: 'modal_budget', icon: 'fa-coins' },
-                        { id: 'diag_impact', label: "Impact ROI chiffré", action: 'modal_roi', icon: 'fa-chart-line' }
+                        {
+                            id: 'diag_pains',
+                            label: "Douleurs identifiées",
+                            action: 'modal_pains',
+                            icon: 'fa-heart-broken',
+                            clues: "La douleur n'est pas technique, elle est business ou psychologique.",
+                            steps: [
+                                "Identifier l'impact financier n°1",
+                                "Identifier le stress personnel de l'interlocuteur",
+                                "Valider que le client reconnaît la gravité du problème"
+                            ]
+                        },
+                        {
+                            id: 'diag_budget',
+                            label: "Budget validé",
+                            action: 'modal_budget',
+                            icon: 'fa-coins',
+                            clues: "Parlez de budget le plus tôt possible pour éviter les fausses pistes.",
+                            steps: [
+                                "Demander si une enveloppe a déjà été allouée",
+                                "Vérifier la capacité de décision de l'interlocuteur",
+                                "Donner une fourchette pour tester la réaction"
+                            ]
+                        },
+                        {
+                            id: 'diag_impact',
+                            label: "Impact ROI chiffré",
+                            action: 'modal_roi',
+                            icon: 'fa-chart-line',
+                            clues: "Le ROI est votre meilleure arme contre l'objection de prix.",
+                            steps: [
+                                "Estimer le coût annuel de l'inaction",
+                                "Calculer le bénéfice potentiel du succès",
+                                "Faire dire au client qu'il est d'accord sur ces chiffres"
+                            ]
+                        }
                     ],
                     questions: [
                         "Depuis combien de temps ce problème persiste-t-il ?",
@@ -567,9 +633,42 @@ const PricingEngine = {
                         "Positionnez-vous comme l'unique pont vers son objectif."
                     ],
                     checklist: [
-                        { id: 'align_solution', label: "Solution validée", action: 'modal_solution', icon: 'fa-check-circle' },
-                        { id: 'align_anchoring', label: "Ancrage prix effectué", action: 'modal_anchoring', icon: 'fa-anchor' },
-                        { id: 'align_agreement', label: "Accord de principe", action: 'modal_agreement', icon: 'fa-handshake' }
+                        {
+                            id: 'align_solution',
+                            label: "Solution validée",
+                            action: 'modal_solution',
+                            icon: 'fa-check-circle',
+                            clues: "Assurez-vous que le client voit MA solution comme LE pont vers son futur désiré.",
+                            steps: [
+                                "Lier chaque livrable à une douleur identifiée",
+                                "Valider l'adhésion technique et business",
+                                "Faire confirmer le 'Go' sur le périmètre"
+                            ]
+                        },
+                        {
+                            id: 'align_anchoring',
+                            label: "Ancrage prix effectué",
+                            action: 'modal_anchoring',
+                            icon: 'fa-anchor',
+                            clues: "L'option Elite protège votre marge sur l'option Sécurité.",
+                            steps: [
+                                "Présenter l'Option 3 (Elite) sans trembler",
+                                "Attendre le silence du client (Empathie Tactique)",
+                                "Présenter l'Option 2 comme la solution évidente"
+                            ]
+                        },
+                        {
+                            id: 'align_agreement',
+                            label: "Accord de principe",
+                            action: 'modal_agreement',
+                            icon: 'fa-handshake',
+                            clues: "L'accord de principe est un engagement moral avant le papier.",
+                            steps: [
+                                "Demander si quelque chose s'oppose à la collaboration",
+                                "Fixer la date de lancement",
+                                "Valider les prochaines étapes administratives"
+                            ]
+                        }
                     ],
                     argument: "Investir aujourd'hui sécurise un gain réel sur l'année."
                 },
