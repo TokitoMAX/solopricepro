@@ -470,7 +470,7 @@ const PricingEngine = {
                         "Identifiez la valeur métier (Business Value) spécifique à ce client.",
                         "Soyez prêt à expliquer votre 'Pourquoi' en moins de 30 secondes."
                     ],
-                    checklist: ["Portfolio sectoriel prêt", "SoloPrice Pro configuré", "Mindset de Consultant"]
+                    checklist: ["Portfolio sectoriel", "Configuration SoloPrice Pro", "Mindset Consultant"]
                 },
                 intermediate: {
                     title: "Le Cadrage Stratégique",
@@ -482,7 +482,7 @@ const PricingEngine = {
                     checklist: [
                         {
                             id: 'prep_profile',
-                            label: "Étude du prospect finie",
+                            label: "Étude du prospect",
                             action: 'modal_research',
                             icon: 'fa-search',
                             clues: "Cherchez des signaux de croissance (recrutement, levée de fonds) ou de friction (avis clients, tech stack vieillissante).",
@@ -494,7 +494,7 @@ const PricingEngine = {
                         },
                         {
                             id: 'prep_reserve',
-                            label: "Prix de réserve défini",
+                            label: "Prix de réserve",
                             action: 'modal_pricing',
                             icon: 'fa-hand-holding-usd',
                             clues: "Votre prix de réserve est la limite mentale qui vous protège des mauvaises affaires.",
@@ -506,7 +506,7 @@ const PricingEngine = {
                         },
                         {
                             id: 'prep_labels',
-                            label: "Plan de cadrage prêt",
+                            label: "Plan de cadrage",
                             action: 'modal_framing',
                             icon: 'fa-clipboard-list',
                             clues: "Un bon cadrage empêche le client de prendre le contrôle de l'entretien par le bas.",

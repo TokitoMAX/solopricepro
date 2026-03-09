@@ -1527,7 +1527,10 @@ const Scoper = {
                     `<div style="font-size: 1.1rem; font-weight: 700; color: white; font-style: italic; line-height: 1.5; border-left: 3px solid var(--primary); padding-left: 1rem;">"${levelData.argument}"</div>` :
                     this.currentSalesPhase === 'closing' ?
                         levelData.methods.map(m => `<div style="padding: 0.8rem 1.2rem; background: var(--primary-glass); border-radius: 8px; margin-bottom: 0.6rem; font-size: 0.85rem; color: white; font-weight: 800; display: flex; align-items: center; gap: 10px;"><i class="fas fa-check-double"></i> ${m}</div>`).join('') :
-                        levelData.checklist.map(c => `<div style="margin-bottom: 0.6rem; font-size: 0.9rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;"><i class="fas fa-square" style="color: #333;"></i> ${c}</div>`).join('')
+                        levelData.checklist.map(c => {
+                            const label = typeof c === 'string' ? c : (c.label || 'Action');
+                            return `<div style="margin-bottom: 0.6rem; font-size: 0.9rem; color: #94a3b8; display: flex; align-items: center; gap: 10px;"><i class="fas fa-square" style="color: #333;"></i> ${label}</div>`;
+                        }).join('')
             }
                         </div>
                     </div>
@@ -1950,26 +1953,28 @@ const Scoper = {
         const modal = document.getElementById('closing-action-modal');
         if (modal) modal.remove();
 
-        // Integration Logic: Pre-populate Journal with human-readable labels
-        const phaseData = (PricingEngine.salesLifecycle && PricingEngine.salesLifecycle[this.currentSalesPhase]) ? PricingEngine.salesLifecycle[this.currentSalesPhase] : null;
-        let actionLabel = checkId;
-        if (phaseData && phaseData.levels && phaseData.levels.intermediate) {
-            const item = phaseData.levels.intermediate.checklist.find(i => i.id === checkId);
-            if (item) actionLabel = item.label;
-        }
+        // Integration Logic: Only add to journal if 100% complete
+        if (allChecked) {
+            const phaseData = (PricingEngine.salesLifecycle && PricingEngine.salesLifecycle[this.currentSalesPhase]) ? PricingEngine.salesLifecycle[this.currentSalesPhase] : null;
+            let actionLabel = checkId;
+            if (phaseData && phaseData.levels && phaseData.levels.intermediate) {
+                const item = phaseData.levels.intermediate.checklist.find(i => i.id === checkId);
+                if (item) actionLabel = item.label;
+            }
 
-        let journalContent = `📌 STRATÉGIE : ${actionLabel}\n`;
-        if (finalNotes && finalNotes.value) {
-            journalContent += `\n${finalNotes.value}`;
-        } else if (textInput && textInput.value) {
-            journalContent += `\n${textInput.value}`;
-        }
+            let journalContent = `📌 STRATÉGIE : ${actionLabel}\n`;
+            if (finalNotes && finalNotes.value) {
+                journalContent += `\n${finalNotes.value}`;
+            } else if (textInput && textInput.value) {
+                journalContent += `\n${textInput.value}`;
+            }
 
-        if (valInput && valInput.value) {
-            journalContent += `\n\nValeur cible : ${valInput.value} €`;
-        }
+            if (valInput && valInput.value) {
+                journalContent += `\n\nValeur cible : ${valInput.value} €`;
+            }
 
-        this.addJournalEntry('note', journalContent.trim(), true);
+            this.addJournalEntry('note', journalContent.trim(), true);
+        }
 
         // Refresh UI & Phase Unlock
         App.navigateTo('scoper', 'closing');
