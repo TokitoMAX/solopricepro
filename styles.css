@@ -212,11 +212,10 @@ section {
     content: '';
     position: absolute;
     left: 0;
-    top: 20%;
-    bottom: 20%;
+    top: 25%;
+    bottom: 25%;
     width: 3px;
     background: var(--primary);
-    box-shadow: 0 0 10px var(--primary);
     border-radius: 0 4px 4px 0;
 }
 
@@ -277,15 +276,15 @@ section {
 .user-avatar {
     width: 42px;
     height: 42px;
-    background: var(--gradient-1);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    color: white;
-    font-size: 1.2rem;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    color: var(--white);
+    flex-shrink: 0;
 }
 
 .user-details {
@@ -614,7 +613,7 @@ section {
 .feature-card:hover, .result-card:hover {
     transform: translateY(-5px);
     border-color: var(--primary-glass);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 20px rgba(16, 185, 129, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .feature-card::before, .result-card::before {
@@ -807,7 +806,7 @@ section {
 .feature-card:hover {
     transform: translateY(-8px);
     border-color: var(--border-highlight);
-    box-shadow: var(--shadow-premium), var(--shadow-glow);
+    box-shadow: var(--shadow-premium);
 }
 
 .feature-card::after {
@@ -825,7 +824,7 @@ section {
 
 .feature-card:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    box-shadow: var(--shadow-lg);
     border-color: var(--primary-light);
 }
 
@@ -1103,13 +1102,9 @@ section {
 
 .card-badge {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: var(--primary);
-    color: white;
+    top: 1.5rem;
+    right: 1.5rem;
     font-size: 0.65rem;
-    font-weight: 800;
-    padding: 4px 10px;
     border-radius: 50px;
     letter-spacing: 0.5px;
 }

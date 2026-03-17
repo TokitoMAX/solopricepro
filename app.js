@@ -1421,6 +1421,105 @@ const App = {
         }
     },
 
+    // Advanced Currency Configuration based on user country
+    getCurrencyConfig() {
+        // Fallbacks: default to France/EUR
+        let countryCode = 'FR';
+        let currency = 'EUR';
+        let symbol = '€';
+        let locale = 'fr-FR';
+        let defaultRevenue = 5000;
+
+        const user = (typeof Storage !== 'undefined') ? Storage.getUser() : null;
+        let country = 'FR';
+
+        if (user && (user.user_metadata?.country || user.company?.country)) {
+            country = user.user_metadata?.country || user.company?.country;
+        } else if (typeof document !== 'undefined') {
+            let lang = 'fr';
+            const storedLang = localStorage.getItem('sp_lang');
+            if (storedLang) {
+                lang = storedLang;
+            } else {
+                const match = document.cookie.match(/googtrans=\/[^\/]+\/([a-z]{2})/);
+                if (match && match[1]) {
+                    lang = match[1];
+                } else if (typeof navigator !== 'undefined' && navigator.language) {
+                    lang = navigator.language.split('-')[0];
+                }
+            }
+            if (lang === 'en') country = 'US';
+            else if (lang === 'es') {
+                const fullLang = (navigator.language || '').toLowerCase();
+                country = fullLang.includes('es-es') ? 'ES' : 'US';
+            }
+        }
+
+        switch (country) {
+            case 'CA': currency = 'CAD'; symbol = 'CAD$'; locale = 'en-CA'; defaultRevenue = 6000; break;
+            case 'CH': currency = 'CHF'; symbol = 'CHF'; locale = 'fr-CH'; defaultRevenue = 8000; break;
+            case 'US': case 'JM': case 'BB': case 'TT': case 'GY': case 'SB': case 'FJ': case 'TO':
+            case 'WS': case 'AE': case 'SG': case 'IN': case 'NG': case 'GH': case 'KN': case 'AG':
+            case 'DM': case 'GD': case 'VC': case 'LC': case 'GB': case 'IE': case 'SC': case 'MV':
+                currency = 'USD'; symbol = '$'; locale = 'en-US'; defaultRevenue = 5000; break;
+            case 'GB': currency = 'GBP'; symbol = '£'; locale = 'en-GB'; defaultRevenue = 5000; break;
+            case 'MA': case 'DZ': case 'TN': currency = 'MAD'; symbol = 'MAD'; locale = 'fr-MA'; defaultRevenue = 20000; break;
+            case 'SN': case 'CI': case 'CM': case 'GA': case 'CD': case 'KM': case 'HT':
+                currency = 'XOF'; symbol = 'FCFA'; locale = 'fr-FR'; defaultRevenue = 1500000; break;
+            case 'MG': currency = 'MGA'; symbol = 'Ar'; locale = 'fr-FR'; defaultRevenue = 5000000; break;
+            case 'MU': currency = 'MUR'; symbol = 'Rs'; locale = 'en-MU'; defaultRevenue = 100000; break;
+            case 'MX': currency = 'MXN'; symbol = 'MX$'; locale = 'es-MX'; defaultRevenue = 50000; break;
+            case 'CO': currency = 'COP'; symbol = 'COP$'; locale = 'es-CO'; defaultRevenue = 10000000; break;
+            case 'BR': currency = 'BRL'; symbol = 'R$'; locale = 'pt-BR'; defaultRevenue = 15000; break;
+            case 'AR': currency = 'ARS'; symbol = 'AR$'; locale = 'es-AR'; defaultRevenue = 500000; break;
+            case 'CL': currency = 'CLP'; symbol = 'CLP$'; locale = 'es-CL'; defaultRevenue = 2500000; break;
+            case 'ZA': currency = 'ZAR'; symbol = 'R'; locale = 'en-ZA'; defaultRevenue = 50000; break;
+            case 'ES': currency = 'EUR'; symbol = '€'; locale = 'es-ES'; defaultRevenue = 5000; break;
+            case 'FR': case 'BE': case 'LU': case 'DE': case 'IT': case 'PT': case 'NL': case 'IE':
+            case 'RE': case 'GP': case 'MQ': case 'GF': case 'PM': case 'MF': case 'BL':
+            case 'WF': case 'NC': case 'PF': case 'YT':
+            case 'LB': case 'VU': case 'MC':
+            default:
+                currency = 'EUR'; symbol = '€'; locale = 'fr-FR'; defaultRevenue = 5000; break;
+        }
+        return { currency, symbol, locale, defaultRevenue };
+    },
+
+    formatCurrency(amount, skipSymbol = false) {
+        if (amount === undefined || amount === null || isNaN(amount)) amount = 0;
+        const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+        const config = this.getCurrencyConfig();
+        if (skipSymbol) {
+            return Math.round(numAmount).toLocaleString(config.locale);
+        }
+        try {
+            return new Intl.NumberFormat(config.locale, {
+                style: 'currency',
+                currency: config.currency,
+                maximumFractionDigits: 0,
+                minimumFractionDigits: 0
+            }).format(numAmount);
+        } catch (e) {
+            return `${Math.round(numAmount).toLocaleString(config.locale)} ${config.symbol}`;
+        }
+    },
+
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        const config = this.getCurrencyConfig();
+        return date.toLocaleDateString(config.locale);
+    },
+
+    calculateTotal(items, includeTax = true) {
+        const settings = Storage.get(Storage.KEYS.SETTINGS) || { taxRate: 0 };
+        const subtotal = items.reduce((sum, item) =>
+            sum + (item.quantity * item.unitPrice), 0
+        );
+        if (!includeTax) return subtotal;
+        const taxAmount = subtotal * (settings.taxRate / 100);
+        return subtotal + taxAmount;
+    },
+
 };
 
 window.App = App;
