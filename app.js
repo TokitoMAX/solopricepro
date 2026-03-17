@@ -1,5 +1,6 @@
-// SoloPrice Pro - Application Manager
+// SoloPrice Pro - Application Manager (v20260317_1640)
 // Gestion du routing et de la navigation SPA
+console.log('[APP] Version v20260317_1640 (DomTom Edition) LOADED');
 
 const App = {
     currentPage: 'dashboard',
