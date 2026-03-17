@@ -314,10 +314,17 @@ const App = {
         };
 
         const mobileTitle = document.getElementById('mobile-page-title');
+        const desktopTitle = document.getElementById('desktop-page-title');
         const homeBtn = document.getElementById('mobile-home-btn');
 
+        const titleText = titleMap[page] || 'SoloPrice Pro';
+
         if (mobileTitle) {
-            mobileTitle.textContent = titleMap[page] || 'SoloPrice Pro';
+            mobileTitle.textContent = titleText;
+        }
+
+        if (desktopTitle) {
+            desktopTitle.textContent = titleText;
         }
 
         // Show home button on all pages except dashboard

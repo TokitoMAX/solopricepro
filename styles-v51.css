@@ -22,10 +22,13 @@
     
     --text: #f8fafc;
     --text-muted: #94a3b8;
+    --white: #ffffff;
 
     --border: rgba(255, 255, 255, 0.08);
     --border-strong: rgba(255, 255, 255, 0.15);
     --border-highlight: rgba(16, 185, 129, 0.3);
+
+    --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-light));
 
     /* SHARP PREMIUM DEPTH */
     --shadow-premium: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 10px 30px -10px rgba(0, 0, 0, 0.5);
@@ -2626,27 +2629,29 @@ section {
 }
 
 .logo-icon {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background: var(--gradient-primary);
-    border-radius: 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
-    color: var(--white);
-    font-size: 1.2rem;
+    font-weight: 900;
+    color: #ffffff;
+    font-size: 1.3rem;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo-text {
     font-weight: 800;
-    font-size: 1.2rem;
-    color: #ffffff;
+    font-size: 1.25rem;
+    color: #ffffff !important;
     letter-spacing: -0.02em;
-    margin-left: 8px;
+    margin-left: 10px;
     transition: all 0.3s var(--easing-premium);
+    display: inline-block;
 }
 
 .sidebar:not(:hover):not(.mobile-active) .logo-text {
@@ -3208,6 +3213,43 @@ section {
     line-height: 1.4;
 }
 
+/* Main Content Header & Orientation */
+.main-content-header {
+    display: none; /* Mobile par défaut */
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(var(--bg-sidebar), 0.5);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+@media (min-width: 769px) {
+    .main-content-header {
+        display: flex;
+    }
+    
+    .main-content {
+        padding-top: 0 !important; /* Header provides padding */
+    }
+}
+
+.desktop-page-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.02em;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
 /* Boussole & Stats */
 .compass-stats {
     display: flex;
