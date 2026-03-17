@@ -273,33 +273,55 @@ section {
     pointer-events: none;
 }
 
+.user-info-sidebar {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s var(--easing-premium);
+}
+
+.sidebar:not(:hover):not(.mobile-active) .user-info-sidebar {
+    padding: 1rem 0;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    transition: all 0.3s var(--easing-premium);
+}
+
+.sidebar:not(:hover):not(.mobile-active) .user-profile {
+    justify-content: center;
+    gap: 0;
+}
+
 .user-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
-    background: var(--bg-card);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--bg-elevated);
     border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--white);
     flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 .user-details {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    transition: all 0.3s var(--easing-premium);
 }
 
 .user-name {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--white);
     white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
 }
 
 .user-status {
@@ -2554,7 +2576,6 @@ section {
         width: 70px;
     }
 
-    .sidebar:not(:hover):not(.mobile-active) .logo-text,
     .sidebar:not(:hover):not(.mobile-active) .nav-label,
     .sidebar:not(:hover):not(.mobile-active) .sidebar-section-title,
     .sidebar:not(:hover):not(.mobile-active) .user-details,
@@ -2575,13 +2596,124 @@ section {
 }
 
 .sidebar-header {
-    padding: 1.5rem;
+    height: 70px;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    height: 70px;
     border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+    padding: 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 1.25rem;
+    width: 100%;
+    transition: all 0.3s var(--easing-premium);
+}
+
+.sidebar:not(:hover):not(.mobile-active) .logo {
+    padding: 0;
+    justify-content: center;
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--gradient-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: var(--white);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.logo-text {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    margin-left: 8px;
+    transition: all 0.3s var(--easing-premium);
+}
+
+.sidebar:not(:hover):not(.mobile-active) .logo-text {
+    opacity: 0;
+    width: 0;
+    margin-left: 0;
+    overflow: hidden;
+}
+
+.logo-badge {
+    background: var(--primary);
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-left: 6px;
+    flex-shrink: 0;
+    transition: all 0.3s var(--easing-premium);
+}
+
+.sidebar:not(:hover):not(.mobile-active) .logo-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 0.5rem;
+    padding: 1px 3px;
+    margin: 0;
+}
+
+@media (min-width: 769px) {
+    .mobile-menu-toggle {
+        display: none !important;
+    }
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.25rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s, padding 0.4s var(--easing-premium), color 0.2s;
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar:not(:hover):not(.mobile-active) .nav-item {
+    padding: 0.8rem 0;
+    justify-content: center;
+}
+
+.nav-icon {
+    width: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    transition: transform 0.3s var(--easing-premium);
+}
+
+.sidebar:not(:hover):not(.mobile-active) .nav-icon {
+    width: 70px;
+}
+
+.nav-label {
+    margin-left: 1rem;
+    transition: opacity 0.3s var(--easing-premium), transform 0.3s var(--easing-premium);
 }
 
 .user-info-sidebar {
