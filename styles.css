@@ -288,20 +288,11 @@ section {
     transition: all 0.3s var(--easing-premium);
 }
 
-.sidebar:not(:hover):not(.mobile-active) .user-info-sidebar {
-    padding: 1rem 0;
-}
-
 .user-profile {
     display: flex;
     align-items: center;
     gap: 0.8rem;
     transition: all 0.3s var(--easing-premium);
-}
-
-.sidebar:not(:hover):not(.mobile-active) .user-profile {
-    justify-content: center;
-    gap: 0;
 }
 
 .user-avatar {
@@ -2577,29 +2568,12 @@ section {
 
 @media (min-width: 769px) {
     .sidebar {
-        width: 280px;
+        width: 260px;
         transition: width 0.4s var(--easing-premium);
     }
 
-    .sidebar:not(:hover):not(.mobile-active) {
-        width: 70px;
-    }
-
-    .sidebar:not(:hover):not(.mobile-active) .nav-label,
-    .sidebar:not(:hover):not(.mobile-active) .sidebar-section-title,
-    .sidebar:not(:hover):not(.mobile-active) .user-details,
-    .sidebar:not(:hover):not(.mobile-active) .collaboration-mention {
-        opacity: 0;
-        pointer-events: none;
-        transform: translateX(-10px);
-    }
-
-    .sidebar:not(:hover) ~ .main-content {
-        margin-left: 70px;
-    }
-
     .main-content {
-        margin-left: 280px;
+        margin-left: 260px;
         transition: margin-left 0.4s var(--easing-premium);
     }
 }
@@ -2621,11 +2595,6 @@ section {
     padding: 0 1.25rem;
     width: 100%;
     transition: all 0.3s var(--easing-premium);
-}
-
-.sidebar:not(:hover):not(.mobile-active) .logo {
-    padding: 0;
-    justify-content: center;
 }
 
 .logo-icon {
@@ -2654,13 +2623,6 @@ section {
     display: inline-block;
 }
 
-.sidebar:not(:hover):not(.mobile-active) .logo-text {
-    opacity: 0;
-    width: 0;
-    margin-left: 0;
-    overflow: hidden;
-}
-
 .logo-badge {
     background: var(--primary);
     color: #000;
@@ -2672,15 +2634,6 @@ section {
     margin-left: 6px;
     flex-shrink: 0;
     transition: all 0.3s var(--easing-premium);
-}
-
-.sidebar:not(:hover):not(.mobile-active) .logo-badge {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 0.5rem;
-    padding: 1px 3px;
-    margin: 0;
 }
 
 @media (min-width: 769px) {
