@@ -29,7 +29,7 @@
 
     /* SHARP PREMIUM DEPTH */
     --shadow-premium: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-    --shadow-glow-sharp: 0 0 15px rgba(16, 185, 129, 0.1);
+    --shadow-accent: 0 4px 12px rgba(16, 185, 129, 0.1);
     
     --backdrop-blur: blur(24px);
     --radius-sm: 6px;
@@ -307,7 +307,7 @@ section {
     color: var(--text-muted);
 }
 
-/* Hero */
+/* Hero Animated Refined */
 .hero {
     padding: 10rem 0 8rem 0;
     text-align: center;
@@ -331,30 +331,53 @@ section {
 }
 
 .hero-title {
-    font-size: clamp(3rem, 8vw, 6rem);
+    font-size: clamp(3rem, 7vw, 5.5rem);
     font-weight: 800;
-    line-height: 0.95;
+    line-height: 1;
     letter-spacing: -0.04em;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     color: var(--white);
-    max-width: 1000px;
+    max-width: 1100px;
     margin-left: auto;
     margin-right: auto;
     animation: fadeInUp 1s var(--easing-premium);
 }
 
-.gradient-text {
-    background: linear-gradient(to bottom right, var(--primary), var(--primary-light));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.hero-title-rotating {
+    position: relative;
+    display: block;
+    height: 1.2em;
+    overflow: hidden;
+    margin-top: 0.2em;
+}
+
+.title-word {
+    position: absolute;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transform: translateY(100%);
+    transition: all 0.6s var(--easing-premium);
+    display: block;
+    font-weight: 900;
+    color: var(--primary);
+}
+
+.title-word.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.title-word.exit {
+    opacity: 0;
+    transform: translateY(-100%);
 }
 
 .hero-subtitle {
     font-size: 1.2rem;
     color: var(--text-muted);
-    max-width: 600px;
-    margin: 0 auto 3rem auto;
+    max-width: 650px;
+    margin: 0 auto 3.5rem auto;
     line-height: 1.6;
     animation: fadeInUp 1s var(--easing-premium) 0.2s backwards;
 }
@@ -1082,6 +1105,7 @@ section {
     transition: all 0.4s var(--easing-premium);
     cursor: pointer;
     position: relative;
+    overflow: visible !important; /* Fix for badge clipping */
 }
 
 .pricing-card-mini:hover {
@@ -2506,28 +2530,58 @@ section {
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
 }
 
-/* Sidebar */
-/* Sidebar */
+/* Sidebar Responsive & Animated */
 .sidebar {
-    width: 260px;
-    background: var(--bg-sidebar);
-    backdrop-filter: var(--backdrop-blur);
+    height: 100vh;
+    background: var(--bg-card);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     position: fixed;
-    height: 100vh;
-    overflow-y: auto;
-    z-index: 50;
-    /* No soft shadow, use hard border for impact */
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+@media (min-width: 769px) {
+    .sidebar {
+        width: 280px;
+        transition: width 0.4s var(--easing-premium);
+    }
+
+    .sidebar:not(:hover):not(.mobile-active) {
+        width: 70px;
+    }
+
+    .sidebar:not(:hover):not(.mobile-active) .logo-text,
+    .sidebar:not(:hover):not(.mobile-active) .nav-label,
+    .sidebar:not(:hover):not(.mobile-active) .sidebar-section-title,
+    .sidebar:not(:hover):not(.mobile-active) .user-details,
+    .sidebar:not(:hover):not(.mobile-active) .collaboration-mention {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(-10px);
+    }
+
+    .sidebar:not(:hover) ~ .main-content {
+        margin-left: 70px;
+    }
+
+    .main-content {
+        margin-left: 280px;
+        transition: margin-left 0.4s var(--easing-premium);
+    }
 }
 
 .sidebar-header {
     padding: 1.5rem;
-    border-bottom: 1px solid var(--border);
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+    height: 70px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
 }
 
 .user-info-sidebar {
@@ -2741,12 +2795,16 @@ section {
 
 /* Main Content */
 .main-content {
-    flex: 1;
-    margin-left: 260px;
+    margin-left: 280px;
     padding: 2.5rem;
     min-height: 100vh;
+    transition: margin-left 0.4s var(--easing-premium);
+    position: relative;
+    z-index: 10;
     background: var(--bg);
 }
+
+/* Sync with Sidebar Collapse - Handled in media query above */
 
 @media (min-width: 1600px) {
     .main-content {

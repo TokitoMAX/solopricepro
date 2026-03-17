@@ -69,6 +69,7 @@ const App = {
                 if (landing) landing.style.display = 'block';
                 if (appWrapper) appWrapper.style.display = 'none';
                 this.updateLandingStats();
+                this.initHeroAnimation();
             }
         } catch (e) {
             console.error(' Critical Init Error:', e);
@@ -140,6 +141,35 @@ const App = {
             main.style.maxWidth = '100vw';
         }
         document.body.classList.add('public-view');
+    },
+
+    initHeroAnimation() {
+        const rotatingContainer = document.querySelector('.hero-title-rotating');
+        if (!rotatingContainer) return;
+
+        const words = rotatingContainer.querySelectorAll('.title-word');
+        if (words.length < 2) return;
+        
+        let currentIndex = 0;
+
+        setInterval(() => {
+            const currentWord = words[currentIndex];
+            currentWord.classList.remove('active');
+            currentWord.classList.add('exit');
+
+            currentIndex = (currentIndex + 1) % words.length;
+
+            const nextWord = words[currentIndex];
+            nextWord.classList.remove('exit');
+            nextWord.classList.add('active');
+
+            // Cleanup exit class after transition
+            setTimeout(() => {
+                words.forEach((w, i) => {
+                    if (i !== currentIndex) w.classList.remove('exit');
+                });
+            }, 600);
+        }, 3000);
     },
 
     updateLandingStats() {
