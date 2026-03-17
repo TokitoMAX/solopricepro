@@ -6329,10 +6329,8 @@ body.public-view {
     .main-content-header {
         display: flex;
     }
-    .main-content {
-        padding-top: 0 !important;
-    }
 }
+
 
 .desktop-page-title {
     font-size: 1.3rem;
