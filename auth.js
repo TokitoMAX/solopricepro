@@ -337,9 +337,14 @@ const Auth = {
 
     handleExpiredSession() {
         console.warn(' Session expired or invalid. Clearing tokens...');
+        
+        // Only trigger once to avoid reload loops
+        if (this._isHandlingExpiry) return;
+        this._isHandlingExpiry = true;
+
         localStorage.removeItem('sp_token');
         localStorage.removeItem('sp_user');
-        sessionStorage.removeItem('sp_in_app'); // CRITICAL: Stop reload loop
+        sessionStorage.removeItem('sp_in_app');
         this.token = null;
         this.user = null;
 
@@ -349,8 +354,29 @@ const Auth = {
 
         // Return to landing after a short delay
         setTimeout(() => {
-            window.location.reload();
+            window.location.href = window.location.origin + window.location.pathname;
         }, 2000);
+    },
+
+    /**
+     * Proactive session check to see if we're still authenticated
+     */
+    async validateSession() {
+        if (!this.token) return false;
+        try {
+            const response = await fetch(`${this.apiBase}/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+            
+            if (response.status === 401 || response.status === 403) {
+                this.handleExpiredSession();
+                return false;
+            }
+            return response.ok;
+        } catch (e) {
+            console.error("[AUTH] Session validation failed:", e);
+            return true; // Don't logout on network error
+        }
     }
 };
 

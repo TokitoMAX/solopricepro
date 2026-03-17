@@ -75,12 +75,22 @@ const App = {
             this.hideLoader();
         }
 
-        // Event listener pour fermeture de modales
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                this.closeModal();
-            }
-        });
+            // Event listener pour fermeture de modales
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    this.closeModal();
+                }
+            });
+
+            // --- SESSION MONITORING ---
+            // Check session every 10 minutes or when user returns to tab
+            setInterval(() => {
+                if (Auth.isLoggedIn()) Auth.validateSession();
+            }, 10 * 60 * 1000);
+
+            window.addEventListener('focus', () => {
+                if (Auth.isLoggedIn()) Auth.validateSession();
+            });
     },
 
     hideLoader() {
