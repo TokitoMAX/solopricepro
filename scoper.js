@@ -1545,11 +1545,18 @@ const Scoper = {
                             <div class="action-check-list" style="display: flex; flex-direction: column; gap: 0.8rem;">
                                 ${((levelData.checklist && levelData.checklist.length > 0) ? levelData.checklist : []).map((item, i) => {
                 const checkId = item.id || `check-${this.currentSalesPhase}-${i}`;
-                const isChecked = localStorage.getItem(`sp_closing_${checkId}`) === 'true';
+                
+                // Use consolidated calculator data for checklist state
+                const calcData = Storage.get(Storage.KEYS.CALCULATOR_DATA) || {};
+                if (!calcData.closingStore) calcData.closingStore = {};
+                
+                const isChecked = calcData.closingStore[checkId] === true;
 
-                // New: Check for "In Progress" status
+                // Check for "In Progress" status in consolidated store
                 const steps = item.steps || [];
-                const checkedStepsCount = steps.filter((_, idx) => localStorage.getItem(`sp_closing_step_${checkId}_${idx}`) === 'true').length;
+                const stepStoreKey = `steps_${checkId}`;
+                const checkedSteps = calcData.closingStore[stepStoreKey] || {};
+                const checkedStepsCount = Object.values(checkedSteps).filter(v => v === true).length;
                 const isInProgress = !isChecked && checkedStepsCount > 0;
 
                 const actionIcon = item.icon || 'fa-bolt';
@@ -1623,8 +1630,11 @@ const Scoper = {
         const phaseData = (PricingEngine.salesLifecycle && PricingEngine.salesLifecycle[this.currentSalesPhase]) ? PricingEngine.salesLifecycle[this.currentSalesPhase] : null;
         if (!phaseData || !phaseData.levels || !phaseData.levels.intermediate) return;
 
+        const calcData = Storage.get(Storage.KEYS.CALCULATOR_DATA) || {};
+        const closingStore = calcData.closingStore || {};
+
         const checklist = phaseData.levels.intermediate.checklist || [];
-        const completedCount = checklist.filter(item => localStorage.getItem(`sp_closing_${item.id}`) === 'true').length;
+        const completedCount = checklist.filter(item => closingStore[item.id] === true).length;
         const totalCount = checklist.length;
         const allChecked = completedCount === totalCount && totalCount > 0;
 
@@ -1645,16 +1655,10 @@ const Scoper = {
     resetStrategicActions() {
         if (!confirm("Voulez-vous vraiment réinitialiser toutes les actions stratégiques de cette mission ? Vos notes dans le journal resteront intactes.")) return;
 
-        // Scan all keys and remove those related to closing progress
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key.startsWith('sp_closing_')) {
-                keysToRemove.push(key);
-            }
-        }
-
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+        const calcData = Storage.get(Storage.KEYS.CALCULATOR_DATA) || {};
+        calcData.closingStore = {};
+        Storage.set(Storage.KEYS.CALCULATOR_DATA, calcData);
+        Storage.saveCalculatorData(calcData);
 
         // Return to preparation phase to force a clean restart
         this.currentSalesPhase = 'preparation';
@@ -1839,17 +1843,20 @@ const Scoper = {
             }
 
             if (checklistItem.steps && checklistItem.steps.length > 0) {
+                const calcData = Storage.get(Storage.KEYS.CALCULATOR_DATA) || {};
+                const closingStore = calcData.closingStore || {};
+                const stepStore = closingStore[`steps_${checkId}`] || {};
+
                 guidingContent += `
                     <div style="margin-bottom: 2rem;">
                         <div style="font-size: 0.65rem; font-weight: 950; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1.2rem;">Étapes de Cadrage</div>
                         <div style="display: flex; flex-direction: column; gap: 0.4rem;">
                             ${checklistItem.steps.map((step, i) => {
-                    const stepId = `sp_closing_step_${checkId}_${i}`;
-                    const isStepChecked = localStorage.getItem(stepId) === 'true';
+                    const isStepChecked = stepStore[i] === true;
                     return `
                                     <label class="step-checkbox-v2">
                                         <input type="checkbox" class="step-checkbox" ${isStepChecked ? 'checked' : ''} 
-                                               onchange="localStorage.setItem('${stepId}', this.checked); Scoper.updateModalButtonState('${checkId}')">
+                                               onchange="Scoper.updateStepStatus('${checkId}', ${i}, this.checked)">
                                         <span style="font-size: 0.9rem; color: #e2e8f0; font-weight: 500;">${step}</span>
                                     </label>
                                 `;
@@ -1956,21 +1963,38 @@ const Scoper = {
         }
     },
 
+    updateStepStatus(checkId, stepIdx, isChecked) {
+        const calcData = Storage.get(Storage.KEYS.CALCULATOR_DATA) || {};
+        if (!calcData.closingStore) calcData.closingStore = {};
+        const stepStoreKey = `steps_${checkId}`;
+        if (!calcData.closingStore[stepStoreKey]) calcData.closingStore[stepStoreKey] = {};
+        
+        calcData.closingStore[stepStoreKey][stepIdx] = isChecked;
+        
+        Storage.set(Storage.KEYS.CALCULATOR_DATA, calcData);
+        this.updateModalButtonState(checkId);
+    },
+
     saveClosingAction(checkId) {
-        // Enregistrer le succès UNIQUEMENT si tout est coché
         const checkboxes = document.querySelectorAll('.step-checkbox');
         const allChecked = checkboxes.length > 0 ? Array.from(checkboxes).every(cb => cb.checked) : true;
 
-        localStorage.setItem(`sp_closing_${checkId}`, allChecked ? 'true' : 'false');
+        const calcData = Storage.get(Storage.KEYS.CALCULATOR_DATA) || {};
+        if (!calcData.closingStore) calcData.closingStore = {};
+        calcData.closingStore[checkId] = allChecked;
 
         // Logique de sauvegarde des données (Inputs spécifiques + Notes générales)
         const textInput = document.getElementById('action-input-text');
         const valInput = document.getElementById('action-input-val');
         const finalNotes = document.getElementById('action-notes-final');
 
-        if (textInput) Storage.set(`sp_closing_data_text_${checkId}`, textInput.value);
-        if (valInput) Storage.set(`sp_closing_data_val_${checkId}`, valInput.value);
-        if (finalNotes) Storage.set(`sp_closing_data_notes_${checkId}`, finalNotes.value);
+        if (textInput) calcData.closingStore[`data_text_${checkId}`] = textInput.value;
+        if (valInput) calcData.closingStore[`data_val_${checkId}`] = valInput.value;
+        if (finalNotes) calcData.closingStore[`data_notes_${checkId}`] = finalNotes.value;
+
+        Storage.set(Storage.KEYS.CALCULATOR_DATA, calcData);
+        // Persist change to server
+        Storage.saveCalculatorData(calcData);
 
         // Fermer la modal
         const modal = document.getElementById('closing-action-modal');
