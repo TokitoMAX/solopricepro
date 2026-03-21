@@ -423,11 +423,16 @@ const Clients = {
         this.editingId = null;
     },
 
-    saveNotes() {
-        if (!this.editingId) return;
-        const notesEl = document.getElementById('client-detail-notes');
-        Storage.updateClient(this.editingId, { notes: notesEl.value });
-        App.showNotification(i18n.t('clients.notify.notes_updated') || 'Note client mise à jour.', 'success');
+    async saveNotes() {
+        if (!this.editingId) return; // Keep editingId for consistency with showDetail setting it
+        const notes = document.getElementById('client-detail-notes').value; // Keep client-detail-notes ID
+
+        try {
+            await Storage.updateClient(this.editingId, { notes }); // Use editingId
+            App.showNotification(i18n.t('clients.notify.notes_updated'), 'success');
+        } catch (err) {
+            App.showNotification('Erreur lors de la sauvegarde : ' + err.message, 'error');
+        }
     },
 
     escapeHtml(text) {

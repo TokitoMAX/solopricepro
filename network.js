@@ -62,31 +62,31 @@ const Network = {
 
         container.innerHTML = `
             <div class="page-header">
-                <h1 class="page-title">Mon Cercle</h1>
-                <p class="page-subtitle">Gérez vos clients, prospects, partenaires et explorez l'écosystème d'experts.</p>
+                <h1 class="page-title">${i18n.t('network.title')}</h1>
+                <p class="page-subtitle">${i18n.t('network.subtitle')}</p>
             </div>
 
             <div class="settings-tabs" style="flex-wrap: wrap; gap: 0.25rem;">
                 <button class="settings-tab" data-tab-id="clients" onclick="Network.switchTab('clients')">
-                    <i class="fas fa-users"></i> Mes Clients
+                    <i class="fas fa-users"></i> ${i18n.t('network.tab.clients')}
                 </button>
                 <button class="settings-tab" data-tab-id="leads" onclick="Network.switchTab('leads')">
-                    <i class="fas fa-funnel-dollar"></i> Mes Prospects
+                    <i class="fas fa-funnel-dollar"></i> ${i18n.t('network.tab.leads')}
                 </button>
                 <button class="settings-tab" data-tab-id="partners" onclick="Network.switchTab('partners')">
-                    <i class="fas fa-handshake"></i> Mes Partenaires
+                    <i class="fas fa-handshake"></i> ${i18n.t('network.tab.partners')}
                 </button>
                 <button class="settings-tab" data-tab-id="ecosystem" onclick="Network.switchTab('ecosystem')">
-                    <i class="fas fa-globe"></i> L'Écosystème
-                    <span style="font-size: 0.6rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">CERCLE</span>
+                    <i class="fas fa-globe"></i> ${i18n.t('network.tab.ecosystem')}
+                    <span style="font-size: 0.6rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">${i18n.t('network.badge.circle')}</span>
                 </button>
                 <button class="settings-tab" data-tab-id="join" onclick="Network.switchTab('join')">
-                    <i class="fas fa-paper-plane"></i> Rejoindre
+                    <i class="fas fa-paper-plane"></i> ${i18n.t('network.tab.join')}
                 </button>
                 ${isAdmin ? `
                 <button class="settings-tab" data-tab-id="applications" onclick="Network.switchTab('applications')" style="border-color: #a855f7;">
-                    <i class="fas fa-inbox"></i> Candidatures
-                    <span style="font-size: 0.6rem; background: #a855f7; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">ADMIN</span>
+                    <i class="fas fa-inbox"></i> ${i18n.t('network.tab.applications')}
+                    <span style="font-size: 0.6rem; background: #a855f7; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">${i18n.t('network.badge.admin')}</span>
                 </button>` : ''}
             </div>
             <div id="cercle-dynamic-content" style="margin-top: 2rem;">
@@ -138,9 +138,9 @@ const Network = {
             container.innerHTML = `
                 <div class="empty-state glass" style="padding: 3rem; border-radius: 16px; text-align: center; margin-bottom: 2rem;">
                     <i class="fas fa-handshake" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
-                    <h3 style="margin-bottom: 0.5rem;">Mes Partenaires Privés</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Vos contacts réseau confidentiels — prestataires, sous-traitants, collaborateurs.</p>
-                    <button class="button-primary" onclick="Network.showAddModal()"><i class="fas fa-plus"></i> Ajouter un contact</button>
+                    <h3 style="margin-bottom: 0.5rem;">${i18n.t('network.partners.empty.title')}</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">${i18n.t('network.partners.empty.desc')}</p>
+                    <button class="button-primary" onclick="Network.showAddModal()"><i class="fas fa-plus"></i> ${i18n.t('network.partners.btn.add')}</button>
                 </div>
             `;
             return;
@@ -148,27 +148,29 @@ const Network = {
 
         container.innerHTML = `
             <div class="network-container">
-                <div class="section-header-inline">
-                    <h3 class="section-title-small">Mes Partenaires Privés</h3>
-                    <button class="button-primary small" onclick="Network.showAddModal()">+ Nouveau</button>
+                <div class="section-header-inline" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 class="section-title-small" style="margin: 0;">${i18n.t('network.partners.title')}</h3>
+                    <button class="button-primary small" onclick="Network.showAddModal()">${i18n.t('network.partners.btn.new')}</button>
                 </div>
                 <div class="partners-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
                     ${this.providers.map(p => `
-                        <div class="network-card glass" style="background: #0a0a0a; border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; border-left: 4px solid ${p.isVerified ? 'var(--primary)' : 'var(--border)'};">
+                        <div class="network-card glass" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 1.5rem; border-radius: 16px; border-left: 4px solid ${p.isVerified ? 'var(--primary)' : 'var(--border)'}; transition: all 0.3s ease;">
                             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                                <div style="width: 45px; height: 45px; background: var(--dark); color: var(--text-muted); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 1px solid var(--border); font-size: 1.2rem;">${(p.name || '?').charAt(0).toUpperCase()}</div>
-                                <div>
-                                    <h3 style="margin: 0; font-size: 1rem;">${p.name}</h3>
-                                    <p style="margin: 2px 0 0; color: var(--text-muted); font-size: 0.82rem;">${p.specialty || 'Non renseigné'}</p>
+                                <div style="width: 45px; height: 45px; background: var(--primary-glass); color: var(--primary-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; border: 1px solid var(--primary-glass); font-size: 1.2rem;">${(p.name || '?').charAt(0).toUpperCase()}</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <h3 style="margin: 0; font-size: 1rem; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</h3>
+                                    <p style="margin: 2px 0 0; color: var(--text-muted); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.specialty || i18n.t('network.partners.specialty_empty')}</p>
                                 </div>
                             </div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">${p.city || ''} ${p.email ? `· ${p.email}` : ''}</div>
-                            <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.8;">
+                                <i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i> ${p.city || ''} ${p.email ? `· ${p.email}` : ''}
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.2rem;">
                                 <button class="button-secondary sm" style="flex: 1; font-size: 0.75rem;" onclick="Network.contactProvider('${p.id}')">
-                                    <i class="fas fa-envelope"></i> Contacter
+                                    <i class="fas fa-envelope"></i> ${i18n.t('network.partners.btn.contact')}
                                 </button>
-                                <button class="button-secondary sm" style="flex: 1; font-size: 0.75rem; border-color: var(--danger-glass); color: var(--danger-light);" onclick="Network.deleteProvider('${p.id}')">
-                                    Supprimer
+                                <button class="button-secondary sm" style="flex: 0 0 auto; width: 36px; padding: 0; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;" onclick="Network.deleteProvider('${p.id}')" title="${i18n.t('network.partners.btn.delete')}">
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
                         </div>
@@ -185,7 +187,7 @@ const Network = {
         container.innerHTML = `
             <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
                 <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem;"></i>
-                <p style="margin-top: 1rem;">Chargement des experts...</p>
+                <p style="margin-top: 1rem;">${i18n.t('network.ecosystem.loading')}</p>
             </div>
         `;
 
@@ -201,36 +203,36 @@ const Network = {
         container.innerHTML = `
             <div class="page-header" style="padding: 0; margin-bottom: 1.5rem;">
                 <div>
-                    <h2 style="font-size: 1.3rem; margin: 0;">Le Cercle SoloPrice</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.3rem 0 0;">Experts sélectionnés et validés par SoloPrice Pro.</p>
+                    <h2 style="font-size: 1.3rem; margin: 0;">${i18n.t('network.ecosystem.title')}</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.3rem 0 0;">${i18n.t('network.ecosystem.subtitle')}</p>
                 </div>
-                ${isAdmin ? `<button class="button-primary small" onclick="Network.showAddEcosystemModal()"><i class="fas fa-plus"></i> Ajouter un expert</button>` : ''}
+                ${isAdmin ? `<button class="button-primary small" onclick="Network.showAddEcosystemModal()"><i class="fas fa-plus"></i> ${i18n.t('network.ecosystem.btn.add')}</button>` : ''}
             </div>
 
             ${this.isExpert() ? (() => {
                 const u = Auth.getUser();
-                const profile = Storage.get(Storage.KEYS.PROFILE) || {};
+                const profile = Storage.get(Storage.KEYS.USER_PROFILE) || {};
                 const name = profile.company_name || profile.first_name || u?.email?.split('@')[0] || 'Vous';
                 const specialty = profile.activity || profile.specialty || 'Expert SoloPrice';
                 const city = profile.city || profile.ville || '';
                 const email = u?.email || '';
                 const portfolio = profile.portfolio || profile.website || '';
                 return `
-                <div style="margin-bottom: 1.5rem; padding: 1.25rem 1.5rem; border-radius: 16px; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(99,102,241,0.06)); border: 1px solid var(--primary); position: relative; overflow: hidden;">
-                    <div style="position: absolute; top: 10px; right: 12px; font-size: 0.6rem; font-weight: 800; letter-spacing: 1.5px; color: var(--primary-light); text-transform: uppercase;">✦ Votre Profil — Mis en Avant</div>
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
-                        <div style="width: 52px; height: 52px; background: var(--primary-glass); color: var(--primary-light); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; border: 2px solid var(--primary); flex-shrink: 0;">${name.charAt(0).toUpperCase()}</div>
+                <div style="margin-bottom: 2rem; padding: 1.5rem 2rem; border-radius: 20px; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(99,102,241,0.08)); border: 1px solid var(--primary); position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);">
+                    <div style="position: absolute; top: 12px; right: 15px; font-size: 0.65rem; font-weight: 800; letter-spacing: 1.5px; color: var(--primary-light); text-transform: uppercase; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px;">${i18n.t('network.expert.profile_notice')}</div>
+                    <div style="display: flex; align-items: center; gap: 1.5rem; margin-top: 0.5rem;">
+                        <div style="width: 60px; height: 60px; background: var(--primary-glass); color: var(--primary-light); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.6rem; border: 2px solid var(--primary); flex-shrink: 0; box-shadow: 0 0 15px var(--primary-glass);">${name.charAt(0).toUpperCase()}</div>
                         <div style="flex:1;">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
-                                <strong style="font-size: 1rem;">${name}</strong>
-                                <span style="font-size: 0.55rem; background: var(--primary); color: white; padding: 2px 7px; border-radius: 4px; font-weight: 700;">EXPERT</span>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                                <strong style="font-size: 1.1rem; color: white;">${name}</strong>
+                                <span style="font-size: 0.6rem; background: var(--primary); color: white; padding: 2px 8px; border-radius: 6px; font-weight: 800;">${i18n.t('network.expert.badge')}</span>
                             </div>
-                            <div style="color: var(--primary-light); font-size: 0.82rem; font-weight: 600;">${specialty}</div>
-                            ${city ? `<div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;"><i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i>${city}</div>` : ''}
+                            <div style="color: var(--primary-light); font-size: 0.9rem; font-weight: 700;">${specialty}</div>
+                            ${city ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;"><i class="fas fa-map-marker-alt" style="margin-right: 6px; color: var(--primary-light);"></i>${city}</div>` : ''}
                         </div>
-                        <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
-                            ${portfolio ? `<a href="${portfolio}" target="_blank" class="button-secondary sm" style="font-size: 0.75rem; text-decoration: none;"><i class="fas fa-external-link-alt"></i> Portfolio</a>` : ''}
-                            ${email ? `<a href="mailto:${email}" class="button-primary small" style="font-size: 0.75rem; text-decoration: none;"><i class="fas fa-envelope"></i> Contacter</a>` : ''}
+                        <div style="display: flex; gap: 0.75rem; flex-shrink: 0;">
+                            ${portfolio ? `<a href="${portfolio}" target="_blank" class="button-secondary sm" style="font-size: 0.8rem; text-decoration: none; padding: 0.6rem 1rem; border-radius: 10px;"><i class="fas fa-external-link-alt"></i> ${i18n.t('network.expert.btn.portfolio')}</a>` : ''}
+                            ${email ? `<a href="mailto:${email}" class="button-primary small" style="font-size: 0.8rem; text-decoration: none; padding: 0.6rem 1rem; border-radius: 10px;"><i class="fas fa-envelope"></i> ${i18n.t('network.expert.btn.contact')}</a>` : ''}
                         </div>
                     </div>
                 </div>
@@ -238,15 +240,17 @@ const Network = {
             })() : ''}
 
             ${experts.length === 0 ? `
-                <div class="empty-state glass" style="padding: 3rem; border-radius: 16px; text-align: center;">
-                    <i class="fas fa-globe" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
-                    <h3>L'Écosystème se construit</h3>
-                    <p style="color: var(--text-muted);">Les premiers experts validés apparaîtront ici bientôt.</p>
-                    ${isAdmin ? `<button class="button-primary" style="margin-top: 1rem;" onclick="Network.showAddEcosystemModal()"><i class="fas fa-plus"></i> Ajouter le premier expert</button>` : `
-                    <button class="button-secondary" style="margin-top: 1rem;" onclick="Network.switchTab('join')"><i class="fas fa-paper-plane"></i> Postuler pour rejoindre</button>`}
+                <div class="empty-state glass" style="padding: 4rem 2rem; border-radius: 20px; text-align: center; border: 1px dashed var(--border);">
+                    <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.03); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                        <i class="fas fa-globe" style="font-size: 2.5rem; color: var(--text-muted);"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem;">${i18n.t('network.ecosystem.empty.title')}</h3>
+                    <p style="color: var(--text-muted); max-width: 400px; margin: 0 auto 2rem;">${i18n.t('network.ecosystem.empty.desc')}</p>
+                    ${isAdmin ? `<button class="button-primary" style="padding: 0.8rem 1.5rem;" onclick="Network.showAddEcosystemModal()"><i class="fas fa-plus"></i> ${i18n.t('network.ecosystem.empty.btn_admin')}</button>` : `
+                    <button class="button-secondary" style="padding: 0.8rem 1.5rem;" onclick="Network.switchTab('join')"><i class="fas fa-paper-plane"></i> ${i18n.t('network.ecosystem.empty.btn_join')}</button>`}
                 </div>
             ` : `
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
                     ${await (async () => {
                 const expertCards = await Promise.all(experts.map(async e => {
                     const ratings = await Ratings.getUserRatings(e.id);
@@ -327,37 +331,60 @@ const Network = {
                             <label class="form-label">Votre Nom Complet *</label>
                             <input type="text" name="user_name" class="form-input" required value="${userName}" placeholder="Jean Dupont">
                         </div>
-                        <div class="form-group" style="margin-bottom: 1.25rem;">
-                            <label class="form-label">Email de Contact *</label>
-                            <input type="email" name="user_email" class="form-input" required value="${userEmail}" placeholder="vous@exemple.com">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 1.25rem;">
-                            <label class="form-label">Votre Spécialité *</label>
-                            <input type="text" name="specialty" class="form-input" required placeholder="Ex: Développeur Web React, Coach Agile...">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 1.25rem;">
-                            <label class="form-label">Lien Portfolio / LinkedIn *</label>
-                            <input type="url" name="portfolio" class="form-input" required placeholder="https://votresite.com">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 1.25rem;">
-                            <label class="form-label">Ville / Région</label>
-                            <input type="text" name="city" class="form-input" placeholder="Ex: Paris, Fort-de-France...">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 1.75rem;">
-                            <label class="form-label">Pourquoi voulez-vous rejoindre le Cercle ?</label>
-                            <textarea name="description" class="form-input" rows="4" placeholder="Présentez votre valeur ajoutée et votre vision..."></textarea>
-                        </div>
-                        <button type="submit" class="button-primary full-width" id="join-submit-btn" style="padding: 1rem; font-size: 1rem;">
-                            <i class="fas fa-paper-plane"></i> Envoyer ma Candidature
-                        </button>
-                        <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;">Notre équipe vous recontactera dans les 48h.</p>
-                    </form>
+        container.innerHTML = `
+            <div class="join-expert-hero glass" style="padding: 4rem 2rem; border-radius: 24px; text-align: center; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.05)); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem;">
+                <div style="display: inline-block; padding: 0.5rem 1rem; background: var(--primary-glass); color: var(--primary-light); border-radius: 30px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem; border: 1px solid var(--primary-glass);">${i18n.t('network.tab.join')}</div>
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${i18n.t('network.join.title')}</h1>
+                <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2.5rem;">${i18n.t('network.join.subtitle')}</p>
+
+                <div class="perks-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; max-width: 900px; margin: 0 auto;">
+                    <div class="perk-item">
+                        <div style="width: 50px; height: 50px; background: rgba(99,102,241,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: #818cf8; font-size: 1.5rem;"><i class="fas fa-rocket"></i></div>
+                        <h4 style="margin-bottom: 0.5rem;">${i18n.t('network.join.perk1.title')}</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">${i18n.t('network.join.perk1.desc')}</p>
+                    </div>
+                    <div class="perk-item">
+                        <div style="width: 50px; height: 50px; background: rgba(16,185,129,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: #34d399; font-size: 1.5rem;"><i class="fas fa-check-circle"></i></div>
+                        <h4 style="margin-bottom: 0.5rem;">${i18n.t('network.join.perk2.title')}</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">${i18n.t('network.join.perk2.desc')}</p>
+                    </div>
+                    <div class="perk-item">
+                        <div style="width: 50px; height: 50px; background: rgba(245,158,11,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: #fbbf24; font-size: 1.5rem;"><i class="fas fa-star"></i></div>
+                        <h4 style="margin-bottom: 0.5rem;">${i18n.t('network.join.perk3.title')}</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">${i18n.t('network.join.perk3.desc')}</p>
+                    </div>
                 </div>
+            </div>
+
+            <div class="join-form-container glass" style="max-width: 700px; margin: 0 auto; padding: 2.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                <h3 style="margin-bottom: 2rem; text-align: center;">${i18n.t('network.join.form.title')}</h3>
+                <form id="expert-application-form" onsubmit="Network.handleJoinSubmit(event)">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="form-group">
+                            <label class="form-label">${i18n.t('network.join.label.role')}</label>
+                            <input type="text" name="specialty" class="modern-input" required placeholder="${i18n.t('network.join.placeholder.role')}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">${i18n.t('network.join.label.portfolio')}</label>
+                            <input type="url" name="portfolio" class="modern-input" required placeholder="https://...">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label class="form-label">${i18n.t('network.join.label.desc')}</label>
+                        <textarea name="description" class="modern-input" rows="4" placeholder="${i18n.t('network.join.placeholder.desc')}"></textarea>
+                    </div>
+                    <button type="submit" class="button-primary full-width" id="join-submit-btn" style="margin-top: 2rem; padding: 1rem; border-radius: 12px; font-weight: 700;">
+                        <i class="fas fa-paper-plane" style="margin-right: 8px;"></i> ${i18n.t('network.join.btn.submit')}
+                    </button>
+                    <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 1.5rem;">
+                        <i class="fas fa-info-circle"></i> ${i18n.t('network.join.notice')}
+                    </p>
+                </form>
             </div>
         `;
     },
 
-    async submitJoinApplication(e) {
+    async handleJoinSubmit(e) {
         e.preventDefault();
         const btn = document.getElementById('join-submit-btn');
         btn.disabled = true;
@@ -585,11 +612,24 @@ const Network = {
             is_ecosystem: true
         };
 
+    async addEcosystemExpert(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const expert = {
+            name: formData.get('name'),
+            specialty: formData.get('specialty'),
+            email: formData.get('email'),
+            city: formData.get('city'),
+            portfolio: formData.get('portfolio'),
+            description: formData.get('description'),
+            is_ecosystem: true
+        };
+
         try {
             await NetworkService.addEcosystemExpert(expert);
             document.getElementById('ecosystem-add-expert-modal')?.classList.remove('active');
             e.target.reset();
-            App.showNotification('Expert ajouté à l\'écosystème !', 'success');
+            App.showNotification(i18n.t('network.ecosystem.notify.added'), 'success');
             this.switchTab('ecosystem');
         } catch (err) {
             App.showNotification('Erreur : ' + err.message, 'error');
@@ -597,10 +637,10 @@ const Network = {
     },
 
     async deleteEcosystemExpert(id) {
-        if (!confirm('Retirer cet expert de l\'écosystème ?')) return;
+        if (!confirm(i18n.t('network.confirm.remove_expert'))) return;
         try {
             await NetworkService.deleteEcosystemExpert(id);
-            App.showNotification('Expert retiré.', 'success');
+            App.showNotification(i18n.t('network.ecosystem.notify.removed'), 'success');
             this.switchTab('ecosystem');
         } catch (err) {
             App.showNotification('Erreur : ' + err.message, 'error');
@@ -681,7 +721,7 @@ const Network = {
             this.providers = Storage._cache[Storage.KEYS.PROVIDERS] || [...this.providers, saved || newProvider];
             this.hideAddModal();
             e.target.reset();
-            App.showNotification('Partenaire ajouté au réseau.', 'success');
+            App.showNotification(i18n.t('network.partners.notify.added'), 'success');
             this.switchTab('partners');
         } catch (err) {
             console.error('Network error:', err);
@@ -690,11 +730,11 @@ const Network = {
     },
 
     async deleteProvider(id) {
-        if (confirm('Supprimer ce partenaire de votre réseau ?')) {
+        if (confirm(i18n.t('network.confirm.delete_partner'))) {
             try {
                 await Storage.delete(Storage.KEYS.PROVIDERS, id);
                 this.loadProviders();
-                App.showNotification('Partenaire supprimé.', 'success');
+                App.showNotification(i18n.t('network.partners.notify.removed'), 'success');
                 this.switchTab('partners');
             } catch (err) {
                 App.showNotification('Erreur lors de la suppression.', 'error');
@@ -707,7 +747,7 @@ const Network = {
         if (p && p.email) {
             window.location.href = `mailto:${p.email}`;
         } else {
-            App.showNotification('Aucun email renseigné pour ce contact.', 'info');
+            App.showNotification(i18n.t('network.partners.notify.no_email'), 'info');
         }
     },
 

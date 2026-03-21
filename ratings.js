@@ -19,7 +19,7 @@ const Ratings = {
                 throw new Error(err.message || 'Erreur lors de l\'envoi de la note');
             }
 
-            App.showNotification('Note envoyée avec succès !', 'success');
+            App.showNotification(i18n.t('ratings.notify.success'), 'success');
             return true;
         } catch (err) {
             console.error('[RATINGS] Submit error:', err);
@@ -51,11 +51,11 @@ const Ratings = {
         }
 
         modal.innerHTML = `
-            <div class="modal-content glass" style="max-width: 450px;">
+            <div class="modal-content glass" style="max-width: 450px; border-radius: 20px;">
                 <button type="button" class="modal-close" onclick="Ratings.hideModal()"></button>
-                <div class="modal-header" style="text-align: center;">
-                    <h2 style="margin-bottom: 0.5rem;">Noter ${expertName}</h2>
-                    <p class="text-muted">Comment s'est passée votre collaboration ?</p>
+                <div class="modal-header" style="text-align: center; border-bottom: none; padding-top: 1rem;">
+                    <h2 style="margin-bottom: 0.5rem;">${i18n.t('ratings.title', { name: expertName })}</h2>
+                    <p class="text-muted" style="font-size: 0.95rem;">${i18n.t('ratings.subtitle')}</p>
                 </div>
                 <div class="modal-body" style="padding: 1.5rem 0;">
                     <div class="stars-container" style="display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 2rem;">
@@ -69,11 +69,11 @@ const Ratings = {
                     </div>
                     <input type="hidden" id="rating-score" value="0">
                     <div class="form-group">
-                        <label class="form-label">Votre avis (optionnel)</label>
-                        <textarea id="rating-comment" class="form-input" rows="3" placeholder="Excellent travail, très réactif..."></textarea>
+                        <label class="form-label">${i18n.t('ratings.label.comment')}</label>
+                        <textarea id="rating-comment" class="modern-input" rows="3" placeholder="${i18n.t('ratings.placeholder.comment')}"></textarea>
                     </div>
-                    <button type="button" class="button-primary full-width" style="margin-top: 1.5rem; padding: 1rem;" onclick="Ratings.processSubmit('${expertId}')">
-                        Envoyer ma note
+                    <button type="button" class="button-primary full-width" style="margin-top: 2rem; padding: 1rem; border-radius: 12px; font-weight: 700;" onclick="Ratings.processSubmit('${expertId}')">
+                        <i class="fas fa-paper-plane"></i> ${i18n.t('ratings.btn.submit')}
                     </button>
                 </div>
             </div>
@@ -134,7 +134,7 @@ const Ratings = {
         const comment = document.getElementById('rating-comment').value;
 
         if (score === 0) {
-            App.showNotification('Veuillez sélectionner une note (1-5 étoiles)', 'warning');
+            App.showNotification(i18n.t('ratings.notify.warning_select'), 'warning');
             return;
         }
 
