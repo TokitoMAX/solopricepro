@@ -154,17 +154,28 @@ const Storage = {
             return cached;
         }
 
-        // 2. Check localStorage
-        try {
-            const local = localStorage.getItem(key);
-            if (local) return JSON.parse(local);
-        } catch (e) {
-            console.warn(`Error reading ${key} from localStorage`, e);
+        // 2. Check localStorage ONLY for authorized ephemeral/UI keys
+        const authorizedLocalKeys = [
+            'sp_token', 'sp_user', 'sp_lang', 'sp_in_app', 'sp_last_page', 
+            'sp_user_cache', 'sp_scoper_current_step', 'sp_debug'
+        ];
+        
+        // Dynamic tab keys are also authorized
+        const isAuthorized = authorizedLocalKeys.includes(key) || key.startsWith('sp_last_tab_');
+
+        if (isAuthorized) {
+            try {
+                const local = localStorage.getItem(key);
+                if (local) return JSON.parse(local);
+            } catch (e) {
+                console.warn(`Error reading ${key} from localStorage`, e);
+            }
         }
 
         // 3. Default fallback
         if (key === this.KEYS.SETTINGS) return {};
         if (key === this.KEYS.JOURNAL) return { mood: 'motivated', entries: [] };
+        if (key === this.KEYS.CALCULATOR_DATA) return { monthlyRevenue: 5000, workingDays: 20 };
         // Default fallback for tables
         return [];
     },
@@ -173,9 +184,16 @@ const Storage = {
         // 1. Update cache
         this._cache[key] = value;
 
-        // 2. Persist to localStorage for transient/UI-preference keys
-        const transientKeys = ['sp_draft_quote_item', 'sp_draft_quote_items', 'sp_user_cache', 'sp_journal', 'sp_scoper_current_step', 'sp_calculator_data'];
-        if (transientKeys.includes(key) || key.startsWith('sp_draft_')) {
+        // 2. Persist to localStorage ONLY for authorized ephemeral/UI keys
+        const authorizedLocalKeys = [
+            'sp_token', 'sp_user', 'sp_lang', 'sp_in_app', 'sp_last_page', 
+            'sp_user_cache', 'sp_scoper_current_step', 'sp_debug',
+            'sp_draft_quote_item' // Ephemeral draft allowed
+        ];
+        
+        const isAuthorized = authorizedLocalKeys.includes(key) || key.startsWith('sp_last_tab_');
+
+        if (isAuthorized) {
             try {
                 if (value === null) {
                     localStorage.removeItem(key);
@@ -185,6 +203,10 @@ const Storage = {
             } catch (e) {
                 console.warn(`Error persisting ${key} to localStorage`, e);
             }
+        } else {
+            // Ensure business data is NOT in localStorage
+            // If it was there (e.g. from old version), we might want to clean it up, 
+            // but for now we just don't write it.
         }
     },
 

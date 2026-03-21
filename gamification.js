@@ -5,11 +5,11 @@
 
 const Gamification = {
     missions: [
-        { id: 'add_lead', label: 'Ajouter un nouveau prospect au pipeline', icon: '' },
-        { id: 'send_quote', label: 'Envoyer un devis en attente', icon: '' },
-        { id: 'check_stats', label: 'Analyser votre rentabilité nette sur le dashboard', icon: '' },
-        { id: 'update_scoper', label: 'Préciser le chiffrage d\'un projet en cours', icon: '' },
-        { id: 'follow_up', label: 'Relancer un client dont le devis date de + de 3 jours', icon: '' }
+        { id: 'add_lead', label: 'Ajouter un nouveau prospect au pipeline', icon: '🚀' },
+        { id: 'send_quote', label: 'Envoyer un devis en attente', icon: '📄' },
+        { id: 'check_stats', label: 'Analyser votre rentabilité nette sur le dashboard', icon: '📊' },
+        { id: 'update_scoper', label: 'Préciser le chiffrage d\'un projet en cours', icon: '⚙️' },
+        { id: 'follow_up', label: 'Relancer un client dont le devis date de + de 3 jours', icon: '🎯' }
     ],
 
     quotes: [
@@ -40,22 +40,28 @@ const Gamification = {
         const streak = Storage.getStreak();
 
         return `
-            <div class="mission-card glass" style="margin-bottom: 2rem; padding: 1.5rem; border-radius: 15px; border-left: 5px solid var(--primary); display: flex; align-items: center; gap: 1.5rem; position: relative; overflow: hidden;">
-                <div style="position: absolute; right: -10px; top: -10px; font-size: 5rem; opacity: 0.05; pointer-events: none;"></div>
+            <div class="mission-card glass-premium hover-lift" style="margin-bottom: 2.5rem; padding: 1.5rem 2rem; border-radius: 20px; border-left: 6px solid var(--primary); display: flex; align-items: center; gap: 2rem; position: relative; overflow: hidden; background: var(--bg-glass-heavy); backdrop-filter: var(--bg-glass-blur); border: 1px solid var(--glass-border-light);">
+                <div style="position: absolute; right: -20px; top: -20px; font-size: 8rem; opacity: 0.03; pointer-events: none; transform: rotate(-15deg); color: var(--primary);">
+                    <i class="fas fa-medal"></i>
+                </div>
                 
-                <div class="streak-badge" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 70px; height: 70px; background: rgba(255, 107, 107, 0.1); border-radius: 50%; border: 2px solid rgba(255, 107, 107, 0.3);">
-                    <span style="font-size: 1.5rem;"></span>
-                    <span style="font-weight: 800; font-size: 1rem; color: #ff6b6b;">${streak}</span>
+                <div class="streak-badge" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px; height: 80px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.2)); border-radius: 50%; border: 2px solid var(--primary-glass); box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);">
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary-light); text-transform: uppercase; margin-bottom: -2px;">Série</span>
+                    <span style="font-weight: 900; font-size: 1.8rem; color: white;">${streak || 0}</span>
                 </div>
-
-                <div style="flex: 1;">
-                    <h3 style="margin: 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-light);">Mission du jour</h3>
-                    <p style="margin: 0.5rem 0; font-weight: 700; font-size: 1.1rem; color: white;">${mission.icon} ${mission.label}</p>
-                    <p style="margin: 0; font-style: italic; font-size: 0.85rem; color: var(--text-muted);">"${quote}"</p>
+ 
+                <div style="flex: 1; position: relative; z-index: 1;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1.5px;">Mission du jour</span>
+                        <span style="width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted);"></span>
+                        <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">${new Date().toLocaleDateString('fr-FR', { weekday: 'long' })}</span>
+                    </div>
+                    <p style="margin: 0.4rem 0; font-weight: 800; font-size: 1.25rem; color: white; letter-spacing: -0.5px;">${mission.icon} ${mission.label}</p>
+                    <p style="margin: 0; font-style: italic; font-size: 0.9rem; color: var(--text-muted); opacity: 0.8;">"${quote}"</p>
                 </div>
-
-                <div>
-                    <button class="button-primary small" onclick="App.showNotification('Mission acceptée ! À vous de jouer.', 'info')">C'est parti !</button>
+ 
+                <div style="position: relative; z-index: 1;">
+                    <button class="button-primary" style="padding: 0.8rem 1.8rem; border-radius: 14px; font-weight: 700;" onclick="App.showNotification('🚀 Mission acceptée ! C\\'est le moment de passer à l\\'action.', 'success')">Relever le Défi</button>
                 </div>
             </div>
         `;

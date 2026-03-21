@@ -70,6 +70,7 @@ const Dashboard = {
             </div>
 
             ${onboardingHtml}
+            ${(typeof Gamification !== 'undefined') ? Gamification.renderMissionCard() : ''}
 
             <!-- BENTO GRID -->
             <div class="bento-grid" style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; margin-bottom: 3rem; perspective: 1200px;">
@@ -115,10 +116,12 @@ const Dashboard = {
                     </div>
                 </div>
 
-                <!-- BENTO: AI Coach (Span 4) -->
                 <div class="bento-item" style="grid-column: span 4; display: flex; flex-direction: column;">
                     ${coachHtml}
                 </div>
+
+                <!-- BENTO: Profitability Insight (Span 4) -->
+                ${(typeof Profitability !== 'undefined') ? Profitability.renderDashboardWidget() : ''}
 
                 <!-- BENTO: Pipeline (Span 4) -->
                 <div class="bento-item glass-premium hover-lift tilt-card" style="grid-column: span 4; padding: 2rem; border-radius: 24px; background: var(--bg-glass-heavy); border: 1px solid var(--glass-border-light); box-shadow: var(--shadow-premium); backdrop-filter: var(--bg-glass-blur); position: relative; transition: transform 0.1s ease, box-shadow 0.3s ease;">
