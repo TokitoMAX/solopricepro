@@ -113,6 +113,21 @@
                 </div>
 
                 <div class="modal-body auth-modal-body">
+                    <!-- Partner Login Button -->
+                    <div id="auth-partner-section" style="padding: 0 0 1rem 0;">
+                        <button type="button" class="btn-partner-sso" onclick="Auth.loginWithDomTomConnect()" style="
+                            display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+                            width: 100%; padding: 0.8rem 1rem; border-radius: 12px; cursor: pointer;
+                            background: linear-gradient(135deg, #10b981, #059669); border: 1px solid rgba(255,255,255,0.15);
+                            color: white; font-size: 0.95rem; font-weight: 600;
+                            transition: transform 0.2s; font-family: inherit; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+                        " onmouseover="this.style.transform='translateY(-2px)'"
+                            onmouseout="this.style.transform='translateY(0)'">
+                            <i class="fas fa-handshake"></i>
+                            Continuer avec DomTom Connect
+                        </button>
+                    </div>
+
                     <!-- Google OAuth Button -->
                     <div id="auth-google-section" style="padding: 0 0 1rem 0;">
                         <button type="button" class="btn-google-oauth" onclick="Auth.loginWithGoogle()" style="

@@ -555,6 +555,201 @@ router.post('/restore-subscription', async (req, res) => {
         const meta = user.user_metadata || {};
         const tier = meta.tier || (meta.is_pro ? 'pro' : 'free');
 
+    const { accessToken, password } = req.body;
+    const { createClient } = require('@supabase/supabase-js');
+
+    try {
+        if (!accessToken) throw new Error('Token manquant');
+        if (!password) throw new Error('Mot de passe manquant');
+
+        console.log(`🔐 Tentative de mise à jour du mot de passe...`);
+
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const anonKey = process.env.SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || (!serviceKey && !anonKey)) {
+            throw new Error('Configuration Supabase manquante sur le serveur');
+        }
+
+        // 1. D'abord, on vérifie si le token est valide et on récupère l'utilisateur
+        const client = createClient(supabaseUrl, anonKey);
+        const { data: userData, error: userError } = await client.auth.getUser(accessToken);
+
+        if (userError) {
+            console.error('❌ Token validation error:', userError.message);
+            // Message plus explicite pour l'utilisateur
+            if (userError.message.includes('expired')) {
+                throw new Error('Votre lien de récupération a expiré. Veuillez refaire une demande.');
+            }
+            throw userError;
+        }
+
+        const userId = userData.user.id;
+        console.log(`✅ Token valide pour l'utilisateur: ${userId}`);
+
+        // 2. On utilise le Service Role Key (Admin) pour forcer le changement de mot de passe
+        // C'est beaucoup plus fiable côté serveur
+        if (serviceKey) {
+            console.log('🔑 Utilisation du Service Role Key pour la mise à jour...');
+            const adminClient = createClient(supabaseUrl, serviceKey);
+            const { data, error: updateError } = await adminClient.auth.admin.updateUserById(
+                userId,
+                { password: password }
+            );
+
+            if (updateError) throw updateError;
+            console.log('✨ Mot de passe mis à jour avec succès (Admin)');
+        } else {
+            console.log('⚠️ Service Role Key manquant. Utilisation de l\'API REST directe (Bypass Library Check)...');
+
+            // On utilise fetch direct pour contourner le check de session de la librairie supabase-js
+            const updateUserUrl = `${supabaseUrl}/auth/v1/user`;
+
+            const response = await fetch(updateUserUrl, {
+                method: 'PUT', // L'API GoTrue utilise PUT pour update user
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                    'apikey': anonKey
+                },
+                body: JSON.stringify({ password: password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('❌ Direct API Error:', data);
+                throw new Error(data.msg || data.message || 'Erreur lors de la mise à jour directe');
+            }
+
+            console.log('✨ Mot de passe mis à jour via API directe !');
+        }
+
+        res.json({ message: 'Mot de passe mis à jour avec succès ! Vous pouvez maintenant vous connecter.' });
+
+    } catch (error) {
+        console.error('❌ Update Password Error:', error.message);
+        res.status(400).json({
+            message: error.message || 'Impossible de mettre à jour le mot de passe',
+            error: error.message
+        });
+    }
+});
+
+// @route   PUT /api/auth/update-metadata
+// @desc    Update user_metadata (first_name, last_name, full_name, country) in Supabase Auth
+// @access  Private
+router.put('/update-metadata', async (req, res) => {
+    const { first_name, last_name, country } = req.body || {};
+    const token = (req.headers.authorization || '').replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Non autorisé' });
+
+    try {
+        const { createClient } = require('@supabase/supabase-js');
+        const admin = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        // Get user ID from token
+        const { data: { user }, error: userErr } = await admin.auth.getUser(token);
+        if (userErr || !user) throw new Error('Utilisateur introuvable');
+
+        // Update user_metadata via admin API
+        const { error: updateErr } = await admin.auth.admin.updateUserById(user.id, {
+            user_metadata: {
+                ...user.user_metadata,
+                first_name: first_name !== undefined ? first_name : (user.user_metadata?.first_name || ''),
+                last_name: last_name !== undefined ? last_name : (user.user_metadata?.last_name || ''),
+                full_name: `${first_name || user.user_metadata?.first_name || ''} ${last_name || user.user_metadata?.last_name || ''}`.trim(),
+                country: country !== undefined ? country : (user.user_metadata?.country || '')
+            }
+        });
+
+        if (updateErr) throw new Error(updateErr.message);
+
+        console.log(`✅ Metadata updated for user ${user.id}: ${first_name} ${last_name} [${country}]`);
+        res.json({ message: 'Profil mis à jour', first_name, last_name, country });
+    } catch (err) {
+        console.error('❌ update-metadata error:', err.message);
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// @route   DELETE /api/auth/delete-account
+// @desc    Permanently delete the authenticated user account + all data
+// @access  Private
+router.delete('/delete-account', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: 'Non authentifié.' });
+
+    const token = authHeader.split(' ')[1];
+    const supabase = req.app.get('supabase');
+
+    try {
+        // Verify the token to get the user
+        const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+        if (authErr || !user) return res.status(401).json({ message: 'Session invalide.' });
+
+        const userId = user.id;
+        console.log(`🗑️ Delete account requested for user: ${userId}`);
+
+        // Use Service Role to delete all user data from tables
+        const { createClient } = require('@supabase/supabase-js');
+        const adminClient = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        const tables = [
+            'sp_clients', 'sp_quotes', 'sp_invoices', 'sp_leads',
+            'sp_expenses', 'sp_revenues', 'sp_journal', 'sp_settings',
+            'sp_calculator_data', 'sp_network_providers', 'sp_user_profile',
+            'sp_marketplace_applications'
+        ];
+
+        // Delete all user data
+        await Promise.allSettled(
+            tables.map(t => adminClient.from(t).delete().eq('user_id', userId))
+        );
+
+        // Delete the auth account itself
+        const { error: deleteErr } = await adminClient.auth.admin.deleteUser(userId);
+        if (deleteErr) throw new Error(deleteErr.message);
+
+        console.log(`✅ Account ${userId} deleted successfully.`);
+        res.json({ success: true, message: 'Compte supprimé définitivement.' });
+    } catch (err) {
+        console.error('❌ delete-account error:', err.message);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// @route   POST /api/auth/restore-subscription
+// @desc    Force-sync subscription status from PayPal / manually restore tier
+// @access  Private
+router.post('/restore-subscription', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: 'Non authentifié.' });
+
+    const token = authHeader.split(' ')[1];
+    const supabase = req.app.get('supabase');
+
+    try {
+        const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+        if (authErr || !user) return res.status(401).json({ message: 'Session invalide.' });
+
+        const { createClient } = require('@supabase/supabase-js');
+        const adminClient = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        // Read the current metadata
+        const meta = user.user_metadata || {};
+        const tier = meta.tier || (meta.is_pro ? 'pro' : 'free');
+
         if (tier === 'free' || tier === 'standard') {
             return res.status(400).json({ message: 'Aucun abonnement actif trouvé pour ce compte.' });
         }
@@ -569,7 +764,6 @@ router.post('/restore-subscription', async (req, res) => {
                 subscriptionExpiry: newExpiry
             }
         });
-
         if (updateErr) throw new Error(updateErr.message);
 
         console.log(`✅ Subscription restored for user ${user.id} (tier: ${tier})`);
@@ -577,6 +771,113 @@ router.post('/restore-subscription', async (req, res) => {
     } catch (err) {
         console.error('❌ restore-subscription error:', err.message);
         res.status(500).json({ message: err.message });
+    }
+});
+
+// @route   POST /api/auth/partner-login
+// @desc    SSO Partner Login (DomTom Connect)
+// @access  Public (Verification via HMAC signature)
+router.post('/partner-login', async (req, res) => {
+    const { email, name, timestamp, signature, partner } = req.body || {};
+    
+    if (!email || !signature || !timestamp) {
+        return res.status(400).json({ message: 'Paramètres SSO manquants.' });
+    }
+
+    try {
+        console.log(`[PARTNER-AUTH] Tentative SSO pour: ${email} via ${partner || 'inconnu'}`);
+
+        // 1. Vérification de la signature
+        const secret = process.env.PARTNER_SSO_SECRET || 'dtc_sso_default_secret_2026';
+        const message = `${email}${name || ''}${timestamp}`;
+        const crypto = require('crypto');
+        const expectedSignature = crypto
+            .createHmac('sha256', secret)
+            .update(message)
+            .digest('hex');
+
+        if (signature !== expectedSignature) {
+            console.error('[PARTNER-AUTH] Signature invalide');
+            return res.status(401).json({ message: 'Signature de sécurité invalide.' });
+        }
+
+        // 2. Vérification de l'expiration (5 min)
+        const requestTime = parseInt(timestamp);
+        const now = Date.now();
+        if (Math.abs(now - requestTime) > 5 * 60 * 1000) {
+            console.error('[PARTNER-AUTH] Token expiré');
+            return res.status(401).json({ message: 'Le lien de connexion a expiré.' });
+        }
+
+        // 3. Récupérer ou Créer l'utilisateur dans Supabase
+        const { createClient } = require('@supabase/supabase-js');
+        const adminClient = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        // On cherche si l'utilisateur existe déjà
+        const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers();
+        if (listError) throw listError;
+
+        let existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        let userId;
+        let isNewUser = false;
+
+        if (!existingUser) {
+            console.log(`[PARTNER-AUTH] Création auto d'un compte pour: ${email}`);
+            const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+                email: email,
+                email_confirm: true,
+                user_metadata: {
+                    full_name: name || '',
+                    partner: partner || 'domtomconnect',
+                    is_partner_sso: true
+                }
+            });
+            if (createError) throw createError;
+            existingUser = newUser.user;
+            userId = existingUser.id;
+            isNewUser = true;
+        } else {
+            userId = existingUser.id;
+            console.log(`[PARTNER-AUTH] Utilisateur existant trouvé: ${userId}`);
+        }
+
+        // 4. Injecter les données d'accueil si nouvel utilisateur
+        if (isNewUser) {
+            try {
+                const { injectWelcomeData } = require('../services/onboarding');
+                await injectWelcomeData(adminClient, userId);
+            } catch (onboardingErr) {
+                console.error('[PARTNER-AUTH] Erreur injection onboarding:', onboardingErr);
+            }
+        }
+
+        // 5. Générer un lien de session
+        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+            type: 'login',
+            email: email
+        });
+
+        if (linkError) throw linkError;
+
+        res.json({
+            user: {
+                id: existingUser.id,
+                email: existingUser.email,
+                user_metadata: existingUser.user_metadata || {}
+            },
+            session: {
+                access_token: linkData.properties?.action_link?.split('token=')[1]?.split('&')[0] || 'sso_verified'
+            },
+            redirect_to: linkData.properties?.action_link
+        });
+
+        console.log(`[PARTNER-AUTH] SSO réussi pour: ${email}`);
+    } catch (err) {
+        console.error('[PARTNER-AUTH] Erreur interne:', err.message);
+        res.status(500).json({ message: 'Erreur lors de la connexion partenaire.' });
     }
 });
 
