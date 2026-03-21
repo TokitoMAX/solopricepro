@@ -1538,6 +1538,43 @@ const App = {
         return date.toLocaleDateString(config.locale);
     },
 
+    init3DTilt() {
+        const cards = document.querySelectorAll('.tilt-card');
+        cards.forEach(card => {
+            // S'assurer de ne pas doubler les écouteurs si déjà présent (re-render)
+            if (card.dataset.tiltInitialized) return;
+            card.dataset.tiltInitialized = "true";
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = (y - centerY) / 15;
+                const rotateY = (centerX - x) / 15;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+                // Effet de brillance (glare)
+                const glare = card.querySelector('.tilt-glare');
+                if (glare) {
+                    const glareX = (x / rect.width) * 100;
+                    const glareY = (y / rect.height) * 100;
+                    glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.2), transparent)`;
+                }
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+                const glare = card.querySelector('.tilt-glare');
+                if (glare) glare.style.background = 'transparent';
+            });
+        });
+    },
+
     calculateTotal(items, includeTax = true) {
         const settings = Storage.get(Storage.KEYS.SETTINGS) || { taxRate: 0 };
         const subtotal = items.reduce((sum, item) =>

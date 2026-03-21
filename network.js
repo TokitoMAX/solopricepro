@@ -311,26 +311,6 @@ const Network = {
     // TAB: REJOINDRE (application form for users)
     // =============================================
     renderJoinTab(container) {
-        const user = Auth.getUser();
-        const userName = user ? `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() : '';
-        const userEmail = user ? user.email : '';
-
-        container.innerHTML = `
-            <div style="max-width: 650px; margin: 0 auto;">
-                <div class="glass" style="padding: 2.5rem; border-radius: 20px; border: 1px solid var(--primary-glass);">
-                    <div style="text-align: center; margin-bottom: 2rem;">
-                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), #7c3aed); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i class="fas fa-rocket" style="color: white; font-size: 1.5rem;"></i>
-                        </div>
-                        <h2 style="margin: 0 0 0.5rem;">Rejoindre Le Cercle SoloPrice</h2>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Proposez vos services dans notre réseau d'experts validés. Notre équipe examinera votre profil.</p>
-                    </div>
-
-                    <form id="ecosystem-join-form" onsubmit="Network.submitJoinApplication(event)">
-                        <div class="form-group" style="margin-bottom: 1.25rem;">
-                            <label class="form-label">Votre Nom Complet *</label>
-                            <input type="text" name="user_name" class="form-input" required value="${userName}" placeholder="Jean Dupont">
-                        </div>
         container.innerHTML = `
             <div class="join-expert-hero glass" style="padding: 4rem 2rem; border-radius: 24px; text-align: center; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.05)); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem;">
                 <div style="display: inline-block; padding: 0.5rem 1rem; background: var(--primary-glass); color: var(--primary-light); border-radius: 30px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem; border: 1px solid var(--primary-glass);">${i18n.t('network.tab.join')}</div>
@@ -598,19 +578,6 @@ const Network = {
         }
         modal.classList.add('active');
     },
-
-    async addEcosystemExpert(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const expert = {
-            name: formData.get('name'),
-            specialty: formData.get('specialty'),
-            email: formData.get('email'),
-            city: formData.get('city'),
-            portfolio: formData.get('portfolio'),
-            description: formData.get('description'),
-            is_ecosystem: true
-        };
 
     async addEcosystemExpert(e) {
         e.preventDefault();
