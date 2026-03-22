@@ -55,9 +55,10 @@ const Auth = {
                     }
                 } else {
                     const err = await response.json();
-                    console.error("[PARTNER-AUTH] Error:", err.message);
+                    const errorDetails = err.debug ? `${err.message} (${err.debug})` : err.message;
+                    console.error("[PARTNER-AUTH] Error:", errorDetails || 'Erreur inconnue');
                     if (typeof App !== 'undefined' && App.showNotification) {
-                        App.showNotification("La connexion partenaire a échoué : " + (err.message || 'Erreur inconnue'), 'error');
+                        App.showNotification("La connexion partenaire a échoué : " + (errorDetails || 'Erreur inconnue'), 'error');
                     }
                 }
             } catch (err) {

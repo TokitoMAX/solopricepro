@@ -176,41 +176,102 @@ router.post('/restore-subscription', async (req, res) => {
     }
 });
 
-// @route   POST /api/auth/partner-login
-router.post('/partner-login', async (req, res) => {
-    const { email, name, timestamp, signature, partner } = req.body || {};
-    if (!email || !signature || !timestamp) return res.status(400).json({ message: 'Paramètres SSO manquants.' });
+// Logic partagée pour le SSO (GET & POST)
+async function handleSSOLogin(req, res, params) {
+    const { email, name, timestamp, signature, partner } = params;
+    console.log(`[SSO-DEBUG] Processing SSO for ${email}. Partner: ${partner}`);
+
+    if (!email || !signature || !timestamp) {
+        console.warn("[SSO-DEBUG] Missing parameters:", { email: !!email, signature: !!signature, timestamp: !!timestamp });
+        return res.status(400).json({ message: 'Paramètres SSO manquants.' });
+    }
+
     try {
         const secret = process.env.PARTNER_SSO_SECRET || 'dtc_sso_default_secret_2026';
         const crypto = require('crypto');
-        const expectedSignature = crypto.createHmac('sha256', secret).update(`${email}${name || ''}${timestamp}`).digest('hex');
-        if (signature !== expectedSignature) return res.status(401).json({ message: 'Signature invalide.' });
-        if (Math.abs(Date.now() - parseInt(timestamp)) > 5 * 60 * 1000) return res.status(401).json({ message: 'Lien expiré.' });
+        const payload = `${email}${name || ''}${timestamp}`;
+        const expectedSignature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+        
+        console.log(`[SSO-DEBUG] Sig Check -> Provided: ${signature.substring(0, 8)}..., Expected: ${expectedSignature.substring(0, 8)}...`);
+        
+        if (signature !== expectedSignature) {
+            console.error("[SSO-DEBUG] Signature mismatch");
+            return res.status(401).json({ message: 'Signature invalide.' });
+        }
+
+        if (Math.abs(Date.now() - parseInt(timestamp)) > 15 * 60 * 1000) {
+            console.warn("[SSO-DEBUG] Link expired. Timestamp:", timestamp, "Now:", Date.now());
+            return res.status(401).json({ message: 'Lien expiré.' });
+        }
+
         const { createClient } = require('@supabase/supabase-js');
         const adminClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-        const { data: { users } } = await adminClient.auth.admin.listUsers();
+        
+        console.log("[SSO-DEBUG] Verifying user existence...");
+        const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers();
+        if (listError) throw listError;
+
         let user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
         let isNewUser = false;
+
         if (!user) {
+            console.log(`[SSO-DEBUG] Creating new user: ${email}`);
             const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
-                email, email_confirm: true, user_metadata: { full_name: name || '', partner: partner || 'domtomconnect', is_partner_sso: true }
+                email, 
+                email_confirm: true, 
+                user_metadata: { 
+                    full_name: name || '', 
+                    partner: partner || 'domtomconnect', 
+                    is_partner_sso: true 
+                }
             });
             if (createError) throw createError;
             user = newUser.user;
             isNewUser = true;
         }
-        if (isNewUser) await injectWelcomeData(adminClient, user.id).catch(err => console.error(err));
+
+        // MISE À JOUR DU PROFIL
+        await adminClient.from('sp_user_profile').upsert({
+            user_id: user.id,
+            email: user.email,
+            full_name: name || user.user_metadata?.full_name || '',
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' }).catch(err => console.error("[SSO-DEBUG] Profile error:", err));
+
+        if (isNewUser) {
+            await injectWelcomeData(adminClient, user.id).catch(err => console.error("[SSO-DEBUG] Onboarding error:", err));
+        }
+
         const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({ type: 'login', email });
         if (linkError) throw linkError;
+
+        const actionLink = linkData.properties?.action_link;
+        
+        // Si c'est un GET (redirection directe), on redirige vers le magic link
+        if (req.method === 'GET') {
+            console.log("[SSO-DEBUG] GET Request: Redirecting to magic link.");
+            return res.redirect(actionLink);
+        }
+
+        // Si c'est un POST (appel API), on renvoie les données pour le frontend
+        console.log("[SSO-DEBUG] POST Request: Returning JSON response.");
         res.json({
             user: { id: user.id, email: user.email, user_metadata: user.user_metadata || {} },
-            session: { access_token: linkData.properties?.action_link?.split('token=')[1]?.split('&')[0] || 'sso_verified' },
-            redirect_to: linkData.properties?.action_link
+            session: { access_token: actionLink?.split('token=')[1]?.split('&')[0] || 'sso_verified' },
+            redirect_to: actionLink
         });
+
     } catch (err) {
-        res.status(500).json({ message: 'Erreur lors de la connexion partenaire.' });
+        console.error("[SSO-DEBUG] Critical Error:", err);
+        res.status(500).json({ message: 'Erreur lors de la connexion partenaire.', debug: err.message });
     }
-});
+}
+
+// @route   GET /api/auth/partner-login
+router.get('/partner-login', (req, res) => handleSSOLogin(req, res, req.query));
+
+// @route   POST /api/auth/partner-login
+router.post('/partner-login', (req, res) => handleSSOLogin(req, res, req.body));
 
 // @route   POST /api/auth/google-callback
 router.post('/google-callback', async (req, res) => {
