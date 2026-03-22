@@ -66,6 +66,17 @@ export default async function handler(req, res) {
             if (createError) throw createError;
             user = newUser.user;
             isNewUser = true;
+        } else {
+            // S'il existe déjà, on s'assure qu'il a le flag partner_sso
+            console.log(`[SSO] Utilisateur existant : ${email}. Mise à jour des métadonnées.`);
+            const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+                user_metadata: { 
+                    ...user.user_metadata,
+                    partner: partner || 'domtomconnect',
+                    is_partner_sso: true 
+                }
+            });
+            if (updateError) console.warn("[SSO] Erreur mise à jour métadonnées:", updateError.message);
         }
 
         // 5. Mise à jour du profil (sp_user_profile)

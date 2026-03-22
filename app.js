@@ -735,6 +735,30 @@ const App = {
         const sidebarFooter = document.querySelector('.sidebar-footer');
         if (sidebarFooter) {
             sidebarFooter.style.display = 'block';
+
+            // --- LIEN DE RETOUR PARTENAIRE ---
+            const existingPartnerLink = document.getElementById('partner-return-link');
+            if (user.user_metadata?.is_partner_sso) {
+                if (!existingPartnerLink) {
+                    const partnerLink = document.createElement('div');
+                    partnerLink.id = 'partner-return-link';
+                    partnerLink.style.cssText = 'padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 5px;';
+                    partnerLink.innerHTML = `
+                        <a href="https://domtomconnect.com/mon-espace" style="color: var(--primary-light); font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 8px; opacity: 0.9; transition: opacity 0.2s;">
+                            <i class="fas fa-arrow-left" style="font-size: 0.7rem;"></i>
+                            <span>Retour DomTom Connect</span>
+                        </a>
+                    `;
+                    const logoutBtn = sidebarFooter.querySelector('#nav-logout');
+                    if (logoutBtn) {
+                        sidebarFooter.insertBefore(partnerLink, logoutBtn);
+                    } else {
+                        sidebarFooter.appendChild(partnerLink);
+                    }
+                }
+            } else if (existingPartnerLink) {
+                existingPartnerLink.remove();
+            }
         }
     },
 

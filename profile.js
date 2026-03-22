@@ -225,6 +225,26 @@ const Profile = {
                     </div>
                 </div>
             </div>
+
+            <!-- Partner Portal Section -->
+            ${(user.user_metadata?.is_partner_sso) ? `
+                <div class="glass-card" style="margin-top: 2rem; padding: 2rem; border-radius: 20px; border: 1px solid var(--primary-glass); background: rgba(59, 130, 246, 0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 2rem;">
+                        <div>
+                            <h2 class="section-title-small" style="color: var(--primary-light); margin-bottom: 0.5rem;">
+                                <i class="fas fa-external-link-alt" style="margin-right: 10px;"></i>
+                                ${i18n.t('profile.partner_portal.title') || 'Portail DomTom Connect'}
+                            </h2>
+                            <p class="text-sm text-muted">
+                                ${i18n.t('profile.partner_portal.desc') || 'Votre compte est lié à votre espace DomTom Connect. Vous pouvez y retourner pour gérer vos autres services.'}
+                            </p>
+                        </div>
+                        <button class="button-primary" onclick="window.location.href='https://domtomconnect.com/mon-espace'" style="flex-shrink: 0; min-width: 200px;">
+                            ${i18n.t('profile.partner_portal.btn') || 'Retourner au Portail'}
+                        </button>
+                    </div>
+                </div>
+            ` : ''}
         `;
 
         // Initialize country-dependent UI

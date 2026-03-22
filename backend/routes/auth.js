@@ -228,6 +228,17 @@ async function handleSSOLogin(req, res, params) {
             if (createError) throw createError;
             user = newUser.user;
             isNewUser = true;
+        } else {
+            // S'il existe déjà, on s'assure qu'il a le flag partner_sso
+            console.log(`[SSO-DEBUG] Existing user: ${email}. Setting partner metadata.`);
+            const { error: updateError } = await adminClient.auth.admin.updateUserById(user.id, {
+                user_metadata: { 
+                    ...user.user_metadata,
+                    partner: partner || 'domtomconnect',
+                    is_partner_sso: true 
+                }
+            });
+            if (updateError) console.warn("[SSO-DEBUG] Meta update error:", updateError.message);
         }
 
         // MISE À JOUR DU PROFIL
