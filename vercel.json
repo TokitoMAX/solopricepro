@@ -3,21 +3,18 @@
   "builds": [
     {
       "src": "server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "*.html",
-          "*.css",
-          "*.js",
-          "backend/**/*.js",
-          "services/**/*.js",
-          "constants/**/*",
-          "assets/**/*"
-        ]
-      }
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/sso.js",
+      "use": "@vercel/node"
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/sso",
+      "destination": "/api/sso.js"
+    },
     {
       "source": "/(.*)",
       "destination": "/server.js"

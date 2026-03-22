@@ -75,60 +75,6 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// --- SSO PARTNER LOGIC (Intégré directement pour éviter tout 404 de routage) ---
-async function handleDirectSSOLogin(req, res, params) {
-    const { email, name, timestamp, signature, partner } = params;
-    console.log(`[SSO-DIRECT] Processing for ${email}`);
-    try {
-        const secret = process.env.PARTNER_SSO_SECRET || 'dtc_sso_default_secret_2026';
-        const crypto = require('crypto');
-        if (!email || !signature || !timestamp) return res.status(400).json({ message: 'Paramètres SSO manquants.' });
-        const payload = `${email}${name || ''}${timestamp}`;
-        const expectedSignature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
-        if (signature !== expectedSignature) return res.status(401).json({ message: 'Signature invalide.' });
-        
-        const adminClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-        const { data: { users } } = await adminClient.auth.admin.listUsers();
-        let user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-        const metadata = { 
-            full_name: name || '', 
-            company_name: name || '', 
-            partner: partner || 'domtomconnect', 
-            is_partner_sso: true 
-        };
-
-        if (!user) {
-            const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({ email, email_confirm: true, user_metadata: metadata });
-            if (createError) throw createError;
-            user = newUser.user;
-        } else {
-            await adminClient.auth.admin.updateUserById(user.id, { user_metadata: { ...user.user_metadata, ...metadata } });
-        }
-
-        await adminClient.from('sp_user_profile').upsert({ user_id: user.id, email: user.email, full_name: name || user.user_metadata?.full_name || '', updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
-
-        const protocol = req.headers['x-forwarded-proto'] || 'https';
-        const host = req.headers['x-forwarded-host'] || req.headers.host;
-        const origin = process.env.APP_URL || `${protocol}://${host}`;
-        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: `${origin}/index.html` } });
-        if (linkError) throw linkError;
-
-        const actionLink = linkData?.properties?.action_link;
-        if (req.method === 'GET') {
-            res.setHeader('Content-Type', 'text/html');
-            return res.send(`<html><body style="background:#0f172a;color:white;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;"><div style="text-align:center;"><h2>Connexion...</h2><p>Preparation de SoloPrice Pro.</p><a href="${actionLink}" style="color:#10b981;text-decoration:none;font-size:0.8rem;">Cliquez ici si bloqué</a></div><script>setTimeout(()=>{window.location.href="${actionLink}";},500);</script></body></html>`);
-        }
-        res.json({ user: { id: user.id, email: user.email, user_metadata: metadata }, session: { access_token: actionLink?.split('token=')[1]?.split('&')[0] || 'sso_verified' }, redirect_to: actionLink });
-    } catch (err) {
-        console.error("[SSO-DIRECT] Error:", err.message);
-        res.status(500).json({ message: 'Erreur SSO', debug: err.message });
-    }
-}
-
-app.get('/api/partner-sso', (req, res) => handleDirectSSOLogin(req, res, req.query));
-app.post('/api/partner-sso', (req, res) => handleDirectSSOLogin(req, res, req.body));
-
 // 3. Gardiennage Supabase pour les routes API
 app.use(['/api/auth', '/api/data', '/api/admin', '/api/marketplace'], (req, res, next) => {
     if (!supabase) {
