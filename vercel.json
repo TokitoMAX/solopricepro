@@ -9,6 +9,7 @@
           "*.html",
           "*.css",
           "*.js",
+          "api/**/*.js",
           "backend/**/*.js",
           "services/**/*.js",
           "constants/**/*",
@@ -18,6 +19,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/auth/partner-login",
+      "destination": "/api/auth/partner-login.js"
+    },
     {
       "source": "/(.*)",
       "destination": "/server.js"
