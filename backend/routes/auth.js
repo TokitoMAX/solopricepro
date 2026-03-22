@@ -246,7 +246,14 @@ async function handleSSOLogin(req, res, params) {
             await injectWelcomeData(adminClient, user.id).catch(err => console.error("[SSO-DEBUG] Onboarding error:", err));
         }
 
-        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({ type: 'magiclink', email });
+        const origin = process.env.APP_URL || (req.headers.host ? `https://${req.headers.host}` : '');
+        const redirectTo = `${origin}/index.html`;
+
+        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({ 
+            type: 'magiclink', 
+            email,
+            options: { redirectTo }
+        });
         if (linkError) throw linkError;
 
         const actionLink = linkData.properties?.action_link;
