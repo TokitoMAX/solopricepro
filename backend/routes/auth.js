@@ -246,7 +246,7 @@ async function handleSSOLogin(req, res, params) {
             await injectWelcomeData(adminClient, user.id).catch(err => console.error("[SSO-DEBUG] Onboarding error:", err));
         }
 
-        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({ type: 'login', email });
+        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({ type: 'magiclink', email });
         if (linkError) throw linkError;
 
         const actionLink = linkData.properties?.action_link;

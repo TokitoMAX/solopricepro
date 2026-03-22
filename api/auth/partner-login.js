@@ -97,7 +97,7 @@ export default async function handler(req, res) {
         const redirectTo = `${origin}/index.html`;
 
         const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-            type: 'login',
+            type: 'magiclink',
             email,
             options: { redirectTo }
         });
