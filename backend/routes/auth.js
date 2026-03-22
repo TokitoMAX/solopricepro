@@ -260,8 +260,13 @@ async function handleSSOLogin(req, res, params) {
             await injectWelcomeData(adminClient, user.id).catch(err => console.error("[SSO-DEBUG] Onboarding error:", err));
         }
 
-        const origin = process.env.APP_URL || (req.headers.host ? `https://${req.headers.host}` : '');
+        // 7. Génération de l'URL de redirection (Détection d'origine robuste pour Vercel)
+        const protocol = req.headers['x-forwarded-proto'] || 'https';
+        const host = req.headers['x-forwarded-host'] || req.headers.host;
+        const origin = process.env.APP_URL || `${protocol}://${host}`;
         const redirectTo = `${origin}/index.html`;
+
+        console.log(`[SSO-DEBUG] Origin detection -> Proto: ${req.headers['x-forwarded-proto']}, Host: ${host}. Result Origin: ${origin}`);
 
         const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({ 
             type: 'magiclink', 
@@ -270,7 +275,11 @@ async function handleSSOLogin(req, res, params) {
         });
         if (linkError) throw linkError;
 
-        const actionLink = linkData.properties?.action_link;
+        const actionLink = linkData?.properties?.action_link;
+        if (!actionLink) {
+            console.error("[SSO-DEBUG] action_link is missing in linkData.properties:", linkData?.properties);
+            throw new Error("Lien de connexion non généré par Supabase");
+        }
         
         // Si c'est un GET (redirection directe), on utilise le "Pont de Session"
         if (req.method === 'GET') {

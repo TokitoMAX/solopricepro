@@ -107,8 +107,13 @@ export default async function handler(req, res) {
 
         // 7. Génération d'un lien de connexion magique pour connecter l'utilisateur
         // On redirige vers l'URL de base de l'app, qui détectera la session
-        const origin = process.env.APP_URL || (req.headers.host ? `https://${req.headers.host}` : '');
+        // 7. Génération d'un lien de connexion magique (Détection d'origine robuste)
+        const protocol = req.headers['x-forwarded-proto'] || 'https';
+        const host = req.headers['x-forwarded-host'] || req.headers.host;
+        const origin = process.env.APP_URL || `${protocol}://${host}`;
         const redirectTo = `${origin}/index.html`;
+
+        console.log(`[SSO] Origin: ${origin} (Proto: ${req.headers['x-forwarded-proto']}, Host: ${host})`);
 
         const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
             type: 'magiclink',
@@ -117,6 +122,12 @@ export default async function handler(req, res) {
         });
 
         if (linkError) throw linkError;
+
+        const actionLink = linkData?.properties?.action_link;
+        if (!actionLink) {
+            console.error("[SSO] action_link manquant dans linkData.properties:", linkData?.properties);
+            throw new Error("Lien de connexion non généré par Supabase");
+        }
 
         console.log(`[SSO] Succès pour ${email}. Envoi de la page de transition.`);
         res.setHeader('Content-Type', 'text/html');
@@ -140,11 +151,11 @@ export default async function handler(req, res) {
                         <div class="loader"></div>
                         <h2>Presque prêt...</h2>
                         <p>Nous vous connectons en toute sécurité à votre tableau de bord SoloPrice Pro.</p>
-                        <a id="sso-link" class="link" href="${linkData.properties.action_link}">Cliquez ici si la redirection ne démarre pas</a>
+                        <a id="sso-link" class="link" href="${actionLink}">Cliquez ici si la redirection ne démarre pas</a>
                     </div>
                     <script>
                         setTimeout(() => {
-                            window.location.href = "${linkData.properties.action_link}";
+                            window.location.href = "${actionLink}";
                         }, 800);
                     </script>
                 </body>
