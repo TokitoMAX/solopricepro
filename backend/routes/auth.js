@@ -231,12 +231,16 @@ async function handleSSOLogin(req, res, params) {
         }
 
         // MISE À JOUR DU PROFIL
-        await adminClient.from('sp_user_profile').upsert({
-            user_id: user.id,
-            email: user.email,
-            full_name: name || user.user_metadata?.full_name || '',
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' }).catch(err => console.error("[SSO-DEBUG] Profile error:", err));
+        const { error: profileError } = await adminClient
+            .from('sp_user_profile')
+            .upsert({
+                user_id: user.id,
+                email: user.email,
+                full_name: name || user.user_metadata?.full_name || '',
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+        
+        if (profileError) console.error("[SSO-DEBUG] Profile error:", profileError.message);
 
         if (isNewUser) {
             await injectWelcomeData(adminClient, user.id).catch(err => console.error("[SSO-DEBUG] Onboarding error:", err));

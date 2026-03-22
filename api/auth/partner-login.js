@@ -81,7 +81,6 @@ export default async function handler(req, res) {
 
         if (profileError) {
             console.error("[SSO] Erreur lors de l'upsert du profil:", profileError.message);
-            // On continue quand même, le principal est l'auth
         }
 
         // 6. Injection de données de bienvenue pour les nouveaux
