@@ -36,7 +36,7 @@ const Auth = {
                 // Show loader if possible
                 if (typeof App !== 'undefined' && App.showLoader) App.showLoader();
 
-                const response = await fetch(`${this.apiBase}/api/auth/partner-login`, {
+                const response = await fetch(`${this.apiBase}/api/partner-sso`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ partner, email, name, timestamp, signature })
