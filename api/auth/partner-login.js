@@ -118,11 +118,38 @@ export default async function handler(req, res) {
 
         if (linkError) throw linkError;
 
-        console.log(`[SSO] Succès pour ${email}. Redirection via magic link.`);
-
-        // 8. Redirection finale
-        // Le lien généré par Supabase s'occupe de créer la session côté client
-        return res.redirect(linkData.properties.action_link);
+        console.log(`[SSO] Succès pour ${email}. Envoi de la page de transition.`);
+        res.setHeader('Content-Type', 'text/html');
+        return res.send(`
+            <html>
+                <head>
+                    <title>Connexion SoloPrice Pro...</title>
+                    <style>
+                        body { background: #0f172a; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                        .card { text-align: center; padding: 2.5rem; background: rgba(255,255,255,0.03); border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px); max-width: 420px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+                        .loader { width: 48px; height: 48px; border: 3px solid rgba(16, 185, 129, 0.1); border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem; }
+                        @keyframes spin { to { transform: rotate(360deg); } }
+                        h2 { margin: 0 0 0.75rem 0; font-weight: 700; color: #f8fafc; font-size: 1.5rem; }
+                        p { color: #94a3b8; font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
+                        .link { color: #10b981; text-decoration: none; font-size: 0.85rem; opacity: 0.6; transition: all 0.2s; border-bottom: 1px solid transparent; }
+                        .link:hover { opacity: 1; border-bottom-color: #10b981; }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <div class="loader"></div>
+                        <h2>Presque prêt...</h2>
+                        <p>Nous vous connectons en toute sécurité à votre tableau de bord SoloPrice Pro.</p>
+                        <a id="sso-link" class="link" href="${linkData.properties.action_link}">Cliquez ici si la redirection ne démarre pas</a>
+                    </div>
+                    <script>
+                        setTimeout(() => {
+                            window.location.href = "${linkData.properties.action_link}";
+                        }, 800);
+                    </script>
+                </body>
+            </html>
+        `);
 
     } catch (err) {
         console.error("[SSO] Erreur critique:", err);

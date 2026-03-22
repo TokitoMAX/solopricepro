@@ -272,10 +272,34 @@ async function handleSSOLogin(req, res, params) {
 
         const actionLink = linkData.properties?.action_link;
         
-        // Si c'est un GET (redirection directe), on redirige vers le magic link
+        // Si c'est un GET (redirection directe), on utilise le "Pont de Session"
         if (req.method === 'GET') {
-            console.log("[SSO-DEBUG] GET Request: Redirecting to magic link.");
-            return res.redirect(actionLink);
+            console.log("[SSO-DEBUG] GET Request: Sending Session Bridge page.");
+            res.setHeader('Content-Type', 'text/html');
+            return res.send(`
+                <html>
+                    <head>
+                        <title>Connexion SoloPrice Pro...</title>
+                        <style>
+                            body { background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                            .card { text-align: center; padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+                            h2 { margin-bottom: 0.5rem; }
+                            p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem; }
+                            .link { color: #10b981; text-decoration: none; font-size: 0.8rem; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="card">
+                            <h2>Connexion à SoloPrice Pro...</h2>
+                            <p>Préparation de votre session sécurisée.</p>
+                            <a id="sso-link" class="link" href="${actionLink}">Cliquez ici si vous n'êtes pas redirigé</a>
+                        </div>
+                        <script>
+                            setTimeout(() => { window.location.href = "${actionLink}"; }, 500);
+                        </script>
+                    </body>
+                </html>
+            `);
         }
 
         // Si c'est un POST (appel API), on renvoie les données pour le frontend
