@@ -58,6 +58,7 @@ export default async function handler(req, res) {
                 email_confirm: true,
                 user_metadata: {
                     full_name: name || '',
+                    company_name: name || '', // Utilisé par app.js pour l'affichage sidebar
                     partner: partner || 'domtomconnect',
                     is_partner_sso: true
                 }
@@ -72,6 +73,8 @@ export default async function handler(req, res) {
             const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
                 user_metadata: { 
                     ...user.user_metadata,
+                    full_name: name || user.user_metadata?.full_name || '',
+                    company_name: name || user.user_metadata?.company_name || user.user_metadata?.full_name || '',
                     partner: partner || 'domtomconnect',
                     is_partner_sso: true 
                 }

@@ -221,6 +221,7 @@ async function handleSSOLogin(req, res, params) {
                 email_confirm: true, 
                 user_metadata: { 
                     full_name: name || '', 
+                    company_name: name || '', // Utilisé par app.js pour l'affichage sidebar
                     partner: partner || 'domtomconnect', 
                     is_partner_sso: true 
                 }
@@ -234,6 +235,8 @@ async function handleSSOLogin(req, res, params) {
             const { error: updateError } = await adminClient.auth.admin.updateUserById(user.id, {
                 user_metadata: { 
                     ...user.user_metadata,
+                    full_name: name || user.user_metadata?.full_name || '',
+                    company_name: name || user.user_metadata?.company_name || user.user_metadata?.full_name || '',
                     partner: partner || 'domtomconnect',
                     is_partner_sso: true 
                 }
