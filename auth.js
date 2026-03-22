@@ -13,6 +13,7 @@ const Auth = {
         : '',
 
     token: localStorage.getItem('sp_token') || null,
+    refreshToken: localStorage.getItem('sp_refresh_token') || null,
     user: localStorage.getItem('sp_user') ? JSON.parse(localStorage.getItem('sp_user')) : null,
 
     init() {
@@ -290,13 +291,18 @@ const Auth = {
             user_metadata: user.user_metadata,
             company: user.user_metadata?.company || { name: user.user_metadata?.company_name || '' },
             isPro: !!(user.user_metadata?.is_pro || user.is_pro),
-            token: session?.access_token
+            token: session?.access_token,
+            refreshToken: session?.refresh_token
         };
 
         this.token = userData.token;
+        this.refreshToken = userData.refreshToken;
         this.user = userData;
 
         localStorage.setItem('sp_token', userData.token);
+        if (userData.refreshToken) {
+            localStorage.setItem('sp_refresh_token', userData.refreshToken);
+        }
         localStorage.setItem('sp_user', JSON.stringify(userData));
 
         if (typeof Storage !== 'undefined') {
@@ -318,6 +324,7 @@ const Auth = {
     logout() {
         if (window.sbClient) window.sbClient.auth.signOut();
         localStorage.removeItem('sp_token');
+        localStorage.removeItem('sp_refresh_token');
         localStorage.removeItem('sp_user');
         sessionStorage.removeItem('sp_in_app');
 
@@ -344,9 +351,11 @@ const Auth = {
         this._isHandlingExpiry = true;
 
         localStorage.removeItem('sp_token');
+        localStorage.removeItem('sp_refresh_token');
         localStorage.removeItem('sp_user');
         sessionStorage.removeItem('sp_in_app');
         this.token = null;
+        this.refreshToken = null;
         this.user = null;
 
         if (typeof App !== 'undefined' && App.showNotification) {
@@ -385,16 +394,77 @@ const Auth = {
 (function () {
     const originalFetch = window.fetch;
     let isHandlingError = false;
+    let isRefreshing = false;
+    let refreshSubscribers = [];
+
+    function onRefreshed(token) {
+        refreshSubscribers.forEach(cb => cb(token));
+        refreshSubscribers = [];
+    }
 
     window.fetch = async function () {
         try {
+            if (isRefreshing) {
+                await new Promise(resolve => refreshSubscribers.push(resolve));
+                if (arguments[1] && arguments[1].headers) {
+                    arguments[1].headers['Authorization'] = `Bearer ${Auth.token}`;
+                }
+            }
+
             const response = await originalFetch.apply(this, arguments);
 
-            // If we get a 401 or 403, and it's NOT a login/register attempt
-            const url = arguments[0];
-            const isAuthEndpoint = typeof url === 'string' && (url.includes('/api/auth/login') || url.includes('/api/auth/register'));
+            const url = typeof arguments[0] === 'string' ? arguments[0] : arguments[0].url;
+            const isAuthEndpoint = url && (url.includes('/api/auth/login') || url.includes('/api/auth/register') || url.includes('/api/auth/refresh'));
 
             if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
+                const refreshToken = localStorage.getItem('sp_refresh_token');
+                
+                if (refreshToken) {
+                    if (!isRefreshing) {
+                        isRefreshing = true;
+                        try {
+                            const refreshRes = await originalFetch(`${Auth.apiBase || ''}/api/auth/refresh`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ refresh_token: refreshToken })
+                            });
+
+                            if (refreshRes.ok) {
+                                const data = await refreshRes.json();
+                                Auth.token = data.session.access_token;
+                                Auth.refreshToken = data.session.refresh_token;
+                                localStorage.setItem('sp_token', Auth.token);
+                                localStorage.setItem('sp_refresh_token', Auth.refreshToken);
+                                
+                                isRefreshing = false;
+                                onRefreshed(Auth.token);
+
+                                const newArgs = [...arguments];
+                                if (newArgs[1]) {
+                                    newArgs[1] = { ...newArgs[1] };
+                                    newArgs[1].headers = { ...newArgs[1].headers, 'Authorization': `Bearer ${Auth.token}` };
+                                }
+                                return await originalFetch.apply(this, newArgs);
+                            } else {
+                                throw new Error('Refresh failed');
+                            }
+                        } catch (err) {
+                            isRefreshing = false;
+                        }
+                    } else {
+                        return new Promise(resolve => {
+                            refreshSubscribers.push(token => {
+                                const newArgs = [...arguments];
+                                if (newArgs[1]) {
+                                    newArgs[1] = { ...newArgs[1] };
+                                    newArgs[1].headers = { ...newArgs[1].headers, 'Authorization': `Bearer ${token}` };
+                                }
+                                resolve(originalFetch.apply(this, newArgs));
+                            });
+                        });
+                    }
+                }
+
                 if (!isHandlingError && typeof Auth !== 'undefined' && Auth.handleExpiredSession) {
                     isHandlingError = true;
                     Auth.handleExpiredSession();
@@ -487,6 +557,7 @@ Auth.handleGoogleCallback = async function () {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 supabase_token: session.access_token,
+                refresh_token: session.refresh_token,
                 user_id: user.id,
                 email: user.email,
                 full_name: user.user_metadata?.full_name || '',
@@ -510,7 +581,8 @@ Auth.handleGoogleCallback = async function () {
                 user_metadata: user.user_metadata || {},
                 company: { name: user.user_metadata?.full_name || user.email },
                 isPro: !!(user.user_metadata?.is_pro),
-                token: session.access_token
+                token: session.access_token,
+                refreshToken: session.refresh_token
             };
 
             Auth.token = userData.token;

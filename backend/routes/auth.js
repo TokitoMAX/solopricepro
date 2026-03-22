@@ -39,7 +39,7 @@ router.post('/login', async (req, res) => {
         if (!email || !password) return res.status(400).json({ message: "L'email et le mot de passe sont obligatoires." });
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) return res.status(401).json({ message: error.message });
-        res.json({ user: data.user, session: { access_token: data.session.access_token } });
+        res.json({ user: data.user, session: { access_token: data.session.access_token, refresh_token: data.session.refresh_token } });
     } catch (error) {
         res.status(500).json({ message: 'Erreur serveur lors de la connexion' });
     }
@@ -58,6 +58,20 @@ router.get('/me', async (req, res) => {
         res.json({ user: adminData?.user || user });
     } catch (error) {
         res.status(401).json({ message: 'Session invalide' });
+    }
+});
+
+// @route   POST /api/auth/refresh
+router.post('/refresh', async (req, res) => {
+    const { refresh_token } = req.body || {};
+    const supabase = req.app.get('supabase');
+    try {
+        if (!refresh_token) return res.status(400).json({ message: "Token de rafraîchissement manquant" });
+        const { data, error } = await supabase.auth.refreshSession({ refresh_token });
+        if (error) throw error;
+        res.json({ session: { access_token: data.session.access_token, refresh_token: data.session.refresh_token }, user: data.user });
+    } catch (error) {
+        res.status(401).json({ message: 'Session invalide ou expirée' });
     }
 });
 
@@ -333,7 +347,7 @@ router.post('/partner-login', (req, res) => handleSSOLogin(req, res, req.body));
 
 // @route   POST /api/auth/google-callback
 router.post('/google-callback', async (req, res) => {
-    const { supabase_token, email, full_name, avatar_url } = req.body || {};
+    const { supabase_token, refresh_token, email, full_name, avatar_url } = req.body || {};
     const supabase = req.app.get('supabase');
     try {
         const { data: { user }, error: authErr } = await supabase.auth.getUser(supabase_token);
@@ -343,7 +357,7 @@ router.post('/google-callback', async (req, res) => {
         await adminClient.from('sp_user_profile').upsert({
             user_id: user.id, email: user.email, full_name: full_name || user.user_metadata?.full_name || '', avatar_url: avatar_url || user.user_metadata?.avatar_url || ''
         }, { onConflict: 'user_id', ignoreDuplicates: true });
-        res.json({ user: { id: user.id, email: user.email, user_metadata: user.user_metadata || {} }, session: { access_token: supabase_token } });
+        res.json({ user: { id: user.id, email: user.email, user_metadata: user.user_metadata || {} }, session: { access_token: supabase_token, refresh_token: refresh_token } });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
