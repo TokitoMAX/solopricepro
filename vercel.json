@@ -6,33 +6,20 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "index.html",
+          "*.html",
           "*.css",
           "*.js",
           "backend/**/*.js",
           "services/**/*.js",
           "constants/**/*",
-          "assets/**/*",
-          "i18n.js"
+          "assets/**/*"
         ]
       }
-    },
-    {
-      "src": "api/sso.js",
-      "use": "@vercel/node"
     }
   ],
   "rewrites": [
     {
-      "source": "/api/sso",
-      "destination": "/api/sso.js"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/((?!.*\\.).*)",
+      "source": "/(.*)",
       "destination": "/server.js"
     }
   ],

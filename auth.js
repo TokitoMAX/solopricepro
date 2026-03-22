@@ -18,56 +18,9 @@ const Auth = {
     init() {
         // Mode Backend Local - Initialisation standard
         console.log("Auth initialized. API Base:", this.apiBase);
-        this.handlePartnerCallback();
     },
 
-    async handlePartnerCallback() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const partner = urlParams.get('partner');
-        const email = urlParams.get('email');
-        const name = urlParams.get('name');
-        const timestamp = urlParams.get('timestamp');
-        const signature = urlParams.get('signature');
 
-        if (partner && email && signature && timestamp) {
-            console.log("[PARTNER-AUTH] SSO detected for:", email);
-            
-            try {
-                // Show loader if possible
-                if (typeof App !== 'undefined' && App.showLoader) App.showLoader();
-
-                const response = await fetch(`${this.apiBase}/api/sso`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ partner, email, name, timestamp, signature })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    this.handleAuthSuccess(result);
-                    
-                    // Cleanup URL
-                    const cleanUrl = window.location.origin + window.location.pathname;
-                    window.history.replaceState({}, document.title, cleanUrl);
-                    
-                    if (typeof App !== 'undefined' && App.showNotification) {
-                        App.showNotification(`Connexion réussie via ${partner}`, 'success');
-                    }
-                } else {
-                    const err = await response.json();
-                    const errorDetails = err.debug ? `${err.message} (${err.debug})` : err.message;
-                    console.error("[PARTNER-AUTH] Error:", errorDetails || 'Erreur inconnue');
-                    if (typeof App !== 'undefined' && App.showNotification) {
-                        App.showNotification("La connexion partenaire a échoué : " + (errorDetails || 'Erreur inconnue'), 'error');
-                    }
-                }
-            } catch (err) {
-                console.error("[PARTNER-AUTH] Exception:", err);
-            } finally {
-                if (typeof App !== 'undefined' && App.hideLoader) App.hideLoader();
-            }
-        }
-    },
 
     checkRecoveryMode() {
         const hash = window.location.hash;
@@ -582,17 +535,7 @@ Auth.handleGoogleCallback = async function () {
     }
 };
 
-// ============================================================
-// DomTom Connect Partner Login
-// ============================================================
-Auth.loginWithDomTomConnect = function() {
-    // URL du portail partenaire (à adapter selon l'environnement)
-    const partnerPortalUrl = 'https://domtomconnect.com/auth/sso/soloprice';
-    const currentUrl = window.location.origin + window.location.pathname;
-    
-    // On redirige vers DomTom Connect avec l'URL de retour
-    window.location.href = `${partnerPortalUrl}?redirect_back=${encodeURIComponent(currentUrl)}`;
-};
+
 
 try {
     Auth.init();
