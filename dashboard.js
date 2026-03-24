@@ -228,17 +228,27 @@ const Dashboard = {
                         const client = (typeof Storage !== 'undefined' && Storage.getClient) ? Storage.getClient(doc.clientId) : null;
                         const isInvoice = doc.number.includes('FACT') || doc.type === 'invoice';
                         return `
-                                <div class="doc-card" style="padding: 1.5rem; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border-light); transition: all 0.2s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='translateY(0)';">
+                                 <div class="doc-card" style="padding: 1.5rem; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border-light); transition: all 0.2s ease; cursor: pointer; position: relative;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='translateY(0)';" onclick="App.navigateTo('${isInvoice ? 'quotes' : 'quotes'}')">
                                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                                         <div style="width: 40px; height: 40px; border-radius: 10px; background: ${isInvoice ? 'rgba(6, 95, 70, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; display: flex; align-items: center; justify-content: center; color: ${isInvoice ? 'var(--secondary)' : 'var(--primary)'}; font-size: 1.1rem;">
                                             <i class="fas ${isInvoice ? 'fa-file-invoice' : 'fa-file-signature'}"></i>
                                         </div>
-                                        <span class="status-badge status-${doc.status}" style="padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">${this.getStatusLabel(doc.status)}</span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <span class="status-badge status-${doc.status}" style="padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">${this.getStatusLabel(doc.status)}</span>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div style="font-weight: 800; font-size: 1.2rem; color: white; margin-bottom: 4px;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(doc.total) : doc.total}</div>
-                                        <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-muted);">${doc.number}</div>
-                                        <div style="font-size: 0.8rem; color: var(--text-muted); opacity: 0.7;">${client?.name || 'Client'}</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                        <div>
+                                            <div style="font-weight: 800; font-size: 1.2rem; color: white; margin-bottom: 4px;">${(typeof App !== 'undefined' && App.formatCurrency) ? App.formatCurrency(doc.total) : doc.total}</div>
+                                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-muted);">${doc.number}</div>
+                                            <div style="font-size: 0.8rem; color: var(--text-muted); opacity: 0.7;">${client?.name || 'Client'}</div>
+                                        </div>
+                                        <div class="card-quick-actions" style="display: flex; gap: 8px;" onclick="event.stopPropagation()">
+                                            ${isInvoice && doc.status !== 'paid' ? `
+                                                <button onclick="Invoices.markAsPaid('${doc.id}')" title="Marquer Payé" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--primary-glass); background: rgba(16, 185, 129, 0.1); color: #10b981; cursor: pointer;"><i class="fas fa-check"></i></button>
+                                            ` : ''}
+                                            <button onclick="${isInvoice ? 'Invoices' : 'Quotes'}.copyPublicLink('${doc.id}')" title="Copier le lien" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--glass-border-light); background: rgba(255,255,255,0.05); color: white; cursor: pointer;"><i class="fas fa-link"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                             `;

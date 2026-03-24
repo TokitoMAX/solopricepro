@@ -891,6 +891,24 @@ const Storage = {
         };
     },
 
+    async fetchPublicQuote(id) {
+        console.log(`️ [STORAGE] Fetching Public Quote: ${id}`);
+        const quote = this.getQuote(id);
+        if (!quote) return null;
+        const client = this.getClient(quote.clientId);
+        const provider = this.getNormalizedUser();
+        return { quote, client, provider };
+    },
+
+    async fetchPublicInvoice(id) {
+        console.log(`️ [STORAGE] Fetching Public Invoice: ${id}`);
+        const invoice = this.getInvoice(id);
+        if (!invoice) return null;
+        const client = this.getClient(invoice.clientId);
+        const provider = this.getNormalizedUser();
+        return { invoice, client, provider };
+    },
+
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }

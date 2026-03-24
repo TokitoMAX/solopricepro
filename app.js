@@ -1242,6 +1242,16 @@ const App = {
             return true;
         }
 
+        if (hash.startsWith('view-invoice=')) {
+            const invoiceId = hash.split('=')[1];
+            this.enterApp(false, false);
+            this.enterPublicMode();
+            if (typeof Invoices !== 'undefined') {
+                Invoices.renderPublicView(invoiceId);
+            }
+            return true;
+        }
+
         if (hash.startsWith('page=')) return false;
 
         // 3. Cas spécifique : Récupération de mot de passe (Supabase)

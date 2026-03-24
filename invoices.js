@@ -864,6 +864,143 @@ const Invoices = {
         }
     },
 
+    async togglePaymentStatus(id, type) {
+        const invoice = Storage.getInvoice(id);
+        if (!invoice) return;
+
+        const field = type === 'expert' ? 'expert_paid_at' : 'platform_paid_at';
+        const newValue = invoice[field] ? null : new Date().toISOString();
+
+        try {
+            await Storage.updateInvoice(id, { [field]: newValue });
+            App.showNotification('Statut de paiement mis à jour.', 'success');
+            
+            // Auto-update global status if everything is paid
+            const updatedInvoice = Storage.getInvoice(id);
+            if (updatedInvoice.expert_paid_at && updatedInvoice.platform_paid_at && updatedInvoice.status !== 'paid') {
+                await Storage.updateInvoice(id, { status: 'paid' });
+            }
+
+            this.render(this.lastContainerId);
+        } catch (e) {
+            App.showNotification('Erreur de mise à jour.', 'error');
+        }
+    },
+
+    async markAsPaid(id) {
+        const invoice = Storage.getInvoice(id);
+        if (!invoice) return;
+
+        const now = new Date().toISOString();
+        try {
+            await Storage.updateInvoice(id, {
+                expert_paid_at: now,
+                platform_paid_at: now,
+                status: 'paid'
+            });
+            App.showNotification('Facture marquée comme entièrement payée.', 'success');
+            this.render(this.lastContainerId);
+        } catch (e) {
+            App.showNotification('Erreur de mise à jour.', 'error');
+        }
+    },
+
+    copyPublicLink(id) {
+        const invoice = Storage.getInvoice(id);
+        if (!invoice) return;
+        const baseUrl = window.location.origin + window.location.pathname;
+        const publicLink = `${baseUrl}#view-invoice=${invoice.id}`;
+
+        navigator.clipboard.writeText(publicLink).then(() => {
+            App.showNotification('Lien public copié.', 'success');
+        }).catch(err => {
+            prompt('Copiez ce lien :', publicLink);
+        });
+    },
+
+    async renderPublicView(id, paymentStatus) {
+        const container = document.getElementById('public-view-container') || document.getElementById('app-wrapper');
+        if (!container) return;
+
+        try {
+            const data = await Storage.fetchPublicInvoice(id);
+            if (!data) throw new Error('Document introuvable');
+
+            const { invoice, client, provider } = data;
+
+            App.enterPublicMode();
+
+            container.innerHTML = `
+                <div class="public-invoice-page glass" style="max-width: 900px; margin: 2rem auto; padding: 3rem; border-radius: 24px;">
+                    <div class="public-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem;">
+                        <div>
+                            <h1 class="logo-text" style="font-size: 2rem; margin-bottom: 0.5rem;">FACTURE ${invoice.number}</h1>
+                            <p class="text-muted">Émise le ${App.formatDate(invoice.createdAt)}</p>
+                        </div>
+                        <div style="text-align: right;">
+                             <span class="status-badge status-${invoice.status}" style="font-size: 1rem; padding: 8px 16px;">${this.getStatusLabel(invoice.status)}</span>
+                        </div>
+                    </div>
+
+                    <div class="public-actors" style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-bottom: 3rem;">
+                        <div>
+                             <h4 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 1rem;">Prestataire</h4>
+                             <p><strong>${provider.company?.name || provider.email}</strong><br>${provider.company?.address || ''}</p>
+                        </div>
+                        <div>
+                             <h4 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 1rem;">Client</h4>
+                             <p><strong>${client.name}</strong><br>${client.address || ''}</p>
+                        </div>
+                    </div>
+
+                    <table class="data-table" style="margin-bottom: 2rem;">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th style="text-align: center;">Qté</th>
+                                <th style="text-align: right;">Prix Unitaire</th>
+                                <th style="text-align: right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${invoice.items.map(item => `
+                                <tr>
+                                    <td>${item.description}</td>
+                                    <td style="text-align: center;">${item.quantity}</td>
+                                    <td style="text-align: right;">${App.formatCurrency(item.unitPrice)}</td>
+                                    <td style="text-align: right;">${App.formatCurrency(item.quantity * item.unitPrice)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <div style="display: flex; justify-content: flex-end;">
+                        <div style="width: 300px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Sous-total HT</span>
+                                <span>${App.formatCurrency(invoice.subtotal)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>${invoice.taxName || 'TVA'} (${invoice.taxRate}%)</span>
+                                <span>${App.formatCurrency(invoice.tax)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; color: white;">
+                                <span>TOTAL TTC</span>
+                                <span>${App.formatCurrency(invoice.total)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="public-footer" style="margin-top: 4rem; padding-top: 2rem; border-top: 1px dashed var(--border); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                        Propulsé par SoloPrice Pro - L'outil de gestion des experts indépendants.
+                    </div>
+                </div>
+            `;
+        } catch (err) {
+            container.innerHTML = `<div class="error-view">${err.message}</div>`;
+        }
+    },
+
     hideForm() {
         const container = document.getElementById('invoice-form-container');
         container.innerHTML = '';

@@ -1045,6 +1045,19 @@ const Quotes = {
         }
     },
 
+    copyPublicLink(id) {
+        const quote = Storage.getQuote(id);
+        if (!quote) return;
+        const baseUrl = window.location.origin + window.location.pathname;
+        const publicLink = `${baseUrl}#view-quote=${quote.id}`;
+
+        navigator.clipboard.writeText(publicLink).then(() => {
+            App.showNotification(i18n.t('quotes.notify.link_copied'), 'success');
+        }).catch(err => {
+            prompt(i18n.t('quotes.prompt.copy_link'), publicLink);
+        });
+    },
+
     async renderPublicView(id, params) {
         console.log(`[QUOTES] Starting renderPublicView for ID: ${id}`);
         const container = document.getElementById(this.lastContainerId || 'quotes-content');
